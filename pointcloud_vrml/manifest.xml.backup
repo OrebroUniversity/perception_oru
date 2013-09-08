@@ -1,0 +1,22 @@
+<package>
+  <description brief="pointcloud_vrml">
+
+     pointcloud_vrml
+
+  </description>
+  <author>Dev</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pointcloud_vrml</url>
+  <depend package="common_rosdeps" />
+  <rosdep name="eigen" />
+  <depend package="pcl"/>
+  <depend package="pcl_ros"/>
+  <depend package="tf"/>
+  <depend package="nav_msgs"/>
+  <export> 
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib" />
+  </export>
+</package>
+
+

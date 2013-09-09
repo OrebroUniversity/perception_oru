@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ndt_fuser" type="ndt_fuser" name="ndt_fuser_kinect">
+	<param name="points_topic" value="/camera/depth_registered/points" />
+	<param name="size_x_meters" value="10" />
+	<param name="size_y_meters" value="10" />
+	<param name="size_z_meters" value="10" />
+	<param name="resolution" value="0.05" />
+	<param name="sensor_range" value="3.5" />
+	<param name="visualize" value="true" />
+    </node>
+</launch>

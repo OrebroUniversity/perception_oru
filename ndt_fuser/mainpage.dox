@@ -1,0 +1,13 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b ndt_fuser provides two classes for building NDT maps from a moving robot. The package provides C++ API, as well as a ROS node for mapping from a 2D laser scanner or 3D point cloud source. 
+
+
+\section codeapi Code API
+
+The API is provided through two templated clases - NDTFuser and NDTFuserHMT. The functionalities are demonstrated in use in the ros node. 
+
+
+*/

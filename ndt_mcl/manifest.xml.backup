@@ -1,0 +1,31 @@
+<package>
+  <description brief="ndt_mcl">
+
+     ndt_mcl
+
+  </description>
+  <author>jari</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ndt_mcl</url>
+  <depend package="ndt_visualisation"/>
+  <depend package="rosbag"/>
+	<depend package="tf"/>
+	
+	<depend package="nav_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="message_filters"/>
+  <depend package="pcl"/>
+  <depend package="ndt_map"/>
+  
+	<depend package="ndt_registration"/>
+	<depend package="pointcloud_vrml"/>
+	<depend package="visualization_msgs"/>
+  
+   <export>
+    <cpp cflags="-I${prefix}/src" lflags="-L${prefix}/lib" />
+  </export>
+</package>
+
+

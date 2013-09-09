@@ -1,0 +1,45 @@
+<package>
+  <name>ndt_map_builder</name>
+  <version>1.0.0</version>
+  <description>ndt_map_builder</description>
+  <maintainer email="">Todor Stoyanov</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/ndt_map_builder</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Todor Stoyanov</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>common_rosdeps</build_depend>
+  <build_depend>pcl</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>pointcloud_vrml</build_depend>
+  <build_depend>ndt_map</build_depend>
+  <build_depend>ndt_registration</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>common_rosdeps</run_depend>
+  <run_depend>pcl</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>pointcloud_vrml</run_depend>
+  <run_depend>ndt_map</run_depend>
+  <run_depend>ndt_registration</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>common_rosdeps</test_depend> -->
+  <!-- <test_depend>pcl</test_depend> -->
+  <!-- <test_depend>pcl_ros</test_depend> -->
+  <!-- <test_depend>pointcloud_vrml</test_depend> -->
+  <!-- <test_depend>ndt_map</test_depend> -->
+  <!-- <test_depend>ndt_registration</test_depend> -->
+
+<export>
+    <cpp cflags="-I${prefix}/include"/>
+</export>
+
+</package>

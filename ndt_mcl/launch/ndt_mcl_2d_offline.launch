@@ -1,0 +1,22 @@
+<launch>
+
+	<node pkg="ndt_mcl" type="2d_ndt_mcl_offline_test" required="true" name="NDTMCL">
+		
+		<param name="input_laser_topic" value="/laserscan" />
+		<param name="tf_base_link" value="/state_base_link" />
+		<param name="tf_laser_link" value="/base_laser_link" />
+		
+		<param name="use_pose_offset" value="true" />
+	  <param name="sensor_pose_x" value="0.695" />
+		<param name="sensor_pose_y" value="-0.01" />
+		<param name="sensor_pose_th" value="-0.0069813" />
+
+		<param name="load_map_from_file" value="true" />
+		<param name="map_file_name" value="$(find ndt_mcl)/maps/ndt_0040.ndmap" />
+
+		<param name="save_output_map" value="false" />
+		<param name="output_map_file_name" value="$(find ndt_mcl)/maps/ndt_mapper_output.ndmap" />
+		<param name="map_resolution" value="0.4" />
+		<param name="bagfile_name" value="$(find ndt_mcl)/data/localization.bag"/>
+	</node>   
+</launch>

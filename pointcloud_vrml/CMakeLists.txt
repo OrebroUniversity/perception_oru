@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 #common_rosdeps <- it seams that it is not necessary anymore 
 rosconsole
 pcl pcl_ros tf nav_msgs eigen)
-
+catkin_package(INCLUDE_DIRS include)
 # include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
@@ -62,9 +62,9 @@ target_link_libraries(vrml_reader ${catkin_LIBRARIES})
 target_link_libraries(vrml_writer ${catkin_LIBRARIES})
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
+#generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs
-)
+#)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package

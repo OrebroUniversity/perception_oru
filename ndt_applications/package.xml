@@ -1,0 +1,50 @@
+<package>
+  <name>ndt_applications</name>
+  <version>1.0.0</version>
+  <description>ndt_applications</description>
+<maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
+<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/ndt_applications</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Jari</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>rosbag</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>ndt_map</build_depend>
+  <build_depend>ndt_visualisation</build_depend>
+  <build_depend>velodyne_msgs</build_depend>
+  <build_depend>velodyne_pointcloud</build_depend>
+  <build_depend>tf_conversions</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>rosbag</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>ndt_map</run_depend>
+  <run_depend>ndt_visualisation</run_depend>
+  <run_depend>velodyne_msgs</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
+  <run_depend>tf_conversions</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>rosbag</test_depend> -->
+  <!-- <test_depend>nav_msgs</test_depend> -->
+  <!-- <test_depend>sensor_msgs</test_depend> -->
+  <!-- <test_depend>ndt_map</test_depend> -->
+  <!-- <test_depend>ndt_visualisation</test_depend> -->
+  <!-- <test_depend>velodyne_msgs</test_depend> -->
+  <!-- <test_depend>velodyne_pointcloud</test_depend> -->
+  <!-- <test_depend>tf_conversions</test_depend> -->
+
+</package>

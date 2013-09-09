@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/maw/rosbuild_ws/oru-ros-pkg/perception_oru/ndt_map_builder/build/devel/setup.sh

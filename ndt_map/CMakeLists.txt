@@ -6,7 +6,9 @@ project(ndt_map)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS pcl pcl_ros pointcloud_vrml cv_bridge eigen)
 find_package(OpenCV REQUIRED)
- include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
+#catkin_package(INCLUDE_DIRS include)
+
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
 
@@ -70,15 +72,15 @@ target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
 #include_directories(${Boost_INCLUDE_DIRS})
 #target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
+#generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs
-)
+#)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
 catkin_package(
     DEPENDS pcl pcl_ros pointcloud_vrml opencv2 cv_bridge eigen
     CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+    INCLUDE_DIRS include
+    LIBRARIES # ${PROJECT_NAME}
 )

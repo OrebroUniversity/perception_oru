@@ -1,0 +1,90 @@
+# Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
+# Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
+cmake_minimum_required(VERSION 2.8.3)
+project(ndt_visualisation)
+# Load catkin and all dependencies required for this package
+# TODO: remove all from COMPONENTS that are not catkin packages.
+find_package(catkin REQUIRED COMPONENTS pcl ndt_map eigen)
+
+# include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+# CATKIN_MIGRATION: removed during catkin migration
+# cmake_minimum_required(VERSION 2.4.6)
+
+# CATKIN_MIGRATION: removed during catkin migration
+# include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+
+# Set the build type.  Options are:
+#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
+#  Debug          : w/ debug symbols, w/o optimization
+#  Release        : w/o debug symbols, w/ optimization
+#  RelWithDebInfo : w/ debug symbols, w/ optimization
+#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+#set(ROS_BUILD_TYPE RelWithDebInfo)
+
+
+# CATKIN_MIGRATION: removed during catkin migration
+# rosbuild_init()
+find_package(LibXml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR})
+ADD_DEFINITIONS(-DLINUX_OS)
+find_package(OpenGL REQUIRED)
+find_package(GLU REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(JPEG REQUIRED)
+FIND_PACKAGE(MRPT REQUIRED graphslam;gui;base;opengl)
+include_directories(${JPEG_INCLUDE_DIR})
+include_directories(${GLUT_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+
+#FIND_PACKAGE(MRPT REQUIRED graphslam;gui)
+
+#set the default path for built executables to the "bin" directory
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+#set the default path for built libraries to the "lib" directory
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+#uncomment if you have defined messages
+#add_message_files(
+#  FILES
+  # TODO: List your msg files here
+#)
+#uncomment if you have defined services
+#add_service_files(
+#  FILES
+  # TODO: List your msg files here
+#)
+
+# CATKIN_MIGRATION: removed during catkin migration
+# rosbuild_add_boost_directories()
+
+#common commands for building c++ executables and libraries
+add_library(${PROJECT_NAME} src/CMyEllipsoid.cpp)
+target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
+
+#add_executable(ndt_viewer src/ndt_viewer.cc)
+#target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
+#find_package(Boost REQUIRED COMPONENTS program_options thread)
+#include_directories(${Boost_INCLUDE_DIRS})
+#target_link_libraries(ndt_viewer ${Boost_LIBRARIES})
+
+#target_link_libraries(${PROJECT_NAME} another_library)
+#
+# CATKIN_MIGRATION: removed during catkin migration
+# rosbuild_add_boost_directories()
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(example ${PROJECT_NAME})
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+    #TODO DEPENDENCIES geometry_msgs std_msgs
+)
+
+# catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
+# TODO: fill in what other packages will need to use this package
+catkin_package(
+    DEPENDS common_rosdeps pcl ndt_map eigen
+    CATKIN_DEPENDS # TODO
+    INCLUDE_DIRS include
+    LIBRARIES ndt_visualisation
+)

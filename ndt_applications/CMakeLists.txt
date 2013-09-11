@@ -5,10 +5,10 @@ project(ndt_applications)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rosbag nav_msgs sensor_msgs ndt_map ndt_visualisation 
-#velodyne_msgs velodyne_pointcloud 
+velodyne_driver velodyne_msgs velodyne_pointcloud 
 tf_conversions)
 
-find_package(velodyne_msgs REQUIRED)
+#find_package(velodyne_msgs REQUIRED)
  include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 # CATKIN_MIGRATION: removed during catkin migration
 # cmake_minimum_required(VERSION 2.4.6)
@@ -57,8 +57,8 @@ target_link_libraries(velodyneNDTMapper ${MRPT_LIBS})
 # CATKIN_MIGRATION: removed during catkin migration
 # rosbuild_add_boost_directories()
 #find_package(Boost REQUIRED COMPONENTS thread)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+#include_directories(${Boost_INCLUDE_DIRS})
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 #add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 ## Generate added messages and services with any dependencies listed here

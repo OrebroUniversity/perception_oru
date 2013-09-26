@@ -1,8 +1,0 @@
-<stack>
-  <description brief="perception_oru">Perception packages from the MRO lab at AASS, Orebro University</description>
-  <author>Maintained by Todor Stoyanov, Jari Saarinen, Henrik Andreasson and Daniel Canelhas</author>
-  <license>BSD</license>  
-  <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/perception_oru</url>
-  <depend stack="ros" />
-</stack>

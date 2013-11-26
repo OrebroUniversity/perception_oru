@@ -55,9 +55,9 @@ target_link_libraries(test_ndt_mapper ${catkin_LIBRARIES})
 #add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
+#generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs
-)
+#)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package

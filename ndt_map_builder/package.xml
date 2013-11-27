@@ -1,6 +1,6 @@
 <package>
   <name>ndt_map_builder</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>ndt_map_builder</description>
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>

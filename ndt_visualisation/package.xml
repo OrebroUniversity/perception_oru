@@ -24,12 +24,14 @@
   <build_depend>pcl</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>mrpt</build_depend>
+  <build_depend>glut</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>pcl</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>mrpt</run_depend>
+  <run_depend>glut</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>common_rosdeps</test_depend> -->

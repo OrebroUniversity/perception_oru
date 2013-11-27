@@ -1,6 +1,6 @@
 <package>
   <name>perception_oru</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <description>Perception packages from the MRO lab at AASS, Orebro University</description>
   <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer> 
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>

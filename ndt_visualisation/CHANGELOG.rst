@@ -2,8 +2,8 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2013-11-27)
+------------------
 * rosdeps are now handled through catkin, hopefully mrpt as well
 * CMake files fixed to output in the correct place
 * Contributors: Todor Stoyanov

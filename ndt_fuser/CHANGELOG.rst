@@ -2,8 +2,8 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.3 (2013-11-27)
+------------------
 * CMake files fixed to output in the correct place
 * Contributors: Todor Stoyanov
 

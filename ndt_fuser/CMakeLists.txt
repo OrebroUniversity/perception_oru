@@ -4,9 +4,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ndt_fuser)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation)
+find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs)
 catkin_package(
-    DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation
+    DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs
     CATKIN_DEPENDS # TODO
     INCLUDE_DIRS include
     LIBRARIES # TODO

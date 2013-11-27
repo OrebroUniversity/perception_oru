@@ -6,29 +6,13 @@ project(ndt_map_builder)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS  pcl pcl_ros pointcloud_vrml ndt_map ndt_registration eigen)
 
+catkin_package(
+    DEPENDS common_rosdeps pcl pcl_ros pointcloud_vrml ndt_map ndt_registration eigen
+    CATKIN_DEPENDS # TODO
+    INCLUDE_DIRS # TODO include
+    LIBRARIES # TODO
+)
 include_directories(include ${catkin_INCLUDE_DIRS})
-# CATKIN_MIGRATION: removed during catkin migration
-# cmake_minimum_required(VERSION 2.4.6)
-
-# CATKIN_MIGRATION: removed during catkin migration
-# include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
-
-
-# CATKIN_MIGRATION: removed during catkin migration
-# rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
 #add_message_files(
@@ -61,9 +45,3 @@ target_link_libraries(test_ndt_mapper ${catkin_LIBRARIES})
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
-catkin_package(
-    DEPENDS common_rosdeps pcl pcl_ros pointcloud_vrml ndt_map ndt_registration eigen
-    CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
-)

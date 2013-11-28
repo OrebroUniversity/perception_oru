@@ -2,6 +2,13 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* small modification to launch file to make seemless integration with ndt_fuser
+* Added release flags to all CMake files
+* Re-organization of include files to follow ros convention, lots of changes
+* Contributors: Todor Stoyanov
+
 1.0.3 (2013-11-27)
 ------------------
 * CMake files fixed to output in the correct place

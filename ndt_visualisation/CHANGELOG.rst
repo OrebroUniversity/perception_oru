@@ -2,6 +2,12 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added release flags to all CMake files
+* Re-organization of include files to follow ros convention, lots of changes
+* Contributors: Todor Stoyanov
+
 1.0.3 (2013-11-27)
 ------------------
 * rosdeps are now handled through catkin, hopefully mrpt as well

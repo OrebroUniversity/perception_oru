@@ -2,6 +2,9 @@
 Changelog for package perception_oru
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.3 (2013-11-27)
 ------------------
 

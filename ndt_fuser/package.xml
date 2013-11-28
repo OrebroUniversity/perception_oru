@@ -5,14 +5,14 @@
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
 <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/ndt_fuser</url>
   <!-- <url type="bugtracker"></url> -->
 
-  <author>Todor Stoyanov and Jari Saarinen</author>
+  <author>Todor Stoyanov</author>
+  <author>Jari Saarinen</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -24,6 +24,7 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>ndt_visualisation</build_depend>
+  <build_depend>pcl</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>ndt_registration</run_depend>
@@ -32,6 +33,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>ndt_visualisation</run_depend>
+  <run_depend>pcl</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>ndt_registration</test_depend> -->
@@ -40,8 +42,8 @@
   <!-- <test_depend>sensor_msgs</test_depend> -->
   <!-- <test_depend>ndt_visualisation</test_depend> -->
 
-<export>
+<!--export>
     <cpp lflags="-Wl,-rpath,${prefix}/lib" cflags="-I${prefix}/include"/>
-</export>
+</export-->
 
 </package>

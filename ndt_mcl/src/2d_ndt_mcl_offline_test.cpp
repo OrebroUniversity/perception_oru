@@ -26,7 +26,7 @@
 	#include <mrpt/base.h>
 	#include <mrpt/opengl.h>
 	#include <GL/gl.h>
-	#include "CMyEllipsoid.h"
+	#include "ndt_mcl/CMyEllipsoid.h"
 #endif
 
 #include <ros/ros.h>
@@ -39,13 +39,14 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <ndt_map.h>
 #include <tf/transform_broadcaster.h>
-#include "tfMessageReader.h"
-#include "ndt_mcl.hpp"
+
+#include <ndt_map/ndt_map.h>
+#include "ndt_mcl/tfMessageReader.h"
+#include "ndt_mcl/impl/ndt_mcl.hpp"
 
 #ifdef USE_VISUALIZATION_DEBUG
-#include "mcl_visualization.hpp" ///< here is a punch of visualization code based on the MRPT's GUI components
+#include "ndt_mcl/impl/mcl_visualization.hpp" ///< here is a punch of visualization code based on the MRPT's GUI components
 #endif
 
 /**

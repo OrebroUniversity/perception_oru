@@ -6,12 +6,12 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include <ndt_matcher_d2d.h>
-#include <ndt_map.h>
-#include <ndt_matcher_d2d_feature.h>
-#include <pointcloud_utils.h>
-#include <cell_vector.h>
-#include <lazy_grid.h>
+#include <ndt_registration/ndt_matcher_d2d.h>
+#include <ndt_registration/ndt_matcher_d2d_feature.h>
+#include <ndt_map/ndt_map.h>
+#include <ndt_map/cell_vector.h>
+#include <ndt_map/lazy_grid.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
 using namespace std;
 using namespace lslgeneric;

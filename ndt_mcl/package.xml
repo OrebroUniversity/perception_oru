@@ -5,14 +5,13 @@
   <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
 <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/ndt_mcl</url>
   <!-- <url type="bugtracker"></url> -->
 
-  <author>jari</author>
+  <author>Jari Saarinen</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -65,8 +64,8 @@
   <!-- <test_depend>pointcloud_vrml</test_depend> -->
   <!-- <test_depend>visualization_msgs</test_depend> -->
 
-<export>
+<!--export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/src"/>
-</export>
+</export-->
 
 </package>

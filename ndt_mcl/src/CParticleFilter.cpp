@@ -2,7 +2,7 @@
 * The cpp file for the particle filter
 */
 
-#include "CParticleFilter.h"
+#include "ndt_mcl/CParticleFilter.h"
 
 using namespace mcl;
 

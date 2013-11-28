@@ -1,11 +1,11 @@
 // Evaluation using TUM data set.
-#include <ndt_fuser.h>
+#include <ndt_fuser/ndt_fuser.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
 #include <iostream>
 #include <boost/thread/thread.hpp>
 #include <boost/program_options.hpp>
 
-#include <pointcloud_utils.h>
 #include <cv.h>
 #include <highgui.h>
 #include <pcl/io/io.h>

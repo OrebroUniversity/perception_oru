@@ -1,4 +1,4 @@
-#include <oc_tree.h>
+#include <ndt_map/oc_tree.h>
 
 #include "ros/ros.h"
 #include "pcl/point_cloud.h"

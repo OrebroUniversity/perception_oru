@@ -5,7 +5,6 @@
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
 <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
 
   <license>BSD</license>
 
@@ -41,8 +40,8 @@
   <!-- <test_depend>ndt_map</test_depend> -->
   <!-- <test_depend>ndt_registration</test_depend> -->
 
-<export>
+<!--export>
     <cpp cflags="-I${prefix}/include"/>
-</export>
+</export-->
 
 </package>

@@ -1,7 +1,7 @@
-#include <ndt_map_builder.h>
-#include <oc_tree.h>
-#include <ndt_matcher_d2d.h>
-#include <pointcloud_utils.h>
+#include <ndt_map_builder/ndt_map_builder.h>
+#include <ndt_map/oc_tree.h>
+#include <ndt_registration/ndt_matcher_d2d.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
 using namespace std;
 using namespace lslgeneric;

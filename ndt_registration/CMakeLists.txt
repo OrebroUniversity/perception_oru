@@ -4,17 +4,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ndt_registration)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS ndt_map pcl pointcloud_vrml tf tf_conversions eigen)
+find_package(catkin REQUIRED COMPONENTS ndt_map pointcloud_vrml tf tf_conversions)
 catkin_package(
-    DEPENDS ndt_map pcl pointcloud_vrml tf tf_conversions eigen
-    CATKIN_DEPENDS # TODO
+    DEPENDS eigen pcl
+    CATKIN_DEPENDS ndt_map pointcloud_vrml tf tf_conversions
     INCLUDE_DIRS include
     LIBRARIES # TODO
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options)
-#include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} )
-
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 #uncomment if you have defined messages
@@ -28,37 +26,22 @@ include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
   # TODO: List your msg files here
 #)
 
-#common commands for building c++ executables and libraries
-#add_library(${PROJECT_NAME} ${LIBRARY_SOURCES})
-#target_link_libraries(${PROJECT_NAME} another_library)
-
-# CATKIN_MIGRATION: removed during catkin migration
-# rosbuild_add_boost_directories()
 #add_executable(ndt_registration_test test/ndt_registration_test.cc)
 #rosbuild_add_openmp_flags(ndt_registration_test)
 
 find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
 add_executable(simple_test test/simple.cc)
 target_link_libraries(simple_test ${Boost_LIBRARIES} ${catkin_LIBRARIES})
-
-#rosbuild_add_openmp_flags(simple_test)
-
 
 add_executable(from_jff test/from_jff.cc)
 target_link_libraries(from_jff ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 #rosbuild_add_openmp_flags(from_jff)
 
-#target_link_libraries(ndt_registration_test ndt_map pointcloud_vrml)
-
 add_executable(ndt_feature_test test/ndt_feature_test.cc)
 target_link_libraries(ndt_feature_test ${Boost_LIBRARIES} ${catkin_LIBRARIES})
-
-#target_link_libraries(ndt_feature_test ${Boost_LIBRARIES})
-
-#target_link_libraries(ndt_feature_test ${PROJECT_NAME} ndt_map pointcloud_vrml)
 
 #add_executable(feature_registration test/feature_registration.cc)
 #target_link_libraries(feature_registration ndt_map pointcloud_vrml )
@@ -93,3 +76,12 @@ target_link_libraries(ndt_feature_test ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
+install(TARGETS simple_test from_jff 
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+       )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+       )

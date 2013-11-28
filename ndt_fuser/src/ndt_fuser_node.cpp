@@ -1,5 +1,5 @@
 //#include <ndt_fuser.h>
-#include <ndt_fuser_hmt.h>
+#include <ndt_fuser/ndt_fuser_hmt.h>
 #include <ros/ros.h>
 
 #include "pcl/point_cloud.h"

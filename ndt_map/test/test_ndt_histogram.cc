@@ -1,7 +1,7 @@
-#include <ndt_histogram.h>
-#include <oc_tree.h>
-#include <pointcloud_utils.h>
-#include <lazy_grid.h>
+#include <ndt_map/ndt_histogram.h>
+#include <ndt_map/oc_tree.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/lazy_grid.h>
 
 #include "pcl/point_cloud.h"
 #include "sensor_msgs/PointCloud2.h"

@@ -3,11 +3,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
-# TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS pcl ndt_map eigen)
+find_package(catkin REQUIRED COMPONENTS ndt_map)
 catkin_package(
-    DEPENDS common_rosdeps pcl ndt_map eigen
-    CATKIN_DEPENDS # TODO
+    DEPENDS common_rosdeps pcl eigen mrpt glut libxmu-dev
+    CATKIN_DEPENDS ndt_map 
     INCLUDE_DIRS include
     LIBRARIES ndt_visualisation
 )
@@ -43,11 +42,11 @@ include_directories(${catkin_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/CMyEllipsoid.cpp)
 target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
 
-#add_executable(ndt_viewer src/ndt_viewer.cc)
-#target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
-#find_package(Boost REQUIRED COMPONENTS program_options thread)
-#include_directories(${Boost_INCLUDE_DIRS})
-#target_link_libraries(ndt_viewer ${Boost_LIBRARIES})
+find_package(Boost REQUIRED COMPONENTS program_options thread)
+include_directories(${Boost_INCLUDE_DIRS})
+add_executable(ndt_viewer src/ndt_viewer.cc)
+target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
+
 
 #target_link_libraries(${PROJECT_NAME} another_library)
 #
@@ -61,4 +60,12 @@ target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${J
 #)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
-# TODO: fill in what other packages will need to use this package
+install(TARGETS ndt_viewer ${PROJECT_NAME}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+       )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+       )

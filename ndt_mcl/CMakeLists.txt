@@ -3,19 +3,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_mcl)
 # Load catkin and all dependencies required for this package
-# TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters pcl ndt_map ndt_registration pointcloud_vrml visualization_msgs)
+find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration pointcloud_vrml visualization_msgs)
 
 catkin_package(
-    DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters pcl ndt_map ndt_registration pointcloud_vrml visualization_msgs
-    CATKIN_DEPENDS # TODO
+    DEPENDS pcl eigen mrpt
+    CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration pointcloud_vrml visualization_msgs
     INCLUDE_DIRS #include
     LIBRARIES # TODO
 )
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
+#find_package(Eigen REQUIRED)
+#include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
 #if you want to use multi-threading
@@ -35,6 +34,7 @@ target_link_libraries(mcl_example ${MRPT_LIBS} ${catkin_LIBRARIES})
 
 #an example of 2d ndt-mcl
 add_executable(2d_ndt_mcl_offline_test src/2d_ndt_mcl_offline_test.cpp src/CMyEllipsoid.cpp src/CParticleFilter.cpp)
+
 find_package(Boost REQUIRED COMPONENTS signals)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(2d_ndt_mcl_offline_test ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
@@ -48,6 +48,13 @@ target_link_libraries(2d_ndt_mcl_node ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${J
 #generate_messages(
 #    #TODO DEPENDENCIES geometry_msgs std_msgs
 #)
-
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
-# TODO: fill in what other packages will need to use this package
+install(TARGETS 2d_ndt_mcl_node mcl_example 
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+       )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+       )

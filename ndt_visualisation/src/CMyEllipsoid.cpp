@@ -29,12 +29,12 @@
 #include <mrpt/opengl.h>  // Precompiled header
 
 
-#include "CMyEllipsoid.h"
+#include "ndt_visualisation/CMyEllipsoid.h"
 #include <mrpt/math/CMatrix.h>
 #include <mrpt/math/geometry.h>
 #include <mrpt/math/ops_matrices.h>
 
-#include "opengl_internals.h"
+#include "ndt_visualisation/opengl_internals.h"
 
 using namespace mrpt;
 using namespace mrpt::opengl;

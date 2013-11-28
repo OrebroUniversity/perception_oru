@@ -3,10 +3,9 @@
   <version>1.0.6</version>
   <description>Contains a new implementation of 3D NDT registration. 
     Used to find the relative positions of two point clouds.</description>
-<maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
-<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
+  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
+  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
 
   <license>BSD</license>
 

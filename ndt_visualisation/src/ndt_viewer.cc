@@ -1,4 +1,4 @@
-#include <ndt_viz.h>
+#include <ndt_visualisation/ndt_viz.h>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 

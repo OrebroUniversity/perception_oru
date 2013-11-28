@@ -28,7 +28,7 @@
 	#include <mrpt/base.h>
 	#include <mrpt/opengl.h>
 	#include <GL/gl.h>
-	#include "CMyEllipsoid.h"
+	#include "ndt_mcl/CMyEllipsoid.h"
 #endif
 
 #include <ros/ros.h>
@@ -42,11 +42,12 @@
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <ndt_map.h>
 #include <tf/transform_broadcaster.h>
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Pose.h"
-#include "ndt_mcl.hpp"
+
+#include "ndt_mcl/impl/ndt_mcl.hpp"
+#include <ndt_map/ndt_map.h>
 
 
 
@@ -54,7 +55,7 @@
 /// Visualization stuff
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef USE_VISUALIZATION_DEBUG
-#include "mcl_visualization.hpp" ///< here is a punch of visualization code based on the MRPT's GUI components
+#include "ndt_mcl/impl/mcl_visualization.hpp" ///< here is a punch of visualization code based on the MRPT's GUI components
 #endif
 ros::Publisher ndtmap_pub; 
 
@@ -65,7 +66,7 @@ void sendMapToRviz(lslgeneric::NDTMap<pcl::PointXYZ> &map){
 
 	std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> ndts;
 	ndts = map.getAllCells();
-	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%d components)\n",ndts.size());
+	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%lu components)\n",ndts.size());
 	visualization_msgs::MarkerArray marray;
 	
 	for(unsigned int i=0;i<ndts.size();i++){

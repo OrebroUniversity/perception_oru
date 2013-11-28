@@ -5,7 +5,6 @@
 #include"sensor_msgs/point_cloud_conversion.h"
 #include<cstring>
 #include<Eigen/Eigen>
-#include<pointcloud_utils.h>
 #include "ros/ros.h"
 #include "pcl/point_cloud.h"
 #include "sensor_msgs/PointCloud2.h"
@@ -14,6 +13,8 @@
 #include "message_filters/subscriber.h"
 #include "tf/message_filter.h"
 #include <tf/transform_broadcaster.h>
+
+#include<pointcloud_vrml/pointcloud_utils.h>
 
 using namespace std;
 

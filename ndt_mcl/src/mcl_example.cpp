@@ -1,9 +1,9 @@
 //mrpt stuff
-#include <ndt_viz.h>
+#include <ndt_visualisation/ndt_viz.h>
 #include <mrpt/utils/CTicTac.h>
 
-#include "ParticleFilter3D.h"
-#include "3d_ndt_mcl.hpp"
+#include "ndt_mcl/ParticleFilter3D.h"
+#include "ndt_mcl/impl/3d_ndt_mcl.hpp"
 using namespace mrpt;
 using namespace mrpt::gui;
 using namespace mrpt::opengl;

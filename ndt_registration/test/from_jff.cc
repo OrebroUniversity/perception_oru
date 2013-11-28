@@ -1,8 +1,8 @@
-#include <ndt_matcher_p2d.h>
-#include <ndt_matcher_d2d_2d.h>
-#include <ndt_matcher_d2d.h>
-#include <ndt_map.h>
-#include <pointcloud_utils.h>
+#include <ndt_registration/ndt_matcher_p2d.h>
+#include <ndt_registration/ndt_matcher_d2d_2d.h>
+#include <ndt_registration/ndt_matcher_d2d.h>
+#include <ndt_map/ndt_map.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
 #include "pcl/point_cloud.h"
 #include <cstdio>

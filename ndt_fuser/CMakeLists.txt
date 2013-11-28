@@ -3,11 +3,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_fuser)
 # Load catkin and all dependencies required for this package
-# TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs)
 catkin_package(
-    DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs
-    CATKIN_DEPENDS # TODO
+    DEPENDS eigen pcl mrpt glut libxmu-dev 
+    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs
     INCLUDE_DIRS include
     LIBRARIES # TODO
 )
@@ -62,3 +61,12 @@ target_link_libraries(ndt_fuser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LI
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
+install(TARGETS ndt_fuser ${PROJECT_NAME}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+       )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+       )

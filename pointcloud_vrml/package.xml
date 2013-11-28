@@ -5,14 +5,13 @@
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
 <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-<maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/pointcloud_vrml</url>
   <!-- <url type="bugtracker"></url> -->
 
-  <author>Dev</author>
+  <author>Todor Stoyanov</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -40,8 +39,8 @@
   <!-- <test_depend>tf</test_depend> -->
   <!-- <test_depend>nav_msgs</test_depend> -->
 
-<export>
+<!--export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
-</export>
+</export-->
 
 </package>

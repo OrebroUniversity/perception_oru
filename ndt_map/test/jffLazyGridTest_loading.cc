@@ -1,12 +1,8 @@
-#include <ndt_map.h>
-// #include <oc_tree.h>
-#include <lazy_grid.h>
-// #include <cell_vector.h>
-#include <pointcloud_utils.h>
+#include <ndt_map/ndt_map.h>
+#include <ndt_map/lazy_grid.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
-// #include "ros/ros.h"
 #include "pcl/point_cloud.h"
-// #include "sensor_msgs/PointCloud2.h"
 #include "pcl/io/pcd_io.h"
 #include "pcl/features/feature.h"
 #include <cstdio>

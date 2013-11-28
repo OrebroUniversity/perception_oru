@@ -3,7 +3,7 @@
 #include "ros/ros.h"
 #include <tf/transform_broadcaster.h>
 #include "pcl/io/pcd_io.h"
-#include <pointcloud_utils.h>
+#include <pointcloud_vrml/pointcloud_utils.h>
 
 int
 main (int argc, char** argv)
@@ -34,7 +34,7 @@ main (int argc, char** argv)
     static tf::TransformBroadcaster br;
     tf::Transform transform;
     transform.setOrigin(tf::Vector3(0, 0, 0.0));
-    transform.setRotation(tf::Quaternion(0, 0, 0));
+    transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     cloudMSG.header.frame_id = "/pc_frame";
 
     while (ros::ok())

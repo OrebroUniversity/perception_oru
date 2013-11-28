@@ -2,8 +2,8 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.7 (2013-11-28)
+------------------
 * Added release flags to all CMake files
 * Re-organization of include files to follow ros convention, lots of changes
 * Contributors: Todor Stoyanov

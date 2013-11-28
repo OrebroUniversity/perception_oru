@@ -1,6 +1,6 @@
 <package>
   <name>ndt_registration</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <description>Contains a new implementation of 3D NDT registration. 
     Used to find the relative positions of two point clouds.</description>
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>

@@ -1,6 +1,7 @@
 # Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
+set(CMAKE_BUILD_TYPE Release) 
 project(ndt_mcl)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration pointcloud_vrml visualization_msgs)

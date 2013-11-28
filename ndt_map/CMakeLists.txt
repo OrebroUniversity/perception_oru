@@ -1,6 +1,7 @@
 # Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
+set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS pcl pcl_ros pointcloud_vrml cv_bridge eigen )

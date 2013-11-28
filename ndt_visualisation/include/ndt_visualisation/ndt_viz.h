@@ -310,7 +310,7 @@ class NDTViz {
 		    scene->insert( objEllip );*/
 		}
 	    }
-	    win3D->setCameraPointingToPoint(x/s,y/s,3.0);
+	    //win3D->setCameraPointingToPoint(x/s,y/s,3.0);
 	    win3D->unlockAccess3DScene();
 	    win3D->repaint();
 	    fprintf(stderr,"(%lf %lf) s=%lf\n",x/s,y/s,s);

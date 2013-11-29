@@ -44,7 +44,8 @@ bool NDTMapBuilder<PointT>::matchICP(pcl::PointCloud<PointT> &target,  pcl::Poin
 
     icp.setMaximumIterations(1000);
     std::cout<<"max itr are "<<icp.getMaximumIterations()<<std::endl;
-    icp.setInputCloud(cloud_in);
+    // icp.setInputCloud(cloud_in); deprecated
+    icp.setInputSource(cloud_in);
     icp.setInputTarget(cloud_out);
 
     icp.setRANSACOutlierRejectionThreshold (2);

@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(pointcloud_vrml)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS rosconsole pcl pcl_ros tf nav_msgs eigen)
+find_package(catkin REQUIRED COMPONENTS rosconsole pcl_ros tf nav_msgs eigen)
+find_package(PCL REQUIRED)
 catkin_package(
     DEPENDS pcl eigen
     CATKIN_DEPENDS rosconsole pcl_ros tf nav_msgs
@@ -23,7 +24,7 @@ catkin_package(
   # TODO: List your msg files here
 #)
 
-include_directories(${EIGEN_INCLUDE_DIRS}  ${catkin_INCLUDE_DIRS}  include)
+include_directories(${EIGEN_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS}  include)
 add_definitions(${EIGEN_DEFINITIONS})
 
 add_executable(vrml_reader src/pointcloud_reader_node.cc)
@@ -33,8 +34,8 @@ add_executable(vrml_writer src/pointcloud_writer_node.cc)
 #add_executable(rpy2q test/rpy2q.cc)
 #add_executable(trajectory test/compareTrajectory.cc)
 #target_link_libraries(trajectory ${catkin_LIBRARIES})
-target_link_libraries(vrml_reader ${catkin_LIBRARIES})
-target_link_libraries(vrml_writer ${catkin_LIBRARIES})
+target_link_libraries(vrml_reader ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(vrml_writer ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 install(TARGETS vrml_reader vrml_writer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

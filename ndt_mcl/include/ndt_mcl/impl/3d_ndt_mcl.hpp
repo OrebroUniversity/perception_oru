@@ -1,7 +1,8 @@
 #ifndef NDT_MCL_3D_HPP_
 #define NDT_MCL_3D_HPP_
 #include <mrpt/utils/CTicTac.h> ///Timing
-#include <pcl/ros/conversions.h>
+//#include <pcl/ros/conversions.h> //deprecated
+#include <pcl/conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>

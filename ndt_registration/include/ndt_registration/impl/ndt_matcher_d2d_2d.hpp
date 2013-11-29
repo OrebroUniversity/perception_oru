@@ -5,7 +5,7 @@
 #include "Eigen/Eigen"
 #include <fstream>
 #include <omp.h>
-
+#include <sys/time.h>
 namespace lslgeneric
 {
 

@@ -2,12 +2,13 @@
 
 #include "ros/ros.h"
 #include "pcl/point_cloud.h"
+#include <pcl/common/centroid.h>
 #include "sensor_msgs/PointCloud2.h"
 #include "pcl/io/pcd_io.h"
 #include "pcl/features/feature.h"
 #include "Eigen/Core"
 #include <cstdio>
-
+#include <pcl_conversions/pcl_conversions.h>
 static int ctr = 0;
 
 void octCallback(const sensor_msgs::PointCloud2ConstPtr &msg)

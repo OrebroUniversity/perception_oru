@@ -2,8 +2,8 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2013-12-02)
+------------------
 * removed deprecated dependancy on mrpt-graphslam
 * hydro release
 * Contributors: Todor Stoyanov

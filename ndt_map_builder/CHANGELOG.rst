@@ -2,6 +2,9 @@
 Changelog for package ndt_map_builder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.9 (2013-12-02)
 ------------------
 * deprecate function in ndt_map_builder.hpp:47 fixed

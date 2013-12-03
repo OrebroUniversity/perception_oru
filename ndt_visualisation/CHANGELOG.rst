@@ -2,6 +2,11 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* backward compatible CMyellipsoid
+* Contributors: Todor Stoyanov
+
 1.0.9 (2013-12-02)
 ------------------
 * removed deprecated dependancy on mrpt-graphslam

@@ -2,8 +2,8 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2013-12-03)
+-------------------
 * backward compatible CMyellipsoid
 * Contributors: Todor Stoyanov
 

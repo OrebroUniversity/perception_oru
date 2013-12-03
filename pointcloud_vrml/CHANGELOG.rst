@@ -2,6 +2,9 @@
 Changelog for package pointcloud_vrml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.10 (2013-12-03)
 -------------------
 

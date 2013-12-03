@@ -2,8 +2,8 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.12 (2013-12-03)
+-------------------
 * Added new install targets for launch files
 * Contributors: Todor Stoyanov
 

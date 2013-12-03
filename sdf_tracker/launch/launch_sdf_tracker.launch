@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="SDF" pkg="sdf_tracker" type="sdf_tracker_node">
+    <param name="c_name" value="camera"/>
+    <param name="offsetZ" value="-0.40"/>
+    <param name="GridSizeX" value= "300"/>
+    <param name="GridSizeY" value= "300"/>
+    <param name="GridSizeZ" value= "400"/>
+    <param name="CellSize" value= "0.02" />
+    <param name="PositiveTruncationDistance" value= "0.1" />
+    <param name="NegativeTruncationDistance" value= "-0.04" />
+    <param name="RobustStatisticCoefficient" value= "0.02" />
+    <param name="OutputVolume" value= "false" />
+    <param name="InteractiveMode" value= "true" />
+    <param name="depth_registered" value= "true"/>
+    <param name="MaximumRaycastSteps" value= "160" /> 
+
+<!-- full list of parameters and their default values -->
+<!--   
+    <param name="ImageWidth" value= "640"/>
+    <param name="ImageHeight" value= "480"/>
+   
+    <param name="OutputTriangles" value= "false" />
+    <param name="InteractiveMode" value= "true" />
+    
+    <param name="MaxWeight" value= "64.0" />
+    <param name="CellSize" value= "0.02" />
+    <param name="GridSizeX" value= "256" />
+    <param name="GridSizeY" value= "256" />
+    <param name="GridSizeZ" value= "256" />
+    <param name="offsetX" value= "0.0" />
+    <param name="offsetY" value= "0.0" />
+    <param name="offsetZ" value= "-0.40" />
+    <param name="PositiveTruncationDistance" value= "0.1" />
+    <param name="NegativeTruncationDistance" value= "-0.04" />
+    <param name="RobustStatisticCoefficient" value= "0.02" />
+    <param name="Regularization" value= "0.01" />
+    <param name="MinPoseChangeToFuseData" value= "0.01" />
+    <param name="ConvergenceCondition"  value= "0.0001" />
+    <param name="MaximumRaycastSteps" value= "12" /> 
+    <param name="c_name" value= "camera"/>
+ -->   
+<!--
+    The following values are default for kinect-like sensors.
+    If the parameters ImageWidth and ImageHeight are set to QVGA or QQVGA resolution,
+    these values will be rescaled automatically.
+    If set manually, remember to change them when using QVGA or QQVGA image modes.
+-->
+<!-- 
+    <param name="FocalLengthX" value= "520.0" />
+    <param name="FocalLengthY" value= "520.0" />
+    <param name="CenterPointX" value= "319.5" />
+    <param name="CenterPointY" value= "239.5" /> 
+-->
+  </node>
+</launch>

@@ -71,3 +71,13 @@ install(TARGETS ndt_fuser ${PROJECT_NAME}
 install(DIRECTORY include/${PROJECT_NAME}/
 	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
        )
+install(FILES
+   launch/fuser_2dlaser.launch  
+   launch/fuser_hmt_vellodyne32.launch  
+   launch/fuser_velodyne32.launch  
+   launch/velo32.yaml
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+install(DIRECTORY maps/
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

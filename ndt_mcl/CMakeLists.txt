@@ -59,3 +59,10 @@ install(TARGETS 2d_ndt_mcl_node mcl_example
 install(DIRECTORY include/${PROJECT_NAME}/
 	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
        )
+install(FILES
+   launch/2d_ndt_mcl_node.launch 
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+install(DIRECTORY data/
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

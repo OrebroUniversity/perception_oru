@@ -50,6 +50,7 @@
     <!-- <metapackage/> -->
 
     <!-- Other tools can request additional information be placed here -->
+    <cpp lflags="-L${prefix} -lsdf_tracker"/>
 
   </export>
 </package>

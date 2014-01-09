@@ -7,7 +7,7 @@ project(ndt_map)
 find_package(catkin REQUIRED COMPONENTS pcl_ros pointcloud_vrml cv_bridge eigen )
 
 catkin_package(
-    DEPENDS pcl eigen opencv2
+    DEPENDS eigen opencv2
     CATKIN_DEPENDS pcl_ros pointcloud_vrml cv_bridge 
     INCLUDE_DIRS include
     LIBRARIES # ${PROJECT_NAME}
@@ -19,9 +19,7 @@ add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
 add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
 
 find_package(OpenCV REQUIRED)
-find_package(PCL REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
 
 #uncomment if you have defined messages
 #add_message_files(
@@ -36,10 +34,10 @@ include_directories(${PCL_INCLUDE_DIRS})
 
 #make a node that listens to point clouds and makes ndts
 
-target_link_libraries(oct_builder ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(histTest ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(jffSaveTest ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-target_link_libraries(jffLoadTest ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(oct_builder ${catkin_LIBRARIES})
+target_link_libraries(histTest ${catkin_LIBRARIES})
+target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
+target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
 #add_executable(likelihood_test test/ndtLikelihoodTester.cc)
 #target_link_libraries(likelihood_test ${PROJECT_NAME}  pointcloud_vrml)
 ##add_executable(ltest test/likelihoodSingleScan.cc)

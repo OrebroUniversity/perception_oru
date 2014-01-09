@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_map)
+find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros)
 catkin_package(
     DEPENDS common_rosdeps pcl eigen mrpt glut libxmu-dev
-    CATKIN_DEPENDS ndt_map 
+    CATKIN_DEPENDS ndt_map pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ndt_visualisation
 )

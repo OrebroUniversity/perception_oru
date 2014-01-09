@@ -2,6 +2,11 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixing mess with pcl compatibility
+* Contributors: Todor Stoyanov
+
 1.0.12 (2013-12-03)
 -------------------
 

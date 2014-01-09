@@ -2,6 +2,9 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.12 (2013-12-03)
 -------------------
 * Added new install targets for launch files

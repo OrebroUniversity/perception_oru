@@ -22,6 +22,7 @@
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
   <build_depend>pcl_ros</build_depend>
+  <build_depend>pcl</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>mrpt</build_depend>
   <build_depend>glut</build_depend>
@@ -30,6 +31,7 @@
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>pcl_ros</run_depend>
+  <run_depend>pcl</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>mrpt</run_depend>
   <run_depend>glut</run_depend>

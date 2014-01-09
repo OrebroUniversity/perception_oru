@@ -7,7 +7,7 @@ project(ndt_registration)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS ndt_map pointcloud_vrml tf tf_conversions pcl_ros)
 catkin_package(
-    DEPENDS eigen 
+    DEPENDS eigen pcl 
     CATKIN_DEPENDS ndt_map pointcloud_vrml tf tf_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES # TODO

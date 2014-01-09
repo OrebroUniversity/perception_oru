@@ -7,7 +7,7 @@ project(ndt_map)
 find_package(catkin REQUIRED COMPONENTS pcl_ros pointcloud_vrml cv_bridge eigen )
 
 catkin_package(
-    DEPENDS eigen opencv2
+    DEPENDS eigen opencv2 pcl
     CATKIN_DEPENDS pcl_ros pointcloud_vrml cv_bridge 
     INCLUDE_DIRS include
     LIBRARIES # ${PROJECT_NAME}

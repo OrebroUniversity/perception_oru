@@ -6,7 +6,7 @@ project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros)
 catkin_package(
-    DEPENDS common_rosdeps pcl eigen mrpt glut libxmu-dev
+    DEPENDS pcl eigen mrpt glut libxmu-dev
     CATKIN_DEPENDS ndt_map pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ndt_visualisation

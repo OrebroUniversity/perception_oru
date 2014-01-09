@@ -24,7 +24,7 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>message_filters</build_depend>
-  <!--build_depend>pcl</build_depend-->
+  <build_depend>pcl</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
   <build_depend>pointcloud_vrml</build_depend>
@@ -41,7 +41,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>message_filters</run_depend>
-  <!--run_depend>pcl</run_depend-->
+  <run_depend>pcl</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>pointcloud_vrml</run_depend>

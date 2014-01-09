@@ -2,8 +2,8 @@
 Changelog for package pointcloud_vrml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.13 (2014-01-09)
+-------------------
 * fixing mess with pcl compatibility
 * Contributors: Todor Stoyanov
 

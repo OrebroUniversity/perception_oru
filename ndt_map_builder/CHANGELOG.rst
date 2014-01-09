@@ -2,8 +2,8 @@
 Changelog for package ndt_map_builder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.13 (2014-01-09)
+-------------------
 * ompl error fixed
 * Contributors: Tomasz Kucner
 

@@ -6,7 +6,7 @@ project(pointcloud_vrml)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS rosconsole pcl_ros tf nav_msgs eigen)
 catkin_package(
-    DEPENDS eigen pcl 
+    DEPENDS eigen libpcl-all-dev 
     CATKIN_DEPENDS rosconsole pcl_ros tf nav_msgs
     INCLUDE_DIRS include
     LIBRARIES 

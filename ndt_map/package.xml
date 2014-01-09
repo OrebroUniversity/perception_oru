@@ -21,14 +21,14 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
-  <build_depend>pcl</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>pointcloud_vrml</build_depend>
   <build_depend>opencv2</build_depend>
   <build_depend>cv_bridge</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>pcl</run_depend>
+  <run_depend>libpcl-all-dev</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>pointcloud_vrml</run_depend>
   <run_depend>opencv2</run_depend>

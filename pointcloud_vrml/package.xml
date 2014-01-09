@@ -19,7 +19,7 @@
 
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
-  <build_depend>pcl</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>rosconsole</build_depend>
@@ -28,7 +28,7 @@
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>rosconsole</run_depend>	
-  <run_depend>pcl</run_depend>
+  <run_depend>libpcl-all-dev</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>nav_msgs</run_depend>

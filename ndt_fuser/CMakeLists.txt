@@ -6,7 +6,7 @@ project(ndt_fuser)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs)
 catkin_package(
-    DEPENDS eigen pcl mrpt glut libxmu-dev 
+    DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
     CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs
     INCLUDE_DIRS include
     LIBRARIES # TODO

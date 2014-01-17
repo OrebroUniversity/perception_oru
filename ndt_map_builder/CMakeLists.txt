@@ -7,7 +7,7 @@ project(ndt_map_builder)
 find_package(catkin REQUIRED COMPONENTS pcl_ros pointcloud_vrml ndt_map ndt_registration)
 
 catkin_package(
-    DEPENDS pcl eigen
+    DEPENDS libpcl-all-dev eigen
     CATKIN_DEPENDS pcl_ros pointcloud_vrml ndt_map ndt_registration
     INCLUDE_DIRS include
     LIBRARIES # TODO

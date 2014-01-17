@@ -1,6 +1,6 @@
 <package>
   <name>ndt_registration</name>
-  <version>1.0.12</version>
+  <version>1.0.17</version>
   <description>Contains a new implementation of 3D NDT registration. 
     Used to find the relative positions of two point clouds.</description>
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
@@ -23,7 +23,8 @@
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
   <build_depend>ndt_map</build_depend>
-  <!--build_depend>pcl</build_depend-->
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pointcloud_vrml</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tf_conversions</build_depend>
@@ -31,7 +32,8 @@
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>ndt_map</run_depend>
-  <!--run_depend>pcl</run_depend-->
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>libpcl-all-dev</run_depend>
   <run_depend>pointcloud_vrml</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>tf_conversions</run_depend>

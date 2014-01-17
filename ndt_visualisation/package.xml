@@ -1,6 +1,6 @@
 <package>
   <name>ndt_visualisation</name>
-  <version>1.0.12</version>
+  <version>1.0.17</version>
   <description>Contains classes for creating an ndt visualization window. Initial implementation on top of mrpt.</description>
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
@@ -21,7 +21,8 @@
 
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
-  <!--build_depend>pcl</build_depend-->
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>mrpt_libs</build_depend>
   <build_depend>glut</build_depend>
@@ -29,7 +30,8 @@
 	
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
-  <!--run_depend>pcl</run_depend-->
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>libpcl-all-dev</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>mrpt_libs</run_depend>
   <run_depend>glut</run_depend>

@@ -2,6 +2,16 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-01-09)
+-------------------
+* fixes to makefiles wrt pcl
+* Contributors: Todor Stoyanov
+
+1.0.13 (2014-01-09)
+-------------------
+* fixing mess with pcl compatibility
+* Contributors: Todor Stoyanov
+
 1.0.12 (2013-12-03)
 -------------------
 

@@ -7,7 +7,7 @@ project(ndt_mcl)
 find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration pointcloud_vrml visualization_msgs)
 
 catkin_package(
-    DEPENDS pcl eigen mrpt
+    DEPENDS libpcl-all-dev eigen mrpt
     CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration pointcloud_vrml visualization_msgs
     INCLUDE_DIRS #include
     LIBRARIES # TODO

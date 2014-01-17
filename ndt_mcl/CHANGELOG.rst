@@ -2,6 +2,14 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.15 (2014-01-09)
+-------------------
+* fixes to makefiles wrt pcl
+* Contributors: Todor Stoyanov
+
+1.0.13 (2014-01-09)
+-------------------
+
 1.0.12 (2013-12-03)
 -------------------
 * Added new install targets for launch files

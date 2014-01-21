@@ -3,19 +3,20 @@
   <version>1.0.17</version>
   <description>ndt_mcl</description>
   <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
-<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-
+  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+  <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+  
   <license>BSD</license>
-
+  
   <url type="website">http://ros.org/wiki/ndt_mcl</url>
   <!-- <url type="bugtracker"></url> -->
-
+  
   <author>Jari Saarinen</author>
-
+  
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
-
+  
   <!-- Dependencies needed to compile this package. -->
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>rosbag</build_depend>

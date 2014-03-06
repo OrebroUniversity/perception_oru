@@ -148,7 +148,15 @@ class SDFTracker
 
   /// sets the current transformation to the given matrix
   void SetCurrentTransformation(const Eigen::Matrix4d &T); 
-  
+
+  ///Ray-trace a single ray (for the ray defined by camera pixel x,y?) 
+  Eigen::Vector3d 
+      ShootSingleRay(int row, int col, Eigen::Matrix4d &pose);
+
+  ///Ray-trace a single ray 
+  Eigen::Vector3d
+      ShootSingleRay(int row, int col);
+
   /// In interactive sessions, this function returns true at any point after a user has pressed "q" or <ESC> in the render window. 
   bool Quit(void);
 

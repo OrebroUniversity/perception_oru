@@ -1636,3 +1636,53 @@ SDFTracker::ShootSingleRay(int row, int col)
     }
     return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::infinity();
 }
+  
+Eigen::Vector3d SDFTracker::ShootSingleRay(Eigen::Vector3d &start, Eigen::Vector3d &direction) {
+
+    Eigen::Vector4d camera;
+    camera<<start(0),start(1),start(2),1;
+    direction.normalize();
+    Eigen::Vector4d p;
+    p<<direction(0),direction(1),direction(2),0;
+    
+    bool hit = false;
+
+    double scaling = parameters_.Dmax+parameters_.Dmin;
+    double scaling_prev=0;
+    int steps=0;
+    double D = parameters_.resolution;
+
+    while(steps<parameters_.raycast_steps*2 && !hit)
+    { 
+	double D_prev = D;
+	D = SDF(camera + p*scaling);
+
+	if(D < 0.0) //hit
+	{
+	    double i,j,k;  
+
+	    scaling = scaling_prev + (scaling-scaling_prev)*D_prev/(D_prev - D);
+	    hit = true;
+	    Eigen::Vector4d currentPoint = camera + p*scaling;
+
+	    modf(currentPoint(0)/parameters_.resolution + parameters_.XSize/2, &i);
+	    modf(currentPoint(1)/parameters_.resolution + parameters_.YSize/2, &j);  
+	    modf(currentPoint(2)/parameters_.resolution + parameters_.ZSize/2, &k);
+	    int I = static_cast<int>(i);
+	    int J = static_cast<int>(j);
+	    int K = static_cast<int>(k);
+
+	    //If raycast terminates within the reconstructed volume, keep the surface point.
+	    if(I>=0 && I<parameters_.XSize && J>=0 && J<parameters_.YSize && K>=0 && K<parameters_.ZSize)
+	    {   
+		return currentPoint.head<3>();   
+	    }
+	    else return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::quiet_NaN();
+	}
+	scaling_prev = scaling;
+	scaling += std::max(parameters_.resolution,D);  
+	++steps;        
+    }
+    return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::infinity();
+
+}

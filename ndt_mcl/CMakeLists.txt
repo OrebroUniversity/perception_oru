@@ -18,6 +18,13 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(JPEG REQUIRED)
+include_directories(${JPEG_INCLUDE_DIR})
+include_directories(${GLUT_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
+
 #if you want to use multi-threading
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)

@@ -1517,7 +1517,12 @@ void SDFTracker::SaveSDF(const std::string &filename)
   vtkSmartPointer<vtkXMLImageDataWriter>::New();
   writer->SetFileName(filename.c_str());
 
+#if VTK_MAJOR_VERSION <= 5
   writer->SetInput(sdf_volume);
+#else
+  writer->SetInputData(sdf_volume);
+#endif
+//  writer->SetInput(sdf_volume);
   writer->Write();
 }
 

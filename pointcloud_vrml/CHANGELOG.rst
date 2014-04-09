@@ -2,6 +2,9 @@
 Changelog for package pointcloud_vrml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.15 (2014-01-09)
 -------------------
 * fixes to makefiles wrt pcl

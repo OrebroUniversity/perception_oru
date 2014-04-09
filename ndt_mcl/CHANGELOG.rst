@@ -2,6 +2,11 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixes for backward support and compatibility on new ubuntu versions
+* Contributors: Todor Stoyanov
+
 1.0.15 (2014-01-09)
 -------------------
 * fixes to makefiles wrt pcl

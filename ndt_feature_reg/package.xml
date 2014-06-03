@@ -1,0 +1,55 @@
+<package>
+  <name>ndt_feature_reg</name>
+  <version>1.0.17</version>
+  <description>ndt_feature_reg</description>
+<maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
+<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+  <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/ndt_feature_reg</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Henrik Andreasson</author>
+  <author>Todor Stoyanov</author>
+  <author>Jari Saarinen</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>ndt_registration</build_depend>
+  <build_depend>ndt_map</build_depend>
+  <build_depend>laser_geometry</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>ndt_visualisation</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>image_geometry</build_depend>
+  <build_depend>cv_bridge</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>ndt_registration</run_depend>
+  <run_depend>ndt_map</run_depend>
+  <run_depend>laser_geometry</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>ndt_visualisation</run_depend>
+  <run_depend>libpcl-all-dev</run_depend>
+  <run_depend>image_geometry</run_depend>
+  <run_depend>cv_bridge</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>ndt_registration</test_depend> -->
+  <!-- <test_depend>ndt_map</test_depend> -->
+  <!-- <test_depend>laser_geometry</test_depend> -->
+  <!-- <test_depend>sensor_msgs</test_depend> -->
+  <!-- <test_depend>ndt_visualisation</test_depend> -->
+
+<!--export>
+    <cpp lflags="-Wl,-rpath,${prefix}/lib" cflags="-I${prefix}/include"/>
+</export-->
+
+</package>

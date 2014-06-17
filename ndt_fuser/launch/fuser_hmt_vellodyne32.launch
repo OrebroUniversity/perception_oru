@@ -28,6 +28,9 @@
 	<param name="beHMT" value="true" />
 	<param name="match2D" value="true" />
 	<param name="useOdometry" value="true" />
+	<param name="plotGTTrack" value="true" />
+	<param name="initPoseFromGT" value="true" />
+	<param name="gt_topic" value="/vmc_navserver/state" />
 	<param name="odometry_topic" value="/vmc_navserver/odom" />
 	<param name="visualize" value="true" />
     </node>

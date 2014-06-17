@@ -24,6 +24,13 @@ include_directories(${JPEG_INCLUDE_DIR})
 include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
 
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(JPEG REQUIRED)
+include_directories(${JPEG_INCLUDE_DIR})
+include_directories(${GLUT_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
+
 #if you want to use multi-threading
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)

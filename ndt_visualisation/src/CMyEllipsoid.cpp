@@ -209,7 +209,7 @@ void  CMyEllipsoid::readFromStream(CStream &in,int version)
 			// Update cov. matrix cache:
 			m_prevComputedCov = m_cov;
 			m_cov.eigenVectors(m_eigVec,m_eigVal);
-			m_eigVal.Sqrt();
+			m_eigVal = m_eigVal.cwiseSqrt();
 
 		} break;
 	default:
@@ -283,7 +283,7 @@ void CMyEllipsoid::setCovMatrix( const mrpt::math::CMatrixDouble &m, int resizeT
 		// Not null matrix: compute the eigen-vectors & values:
 		m_prevComputedCov = m_cov;
 		m_cov.eigenVectors(m_eigVec,m_eigVal);
-		m_eigVal.Sqrt();
+		m_eigVal = m_eigVal.cwiseSqrt();
 		// Do the scale at render to avoid recomputing the m_eigVal for different m_quantiles
 	}
 

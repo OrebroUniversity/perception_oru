@@ -1521,7 +1521,6 @@ void SDFTracker::SaveSDF(const std::string &filename)
 #else
   writer->SetInputData(sdf_volume);
 #endif
-  //writer->SetInput(sdf_volume);
   writer->Write();
 }
 
@@ -1571,4 +1570,122 @@ void SDFTracker::LoadSDF(const std::string &filename)
       }
     }
   }
+}
+
+Eigen::Vector3d 
+SDFTracker::ShootSingleRay(int row, int col, Eigen::Matrix4d &pose)
+{
+
+    transformation_mutex_.lock();
+
+    Eigen::Matrix4d T_backup = Transformation_;
+    Transformation_ = pose;
+    Eigen::Vector3d point = ShootSingleRay(row,col);
+    Transformation_ = T_backup;
+
+    transformation_mutex_.unlock();
+    return point;
+}
+
+Eigen::Vector3d 
+SDFTracker::ShootSingleRay(int row, int col)
+{
+    const Eigen::Matrix4d camToWorld = Transformation_;
+    const Eigen::Vector4d camera = camToWorld * Eigen::Vector4d(0.0,0.0,0.0,1.0);
+    const Eigen::Vector4d viewAxis = (camToWorld * Eigen::Vector4d(0.0,0.0,1.0+1e-12,0.0) - camera).normalized();
+
+    if(col<0 || col>=parameters_.image_width || row<0 || row>parameters_.image_height) 
+	return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::signaling_NaN();
+
+    bool hit = false;
+    Eigen::Vector4d p = camToWorld*To3D(row,col,1.0,parameters_.fx,parameters_.fy,parameters_.cx,parameters_.cy) - camera;
+    p.normalize();
+
+    double scaling = parameters_.Dmax+parameters_.Dmin;
+    double scaling_prev=0;
+    int steps=0;
+    double D = parameters_.resolution;
+
+    while(steps<parameters_.raycast_steps*2 && !hit)
+    { 
+	double D_prev = D;
+	D = SDF(camera + p*scaling);
+
+	if(D < 0.0) //hit
+	{
+	    double i,j,k;  
+
+	    scaling = scaling_prev + (scaling-scaling_prev)*D_prev/(D_prev - D);
+	    hit = true;
+	    Eigen::Vector4d currentPoint = camera + p*scaling;
+
+	    modf(currentPoint(0)/parameters_.resolution + parameters_.XSize/2, &i);
+	    modf(currentPoint(1)/parameters_.resolution + parameters_.YSize/2, &j);  
+	    modf(currentPoint(2)/parameters_.resolution + parameters_.ZSize/2, &k);
+	    int I = static_cast<int>(i);
+	    int J = static_cast<int>(j);
+	    int K = static_cast<int>(k);
+
+	    //If raycast terminates within the reconstructed volume, keep the surface point.
+	    if(I>=0 && I<parameters_.XSize && J>=0 && J<parameters_.YSize && K>=0 && K<parameters_.ZSize)
+	    {   
+		return currentPoint.head<3>();   
+	    }
+	    else return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::quiet_NaN();
+	}
+	scaling_prev = scaling;
+	scaling += std::max(parameters_.resolution,D);  
+	++steps;        
+    }
+    return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::infinity();
+}
+  
+Eigen::Vector3d SDFTracker::ShootSingleRay(Eigen::Vector3d &start, Eigen::Vector3d &direction) {
+
+    Eigen::Vector4d camera;
+    camera<<start(0),start(1),start(2),1;
+    direction.normalize();
+    Eigen::Vector4d p;
+    p<<direction(0),direction(1),direction(2),0;
+    
+    bool hit = false;
+
+    double scaling = parameters_.Dmax+parameters_.Dmin;
+    double scaling_prev=0;
+    int steps=0;
+    double D = parameters_.resolution;
+
+    while(steps<parameters_.raycast_steps*2 && !hit)
+    { 
+	double D_prev = D;
+	D = SDF(camera + p*scaling);
+
+	if(D < 0.0) //hit
+	{
+	    double i,j,k;  
+
+	    scaling = scaling_prev + (scaling-scaling_prev)*D_prev/(D_prev - D);
+	    hit = true;
+	    Eigen::Vector4d currentPoint = camera + p*scaling;
+
+	    modf(currentPoint(0)/parameters_.resolution + parameters_.XSize/2, &i);
+	    modf(currentPoint(1)/parameters_.resolution + parameters_.YSize/2, &j);  
+	    modf(currentPoint(2)/parameters_.resolution + parameters_.ZSize/2, &k);
+	    int I = static_cast<int>(i);
+	    int J = static_cast<int>(j);
+	    int K = static_cast<int>(k);
+
+	    //If raycast terminates within the reconstructed volume, keep the surface point.
+	    if(I>=0 && I<parameters_.XSize && J>=0 && J<parameters_.YSize && K>=0 && K<parameters_.ZSize)
+	    {   
+		return currentPoint.head<3>();   
+	    }
+	    else return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::quiet_NaN();
+	}
+	scaling_prev = scaling;
+	scaling += std::max(parameters_.resolution,D);  
+	++steps;        
+    }
+    return Eigen::Vector3d(1,1,1)*std::numeric_limits<double>::infinity();
+
 }

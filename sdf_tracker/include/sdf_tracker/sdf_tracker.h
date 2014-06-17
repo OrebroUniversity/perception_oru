@@ -71,7 +71,6 @@ class SDFTracker
   float*** myGrid_; 
   bool first_frame_;
   bool quit_;
-  SDF_Parameters parameters_;
   // functions 
   Eigen::Vector4d VertexInterp(double iso, Eigen::Vector4d &p1d, Eigen::Vector4d &p2d,double valp1, double valp2);
   void MarchingTetrahedrons(Eigen::Vector4d &Origin, int tetrahedron);
@@ -82,6 +81,7 @@ class SDFTracker
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   std::vector<Eigen::Vector4d> triangles_;
+  SDF_Parameters parameters_;
   
   /// Returns the signed distance at the given location 
   virtual double SDF(const Eigen::Vector4d &location);
@@ -148,7 +148,19 @@ class SDFTracker
 
   /// sets the current transformation to the given matrix
   void SetCurrentTransformation(const Eigen::Matrix4d &T); 
+
+  ///Ray-trace a single ray (for the ray defined by camera pixel x,y?) 
+  Eigen::Vector3d ShootSingleRay(int row, int col, Eigen::Matrix4d &pose);
+
+  ///Ray-trace a single ray 
+  Eigen::Vector3d ShootSingleRay(int row, int col);
   
+  ///Ray-trace a single ray 
+  Eigen::Vector3d ShootSingleRay(Eigen::Vector3d &start, Eigen::Vector3d &direction);
+
+  cv::Mat* GetCurrentDepthImg() {
+      return depthImage_;
+  }
   /// In interactive sessions, this function returns true at any point after a user has pressed "q" or <ESC> in the render window. 
   bool Quit(void);
 

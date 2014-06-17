@@ -11,7 +11,6 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ndt_visualisation
 )
-
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 ADD_DEFINITIONS(-DLINUX_OS)

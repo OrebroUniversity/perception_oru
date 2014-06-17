@@ -22,10 +22,12 @@ find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 #uncomment if you have defined messages
-#add_message_files(
-#  FILES
-  # TODO: List your msg files here
-#)
+add_message_files(
+  FILES
+  MapMetaData.msg 
+  Map.msg  
+  NDTCell.msg
+)
 #uncomment if you have defined services
 #add_service_files(
 #  FILES

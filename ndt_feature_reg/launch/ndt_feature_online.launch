@@ -1,0 +1,24 @@
+<launch>   
+
+    <include file="$(find openni_launch)/launch/openni.launch" />
+
+    <node pkg="ndt_feature_reg" type="ndt_feature_reg" name="ndt_feature_reg" output="screen">
+      <remap from="rgb" to="/camera/rgb/image_color" />
+      <remap from="depth" to="/camera/depth/image" />
+      <remap from="depth_param" to="/camera/depth/camera_info" />
+      <param name="gt_frame" value="openni_rgb_optical_frame" />
+
+      <param name="max_inldist_xy" type="double" value="0.02" />
+      <param name="max_inldist_z" type="double" value="0.05" />
+      <param name="support_size" value="15" />	
+      <param name="image_scale" value="0.25" />
+      <param name="visualize" value="true" />
+      <param name="detector_thresh" value="200" />
+      <param name="set_initial_pose" value="false" />
+      <param name="publish_cloud" value="true" />
+      <param name="subsample_step" value="5" />
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="$(find ndt_feature_reg)/launch/ndt_feature_reg_rviz.vcg" />
+
+</launch>

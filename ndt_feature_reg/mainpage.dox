@@ -1,0 +1,10 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b ndt_feature_reg provides fast registration between intensity+depth frames, using a combination of visual features and ndt d2d registration 
+
+\section codeapi Code API
+
+
+*/

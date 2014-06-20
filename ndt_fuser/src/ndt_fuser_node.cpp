@@ -1,6 +1,8 @@
 //#include <ndt_fuser.h>
 #include <ndt_fuser/ndt_fuser_hmt.h>
 #include <ros/ros.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 
 #include <pcl_conversions/pcl_conversions.h>
 #include "pcl/point_cloud.h"
@@ -22,6 +24,8 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <std_srvs/Empty.h>
+
+#include <boost/foreach.hpp>
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
@@ -57,10 +61,10 @@ class NDTFuserNode {
 	boost::mutex m, message_m;
 	lslgeneric::NDTFuserHMT<pcl::PointXYZ> *fuser;
 	std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
-		    world_frame, fuser_frame, init_pose_frame, gt_topic;
+      world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
 	double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
 	bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack, 
-	     initPoseFromGT, initPoseFromTF, initPoseSet;
+      initPoseFromGT, initPoseFromTF, initPoseSet, offLineMapping;
 
 	double pose_init_x,pose_init_y,pose_init_z,
 	       pose_init_r,pose_init_p,pose_init_t;
@@ -80,6 +84,11 @@ class NDTFuserNode {
 	// Constructor
 	NDTFuserNode(ros::NodeHandle param_nh) : nb_added_clouds_(0)
 	{
+      ///if we want to build map reading scans directly from bagfile
+      param_nh.param<bool>("off_line_mapping",offLineMapping,false);
+      ///if we want to build map reading scans directly from bagfile
+      param_nh.param<std::string>("bagfile_name",bag_name,"data.bag");
+
 	    ///topic to wait for point clouds, if available
 	    param_nh.param<std::string>("points_topic",points_topic,"points");
 	    ///topic to wait for laser scan messages, if available
@@ -157,38 +166,58 @@ class NDTFuserNode {
 		Eigen::AngleAxis<double>(sensor_pose_r,Eigen::Vector3d::UnitX()) *
 		Eigen::AngleAxis<double>(sensor_pose_p,Eigen::Vector3d::UnitY()) *
 		Eigen::AngleAxis<double>(sensor_pose_t,Eigen::Vector3d::UnitZ()) ;
+        if(!offLineMapping){
+          if(matchLaser) match2D=true;
+          fuser = new lslgeneric::NDTFuserHMT<pcl::PointXYZ>(resolution,size_x,size_y,size_z,
+                                                             sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
 
-	    if(matchLaser) match2D=true;
-	    fuser = new lslgeneric::NDTFuserHMT<pcl::PointXYZ>(resolution,size_x,size_y,size_z,
-		    sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
-
-	    fuser->setSensorPose(sensor_pose_);
-
-	    if(!matchLaser) {
-		points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
-		if(useOdometry) {
-		    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-		    sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
-		    sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
-		} else {
-		    points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
-		}
-	    } else {
-		laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
-		if(useOdometry) {
-		    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-		    sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-		    sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
-
-		} else {
-		    laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
-		}
-	    }
-	    save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
-
-	    if(plotGTTrack) {
-		gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTFuserNode::gt_callback, this);	
-	    }
+          fuser->setSensorPose(sensor_pose_);
+          
+          if(!matchLaser) {
+            points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
+            if(useOdometry) {
+              odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+              sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
+              sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
+            } else {
+              points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
+            }
+          } else {
+            laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
+            if(useOdometry) {
+              odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+              sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
+              sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+              
+            } else {
+              laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
+            }
+          }
+          save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
+          
+          if(plotGTTrack) {
+            gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTFuserNode::gt_callback, this);	
+          }
+        } else {
+          ///////////////////////////////////////////////////////FOR OFFLINE MAPPING /////////////////////////
+          rosbag::Bag bag;
+          bag.open(bag_name, rosbag::bagmode::Read);
+          if(!matchLaser){
+            rosbag::View clouds(bag, rosbag::TopicQuery(points_topic));
+            BOOST_FOREACH(rosbag::MessageInstance const message, clouds){
+              sensor_msgs::PointCloud2::ConstPtr cloud_message=message.instantiate<sensor_msgs::PointCloud2>();
+              pcl::PointCloud<pcl::PointXYZ> cloud;
+              pcl::fromROSMsg (*cloud_message, cloud);
+              T.setIdentity();
+              this->processFrame(cloud,T);
+            }
+             ROS_INFO("Saving current map to map directory %s", map_dir.c_str());
+             m.lock();
+             fuser->saveMap(); 
+             m.unlock();
+          }
+          ////////////////////////////////////////////////////////////////////////////////////////////////////
+        }
 	    initPoseSet = false;
 	}
 

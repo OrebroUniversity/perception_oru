@@ -200,11 +200,16 @@ class NDTFuserNode {
           }
         } else {
           ///////////////////////////////////////////////////////FOR OFFLINE MAPPING /////////////////////////
+          fuser = new lslgeneric::NDTFuserHMT<pcl::PointXYZ>(resolution,size_x,size_y,size_z,
+                                                             sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
+
+          fuser->setSensorPose(sensor_pose_);
           rosbag::Bag bag;
           bag.open(bag_name, rosbag::bagmode::Read);
           if(!matchLaser){
             rosbag::View clouds(bag, rosbag::TopicQuery(points_topic));
-            BOOST_FOREACH(rosbag::MessageInstance const message, clouds){
+            BOOST_FOREACH(rosbag::MessageInstance const message, clouds){ 
+              ROS_INFO("scan");
               sensor_msgs::PointCloud2::ConstPtr cloud_message=message.instantiate<sensor_msgs::PointCloud2>();
               pcl::PointCloud<pcl::PointXYZ> cloud;
               pcl::fromROSMsg (*cloud_message, cloud);
@@ -215,6 +220,8 @@ class NDTFuserNode {
              m.lock();
              fuser->saveMap(); 
              m.unlock();
+             ROS_INFO("EXITING");
+             exit(0);
           }
           ////////////////////////////////////////////////////////////////////////////////////////////////////
         }

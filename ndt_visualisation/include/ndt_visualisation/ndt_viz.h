@@ -92,6 +92,17 @@ class NDTViz {
 	    scene->insert(obj);
 	    win3D->unlockAccess3DScene();
 	}
+	void addPointCloud(pcl::PointCloud<PointT> &cloud, double R=1.0,double G=1.0,double B=1.0){
+
+	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
+	    mrpt::opengl::CPointCloudColouredPtr obj = mrpt::opengl::CPointCloudColoured::Create();
+	    obj->setPointSize(2.5);
+	    for(unsigned int i=0;i<cloud.points.size();i+=2){
+		obj->push_back(cloud.points[i].x, cloud.points[i].y, cloud.points[i].z,R,G,B);
+	    }
+	    scene->insert(obj);
+	    win3D->unlockAccess3DScene();
+	}
 
 
 

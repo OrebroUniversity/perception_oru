@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ndt_mcl" type="3d_ndt_mcl_node" required="true" name="NDTMCL3D">
+	<param name="points_topic" value="/velodyne_points" />
+	<param name="odometry_topic" value="/encoder" />
+	<param name="map_resolution" value="0.4" />
+	<!-- Specific sensor offset parameters for the example file -->
+	<param name="set_sensor_pose" value="true" />
+	<param name="sensor_pose_t"     value="-1.57" />
+	
+	<param name="set_initial_pose" value="true" />
+	<param name="pose_init_x" value="0" />
+	<param name="pose_init_y" value="0" />
+	<param name="pose_init_t" value="0" />
+	
+	<param name="subsample_level" value="0.5" />
+	
+	<param name="load_map_from_file" value="true" />
+	<param name="map_file_name" value="$(find ndt_fuser)/maps/Fika_map_04m.ndmap" />
+	<param name="save_output_map" value="false" />
+	
+     </node>   
+</launch>

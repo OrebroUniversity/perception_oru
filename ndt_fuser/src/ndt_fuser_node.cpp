@@ -25,6 +25,8 @@
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
+#define MAX_TRANSLATION_DELTA 2.0
+#define MAX_ROTATION_DELTA 0.5
 #endif
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
   * \author Todor Stoyanov
@@ -218,6 +220,17 @@ class NDTFuserNode {
 		nb_added_clouds_++;
 	    } else {
 		nb_added_clouds_++;
+		//sanity check for odometry
+		if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
+		    std::cerr<<"Ignoring Odometry!\n";
+		    std::cerr<<Tmotion.translation().transpose()<<std::endl;
+		    Tmotion.setIdentity();
+		}
+		if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
+		    std::cerr<<"Ignoring Odometry!\n";
+		    std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
+		    Tmotion.setIdentity();
+		}
 		pose_ = fuser->update(Tmotion,cloud);
 	    }
 	    m.unlock();

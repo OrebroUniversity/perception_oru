@@ -168,7 +168,7 @@ class NDTFuser{
 			Eigen::Affine3d diff_fuse = Tlast_fuse.inverse()*Tnow;
 
 			if(diff_fuse.translation().norm() > translation_fuse_delta ||
-				diff_fuse.rotation().eulerAngles(0,1,2).norm() > rotation_fuse_delta)
+				diff_fuse.rotation().eulerAngles(0,1,2).norm() > 2*rotation_fuse_delta)
 			{
 			    t3 = getDoubleTime();
 			    map->addPointCloud(spose.translation(),cloud, 0.06, 2.5);

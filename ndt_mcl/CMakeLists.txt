@@ -58,6 +58,10 @@ add_executable(2d_ndt_mcl_node src/2d_ndt_mcl_node.cpp src/CMyEllipsoid.cpp src/
 target_link_libraries(2d_ndt_mcl_node ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(2d_ndt_mcl_node ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
 
+add_executable(3d_ndt_mcl_node src/3d_ndt_mcl_node.cpp src/CMyEllipsoid.cpp src/CParticleFilter.cpp)
+target_link_libraries(3d_ndt_mcl_node ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(3d_ndt_mcl_node ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
+
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
 #    #TODO DEPENDENCIES geometry_msgs std_msgs

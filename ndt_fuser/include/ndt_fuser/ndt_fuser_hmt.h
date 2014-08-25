@@ -319,8 +319,15 @@ class NDTFuserHMT{
 			    Tlast_fuse = Tnow;
 			    if(visualize) //&&ctr%20==0) 
 			    {
-				viewer->plotNDTSAccordingToOccupancy(-1,map); 
-				viewer->plotLocalNDTMap(cloud,resolution); 
+				if(ctr%20==0) {
+				    viewer->plotNDTSAccordingToOccupancy(-1,map); 
+				    viewer->plotLocalNDTMap(cloud,resolution); 
+				}
+				viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
+				viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
+				viewer->displayTrajectory();
+				viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
+				viewer->repaint();	
 			    }
 			    ctr++;
 			}

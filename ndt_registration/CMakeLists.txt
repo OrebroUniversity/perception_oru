@@ -37,6 +37,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 add_executable(simple_test test/simple.cc)
 target_link_libraries(simple_test ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
+add_executable(d2d_deathmatch test/deathmatch.cc)
+target_link_libraries(d2d_deathmatch ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
 add_executable(from_jff test/from_jff.cc)
 target_link_libraries(from_jff ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 #rosbuild_add_openmp_flags(from_jff)

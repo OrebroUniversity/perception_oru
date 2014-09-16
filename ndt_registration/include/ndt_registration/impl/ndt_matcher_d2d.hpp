@@ -175,7 +175,7 @@ bool NDTMatcherD2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
     }
     gettimeofday(&tv_end0,NULL);
     time_combined = (tv_end0.tv_sec-tv_start0.tv_sec)*1000.+(tv_end0.tv_usec-tv_start0.tv_usec)/1000.;
-    std::cout<<"load: "<<time_load<<" match "<<time_match<<" combined "<<time_combined<<std::endl;
+    //std::cout<<"load: "<<time_load<<" match "<<time_match<<" combined "<<time_combined<<std::endl;
     return ret;
 }
 
@@ -1459,7 +1459,7 @@ double NDTMatcherD2D<PointSource,PointTarget>::derivativesNDT(
     Eigen::MatrixXd score_here_omp;
     Eigen::MatrixXd Hessian_omp;
 
-#define n_threads 2
+#define n_threads 6
 
     //n_threads = omp_get_num_threads();
     score_gradient_omp.resize(n_dimensions,n_threads);

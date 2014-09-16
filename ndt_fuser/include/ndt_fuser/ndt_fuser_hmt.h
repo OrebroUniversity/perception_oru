@@ -43,8 +43,8 @@ class NDTFuserHMT{
 	    sensor_pose.setIdentity();
 	    checkConsistency = false;
 	    visualize = true;
-	    translation_fuse_delta = 0.05;
-	    rotation_fuse_delta = 0.01;
+	    translation_fuse_delta = -1;//0.05;
+	    rotation_fuse_delta = -1;//0.01;
 	    max_translation_norm = 1.;
 	    max_rotation_norm = M_PI/4;
 	    map_size_x = map_size_x_;
@@ -131,7 +131,15 @@ class NDTFuserHMT{
 		}
 	    } else {
 		map = new lslgeneric::NDTMap<PointT>(new lslgeneric::LazyGrid<PointT>(resolution));
-		map->initialize(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),map_size_x,map_size_y,map_size_z);
+		if(preLoad) {
+		    char fname[1000];
+		    snprintf(fname,999,"%s/%s_map.jff",hmt_map_dir.c_str(),prefix.c_str());
+		    std::cerr<<"Loading "<<fname<<std::endl;
+		    map->loadFromJFF(fname);
+		} else {
+		    map = new lslgeneric::NDTMap<PointT>(new lslgeneric::LazyGrid<PointT>(resolution));
+		    map->initialize(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),map_size_x,map_size_y,map_size_z);
+		}
 	    }
 //#endif
 	    map->addPointCloud(Tnow.translation(),cloud, 0.1, 100.0, 0.1);
@@ -145,8 +153,8 @@ class NDTFuserHMT{
 	    {
 		viewer->plotNDTSAccordingToOccupancy(-1,map); 
 		viewer->plotLocalNDTMap(cloud,resolution);
-	        viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.2,1,0,0);
-	        viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.2,0,1,0);
+	        viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.5,1,0,0);
+	        viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.5,0,1,0);
 		viewer->displayTrajectory();
 		viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 		viewer->repaint();	
@@ -254,9 +262,10 @@ class NDTFuserHMT{
 			{
 			    //std::cout<<"F: "<<spose.translation().transpose()<<" "<<spose.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
 			    t4 = getDoubleTime();
-			    map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
+			    //TSV: originally this!
+			    //map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
+			    map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
 			    t5 = getDoubleTime();
-			    //map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
 			    //map->addPointCloud(spose.translation(),cloud, 0.06, 25);
 			    //map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, spose.translation(), 0.1);
 			    //t4 = getDoubleTime();
@@ -264,7 +273,7 @@ class NDTFuserHMT{
 			    Tlast_fuse = Tnow;
 			    if(visualize) //&&ctr%20==0) 
 			    {
-				if(ctr%20==0) {
+				if(ctr%50==0) {
 				    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				    viewer->plotLocalNDTMap(cloud,resolution); 
 				}
@@ -319,7 +328,7 @@ class NDTFuserHMT{
 			    Tlast_fuse = Tnow;
 			    if(visualize) //&&ctr%20==0) 
 			    {
-				if(ctr%20==0) {
+				if(ctr%2==0) {
 				    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				    viewer->plotLocalNDTMap(cloud,resolution); 
 				}

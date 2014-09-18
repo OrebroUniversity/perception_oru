@@ -37,12 +37,12 @@ main (int argc, char** argv)
     if (pcl::io::loadPCDFile (argv[2], cloud_offset) == -1)
     {
 	cerr << "Was not able to open file \""<<argv[1]<<"\".\n";
-	return 0;
+	return 1;
     }
     if (pcl::io::loadPCDFile (argv[1], cloud_fixed) == -1)
     {
 	cerr << "Was not able to open file \""<<argv[2]<<"\".\n";
-	return 0;
+	return 1;
     }
     cloud_trans = cloud_offset;
 
@@ -125,5 +125,5 @@ main (int argc, char** argv)
     pcl::io::savePCDFileBinary ("test_pcd.pcd", cloud_comb);
 #endif
 
-    return 1;
+    return 0;
 }

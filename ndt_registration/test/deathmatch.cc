@@ -15,7 +15,7 @@
 
 using namespace std;
 
-//#define DODBG
+#define DODBG
 
 double getDoubleTime()
 {
@@ -28,18 +28,19 @@ double getDoubleTime()
 int
 main (int argc, char** argv)
 {
-    if(argc!=19) {
+    if(argc<19) {
 	std::cout<<"usage "<<argv[0]<<" cloud_fixed.pcd cloud_offset.pcd T00 T01 T02 T03 T10 T11 T12 T13 T20 T21 T22 T23 T30 T31 T32 T33\n";
 	return -1;
     }
 
     pcl::PointCloud<pcl::PointXYZ> cloud_fixed, cloud_offset, cloud_trans;
-    if (pcl::io::loadPCDFile (argv[2], cloud_offset) == -1)
+    if (pcl::io::loadPCDFile (argv[1], cloud_fixed) == -1)
     {
 	cerr << "Was not able to open file \""<<argv[1]<<"\".\n";
 	return 1;
     }
-    if (pcl::io::loadPCDFile (argv[1], cloud_fixed) == -1)
+
+    if (pcl::io::loadPCDFile (argv[2], cloud_offset) == -1)
     {
 	cerr << "Was not able to open file \""<<argv[2]<<"\".\n";
 	return 1;
@@ -77,11 +78,11 @@ main (int argc, char** argv)
     lslgeneric::transformPointCloudInPlace(Tinit,cloud_offset);
 
     tnow = getDoubleTime();
-    double __res[] = {0.5, 1, 2, 4, 6};
+    double __res[] = {0.5, 1};
     std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
 
     lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-    bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
+    //bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
     
     tend = getDoubleTime();
     Tout = Tout*Tinit;

@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define DODBG
+//#define DODBG
 
 double getDoubleTime()
 {
@@ -28,8 +28,8 @@ double getDoubleTime()
 int
 main (int argc, char** argv)
 {
-    if(argc<19) {
-	std::cout<<"usage "<<argv[0]<<" cloud_fixed.pcd cloud_offset.pcd T00 T01 T02 T03 T10 T11 T12 T13 T20 T21 T22 T23 T30 T31 T32 T33\n";
+    if(argc<22) {
+	std::cout<<"usage "<<argv[0]<<" cloud_fixed.pcd cloud_offset.pcd T00 T01 T02 T03 T10 T11 T12 T13 T20 T21 T22 T23 T30 T31 T32 T33 max_resolution n_iterations n_neigh\n";
 	return -1;
     }
 
@@ -78,11 +78,18 @@ main (int argc, char** argv)
     lslgeneric::transformPointCloudInPlace(Tinit,cloud_offset);
 
     tnow = getDoubleTime();
-    double __res[] = {0.5, 1};
+    double res_max = atof(argv[19]);
+    int itr_max = atoi(argv[20]);
+    int n_neigh = atoi(argv[21]);
+
+    double __res[] = {0.5, 1, 2};
     std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
+    resolutions.push_back(res_max);
 
     lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-    //bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
+    matcherD2D.ITR_MAX = itr_max;
+    matcherD2D.n_neighbours = n_neigh;
+    bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
     
     tend = getDoubleTime();
     Tout = Tout*Tinit;

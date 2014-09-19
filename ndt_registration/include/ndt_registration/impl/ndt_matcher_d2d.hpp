@@ -40,6 +40,10 @@ void NDTMatcherD2D<PointSource,PointTarget>::init(bool _isIrregularGrid,
     ITR_MAX = 30;
     DELTA_SCORE = 10e-3*current_resolution;
     step_control = true;
+    //should we try to regularize the hessian or just give up?
+    regularize = true;
+    //how many neighbours to use in the objective
+    n_neighbours =2;
 
 }
 
@@ -322,17 +326,31 @@ bool NDTMatcherD2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetN
         double maxCoeff = evals.maxCoeff();
         if(minCoeff < 0)  //|| evals.minCoeff()) // < 10e-5*evals.maxCoeff()) 
         {
-            Eigen::Matrix<double,6,6> evecs = Sol.eigenvectors().real();
-            double regularizer = score_gradient.norm();
-	    regularizer = regularizer + minCoeff > 0 ? regularizer : 0.001*maxCoeff - minCoeff;
-            //double regularizer = 0.001*maxCoeff - minCoeff;
-            Eigen::Matrix<double,6,1> reg;
-            //ugly
-            reg<<regularizer,regularizer,regularizer,regularizer,regularizer,regularizer;
-            evals += reg;
-            Eigen::Matrix<double,6,6> Lam;
-            Lam = evals.asDiagonal();
-            Hessian = evecs*Lam*(evecs.transpose());
+	    if(regularize) {
+		Eigen::Matrix<double,6,6> evecs = Sol.eigenvectors().real();
+		double regularizer = score_gradient.norm();
+		regularizer = regularizer + minCoeff > 0 ? regularizer : 0.001*maxCoeff - minCoeff;
+		//double regularizer = 0.001*maxCoeff - minCoeff;
+		Eigen::Matrix<double,6,1> reg;
+		//ugly
+		reg<<regularizer,regularizer,regularizer,regularizer,regularizer,regularizer;
+		evals += reg;
+		Eigen::Matrix<double,6,6> Lam;
+		Lam = evals.asDiagonal();
+		Hessian = evecs*Lam*(evecs.transpose());
+	    } else {
+		if(score_here > score_best) 
+		{
+		    T = Tbest;
+		}
+		//de-alloc nextNDT
+		for(unsigned int i=0; i<nextNDT.size(); i++)
+		{
+		    if(nextNDT[i]!=NULL)
+			delete nextNDT[i];
+		}
+		return true;
+	    }
 //            std::cerr<<"regularizing\n";
         }
 //	std::cout<<"s("<<itr_ctr+1<<") = "<<score_here<<";\n";
@@ -1510,7 +1528,7 @@ double NDTMatcherD2D<PointSource,PointTarget>::derivativesNDT(
             point.x = meanMoving(0);
             point.y = meanMoving(1);
             point.z = meanMoving(2);
-            std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+            std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
             for(unsigned int j=0; j<cells.size(); j++)
             {
                 cell = cells[j];
@@ -1581,7 +1599,7 @@ double NDTMatcherD2D<PointSource,PointTarget>::derivativesNDT(
         point.x = meanMoving(0);
         point.y = meanMoving(1);
         point.z = meanMoving(2);
-        std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+        std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
         for(int j=0; j<cells.size(); j++)
         {
             cell = cells[j];

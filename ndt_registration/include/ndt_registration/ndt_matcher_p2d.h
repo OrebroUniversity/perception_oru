@@ -196,6 +196,8 @@ private:
     void init(bool useDefaultGridResolutions, std::vector<double> _resolutions);
     double normalizeAngle(double a);
 public:
+    int ITR_MAX;
+    double subsample_size;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

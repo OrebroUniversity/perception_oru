@@ -1,6 +1,7 @@
 # Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
+#set(CMAKE_BUILD_TYPE RelWithDebug) 
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map)
 # Load catkin and all dependencies required for this package
@@ -35,16 +36,19 @@ set (${PROJECT_NAME}_LIB_SRCS
 #	src/oc_tree.cpp
 #	src/adaptive_oc_tree.cpp
     )
-#add_executable(oct_builder test/octTreeBuilder.cc)
 #add_executable(histTest test/test_ndt_histogram.cc)
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 #add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
 #add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
 add_executable(test_map_topic test/test_map_topic.cpp)
 add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
+add_executable(ndt_builder test/ndtMapBuilder.cc)
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${EIGEN_INCLUDE_DIRS})
+include_directories(include ${PCL_INCLUDE_DIRS})
+add_definitions(${EIGEN_DEFINITIONS})
 link_directories(${catkin_LIBRARY_DIRS})
 
 #uncomment if you have defined messages
@@ -63,8 +67,10 @@ link_directories(${catkin_LIBRARY_DIRS})
 #target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
 target_link_libraries(test_map_topic ${PROJECT_NAME} ${catkin_LIBRARIES})
 target_link_libraries(test_map_topic_1 ${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(ndt_builder ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 #add_executable(likelihood_test test/ndtLikelihoodTester.cc)
 #target_link_libraries(likelihood_test ${PROJECT_NAME}  pointcloud_vrml)

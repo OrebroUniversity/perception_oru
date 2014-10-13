@@ -21,8 +21,9 @@ int main(int argc, char** argv){
   ros::Rate loop_rate(10);
   ndt_map::NDTMapMsg msg;
 
-  lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.2));
-  if (nd.loadFromJFF("basement_04m.jff") < 0)
+  lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(2));
+  ROS_INFO("loading from jff...\n");
+  if (nd.loadFromJFF("maps02.jff") < 0)
     ROS_INFO("loading from jff failed\n");
   
   lslgeneric::toMessage(&nd,msg,"base");

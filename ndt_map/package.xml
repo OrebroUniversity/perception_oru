@@ -23,6 +23,7 @@
   <!-- Dependencies needed to compile this package. -->
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>eigen</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>opencv2</build_depend>

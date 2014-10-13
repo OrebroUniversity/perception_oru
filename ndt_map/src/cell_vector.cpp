@@ -7,6 +7,7 @@ namespace lslgeneric
 
 CellVector::CellVector():mp(new pcl::PointCloud<pcl::PointXYZ>())
 {
+    pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
     protoType= new NDTCell();
     treeUpdated = false;
 }

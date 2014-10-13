@@ -150,6 +150,8 @@ protected:
     int sizeX,sizeY,sizeZ;
 
     virtual bool checkCellforNDT(int indX, int indY, int indZ, bool checkForGaussian=true);
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

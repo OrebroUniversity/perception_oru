@@ -80,7 +80,7 @@ public:
     char isEmpty;	///<based on the most recent observation, is the cell seen empty (1), occupied (-1) or not at all (0)
     double consistency_score;
     enum CellClass {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
-    std::vector<pcl::PointXYZ> points_; ///The points falling into the cell - cleared after update
+    std::vector<pcl::PointXYZ,Eigen::aligned_allocator<pcl::PointXYZ> > points_; ///The points falling into the cell - cleared after update
 		
     NDTCell()
     {

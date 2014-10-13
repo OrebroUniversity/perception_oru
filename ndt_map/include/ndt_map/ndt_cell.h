@@ -35,16 +35,14 @@
 #ifndef NDT_CELL_HH
 #define NDT_CELL_HH
 
-#include <ndt_map/spatial_index.h>
-#include <ndt_map/cell.h>
 #include <ndt_map/impl/EventCounterData.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <vector>
 #include <cstdio>
-#include <Eigen/Eigen>
-
 #include <fstream>
+
+#include <Eigen/Eigen>
 
 /// A rather unsophisticated way of determining the
 /// update method for a cell
@@ -60,6 +58,10 @@
 #define CELL_UPDATE_MODE_STUDENT_T 4
 
 #define REFACTORED
+
+#define JFFERR(x) std::cerr << x << std::endl; return -1;
+#define _JFFVERSION_ "#JFF V0.50"
+
 //#define ICRA_2013_NDT_OM_SIMPLE_MODE 
 namespace lslgeneric
 {
@@ -69,19 +71,16 @@ namespace lslgeneric
 mean, covariance matrix as well as eigen decomposition of covariance
 */
 
-
-    
-
-template<typename PointT>
-class NDTCell : public Cell<PointT>
+//template<typename PointT>
+class NDTCell //: public Cell<PointT>
 {
 public:
     bool hasGaussian_;	///< indicates if the cell has a gaussian in it
-    double cost; 				///FIXME:: Am I used in some context? --> yes, ndt_wavefront planner
-    char isEmpty;				///<based on the most recent observation, is the cell seen empty (1), occupied (-1) or not at all (0)
+    double cost; 	/// ndt_wavefront planner
+    char isEmpty;	///<based on the most recent observation, is the cell seen empty (1), occupied (-1) or not at all (0)
     double consistency_score;
-		enum CellClass {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
-    std::vector<PointT> points_; ///The points falling into the cell - cleared after update
+    enum CellClass {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
+    std::vector<pcl::PointXYZ> points_; ///The points falling into the cell - cleared after update
 		
     NDTCell()
     {
@@ -109,9 +108,12 @@ public:
         points_.clear();
     }
 
-    NDTCell(PointT &center, double &xsize, double &ysize, double &zsize):
-        Cell<PointT>(center,xsize,ysize,zsize)
+    NDTCell(pcl::PointXYZ &center, double &xsize, double &ysize, double &zsize)
     {
+        center_ = center;
+        xsize_ = xsize;
+        ysize_ = ysize;
+        zsize_ = zsize;
         hasGaussian_ = false;
         N = 0;
         R = 0;
@@ -130,7 +132,7 @@ public:
 	cost=INT_MAX;
     }
 
-    NDTCell(const NDTCell& other):Cell<PointT>()
+    NDTCell(const NDTCell& other)
     {
         this->center_ = other.center_;
         this->xsize_ = other.xsize_;
@@ -153,17 +155,58 @@ public:
 	this->cost=other.cost;
     }
 
-    virtual Cell<PointT>* clone() const;
-    virtual Cell<PointT>* copy() const;
+    virtual NDTCell* clone() const;
+    virtual NDTCell* copy() const;
 
+    inline void setCenter(const pcl::PointXYZ &cn)
+    {
+        center_ = cn;
+    }
+    inline void setDimensions(const double &xs, const double &ys, const double &zs)
+    {
+        xsize_ = xs;
+        ysize_ = ys;
+        zsize_ = zs;
+    }
+
+    inline pcl::PointXYZ getCenter() const
+    {
+        return center_;
+    }
+    inline void getDimensions(double &xs, double &ys, double &zs) const
+    {
+        xs = xsize_;
+        ys = ysize_;
+        zs = zsize_;
+    }
+    inline bool isInside(const pcl::PointXYZ pt) const
+    {
+        if(pt.x < center_.x-xsize_/2 || pt.x > center_.x+xsize_/2)
+        {
+            return false;
+        }
+        if(pt.y < center_.y-ysize_/2 || pt.y > center_.y+ysize_/2)
+        {
+            return false;
+        }
+        if(pt.z < center_.z-zsize_/2 || pt.z > center_.z+zsize_/2)
+        {
+            return false;
+        }
+        return true;
+    }
+    virtual double getDiagonal() const
+    {
+        return std::sqrt(xsize_*xsize_+ysize_*ysize_+zsize_*zsize_);
+    }
     /**
     * Updates the current Sample mean and covariance based on
     * give new sample mean @m2 and covariance @cov2,
     * which have been computed from @numpointsindistribution number of points
     */
 
-    inline void updateSampleVariance(const Eigen::Matrix3d &cov2,const Eigen::Vector3d &m2, unsigned int numpointsindistribution, 
-																			bool updateOccupancyFlag=true,  float max_occu=1024, unsigned int maxnumpoints=1e9);
+    void updateSampleVariance(const Eigen::Matrix3d &cov2,const Eigen::Vector3d &m2, unsigned int numpointsindistribution, 
+	    bool updateOccupancyFlag=true,  float max_occu=1024, unsigned int maxnumpoints=1e9);
 
     /**
     * Fits and updates the sample mean and covariance for the cell after the scan has been added.
@@ -178,16 +221,16 @@ public:
     * @param sensor_noise A standard deviation of the sensor noise, used only by method CELL_UPDATE_MODE_SAMPLE_VARIANCE_SURFACE_ESTIMATION
     * if (maxnumpoints<=0) then the cell adaptation strategy is not used
     */
-    inline void computeGaussian(int mode=CELL_UPDATE_MODE_SAMPLE_VARIANCE, unsigned int maxnumpoints=1e9, float occupancy_limit=255, Eigen::Vector3d origin = Eigen::Vector3d(0,0,0), double sensor_noise=0.1);
-		
-		/**
-		* just updates the parameters based on points and leaves the points to cell
-		*/
-		void computeGaussianSimple();
+    void computeGaussian(int mode=CELL_UPDATE_MODE_SAMPLE_VARIANCE, unsigned int maxnumpoints=1e9, float occupancy_limit=255, Eigen::Vector3d origin = Eigen::Vector3d(0,0,0), double sensor_noise=0.1);
+
+    /**
+     * just updates the parameters based on points and leaves the points to cell
+     */
+    void computeGaussianSimple();
     /**
     * Calculates the average color for cell if the point type is pcl::PointXYZI or pcl::PointXYZRGB
     */
-    inline void updateColorInformation();
+    void updateColorInformation();
 
 
     void rescaleCovariance();
@@ -250,19 +293,18 @@ public:
     /**
     * Get likelihood for a given point
     */
-    double getLikelihood(const PointT &pt) const;
+    double getLikelihood(const pcl::PointXYZ &pt) const;
 
     /**
     * Adds a new point to distribution (does not update the distribution)
     * Call computeGaussian() to update the content
     */
-    virtual void addPoint(PointT &pt)
+    virtual void addPoint(pcl::PointXYZ &pt)
     {
         points_.push_back(pt);
     }
 
-
-    virtual void addPoints(pcl::PointCloud<PointT> &pt)
+    virtual void addPoints(pcl::PointCloud<pcl::PointXYZ> &pt)
     {
         points_.insert(points_.begin(),pt.points.begin(),pt.points.end());
     }
@@ -359,9 +401,11 @@ public:
     * @param p2 second point along the ray (it must hold that p1 != p2);
     * @param &out Gives out the exact maximum likelihood point
     */
-    inline double computeMaximumLikelihoodAlongLine(const PointT &p1,const PointT &p2, Eigen::Vector3d &out);
+    double computeMaximumLikelihoodAlongLine(const pcl::PointXYZ &p1, const pcl::PointXYZ &p2, Eigen::Vector3d &out);
 
 private:
+    pcl::PointXYZ center_;
+    double xsize_, ysize_, zsize_;
     Eigen::Matrix3d cov_;		/// Contains the covatiance of the normal distribution
     Eigen::Matrix3d icov_;  /// Precomputed inverse covariance (updated every time the cell is updated)
     Eigen::Matrix3d evecs_; /// Eigen vectors
@@ -385,7 +429,7 @@ private:
 		/**
 		* Cell estimation using student-t
 		*/
-		inline void studentT();
+		void studentT();
 		
 		double squareSum(const Eigen::Matrix3d &C,const Eigen::Vector3d &x){
 			double sum;
@@ -408,6 +452,6 @@ public:
 };
 };
 
-#include<ndt_map/impl/ndt_cell.hpp>
+//#include<ndt_map/impl/ndt_cell.hpp>
 
 #endif

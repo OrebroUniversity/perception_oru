@@ -1,4 +1,4 @@
-namespace perception_oru
+namespace lslgeneric
 {
 
 template< typename PointT>

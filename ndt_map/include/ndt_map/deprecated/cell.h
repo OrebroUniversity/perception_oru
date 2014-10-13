@@ -111,6 +111,10 @@ public:
         }
         return true;
     }
+    virtual double getDiagonal() const
+    {
+        return std::sqrt(xsize_*xsize_+ysize_*ysize_+zsize_*zsize_);
+    }
 
     ///clone - create an empty object with same type
     inline virtual Cell<PointT>* clone() const
@@ -128,10 +132,6 @@ public:
     }
 
     virtual void addPoint(PointT &pt) { }
-    virtual double getDiagonal() const
-    {
-        return std::sqrt(xsize_*xsize_+ysize_*ysize_+zsize_*zsize_);
-    }
 };
 
 

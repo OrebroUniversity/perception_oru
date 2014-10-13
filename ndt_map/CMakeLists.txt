@@ -18,12 +18,23 @@ generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
 )
 
+set (${PROJECT_NAME}_LIB_SRCS
+	src/ndt_cell.cpp
+	src/ndt_map.cpp
+	src/cell_vector.cpp
+	src/lazy_grid.cpp
+	src/ndt_map_hmt.cpp
+#	src/ndt_histogram.cpp
+#	src/oc_tree.cpp
+#	src/adaptive_oc_tree.cpp
+    )
 #add_executable(oct_builder test/octTreeBuilder.cc)
 #add_executable(histTest test/test_ndt_histogram.cc)
-add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
-add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
-add_executable(test_map_topic test/test_map_topic.cpp)
-add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+#add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
+#add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
+#add_executable(test_map_topic test/test_map_topic.cpp)
+#add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -38,14 +49,14 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 #make a node that listens to point clouds and makes ndts
 
-#target_link_libraries(oct_builder ${catkin_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 #target_link_libraries(histTest ${catkin_LIBRARIES})
-target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
-target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
-target_link_libraries(test_map_topic ${catkin_LIBRARIES})
-target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
+#target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
+#target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
+#target_link_libraries(test_map_topic ${catkin_LIBRARIES})
+#target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
 
-add_dependencies(test_map_topic ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)
 
 #add_executable(likelihood_test test/ndtLikelihoodTester.cc)
 #target_link_libraries(likelihood_test ${PROJECT_NAME}  pointcloud_vrml)

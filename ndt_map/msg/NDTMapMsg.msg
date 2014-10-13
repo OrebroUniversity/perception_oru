@@ -10,4 +10,4 @@ float64 x_cell_size    #cell size
 float64 y_cell_size    #cell size
 float64 z_cell_size    #cell size
 
-NDTCell[] cells     #cells
+NDTCellMsg[] cells     #cells

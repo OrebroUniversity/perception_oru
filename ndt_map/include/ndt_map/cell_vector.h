@@ -37,7 +37,8 @@
 
 #include <ndt_map/spatial_index.h>
 #include <ndt_map/ndt_cell.h>
-#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/impl/kdtree_flann.hpp>
+#include <pcl/console/print.h>
 
 namespace lslgeneric
 {

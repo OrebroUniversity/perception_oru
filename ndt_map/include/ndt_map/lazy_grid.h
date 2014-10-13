@@ -113,7 +113,7 @@ public:
     void getGridSize(int &cx, int &cy, int &cz);
     void getGridSizeInMeters(double &cx, double &cy, double &cz);
     void getCenter(double &cx, double &cy, double &cz);
-    virtual inline void getIndexForPoint(const pcl::PointXYZ& pt, int &idx, int &idy, int &idz);
+    virtual void getIndexForPoint(const pcl::PointXYZ& pt, int &idx, int &idy, int &idz);
     NDTCell* getProtoType()
     {
         return protoType;
@@ -129,8 +129,8 @@ public:
 
     ///reads map contents from .jff file
     virtual int loadFromJFF(FILE * jffin);
-    inline bool traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells);
-    inline bool traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point);
+    bool traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells);
+    bool traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point);
     bool isInside(const pcl::PointXYZ& pt) {
 			int indX,indY,indZ;
 			this->getIndexForPoint(pt,indX,indY,indZ);

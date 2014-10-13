@@ -313,7 +313,7 @@ void LazyGrid::getNeighbors(const pcl::PointXYZ &point, const double &radius, st
 
 }
 
-inline void LazyGrid::getIndexForPoint(const pcl::PointXYZ& point, int &indX, int &indY, int &indZ)
+void LazyGrid::getIndexForPoint(const pcl::PointXYZ& point, int &indX, int &indY, int &indZ)
 {
     indX = floor((point.x - centerX)/cellSizeX+0.5) + sizeX/2.0;
     indY = floor((point.y - centerY)/cellSizeY+0.5) + sizeY/2.0;
@@ -600,7 +600,6 @@ int LazyGrid::loadFromJFF(FILE * jffin)
     return 0;
 }
 
-inline
 bool LazyGrid::traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint,const Eigen::Vector3d &diff_ ,
 	const double& maxz, std::vector<NDTCell*> &cells)
 {
@@ -668,7 +667,6 @@ bool LazyGrid::traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &end
 	
 }
 
-inline
 bool LazyGrid::traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint,const Eigen::Vector3d &diff_ ,const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point)
 {
     if(endpoint.z>maxz)

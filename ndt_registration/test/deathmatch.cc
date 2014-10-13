@@ -50,7 +50,8 @@ main (int argc, char** argv)
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Tinit;
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Tout;
     Tout.setIdentity();
-
+    Tinit.setIdentity();
+#if 0
     Tinit.matrix()(0,0) = atof(argv[3]);
     Tinit.matrix()(0,1) = atof(argv[4]);
     Tinit.matrix()(0,2) = atof(argv[5]);
@@ -70,6 +71,7 @@ main (int argc, char** argv)
     Tinit.matrix()(3,1) = 0;
     Tinit.matrix()(3,2) = 0;
     Tinit.matrix()(3,3) = 1;
+#endif
 #ifdef DODBG
     std::cerr<<"Tinit:\n"<<Tinit.matrix()<<std::endl;
 #endif
@@ -89,7 +91,7 @@ main (int argc, char** argv)
     lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
     matcherD2D.ITR_MAX = itr_max;
     matcherD2D.n_neighbours = n_neigh;
-    bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
+    //bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);
     
     tend = getDoubleTime();
     Tout = Tout*Tinit;

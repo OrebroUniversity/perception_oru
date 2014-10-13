@@ -1,9 +1,7 @@
 #include "ros/ros.h"
 #include <ndt_map/ndt_conversions.h>
 #include <ndt_map/ndt_map.h>
-#include <ndt_map/NDTCell.h>
-#include <ndt_map/NDTMap.h>
-#include <ndt_map/ndt_map.h>
+#include <ndt_map/ndt_cell.h>
 #include <ndt_map/lazy_grid.h>
 #include <pointcloud_vrml/pointcloud_utils.h>
 

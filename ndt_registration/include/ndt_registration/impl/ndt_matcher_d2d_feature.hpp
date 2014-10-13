@@ -234,20 +234,6 @@ bool NDTMatcherFeatureD2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& 
     }
 //    std::cout<<"incr(:,"<<itr_ctr+1<<") = [0 0 0 0 0 0]';\n";
 //    std::cout<<"grad(:,"<<itr_ctr+1<<") = [0 0 0 0 0 0]';\n";
-    /*
-        snprintf(fname,49,"final.wrl");
-        fout = fopen(fname,"w");
-        fprintf(fout,"#VRML V2.0 utf8\n");
-        targetNDT.writeToVRML(fout,Eigen::Vector3d(1,0,0));
-        for(unsigned int i=0; i<nextNDT.size(); i++)
-        {
-    	if(nextNDT[i]!=NULL)
-    	{
-    	    nextNDT[i]->writeToVRML(fout,Eigen::Vector3d(0,1,0));
-    	}
-        }
-        fclose(fout);
-    */
     //std::cout<<"res "<<current_resolution<<" itr "<<itr_ctr<<std::endl;
     return ret;
 }

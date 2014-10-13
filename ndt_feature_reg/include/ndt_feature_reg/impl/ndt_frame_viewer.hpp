@@ -65,7 +65,8 @@ NDTFrameViewer<PointT>::showFeaturePC()
     big_cloud->is_dense = false;
     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(big_cloud);
     _viewer->addPointCloud<pcl::PointXYZRGB> (big_cloud, rgb, name);
-    lslgeneric::writeToVRML(name.c_str(),*big_cloud);
+    //FIXME
+    //lslgeneric::writeToVRML(name.c_str(),*big_cloud);
 }
 
 template <typename PointT>

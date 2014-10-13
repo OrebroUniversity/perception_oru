@@ -122,10 +122,6 @@ public:
     ///recursively print the tree
     void print();
 
-    ///output methods to a vrml file. draws the cell sizes and all points
-    void writeToVRML(const char* filename);
-    void writeToVRML(FILE* fout);
-
     ///returns a child at the specified index
     inline OctTree<PointT>* getChild(int idx)
     {

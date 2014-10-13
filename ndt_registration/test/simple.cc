@@ -48,8 +48,9 @@ main (int argc, char** argv)
 
         gettimeofday(&tv_start,NULL);
         //we do a single scan to scan registration
-        cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[7]);
-        cloud_offset = lslgeneric::readVRML<pcl::PointXYZ>(argv[8]);
+        //TODO fix these to load pcd files
+	//cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[7]);
+        //cloud_offset = lslgeneric::readVRML<pcl::PointXYZ>(argv[8]);
         
         Tout =  Eigen::Translation<double,3>(xoffset,yoffset,zoffset)*
             Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
@@ -73,14 +74,5 @@ main (int argc, char** argv)
 	//bool ret = matcherP2F.match(cloud,cloud_offset,Tout);
         //std::cout<<"Transform: \n"<<Tout.matrix()<<std::endl;
 
-        snprintf(fname,49,"c_offset.wrl");
-        fout = fopen(fname,"w");
-        fprintf(fout,"#VRML V2.0 utf8\n");
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud,Eigen::Vector3d(1,0,0));
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(1,1,1));
-
-        lslgeneric::transformPointCloudInPlace<pcl::PointXYZ>(Tout,cloud_offset);
-        lslgeneric::writeToVRML<pcl::PointXYZ>(fout,cloud_offset,Eigen::Vector3d(0,1,0));
-        fclose(fout);
     }
 }

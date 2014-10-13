@@ -5,8 +5,9 @@
 #include <vector>
 #include <Eigen/Eigen>
 #include <ndt_map/ndt_map.h>
-#include <ndt_map/NDTCell.h>
+#include <ndt_map/ndt_cell.h>
 #include <ndt_map/NDTMap.h>
+#include <ndt_map/NDTCell.h>
 #include <string>
 namespace lslgeneric
 {

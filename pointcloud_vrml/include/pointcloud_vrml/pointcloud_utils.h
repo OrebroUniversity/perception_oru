@@ -53,7 +53,7 @@ template< typename PointT>
 double geomDist(PointT p1, PointT p2);
 
 };
-#include<ndt_map/impl/pointcloud_utils.hpp>
+#include<pointcloud_vrml/impl/pointcloud_utils.hpp>
 
 #endif
 

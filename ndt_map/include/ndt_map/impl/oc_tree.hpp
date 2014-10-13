@@ -347,49 +347,6 @@ typename SpatialIndex<PointT>::CellVectorItr OctTree<PointT>::end()
     return myLeafs_.end();
 }
 
-/** output to vrml
-  */
-template <typename PointT>
-void OctTree<PointT>::writeToVRML(const char* filename)
-{
-    if(filename == NULL)
-    {
-        //ERR("OctTree: attempting to print to a null filename \n");
-        return;
-    }
-
-    FILE* fout = fopen (filename,"w");
-    if(fout == NULL)
-    {
-        //ERR("OctTree: attempting to write to a null file %s\n",filename);
-        return;
-    }
-    fprintf(fout,"#VRML V2.0 utf8\n");
-    this->writeToVRML(fout);
-    fclose(fout);
-}
-
-/** output to vrml using file pointer
-  */
-template <typename PointT>
-void OctTree<PointT>::writeToVRML(FILE* fout)
-{
-
-    this->computeLeafCells();
-    typename SpatialIndex<PointT>::CellVectorItr it = this->begin();
-    Eigen::Vector3d col;
-    col<<0,0,0;
-    while(it!= this->end())
-    {
-        NDTCell<PointT>* cell = dynamic_cast<NDTCell<PointT>*>(*it);
-        if(cell!=NULL)
-        {
-            cell->writeToVRML(fout,col);
-        }
-        it++;
-    }
-}
-
 /** returns a new OctTree spatial index
   */
 template <typename PointT>

@@ -201,7 +201,6 @@ public:
     //void updateObservation();
     void classify();
 
-    void writeToVRML(FILE *fout, Eigen::Vector3d col = Eigen::Vector3d(0,0,0));
     int writeToJFF(FILE * jffout);
     int loadFromJFF(FILE * jffin);
 

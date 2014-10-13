@@ -126,7 +126,6 @@ public:
 
     void computeNDTCells(int cellupdatemode = CELL_UPDATE_MODE_SAMPLE_VARIANCE_WITH_RESET);
 
-    void writeToVRML(const char* filename);
     virtual void writeToVRML(FILE* fout);
     virtual void writeToVRML(FILE* fout, Eigen::Vector3d col);
 

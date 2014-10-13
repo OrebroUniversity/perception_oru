@@ -33,14 +33,14 @@ int main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ> cloud;
     char fname[] = "test_wrl.wrl";
 
-    cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[1]);
+    //cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[1]);
 
     lslgeneric::NDTMap<pcl::PointXYZ> nd(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.2));
 
     nd.loadPointCloud(cloud);
     nd.computeNDTCells();
 
-    nd.writeToVRML(fname);
+    //nd.writeToVRML(fname);
 
     if (nd.writeToJFF("LazyGrid.jff") < 0)
         cout << "writing to jff failed\n";

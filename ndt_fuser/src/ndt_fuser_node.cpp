@@ -28,7 +28,7 @@
 #include <std_srvs/Empty.h>
 
 #include <boost/foreach.hpp>
-#include <ndt_map/NDTMap.h>
+//#include <ndt_map/NDTMap.h>
 #include <ndt_map/ndt_conversions.h>
 //#include <ndt_fuser/ndt_cell.h>
 //#include <ndt_fuser/ndt_map.h>
@@ -181,7 +181,7 @@ public:
 
     if(!offLineMapping){
       /////////////////////////MAP PUBLISHIGN///////////////////////////
-      map_publisher_=nh_.advertise<ndt_map::NDTMap>("ndt_map",1000);
+      //map_publisher_=nh_.advertise<ndt_map::NDTMap>("ndt_map",1000);
       ndtmap_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>( "NDTMAP", 0 );
       /////////////////////////////////////////////////
       if(matchLaser) match2D=true;
@@ -483,6 +483,7 @@ public:
   /////////////////////////////////////////////////////////////////////////////
   // map publishing function
    bool publish_map(){
+#if 0
      ndt_map::NDTMap map_msg;
      toMessage(fuser->map, map_msg,fuser_frame);
   //   //very heavy....
@@ -493,6 +494,7 @@ public:
      map_publisher_.publish(map_msg);
      sendMapToRviz(*fuser->map);
      return true;
+    #endif
    }
   /////////////////////////////////////////////////////////////////////////////////
 

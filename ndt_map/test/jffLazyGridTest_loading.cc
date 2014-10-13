@@ -35,7 +35,7 @@ int main (int argc, char** argv)
     lslgeneric::NDTMap<pcl::PointXYZ> nd(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.2));
     if (nd.loadFromJFF("LazyGrid.jff") < 0)
         cout << "loading from jff failed\n";
-    nd.writeToVRML(fname);
+    //nd.writeToVRML(fname);
 
     cout << "Finished loadTest\n";
 

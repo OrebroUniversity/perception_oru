@@ -18,12 +18,12 @@ generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
 )
 
-add_executable(oct_builder test/octTreeBuilder.cc)
-add_executable(histTest test/test_ndt_histogram.cc)
+#add_executable(oct_builder test/octTreeBuilder.cc)
+#add_executable(histTest test/test_ndt_histogram.cc)
 add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
 add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
-add_executable(test_map_topic test/test_map_topic.cpp)
-add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
+#add_executable(test_map_topic test/test_map_topic.cpp)
+#add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -38,12 +38,13 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 #make a node that listens to point clouds and makes ndts
 
-target_link_libraries(oct_builder ${catkin_LIBRARIES})
-target_link_libraries(histTest ${catkin_LIBRARIES})
+#target_link_libraries(oct_builder ${catkin_LIBRARIES})
+#target_link_libraries(histTest ${catkin_LIBRARIES})
 target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
 target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
-target_link_libraries(test_map_topic ${catkin_LIBRARIES})
-target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
+#target_link_libraries(test_map_topic ${catkin_LIBRARIES})
+#target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
+
 #add_executable(likelihood_test test/ndtLikelihoodTester.cc)
 #target_link_libraries(likelihood_test ${PROJECT_NAME}  pointcloud_vrml)
 ##add_executable(ltest test/likelihoodSingleScan.cc)
@@ -58,7 +59,7 @@ catkin_package(
     LIBRARIES # ${PROJECT_NAME}
 )
 
-install(TARGETS oct_builder 
+install(TARGETS  
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

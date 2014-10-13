@@ -174,16 +174,6 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Temp;
     T.setIdentity();
-#ifdef DO_DEBUG_PROC
-    char fname[50];
-    snprintf(fname,49,"/home/tsv/ndt_tmp/initial_clouds.wrl");
-    FILE *fout = fopen(fname,"w");
-    fprintf(fout,"#VRML V2.0 utf8\n");
-
-    lslgeneric::writeToVRML<PointTarget>(fout,target,Eigen::Vector3d(0,1,0));
-    lslgeneric::writeToVRML<PointSource>(fout,source,Eigen::Vector3d(1,0,0));
-    fclose(fout);
-#endif
 
     bool ret;
     pcl::PointCloud<PointSource> moving;
@@ -213,14 +203,6 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
 	std::cout<<"OUT: "<<out.transpose()<<std::endl;
 	std::cout<<"translation "<<Temp.translation().transpose()<<std::endl;
 	//cout<<"--------------------------------------------------------\n";
-	char fname[50];
-	snprintf(fname,49,"/home/tsv/ndt_tmp/inner_cloud%lf.wrl",current_resolution);
-	FILE *fout = fopen(fname,"w");
-	fprintf(fout,"#VRML V2.0 utf8\n");
-	lslgeneric::writeToVRML<PointTarget>(fout,target,Eigen::Vector3d(0,1,0));
-	lslgeneric::writeToVRML<PointSource>(fout,moving,Eigen::Vector3d(1,0,0));
-	//ndt.writeToVRML(fout);
-	fclose(fout);
 #endif
     }
 
@@ -308,14 +290,6 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetN
     
     while(!convergence)
     {
-#ifdef DO_DEBUG_PROC
-        if(itr_ctr == 0)
-        {
-            char fname[100];
-            snprintf(fname,99,"/home/tsv/ndt_tmp/inner_cloud%lf_itr1_dbg.wrl",current_resolution);
-            targetNDT.debugToVRML(fname, nextCloud);
-        }
-#endif
 
         score_gradient.setZero();
         Hessian.setZero();

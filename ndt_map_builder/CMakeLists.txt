@@ -29,15 +29,15 @@ find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
-add_executable(test_ndt_mapper test/test_ndt_mapper.cc)
-target_link_libraries(test_ndt_mapper ${catkin_LIBRARIES})
+#add_executable(test_ndt_mapper test/test_ndt_mapper.cc)
+#target_link_libraries(test_ndt_mapper ${catkin_LIBRARIES})
 
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs
 #)
 
-install(TARGETS test_ndt_mapper 
+install(TARGETS  
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -70,17 +70,6 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
     T.setIdentity();
     bool ret = false;
 
-#ifdef DO_DEBUG_PROC
-    char fname[50];
-    snprintf(fname,49,"initial_clouds.wrl");
-    FILE *fout = fopen(fname,"w");
-    fprintf(fout,"#VRML V2.0 utf8\n");
-
-    lslgeneric::writeToVRML(fout,target,Eigen::Vector3d(1,0,0));
-    lslgeneric::writeToVRML(fout,source,Eigen::Vector3d(0,1,0));
-    fclose(fout);
-#endif
-
     if(isIrregularGrid)
     {
 
@@ -139,32 +128,6 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
             std::cout<<"--------------------------------------------------------\nOverall Transform:\n";
             std::cout<<"rotation   : "<<T.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
             std::cout<<"translation: "<<T.translation().transpose()<<std::endl;
-
-            char fname[50];
-            snprintf(fname,49,"inner_cloud%lf.wrl",current_resolution);
-            FILE *fout = fopen(fname,"w");
-            fprintf(fout,"#VRML V2.0 utf8\n");
-
-            std::vector<NDTCell<PointSource>*> nextNDT = sourceNDT.pseudoTransformNDT(Temp);
-            targetNDT.writeToVRML(fout,Eigen::Vector3d(1,0,0));
-
-            for(unsigned int i=0; i<nextNDT.size(); i++)
-            {
-                if(nextNDT[i]!=NULL)
-                {
-                    nextNDT[i]->writeToVRML(fout,Eigen::Vector3d(0,1,0));
-                    delete nextNDT[i];
-                }
-            }
-            lslgeneric::writeToVRML(fout,sourceCloud,Eigen::Vector3d(0,1,0));
-            fclose(fout);
-
-            snprintf(fname,49,"cloud%lf.wrl",current_resolution);
-            fout = fopen(fname,"w");
-            fprintf(fout,"#VRML V2.0 utf8\n");
-            lslgeneric::writeToVRML(fout,target,Eigen::Vector3d(1,0,0));
-            lslgeneric::writeToVRML(fout,sourceCloud,Eigen::Vector3d(0,1,0));
-            fclose(fout);
 
 #endif
         }

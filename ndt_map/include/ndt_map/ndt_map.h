@@ -345,9 +345,6 @@ public:
     /**
     * Stuff for saving things
     */
-    void writeToVRML(const char* filename);
-    virtual void writeToVRML(FILE* fout);
-    virtual void writeToVRML(FILE* fout, Eigen::Vector3d col);
 
     int writeToJFF(const char* filename);
     int writeLazyGridJFF(FILE * jffout);
@@ -456,9 +453,6 @@ public:
 			map_sizez=sizez;
     }
 
-    //tsv: temporary debug function
-    void debugToVRML(const char* fname, pcl::PointCloud<PointT> &pc);
-    
     /**
     * Computes a maximum likelihood depth from the map, given a position and a view vector 
     */

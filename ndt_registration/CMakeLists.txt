@@ -13,7 +13,7 @@ catkin_package(
     LIBRARIES # TODO
 )
 
-find_package(Boost REQUIRED COMPONENTS program_options)
+find_package(Boost REQUIRED COMPONENTS program_options system)
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
 #uncomment if you have defined messages
@@ -36,9 +36,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
 set (${PROJECT_NAME}_LIB_SRCS
 	src/ndt_matcher_d2d.cpp
-#	src/ndt_matcher_d2d_2d.cpp	
-#      	src/ndt_matcher_d2d_feature.cpp  
-#	src/ndt_matcher_p2d.cpp
+	src/ndt_matcher_d2d_2d.cpp	
+      	src/ndt_matcher_d2d_feature.cpp  
+	src/ndt_matcher_p2d.cpp
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
@@ -46,11 +46,11 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 add_executable(simple_test test/simple.cc)
 target_link_libraries(simple_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
-#add_executable(d2d_deathmatch test/deathmatch.cc)
-#target_link_libraries(d2d_deathmatch ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+add_executable(d2d_deathmatch test/deathmatch.cc)
+target_link_libraries(d2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
-#add_executable(p2d_deathmatch test/p2d_deathmatch.cc)
-#target_link_libraries(p2d_deathmatch ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+add_executable(p2d_deathmatch test/p2d_deathmatch.cc)
+target_link_libraries(p2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 #add_executable(convert_logs test/convert.cc)
 #target_link_libraries(convert_logs ${Boost_LIBRARIES} ${catkin_LIBRARIES})

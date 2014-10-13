@@ -1,7 +1,7 @@
-#include "ndt_map/oc_tree.h"
+#include "ndt_registration/ndt_matcher_d2d_2d.h"
 #include "ndt_map/ndt_cell.h"
 #include "ndt_map/lazy_grid.h"
-#include "pointcloud_vrml/pointcloud_utils.h"
+#include "ndt_map/pointcloud_utils.h"
 #include "Eigen/Eigen"
 #include <fstream>
 #include <omp.h>
@@ -11,8 +11,7 @@ namespace lslgeneric
 
 //#define DO_DEBUG_PROC
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherD2D_2D<PointSource,PointTarget>::init(bool _isIrregularGrid,
+void NDTMatcherD2D_2D::init(bool _isIrregularGrid,
         bool useDefaultGridResolutions, std::vector<double> _resolutions)
 {
     Jest.setZero();
@@ -43,9 +42,8 @@ void NDTMatcherD2D_2D<PointSource,PointTarget>::init(bool _isIrregularGrid,
 
 }
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>& target,
-        pcl::PointCloud<PointSource>& source,
+bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
+        pcl::PointCloud<pcl::PointXYZ>& source,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T ,
         bool useInitialGuess)
 {
@@ -57,7 +55,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
     gettimeofday(&tv_start0,NULL);
 
     //initial guess
-    pcl::PointCloud<PointSource> sourceCloud = source;
+    pcl::PointCloud<pcl::PointXYZ> sourceCloud = source;
     
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> Temp, Tinit;
     Tinit.setIdentity();
@@ -70,6 +68,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
     T.setIdentity();
     bool ret = false;
 
+#if 0
     if(isIrregularGrid)
     {
 
@@ -87,6 +86,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
 
     }
     else
+#endif
     {
 
         //iterative regular grid
@@ -95,15 +95,15 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
 
             current_resolution = resolutions[r_ctr];
 
-            LazyGrid<PointSource> prototypeSource(current_resolution);
-            LazyGrid<PointTarget> prototypeTarget(current_resolution);
+            LazyGrid prototypeSource(current_resolution);
+            LazyGrid prototypeTarget(current_resolution);
 
             gettimeofday(&tv_start,NULL);
-            NDTMap<PointTarget> targetNDT( &prototypeTarget );
+            NDTMap targetNDT( &prototypeTarget );
             targetNDT.loadPointCloud( target );
             targetNDT.computeNDTCells();
 
-            NDTMap<PointSource> sourceNDT( &prototypeSource );
+            NDTMap sourceNDT( &prototypeSource );
             sourceNDT.loadPointCloud( sourceCloud );
             sourceNDT.computeNDTCells();
             gettimeofday(&tv_end,NULL);
@@ -142,9 +142,8 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarg
     return ret;
 }
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetNDT,
-        NDTMap<PointSource>& sourceNDT,
+bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
+        NDTMap& sourceNDT,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T ,
         bool useInitialGuess)
 {
@@ -166,7 +165,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targ
     }
     Tbest = T;
 
-    std::vector<NDTCell<PointSource>*> nextNDT = sourceNDT.pseudoTransformNDT(T);
+    std::vector<NDTCell*> nextNDT = sourceNDT.pseudoTransformNDT(T);
     while(!convergence)
     {
         TR.setIdentity();
@@ -302,8 +301,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targ
 }
 
 //iteratively update the score gradient and hessian (2d version)
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::update_gradient_hessian_local_2d(
+bool NDTMatcherD2D_2D::update_gradient_hessian_local_2d(
         Eigen::MatrixXd &score_gradient,
         Eigen::MatrixXd &Hessian,
 	const Eigen::Vector3d & x,
@@ -364,8 +362,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::update_gradient_hessian_local_2d
 }
 
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::update_gradient_hessian_2d(
+bool NDTMatcherD2D_2D::update_gradient_hessian_2d(
     Eigen::MatrixXd &score_gradient,
     Eigen::MatrixXd &Hessian,
     const Eigen::Vector3d & x,
@@ -414,8 +411,7 @@ bool NDTMatcherD2D_2D<PointSource,PointTarget>::update_gradient_hessian_2d(
 }
 
 //pre-computes the derivative matrices Jest, Hest, Zest, ZHest
-template <typename PointSource, typename PointTarget>
-void NDTMatcherD2D_2D<PointSource,PointTarget>::computeDerivativesLocal_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1,
+void NDTMatcherD2D_2D::computeDerivativesLocal_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1,
                                  Eigen::Matrix<double,3,3> &_Jest,
                                  Eigen::Matrix<double,9,3> &_Hest,
                                  Eigen::Matrix<double,3,9> &_Zest,
@@ -442,8 +438,7 @@ void NDTMatcherD2D_2D<PointSource,PointTarget>::computeDerivativesLocal_2d(Eigen
     }
 }
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherD2D_2D<PointSource,PointTarget>::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1, bool computeHessian)
+void NDTMatcherD2D_2D::computeDerivatives_2d(Eigen::Vector3d &x, Eigen::Matrix3d C1, bool computeHessian)
 {
 
     Jest(0,2) = -x(1);
@@ -471,11 +466,10 @@ void NDTMatcherD2D_2D<PointSource,PointTarget>::computeDerivatives_2d(Eigen::Vec
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define USE_OMP_NDT_MATCHER_D2D_2D
-template <typename PointSource, typename PointTarget>
 //compute the score gradient of a point cloud + transformation to an NDT
-double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
-        const std::vector<NDTCell<PointSource>*> &sourceNDT,
-        const NDTMap<PointTarget> &targetNDT,
+double NDTMatcherD2D_2D::derivativesNDT_2d(
+        const std::vector<NDTCell*> &sourceNDT,
+        const NDTMap &targetNDT,
         Eigen::MatrixXd &score_gradient,
         Eigen::MatrixXd &Hessian,
         bool computeHessian
@@ -513,7 +507,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
         #pragma omp for
         for(unsigned int i=0; i<sourceNDT.size(); i++)
         {
-            PointTarget point;
+            pcl::PointXYZ point;
             Eigen::Vector3d transformed;
             Eigen::Vector3d meanMoving, meanFixed;
             Eigen::Matrix3d CMoving, CFixed, CSum, Cinv, R;
@@ -525,7 +519,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
             Eigen::Matrix<double,9,9> _ZHest;
             double score_here_loc=0;
             int thread_id = omp_get_thread_num();
-            NDTCell<PointTarget> *cell;
+            NDTCell *cell;
             bool exists = false;
             double det = 0;
 
@@ -545,7 +539,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
             point.x = meanMoving(0);
             point.y = meanMoving(1);
             point.z = meanMoving(2);
-            std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+            std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
             for(unsigned int j=0; j<cells.size(); j++)
             {
                 cell = cells[j];
@@ -601,11 +595,11 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
     }
 
 #else
-    PointTarget point;
+    pcl::PointXYZ point;
     Eigen::Vector3d transformed;
     Eigen::Vector3d meanMoving, meanFixed;
     Eigen::Matrix3d CMoving, CFixed, CSum, Cinv, R;
-    NDTCell<PointTarget> *cell;
+    NDTCell *cell;
     bool exists = false;
     double det = 0;
     for(unsigned int i=0; i<sourceNDT.size(); i++)
@@ -617,7 +611,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
         point.x = meanMoving(0);
         point.y = meanMoving(1);
         point.z = meanMoving(2);
-        std::vector<NDTCell<PointSource>*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
         for(int j=0; j<cells.size(); j++)
         {
             cell = cells[j];
@@ -669,11 +663,10 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::derivativesNDT_2d(
     return score_here;
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherD2D_2D<PointSource,PointTarget>::lineSearch2D(
+double NDTMatcherD2D_2D::lineSearch2D(
     Eigen::Matrix<double,3,1> &increment,
-    std::vector<NDTCell<PointSource>*> &sourceNDT,
-    NDTMap<PointTarget> &targetNDT
+    std::vector<NDTCell*> &sourceNDT,
+    NDTMap &targetNDT
 )
 {
 
@@ -689,7 +682,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::lineSearch2D(
     double xtol = 0.01; //window of uncertainty around the optimal step
 
     //my temporary variables
-    std::vector<NDTCell<PointSource>*> sourceNDTHere;
+    std::vector<NDTCell*> sourceNDTHere;
     double score_init = 0.0;
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> ps;
@@ -836,14 +829,14 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::lineSearch2D(
         sourceNDTHere.clear();
         for(unsigned int i=0; i<sourceNDT.size(); i++)
         {
-            NDTCell<PointSource> *cell = sourceNDT[i];
+            NDTCell *cell = sourceNDT[i];
             if(cell!=NULL)
             {
                 Eigen::Vector3d mean = cell->getMean();
                 Eigen::Matrix3d cov = cell->getCov();
                 mean = ps*mean;
                 cov = ps.rotation()*cov*ps.rotation().transpose();
-                NDTCell<PointSource>* nd = (NDTCell<PointSource>*)cell->copy();
+                NDTCell* nd = (NDTCell*)cell->copy();
                 nd->setMean(mean);
                 nd->setCov(cov);
                 sourceNDTHere.push_back(nd);
@@ -1019,8 +1012,7 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::lineSearch2D(
 
 }
 
-template <typename PointSource, typename PointTarget>
-int NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::cstep(double& stx, double& fx, double& dx,
+int NDTMatcherD2D_2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
         double& sty, double& fy, double& dy,
         double& stp, double& fp, double& dp,
         bool& brackt, double stmin, double stmax)
@@ -1218,20 +1210,17 @@ int NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::cstep(double& stx, d
 
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::min(double a, double b)
+double NDTMatcherD2D_2D::MoreThuente::min(double a, double b)
 {
     return (a < b ? a : b);
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::max(double a, double b)
+double NDTMatcherD2D_2D::MoreThuente::max(double a, double b)
 {
     return (a > b ? a : b);
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::absmax(double a, double b, double c)
+double NDTMatcherD2D_2D::MoreThuente::absmax(double a, double b, double c)
 {
     a = fabs(a);
     b = fabs(b);
@@ -1243,173 +1232,11 @@ double NDTMatcherD2D_2D<PointSource,PointTarget>::MoreThuente::absmax(double a, 
         return (b > c) ? b : c;
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherD2D_2D<PointSource,PointTarget>::normalizeAngle(double a)
+double NDTMatcherD2D_2D::normalizeAngle(double a)
 {
     //set the angle between -M_PI and M_PI
     return atan2(sin(a), cos(a));
 
 }
-
-#if 0
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::covariance( NDTMap<PointTarget>& targetNDT,
-        NDTMap<PointSource>& sourceNDT,
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
-        Eigen::MatrixXd &cov
-                                                       )
-{
-
-    double sigmaS = (0.03)*(0.03);
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> TR;
-    TR.setIdentity();
-
-    std::vector<NDTCell<PointSource>*> sourceNDTN = sourceNDT.pseudoTransformNDT(T);
-    std::vector<NDTCell<PointTarget>*> targetNDTN = targetNDT.pseudoTransformNDT(T);
-
-    Eigen::MatrixXd scg(6,1); //column vectors
-    int NM = sourceNDTN.size() + targetNDTN.size();
-
-    Eigen::MatrixXd Jdpdz(NM,6);
-
-    NDTCell<PointTarget> *cell;
-    Eigen::Vector3d transformed;
-    Eigen::Vector3d meanMoving, meanFixed;
-    Eigen::Matrix3d CMoving, CFixed, Cinv;
-    bool exists = false;
-    double det = 0;
-    Eigen::Matrix<double,6,1> ones;
-    ones<<1,1,1,1,1,1;
-    //TODO
-    derivativesNDT(sourceNDTN,targetNDT,scg,cov,true);
-
-    Eigen::Matrix3d Q;
-    Jdpdz.setZero();
-    Q.setZero();
-
-    PointTarget point;
-    //now compute Jdpdz
-    for(int i=0; i<sourceNDTN.size(); i++)
-    {
-        meanMoving = sourceNDTN[i]->getMean();
-        point.x = meanMoving(0);
-        point.y = meanMoving(1);
-        point.z = meanMoving(2);
-
-        if(!targetNDT.getCellForPoint(point,cell))
-        {
-            continue;
-        }
-        if(cell == NULL)
-        {
-            continue;
-        }
-        if(cell->hasGaussian_)
-        {
-
-            meanFixed = cell->getMean();
-            transformed = meanMoving-meanFixed;
-            CFixed = cell->getCov();
-            CMoving= sourceNDTN[i]->getCov();
-
-            (CFixed+CMoving).computeInverseAndDetWithCheck(Cinv,det,exists);
-            if(!exists) continue;
-
-            //compute Jdpdz.col(i)
-            double factor = (-transformed.dot(Cinv*transformed)/2);
-            //these conditions were copied from martin's code
-            if(factor < -120)
-            {
-                continue;
-            }
-            factor = exp(lfd2*factor)/2;
-            if(factor > 1 || factor < 0 || factor*0 !=0)
-            {
-                continue;
-            }
-
-            Q = -sigmaS*Cinv*Cinv;
-
-            Eigen::Matrix<double,6,1> G, xtQJ;
-
-            G.setZero();
-            for(int q=3; q<6; q++)
-            {
-                G(q) =  -transformed.transpose()*Q*Zest.block<3,3>(0,3*q)*Cinv*transformed;
-                G(q) = G(q) -transformed.transpose()*Cinv*Zest.block<3,3>(0,3*q)*Q*transformed;
-            }
-
-            xtQJ = transformed.transpose()*Q*Jest;
-
-            double f1 = (transformed.transpose()*Q*transformed);
-            G = G + xtQJ + (-lfd2/2)*f1*ones;
-            G = G*factor*lfd1*lfd2/2;
-
-            Jdpdz.row(i) = G.transpose();
-
-            for(int j=0; j<targetNDTN.size(); j++)
-            {
-                if(targetNDTN[j]->getMean() == meanFixed)
-                {
-
-                    Jdpdz.row(j+sourceNDTN.size()) = Jdpdz.row(j+sourceNDTN.size())+G.transpose();
-                    continue;
-                }
-            }
-
-            cell = NULL;
-        }
-    }
-
-
-    //cout<<Jdpdz.transpose()<<endl;
-
-    Eigen::MatrixXd JK(6,6);
-    JK = sigmaS*Jdpdz.transpose()*Jdpdz;
-
-    //cout<<"J*J'\n"<<JK<<endl;
-    //cout<<"H\n"<<cov<<endl;
-
-    cov = cov.inverse()*JK*cov.inverse();
-    //cov = cov.inverse();//*fabsf(scoreNDT(sourceNDTN,targetNDT)*2/3);
-    //cout<<"cov\n"<<cov<<endl;
-
-    for(unsigned int q=0; q<sourceNDTN.size(); q++)
-    {
-        delete sourceNDTN[q];
-    }
-    sourceNDTN.clear();
-
-    return true;
-}
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherD2D_2D<PointSource,PointTarget>::covariance( pcl::PointCloud<PointTarget>& target,
-        pcl::PointCloud<PointSource>& source,
-        Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
-        Eigen::MatrixXd &cov
-                                                       )
-{
-
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> TR;
-    TR.setIdentity();
-
-    pcl::PointCloud<PointSource> sourceCloud = lslgeneric::transformPointCloud(T,source);
-
-    LazyGrid<PointSource> prototypeSource(resolutions.front());
-    LazyGrid<PointTarget> prototypeTarget(resolutions.front());
-
-    NDTMap<PointTarget> targetNDT( &prototypeTarget );
-    targetNDT.loadPointCloud( target );
-    targetNDT.computeNDTCells();
-
-    NDTMap<PointSource> sourceNDT( &prototypeSource );
-    sourceNDT.loadPointCloud( sourceCloud );
-    sourceNDT.computeNDTCells();
-
-    this->covariance(targetNDT,sourceNDT,TR,cov);
-
-    return true;
-}
-#endif
 
 }

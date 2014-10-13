@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ndt_fuser" type="ndt_fuser" name="fuser_3d" output="screen" required="true" >
+	<param name="points_topic" value="/velodyne_points" />
+	<param name="off_line_mapping" value="true" />
+	<param name="bagfile_name" value="/media/DATA_BANK/DATA/WHEELOADER_DATA/KJULA/COMBINED/2014-08-27/PROCESSED/velodyne_points_2014-08-29-15-36-37.bag" />
+	<param name="matchLaser" value="false" />
+	<param name="size_x_meters" value="300" />
+	<param name="size_y_meters" value="300" />
+	<param name="size_z_meters" value="80" />
+	<param name="resolution" value="1" />
+	<param name="sensor_range" value="110." />
+	
+	<!-- Specific sensor offset parameters for the example file -->
+	<param name="sensor_pose_x" value="1.92" />
+	<param name="sensor_pose_z" value="3.68" />
+	<param name="sensor_pose_t" value="0.03" />
+	<!--
+	<param name="pose_init_x" value="10.73" />
+	<param name="pose_init_y" value="2.185" />
+	<param name="pose_init_t" value="0.05" />
+	-->
+	<param name="map_directory" value="/home/maw/ORU Projects/Experiments/Kjula_Mapping/" />	
+	<param name="map_name_prefix" value="kjula3d_7" />
+	
+	<param name="beHMT" value="false" />
+	<param name="match2D" value="flase" />
+	<param name="useOdometry" value="false" />
+	<param name="visualize" value="false" />
+	<param name="plotGTTrack" value="false" />
+	<param name="initPoseFromGT" value="false" />
+    </node>
+</launch>

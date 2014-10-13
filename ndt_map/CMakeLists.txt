@@ -22,8 +22,8 @@ generate_messages(
 #add_executable(histTest test/test_ndt_histogram.cc)
 add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
 add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
-#add_executable(test_map_topic test/test_map_topic.cpp)
-#add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
+add_executable(test_map_topic test/test_map_topic.cpp)
+add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -42,8 +42,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #target_link_libraries(histTest ${catkin_LIBRARIES})
 target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
 target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
-#target_link_libraries(test_map_topic ${catkin_LIBRARIES})
-#target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
+target_link_libraries(test_map_topic ${catkin_LIBRARIES})
+target_link_libraries(test_map_topic_1 ${catkin_LIBRARIES})
+
+add_dependencies(test_map_topic ${PROJECT_NAME}_generate_messages_cpp)
 
 #add_executable(likelihood_test test/ndtLikelihoodTester.cc)
 #target_link_libraries(likelihood_test ${PROJECT_NAME}  pointcloud_vrml)
@@ -54,7 +56,7 @@ target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
 
 catkin_package(
     DEPENDS eigen opencv2 libpcl-all-dev
-    CATKIN_DEPENDS pcl_ros pointcloud_vrml cv_bridge 
+    CATKIN_DEPENDS pcl_ros pointcloud_vrml cv_bridge message_runtime
     INCLUDE_DIRS include
     LIBRARIES # ${PROJECT_NAME}
 )

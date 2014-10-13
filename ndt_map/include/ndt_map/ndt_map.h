@@ -416,16 +416,31 @@ public:
 
     virtual bool getCentroid(double &cx, double &cy, double &cz)
     {
-        LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
-        if(lz == NULL) return false;
-        lz->getCenter(cx, cy, cz);
-        return true;
+      LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+      if(lz == NULL) return false;
+      lz->getCenter(cx, cy, cz);
+      return true;
     }
+    bool getGridSize(int &cx, int &cy, int &cz)
+    {
+      LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+      if(lz == NULL) return false;
+      lz->getGridSize(cx, cy, cz);
+      return true;
+    }
+
     bool getGridSizeInMeters(double &cx, double &cy, double &cz)
     {
         LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
         if(lz == NULL) return false;
         lz->getGridSizeInMeters(cx, cy, cz);
+        return true;
+    }
+    bool getCellSizeInMeters(double &cx, double &cy, double &cz)
+    {
+        LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+        if(lz == NULL) return false;
+        lz->getCellSize(cx, cy, cz);
         return true;
     }
     /**

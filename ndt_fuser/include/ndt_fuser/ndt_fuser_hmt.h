@@ -43,8 +43,10 @@ class NDTFuserHMT{
 	    sensor_pose.setIdentity();
 	    checkConsistency = false;
 	    visualize = true;
-	    translation_fuse_delta = 0.05;
-	    rotation_fuse_delta = 0.01;
+        //    translation_fuse_delta = 0.05; ///////// chnaged for stationary sensor
+        translation_fuse_delta = 0.0;
+	    // rotation_fuse_delta = 0.01;  ///////// chnaged for stationary sensor
+        rotation_fuse_delta = 0.0;
 	    max_translation_norm = 1.;
 	    max_rotation_norm = M_PI/4;
 	    map_size_x = map_size_x_;

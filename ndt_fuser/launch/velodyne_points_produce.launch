@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans">
+        <param name="calibration" value="$(find ndt_fuser)/launch/64E_calibration.yaml" />
+    </node>
+</launch>

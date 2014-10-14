@@ -8,7 +8,7 @@ using namespace mrpt;
 using namespace mrpt::gui;
 using namespace mrpt::opengl;
 
-NDTViz<pcl::PointXYZI> ndt_viz;
+NDTViz ndt_viz;
 
 int main(void){
 	ParticleFilter3D filt;

@@ -14,20 +14,19 @@ namespace lslgeneric {
 	std::vector<double> clear_levels;
 	std::vector<int> map_ids;
     };
-    template<typename PointT>
     class NDTCostmap {
 	private:
 	    LevelSet **levels;
-	    NDTMap<PointT> *map_;
-	    LazyGrid<PointT> *grid_;
+	    NDTMap *map_;
+	    LazyGrid *grid_;
 	    int sx, sy, sz;
 	    bool alloc;
 	public:
-	    NDTCostmap(NDTMap<PointT> *map) {
+	    NDTCostmap(NDTMap *map) {
 		std::cerr<<"creating costmap\n";
 		map_ = map;
 		if(map_ != NULL) {
-		    grid_ = dynamic_cast<LazyGrid<PointT>*>(map_->getMyIndex());
+		    grid_ = dynamic_cast<LazyGrid*>(map_->getMyIndex());
 		    if(grid_ != NULL) { 
 			grid_->getGridSize(sx,sy,sz);
 			std::cerr<<"got a lazy grid, size: "<<sx<<" "<<sy<<" "<<sz<<"\n";
@@ -56,8 +55,7 @@ namespace lslgeneric {
 	    void saveCostMapIncr(std::string filename, double max_h);
     };
 
-    template<typename PointT>
-    void NDTCostmap<PointT>::processMap(double robot_height, double occ) {
+    void NDTCostmap::processMap(double robot_height, double occ) {
 	if(!alloc) return;
 	std::cerr<<"processing map\n";
 	double cx,cy,cz;
@@ -67,19 +65,17 @@ namespace lslgeneric {
 	for(int ix=0; ix<sx; ++ix) {
 	    for(int iy=0; iy<sy; ++iy) {
 		for(int iz=0; iz<sz-nheight_cells; ++iz) { //
-		    Cell<PointT> *cell;
-		    grid_->getCellAt(ix,iy,iz,cell);
-		    if(cell == NULL) {  continue; }
-		    NDTCell<PointT>* ndcell = dynamic_cast<NDTCell<PointT>*>(cell);
+		    NDTCell *ndcell;
+		    grid_->getCellAt(ix,iy,iz,ndcell);
 		    if(ndcell == NULL) {  continue; }
 		    //cell is occupied and has a gaussian
 		    if(ndcell->getOccupancy() > occ && ndcell->hasGaussian_) {
-			if(ndcell->getClass() == NDTCell<PointT>::HORIZONTAL ||ndcell->getClass() == NDTCell<PointT>::INCLINED ) {
+			if(ndcell->getClass() == NDTCell::HORIZONTAL ||ndcell->getClass() == NDTCell::INCLINED ) {
 			    bool space = true;
 			    //check we have free space on top
 			    for(int j=1; j<nheight_cells; ++j) {
-				grid_->getCellAt(ix,iy,iz+j,cell);
-				NDTCell<PointT>* ndcell_up = dynamic_cast<NDTCell<PointT>*>(cell);
+				NDTCell* ndcell_up;
+				grid_->getCellAt(ix,iy,iz+j,ndcell_up);
 				if(ndcell_up == NULL) {
 				    space = false;
 				    break;
@@ -120,8 +116,7 @@ namespace lslgeneric {
 	}
     };
 
-    template<typename PointT>
-    void NDTCostmap<PointT>::saveCostMapIncr(std::string filename, double max_h) {
+    void NDTCostmap::saveCostMapIncr(std::string filename, double max_h) {
 	if(!alloc) return;
 	//std::cerr<<"displaying map\n";
 	std::vector<MapPair> maps, maps_final;
@@ -327,8 +322,7 @@ namespace lslgeneric {
 	
 
     }
-    template<typename PointT>
-    void NDTCostmap<PointT>::saveCostMap(std::string filename, double max_h) {
+    void NDTCostmap::saveCostMap(std::string filename, double max_h) {
 	if(!alloc) return;
 	//std::cerr<<"displaying map\n";
 	std::vector<MapPair> maps;

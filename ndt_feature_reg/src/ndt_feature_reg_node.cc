@@ -114,7 +114,7 @@ protected:
     std::string gt_frame_;
 
     ros::Time prev_timestamp_;
-    NDTFrameProc<pcl::PointXYZ>* proc;
+    NDTFrameProc* proc;
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> global_transform_;
     // void TransformEigenToTF(const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &k, tf::Transform &t)
     // {
@@ -194,7 +194,7 @@ public:
         param_nh.param("max_inldist_z", max_inldist_z, 0.05);
         param_nh.param("nb_ransac", nb_ransac, 1000);
 
-        proc = new NDTFrameProc<pcl::PointXYZ>(nb_ransac, max_inldist_xy, max_inldist_z);
+        proc = new NDTFrameProc(nb_ransac, max_inldist_xy, max_inldist_z);
 
         double detector_thresh;
         param_nh.param("detector_thresh", detector_thresh, 400.);
@@ -227,7 +227,7 @@ public:
 
     void process(const cv::Mat &rgb_img, const cv::Mat &depth_img, const ros::Time &current_timestamp)
     {
-        NDTFrame<pcl::PointXYZ> *frame = new NDTFrame<pcl::PointXYZ>();
+        NDTFrame *frame = new NDTFrame();
 //        frame->img = rgb_img;
 //        frame->depth_img = depth_img;
 	rgb_img.copyTo(frame->img);

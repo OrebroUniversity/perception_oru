@@ -43,28 +43,27 @@
 
 namespace ndt_feature_reg
 {
-template <typename PointT>
-class ExpNDTFrameProc : public ndt_feature_reg::NDTFrameProc<PointT>
+class ExpNDTFrameProc : public ndt_feature_reg::NDTFrameProc
 {
 public:
 
-    using NDTFrameProc<PointT>::pe;
-    using NDTFrameProc<PointT>::detector;
-    using NDTFrameProc<PointT>::extractor;
-    using NDTFrameProc<PointT>::img_scale;
-    using NDTFrameProc<PointT>::trim_factor;
-    using NDTFrameProc<PointT>::non_mean;
-    using NDTFrameProc<PointT>::frames;
-    using NDTFrameProc<PointT>::transformVector;
+    using NDTFrameProc::pe;
+    using NDTFrameProc::detector;
+    using NDTFrameProc::extractor;
+    using NDTFrameProc::img_scale;
+    using NDTFrameProc::trim_factor;
+    using NDTFrameProc::non_mean;
+    using NDTFrameProc::frames;
+    using NDTFrameProc::transformVector;
     
     typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
    
 
     void trimNbFrames (size_t maxNbFrames);
-    void addFrameIncremental (NDTFrame<PointT> *f, bool skipMatching, bool ndtEstimateDI = false,
+    void addFrameIncremental (NDTFrame *f, bool skipMatching, bool ndtEstimateDI = false,
                               bool match_full = false, bool match_no_association = false);
     
-    ExpNDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z):NDTFrameProc<PointT>(nb_ransac,max_inldist_xy,max_inldist_z) 
+    ExpNDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z):NDTFrameProc(nb_ransac,max_inldist_xy,max_inldist_z) 
     {
     }
     
@@ -77,8 +76,8 @@ public:
         frames.clear();
     }
 private:
-    void detectKeypoints(NDTFrame<PointT> *f) const;
-    void calcDescriptors(NDTFrame<PointT> *f) const;
+    void detectKeypoints(NDTFrame *f) const;
+    void calcDescriptors(NDTFrame *f) const;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

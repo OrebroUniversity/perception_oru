@@ -72,7 +72,7 @@ Eigen::Affine3d getAsAffine(float x, float y, float yaw ){
 /// Globals
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-NDTMCL<pcl::PointXYZ> *ndtmcl;
+NDTMCL *ndtmcl;
 
 ///Laser sensor offset
 float offx = 0;
@@ -285,7 +285,7 @@ int main(int argc, char **argv){
 	//////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////
 	fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
-	lslgeneric::NDTMap<pcl::PointXYZ> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZ>(resolution));
+	lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 
 	ndmap.setMapSize(80.0, 80.0, 1.0);
 	
@@ -294,7 +294,7 @@ int main(int argc, char **argv){
 		ndmap.loadFromJFF(mapName.c_str());
 	}
 
-	ndtmcl = new NDTMCL<pcl::PointXYZ>(resolution,ndmap,-0.5);
+	ndtmcl = new NDTMCL(resolution,ndmap,-0.5);
 	if(forceSIR) ndtmcl->forceSIR=true;
 
 	fprintf(stderr,"*** FORCE SIR = %d****",forceSIR);

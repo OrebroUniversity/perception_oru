@@ -39,11 +39,12 @@
 #include <ndt_feature_reg/ndt_frame_proc.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
 
 namespace ndt_feature_reg
 {
-template <typename PointT>
-inline void viewKeypointMatches(NDTFrameProc<PointT> *proc, int delay)
+inline void viewKeypointMatches(NDTFrameProc *proc, int delay)
 {
     if (proc->frames.size() < 2)
         return;
@@ -55,8 +56,7 @@ inline void viewKeypointMatches(NDTFrameProc<PointT> *proc, int delay)
     cv::imshow(window_name, display);
     cv::waitKey(delay);
 }
-template <typename PointT>
-inline void viewKeypointMatchesFirst(NDTFrameProc<PointT> *proc, int delay)
+inline void viewKeypointMatchesFirst(NDTFrameProc *proc, int delay)
 {
     if (proc->frames.size() < 2)
         return;
@@ -69,12 +69,10 @@ inline void viewKeypointMatchesFirst(NDTFrameProc<PointT> *proc, int delay)
     cv::waitKey(delay);
 }
 
-template <typename PointT>
 class NDTFrameViewer
 {
 public:
-    NDTFrameViewer(NDTFrameProc<PointT> *proc);
-    //NDTFrameViewer(NDTFrame<PointT> *f0, NDTFrame<PointT> *f1, NDTFrameProc<PointT> &proc);
+    NDTFrameViewer(NDTFrameProc *proc);
     void showPC();
     void showFeaturePC();
     void showNDT();
@@ -88,9 +86,8 @@ public:
     void spinOnce();
 private:
     void initViewer();
-    //std::vector<NDTFrame<PointT>*> _frames;
     boost::shared_ptr<pcl::visualization::PCLVisualizer> _viewer;
-    NDTFrameProc<PointT> *_proc;
+    NDTFrameProc *_proc;
 
     inline pcl::PointXYZRGB getPCLColor(int r, int g, int b)
     {
@@ -132,6 +129,6 @@ private:
 
 };
 }
-#include <ndt_feature_reg/impl/ndt_frame_viewer.hpp>
+//#include <ndt_feature_reg/impl/ndt_frame_viewer.hpp>
 
 #endif

@@ -1111,24 +1111,22 @@ void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, const std:
         //ERR("loading point clouds using indices are currently supported in CellVector index_.");
     }
 }
-#if 0
-template<typename PointT>
-void NDTMap::loadDepthImage(const cv::Mat& depthImage, DepthCamera<PointT> &cameraParams)
+
+void NDTMap::loadDepthImage(const cv::Mat& depthImage, DepthCamera<pcl::PointXYZ> &cameraParams)
 {
-    pcl::PointCloud<PointT> pc;
+    pcl::PointCloud<pcl::PointXYZ> pc;
     cameraParams.convertDepthImageToPointCloud(depthImage, pc);
     this->loadPointCloud(pc);
 }
 
-template<typename PointT>
-pcl::PointCloud<PointT> NDTMap<PointT>::loadDepthImageFeatures(const cv::Mat& depthImage, std::vector<cv::KeyPoint> &keypoints,
-        size_t &supportSize, double maxVar, DepthCamera<PointT> &cameraParams, bool estimateParamsDI, bool nonMean)
+pcl::PointCloud<pcl::PointXYZ> NDTMap::loadDepthImageFeatures(const cv::Mat& depthImage, std::vector<cv::KeyPoint> &keypoints,
+        size_t &supportSize, double maxVar, DepthCamera<pcl::PointXYZ> &cameraParams, bool estimateParamsDI, bool nonMean)
 {
     std::vector<cv::KeyPoint> good_keypoints;
     Eigen::Vector3d mean;
-    PointT mn;
-    pcl::PointCloud<PointT> cloudOut;
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    pcl::PointXYZ mn;
+    pcl::PointCloud<pcl::PointXYZ> cloudOut;
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if(cl==NULL)
     {
         std::cerr<<"wrong index type!\n";
@@ -1138,11 +1136,11 @@ pcl::PointCloud<PointT> NDTMap<PointT>::loadDepthImageFeatures(const cv::Mat& de
     {
         if(!estimateParamsDI)
         {
-            pcl::PointCloud<PointT> points;
-            PointT center;
+            pcl::PointCloud<pcl::PointXYZ> points;
+            pcl::PointXYZ center;
             cameraParams.computePointsAtIndex(depthImage,keypoints[i],supportSize,points,center);
-            NDTCell<PointT> *ndcell = new NDTCell<PointT>();
-            typename pcl::PointCloud<PointT>::iterator it = points.points.begin();
+            NDTCell *ndcell = new NDTCell();
+            typename pcl::PointCloud<pcl::PointXYZ>::iterator it = points.points.begin();
             while (it!= points.points.end() )
             {
                 if(std::isnan(it->x) ||std::isnan(it->y) ||std::isnan(it->z))
@@ -1187,7 +1185,7 @@ pcl::PointCloud<PointT> NDTMap<PointT>::loadDepthImageFeatures(const cv::Mat& de
             Eigen::Vector3d mean;
             Eigen::Matrix3d cov;
             cameraParams.computeParamsAtIndex(depthImage,keypoints[i],supportSize,mean,cov);
-            NDTCell<PointT> *ndcell = new NDTCell<PointT>();
+            NDTCell *ndcell = new NDTCell();
             ndcell->setMean(mean);
             ndcell->setCov(cov);
 
@@ -1215,7 +1213,6 @@ pcl::PointCloud<PointT> NDTMap<PointT>::loadDepthImageFeatures(const cv::Mat& de
     keypoints = good_keypoints;
     return cloudOut;
 }
-#endif
 
 /** Helper function, computes the  NDTCells
 */

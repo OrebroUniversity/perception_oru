@@ -12,7 +12,7 @@
 #include <fstream>
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/ndt_cell.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 #include "ndt_mcl/ParticleFilter3D.h"
 #include <tf_conversions/tf_eigen.h>
 //#include "ndt_mcl/CParticleFilter.h"
@@ -20,10 +20,9 @@
 /**
  * NDT MCL - Class implementation
  */
-template <typename PointT>
 class NDTMCL3D{
     public:
-	lslgeneric::NDTMap<PointT> map; 		///<This is my map 
+	lslgeneric::NDTMap map; 		///<This is my map 
 	ParticleFilter3D pf; 						///<This is the particle filter
 	double resolution;
 	double resolution_sensor;
@@ -33,8 +32,8 @@ class NDTMCL3D{
 	/**
 	 * Constructor
 	 */
-	NDTMCL3D(double map_resolution, lslgeneric::NDTMap<PointT> &nd_map, double zfilter):
-	    map(new lslgeneric::LazyGrid<PointT>(map_resolution))
+	NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
+	    map(new lslgeneric::LazyGrid(map_resolution))
     {
 	isInit = false;
 	forceSIR = false;
@@ -64,7 +63,7 @@ class NDTMCL3D{
 
 	map.initialize(cx,cy,cz,wx,wy,wz);
 
-	std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+	std::vector<lslgeneric::NDTCell*> ndts;
 	ndts = nd_map.getAllCells();
 	fprintf(stderr,"NDT MAP with %d components",ndts.size());
 	for(unsigned int i=0;i<ndts.size();i++){
@@ -95,7 +94,7 @@ class NDTMCL3D{
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<PointT> &cloud){
+	void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
 	    Eigen::Vector3d tr = Tmotion.translation();
 	    Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
 
@@ -108,7 +107,7 @@ class NDTMCL3D{
 
 	    //pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.1 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.1+0.001));
 
-	    lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution_sensor));
+	    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
 	    std::cerr<<"cloud points "<<cloud.points.size()<<std::endl;
 	    local_map.addPointCloudSimple(cloud);
 	    local_map.computeNDTCells();
@@ -120,7 +119,7 @@ class NDTMCL3D{
 	    for(int i=0;i<pf.size();i++){
 		Eigen::Affine3d T = pf.pcloud[i].T;
 
-		std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+		std::vector<lslgeneric::NDTCell*> ndts;
 		tictac.Tic();	
 		ndts = local_map.pseudoTransformNDT(T);
 		t_pseudo += tictac.Tac();
@@ -133,8 +132,8 @@ class NDTMCL3D{
 		    Eigen::Vector3d m = ndts[n]->getMean();	
 		    if(m[2]<zfilt_min) continue;
 
-		    lslgeneric::NDTCell<PointT> *cell;
-		    PointT p;
+		    lslgeneric::NDTCell *cell;
+		    pcl::PointXYZ p;
 		    p.x = m[0];p.y=m[1];p.z=m[2];
 
 		    if(map.getCellAtPoint(p,cell)){
@@ -195,7 +194,7 @@ class NDTMCL3D{
 	    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	    void updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<PointT> &cloud, double subsample_level){
+	    void updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, double subsample_level){
 		if(subsample_level < 0 || subsample_level > 1) subsample_level = 1;
 
 		Eigen::Vector3d tr = Tmotion.translation();
@@ -217,7 +216,7 @@ class NDTMCL3D{
 		double t_pred = tictac.Tac();	
 
 		std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
-		lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution));
+		lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution));
 		//local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
 		local_map.loadPointCloud(cloud);//,30); //sensor_range);
 		local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -227,8 +226,8 @@ class NDTMCL3D{
 		//local_map.computeNDTCells();
 		local_map.computeNDTCellsSimple();
 		*/
-		std::vector<lslgeneric::NDTCell<PointT>*> ndts0 = local_map.getAllCells();
-		std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+		std::vector<lslgeneric::NDTCell*> ndts0 = local_map.getAllCells();
+		std::vector<lslgeneric::NDTCell*> ndts;
 		std::cerr<<"ndts: "<<ndts0.size()<<std::endl;
 
 		if(subsample_level != 1) {
@@ -269,8 +268,8 @@ class NDTMCL3D{
 
 			    if(m[2]<zfilt_min) continue;
 
-			    lslgeneric::NDTCell<PointT> *cell;
-			    PointT p;
+			    lslgeneric::NDTCell *cell;
+			    pcl::PointXYZ p;
 			    p.x = m[0];p.y=m[1];p.z=m[2];
 
 			    if(map.getCellAtPoint(p,cell)){

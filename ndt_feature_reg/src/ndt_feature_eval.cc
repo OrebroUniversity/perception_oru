@@ -9,7 +9,7 @@
 
 #include <ndt_registration/ndt_matcher_d2d_feature.h>
 
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 
 #include <cv.h>
 #include <highgui.h>
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
         {
             std::cout << "iter " << i << "(" << associations.size() << ")" << std::endl;
 
-            NDTFrame<pcl::PointXYZ> *frame1 = new NDTFrame<pcl::PointXYZ>();
+            NDTFrame *frame1 = new NDTFrame();
             frame1->img = cv::imread(associations[i-1].first, 0);
             frame1->depth_img = cv::imread(associations[i-1].second, CV_LOAD_IMAGE_ANYDEPTH); // CV_LOAD_IMAGE_ANYDEPTH is important to load the 16bits image
             if (i == 1)
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
             frame1->cameraParams = cameraparams;
             frame1->supportSize = support_size;
 
-            NDTFrame<pcl::PointXYZ> *frame2 = new NDTFrame<pcl::PointXYZ>();
+            NDTFrame *frame2 = new NDTFrame();
             frame2->img = cv::imread(associations[i].first, 0);
             frame2->depth_img = cv::imread(associations[i].second, CV_LOAD_IMAGE_ANYDEPTH); // CV_LOAD_IMAGE_ANYDEPTH is important to load the 16bits image
             frame2->cameraParams = cameraparams;
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
 
             frame1->current_res = current_res;
             frame2->current_res = current_res;
-            NDTFrameProc<pcl::PointXYZ> proc(nb_ransac, max_inldist_xy, max_inldist_z);
+            NDTFrameProc proc(nb_ransac, max_inldist_xy, max_inldist_z);
             proc.detector = cv::FeatureDetector::create("SURF");
             //( detector_thres
             proc.img_scale = img_scale;
@@ -292,7 +292,7 @@ int main(int argc, char** argv)
     {
         // ----------------------------------------------------------------
 //#else
-        NDTFrameProc<pcl::PointXYZ> proc(nb_ransac, max_inldist_xy, max_inldist_z);
+        NDTFrameProc proc(nb_ransac, max_inldist_xy, max_inldist_z);
         proc.detector = cv::FeatureDetector::create("SURF");
         //proc.detector = new cv::SurfFeatureDetector( detector_thresh );
         proc.img_scale = img_scale;
@@ -305,7 +305,7 @@ int main(int argc, char** argv)
         for (size_t i = 0; i < associations.size(); i++)
         {
             std::cout << "iter " << i << "(" << associations.size() << ")" << std::endl;
-            NDTFrame<pcl::PointXYZ> *frame = new NDTFrame<pcl::PointXYZ>();
+            NDTFrame *frame = new NDTFrame();
             frame->img = cv::imread(associations[i].first, 0);
             frame->depth_img = cv::imread(associations[i].second, CV_LOAD_IMAGE_ANYDEPTH); // CV_LOAD_IMAGE_ANYDEPTH is important to load the 16bits image
             frame->supportSize = support_size;

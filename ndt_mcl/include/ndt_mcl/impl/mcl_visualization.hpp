@@ -23,9 +23,9 @@ void initializeScene(){
 /**
 * Draw the ellipses in the map to the scene
 */
-void addMap2Scene(lslgeneric::NDTMap<pcl::PointXYZ> &map, Eigen::Vector3d &origin, mrpt::opengl::COpenGLScenePtr scene){
+void addMap2Scene(lslgeneric::NDTMap &map, Eigen::Vector3d &origin, mrpt::opengl::COpenGLScenePtr scene){
 	///And plot the results
-	std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> ndts;
+	std::vector<lslgeneric::NDTCell*> ndts;
 	ndts = map.getAllCells();
 	
 	for(unsigned int i=0;i<ndts.size();i++){

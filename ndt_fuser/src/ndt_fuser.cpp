@@ -16,7 +16,7 @@ namespace lslgeneric {
 	if(visualize) 
 	{
 	    viewer->plotNDTSAccordingToOccupancy(-1,map); 
-	    viewer->plotLocalNDTMap(cloud,resolution); 
+	    //viewer->plotLocalNDTMap(cloud,resolution); 
 	}
     }
     Eigen::Affine3d NDTFuser::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
@@ -61,7 +61,7 @@ namespace lslgeneric {
 			if(visualize) 
 			{
 			    viewer->plotNDTSAccordingToOccupancy(-1,map); 
-			    viewer->plotLocalNDTMap(cloud,resolution); 
+			    //viewer->plotLocalNDTMap(cloud,resolution); 
 			}
 		    }
 		}
@@ -104,7 +104,7 @@ namespace lslgeneric {
 			if(visualize) 
 			{
 			    viewer->plotNDTSAccordingToOccupancy(-1,map); 
-			    viewer->plotLocalNDTMap(cloud,resolution); 
+			    //viewer->plotLocalNDTMap(cloud,resolution); 
 			}
 
 		    }

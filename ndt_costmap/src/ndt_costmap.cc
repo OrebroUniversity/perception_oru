@@ -6,11 +6,6 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace lslgeneric;
   
-using namespace mrpt;
-using namespace mrpt::gui;
-using namespace mrpt::opengl;
-
-
 int main(int argc, char **argv){
 
     std::string base_name;
@@ -53,22 +48,8 @@ int main(int argc, char **argv){
     NDTViz *viewer = new NDTViz(true);
     //display map
     viewer->plotNDTSAccordingToClass(-1,&ndmap);
-    while(viewer->win3D->isOpen()){
-	if (viewer->win3D->keyHit())
-	{
-	    mrptKeyModifier kmods;
-	    int key = viewer->win3D->getPushedKey(&kmods);
-	    printf("Key pushed: %c (%i) - modifiers: 0x%04X\n",char(key),key,kmods);
-
-	    if (key==MRPTK_RIGHT) viewer->win3D->setCameraAzimuthDeg( viewer->win3D->getCameraAzimuthDeg() + 5 );
-	    if (key==MRPTK_LEFT)  viewer->win3D->setCameraAzimuthDeg( viewer->win3D->getCameraAzimuthDeg() - 5 );
-
-	    if(key =='q'){
-		break;
-	    }
-	}
-	usleep(100*1000);
-    }
+    char c;
+    std::cin >> c;
     delete viewer;
 
 }

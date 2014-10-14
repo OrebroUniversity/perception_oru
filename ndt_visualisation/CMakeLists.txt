@@ -39,7 +39,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 #)
 
 #common commands for building c++ executables and libraries
-add_library(${PROJECT_NAME} src/CMyEllipsoid.cpp src/NDTVizGlut.cc)
+add_library(${PROJECT_NAME}  src/NDTVizGlut.cc)
 target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options thread)
@@ -47,8 +47,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_executable(ndt_viewer src/ndt_viewer.cc)
 target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
 
-add_executable(glut_test src/glut_test.cc)
-target_link_libraries(glut_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+#add_executable(glut_test src/glut_test.cc)
+#target_link_libraries(glut_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(glut3d_test src/glut3d_test.cc)
 target_link_libraries(glut3d_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})

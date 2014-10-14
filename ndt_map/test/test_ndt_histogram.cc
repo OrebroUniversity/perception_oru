@@ -1,6 +1,6 @@
 #include <ndt_map/ndt_histogram.h>
-#include <ndt_map/oc_tree.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+//#include <ndt_map/oc_tree.h>
+#include <ndt_map/pointcloud_utils.h>
 #include <ndt_map/lazy_grid.h>
 
 #include "pcl/point_cloud.h"
@@ -27,10 +27,10 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud2, cloud3;
     pcl::PointCloud<pcl::PointXYZI> outCloud;
 
-    lslgeneric::OctTree<pcl::PointXYZ> tr;
-    tr.BIG_CELL_SIZE = 2;
-    tr.SMALL_CELL_SIZE = 0.2;
-//    lslgeneric::LazzyGrid tr(0.5);
+    // lslgeneric::OctTree<pcl::PointXYZ> tr;
+    // tr.BIG_CELL_SIZE = 2;
+    // tr.SMALL_CELL_SIZE = 0.2;
+    lslgeneric::LazyGrid tr(0.5);
 
 #ifdef FULLTESTER
     std::string fname_str = argv[1];
@@ -41,13 +41,13 @@ main (int argc, char** argv)
     logger<< "S = [";
     struct timeval tv_start, tv_end;
     gettimeofday(&tv_start,NULL);
-    lslgeneric::NDTHistogram<pc::PointXYZ> *array  = new lslgeneric::NDTHistogram<pc::PointXYZ>[nclouds];
+    lslgeneric::NDTHistogram *array  = new lslgeneric::NDTHistogram[nclouds];
     for(int i=0; i<nclouds; i++)
     {
         char cloudname [500];
         snprintf(cloudname, 499, "%s%03d.wrl", fname_str.c_str(),i);
         cloud = lslgeneric::readVRML(cloudname);
-        lslgeneric::NDTMap<pc::PointXYZ> nd(&tr);
+        lslgeneric::NDTMap nd(&tr);
         nd.loadPointCloud(cloud);
         nd.computeNDTCells();
 
@@ -76,64 +76,64 @@ main (int argc, char** argv)
 
     logger<<"];\n";
 #else
-    cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[1]);
-    cloud2 = lslgeneric::readVRML<pcl::PointXYZ>(argv[2]);
-    //lslgeneric::NDTMap nd(new lslgeneric::LazzyGrid(5));
-    lslgeneric::NDTMap<pcl::PointXYZ> nd(&tr);
-    nd.loadPointCloud(cloud);
-    //lslgeneric::NDTMap nd2(new lslgeneric::LazzyGrid(5));
-    lslgeneric::NDTMap<pcl::PointXYZ> nd2(&tr);
-    nd2.loadPointCloud(cloud2);
+    // cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[1]);
+    // cloud2 = lslgeneric::readVRML<pcl::PointXYZ>(argv[2]);
+    // //lslgeneric::NDTMap nd(new lslgeneric::LazzyGrid(5));
+    // lslgeneric::NDTMap<pcl::PointXYZ> nd(&tr);
+    // nd.loadPointCloud(cloud);
+    // //lslgeneric::NDTMap nd2(new lslgeneric::LazzyGrid(5));
+    // lslgeneric::NDTMap<pcl::PointXYZ> nd2(&tr);
+    // nd2.loadPointCloud(cloud2);
 
-    nd.computeNDTCells();
-    nd2.computeNDTCells();
+    // nd.computeNDTCells();
+    // nd2.computeNDTCells();
 
-    lslgeneric::NDTHistogram<pcl::PointXYZ> nh(nd);
-    lslgeneric::NDTHistogram<pcl::PointXYZ> nh2(nd2);
-    cout<<"1 =========== \n";
-    nh.printHistogram(true);
-    cout<<"2 =========== \n";
-    nh2.printHistogram(true);
+    // lslgeneric::NDTHistogram<pcl::PointXYZ> nh(nd);
+    // lslgeneric::NDTHistogram<pcl::PointXYZ> nh2(nd2);
+    // cout<<"1 =========== \n";
+    // nh.printHistogram(true);
+    // cout<<"2 =========== \n";
+    // nh2.printHistogram(true);
 
-    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
+    // Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
 
-    nh2.bestFitToHistogram(nh,T,true);
-    cout<<" ==================== \n Transform R "<<T.rotation()<<"\nt "<<T.translation().transpose()<<endl;
+    // nh2.bestFitToHistogram(nh,T,true);
+    // cout<<" ==================== \n Transform R "<<T.rotation()<<"\nt "<<T.translation().transpose()<<endl;
 
-    cout<<"scan similarity is "<<nh2.getSimilarity(nh)<<endl;
-    cloud3 = lslgeneric::transformPointCloud(T,cloud2);
-    //lslgeneric::NDTMap nd3(new lslgeneric::LazzyGrid(5));
-    lslgeneric::NDTMap<pcl::PointXYZ> nd3(&tr);
-    nd3.loadPointCloud(cloud3);
-    nd3.computeNDTCells();
+    // cout<<"scan similarity is "<<nh2.getSimilarity(nh)<<endl;
+    // cloud3 = lslgeneric::transformPointCloud(T,cloud2);
+    // //lslgeneric::NDTMap nd3(new lslgeneric::LazzyGrid(5));
+    // lslgeneric::NDTMap<pcl::PointXYZ> nd3(&tr);
+    // nd3.loadPointCloud(cloud3);
+    // nd3.computeNDTCells();
 
-    lslgeneric::NDTHistogram<pcl::PointXYZ> nh3(nd3);
-    cout<<"3 =========== \n";
-    nh3.printHistogram(true);
+    // lslgeneric::NDTHistogram<pcl::PointXYZ> nh3(nd3);
+    // cout<<"3 =========== \n";
+    // nh3.printHistogram(true);
 
 
-    char fname[50];
-    snprintf(fname,49,"ndt_map.wrl");
-    nd.writeToVRML(fname);
+    // char fname[50];
+    // snprintf(fname,49,"ndt_map.wrl");
+    // nd.writeToVRML(fname);
 
-    snprintf(fname,49,"histogramRegistered.wrl");
-    FILE *f = fopen(fname,"w");
-    fprintf(f,"#VRML V2.0 utf8\n");
-    //green = target
-    lslgeneric::writeToVRML(f,cloud,Eigen::Vector3d(0,1,0));
-    //red = init
-    lslgeneric::writeToVRML(f,cloud2,Eigen::Vector3d(1,0,0));
-    //white = final
-    lslgeneric::writeToVRML(f,cloud3,Eigen::Vector3d(1,1,1));
-    fclose(f);
+    // snprintf(fname,49,"histogramRegistered.wrl");
+    // FILE *f = fopen(fname,"w");
+    // fprintf(f,"#VRML V2.0 utf8\n");
+    // //green = target
+    // lslgeneric::writeToVRML(f,cloud,Eigen::Vector3d(0,1,0));
+    // //red = init
+    // lslgeneric::writeToVRML(f,cloud2,Eigen::Vector3d(1,0,0));
+    // //white = final
+    // lslgeneric::writeToVRML(f,cloud3,Eigen::Vector3d(1,1,1));
+    // fclose(f);
 
-    std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> > directions = nh.directions;
-    cout<<"direction = [";
-    for(int i=0; i<directions.size(); i++)
-    {
-        cout<<directions[i].transpose()<<";";
-    }
-    cout<<"];\n";
+    // std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> > directions = nh.directions;
+    // cout<<"direction = [";
+    // for(int i=0; i<directions.size(); i++)
+    // {
+    //     cout<<directions[i].transpose()<<";";
+    // }
+    // cout<<"];\n";
 #endif
 
 

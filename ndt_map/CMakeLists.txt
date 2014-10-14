@@ -32,11 +32,11 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/cell_vector.cpp
 	src/lazy_grid.cpp
 	src/ndt_map_hmt.cpp
-#	src/ndt_histogram.cpp
+	src/ndt_histogram.cpp
 #	src/oc_tree.cpp
 #	src/adaptive_oc_tree.cpp
     )
-#add_executable(histTest test/test_ndt_histogram.cc)
+add_executable(histTest test/test_ndt_histogram.cc)
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 #add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
 #add_executable(jffLoadTest test/jffLazyGridTest_loading.cc)
@@ -62,7 +62,7 @@ link_directories(${catkin_LIBRARY_DIRS})
 #make a node that listens to point clouds and makes ndts
 
 #target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
-#target_link_libraries(histTest ${catkin_LIBRARIES})
+target_link_libraries(histTest ${PROJECT_NAME} ${catkin_LIBRARIES})
 #target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
 #target_link_libraries(jffLoadTest ${catkin_LIBRARIES})
 target_link_libraries(test_map_topic ${PROJECT_NAME} ${catkin_LIBRARIES})

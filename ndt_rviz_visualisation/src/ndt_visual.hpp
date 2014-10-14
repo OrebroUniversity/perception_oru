@@ -18,9 +18,9 @@ namespace lslgeneric{
   public:
     NDTVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
     virtual ~NDTVisual();
-    void setCell(ndt_map::NDTCellMsg msg);
-    void setFramePosition( const Ogre::Vector3& position );
-    void setFrameOrientation( const Ogre::Quaternion& orientation );
+    void setCell(ndt_map::NDTCellMsg msg, double resolution);
+    void setFramePosition(const Ogre::Vector3& position);
+    void setFrameOrientation(const Ogre::Quaternion& orientation);
     void setColor( float r, float g, float b, float a );
   private:
     boost::shared_ptr<rviz::Shape> NDT_elipsoid_;

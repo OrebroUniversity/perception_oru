@@ -18,12 +18,12 @@ int main(int argc, char** argv){
   ros::init(argc,argv,"map_topic");
   ros::NodeHandle nh;
   ros::Publisher map_pub = nh.advertise<ndt_map::NDTMapMsg>("dummy_map_pub", 1000);
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(1);
   ndt_map::NDTMapMsg msg;
 
   lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
   ROS_INFO("loading from jff...\n");
-  if (nd.loadFromJFF("map2m.jff") < 0)
+  if (nd.loadFromJFF("basement_04m.1.jff") < 0)
     ROS_INFO("loading from jff failed\n");
   
   lslgeneric::toMessage(&nd,msg,"base");

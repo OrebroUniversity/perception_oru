@@ -16,7 +16,7 @@
 namespace lslgeneric{
   
   NDTDisplay::NDTDisplay(){
-    ROS_INFO("BUILDING OBJECT");
+    ROS_ERROR("BUILDING OBJECT");
     color_property_ = new rviz::ColorProperty( "Color", QColor( 204, 51, 204 ),
                                                "Color to draw the acceleration arrows.",
                                                this, SLOT( updateColorAndAlpha() ));
@@ -49,7 +49,7 @@ namespace lslgeneric{
     }
   }
   void NDTDisplay::processMessage( const ndt_map::NDTMapMsg::ConstPtr& msg ){
-
+    ROS_ERROR("MESSAGE RECIVED");
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
     if( !context_->getFrameManager()->getTransform( msg->header.frame_id,msg->header.stamp,position, orientation)){
@@ -57,8 +57,15 @@ namespace lslgeneric{
       return;
     }
     for(int itr=0;itr<msg->cells.size();itr++){
+    //for(int itr=0;itr<10;itr++){
       boost::shared_ptr<NDTVisual> visual;
-      visual->setCell(msg->cells[itr]);
+      visual.reset(new NDTVisual(context_->getSceneManager(), scene_node_));
+      if(!(msg->x_cell_size==msg->y_cell_size&&msg->y_cell_size==msg->z_cell_size)){ 
+        ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
+        //return false;
+      }
+
+      visual->setCell(msg->cells[itr],msg->x_cell_size);
       visual->setFramePosition(position);
       visual->setFrameOrientation(orientation);
       float alpha = alpha_property_->getFloat();

@@ -2,6 +2,7 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
 #include <Eigen/Dense>
+#include <ros/ros.h>
 #include <rviz/ogre_helpers/shape.h>
 #include "ndt_visual.hpp"
 
@@ -17,14 +18,14 @@ namespace lslgeneric{
     scene_manager_->destroySceneNode( frame_node_ );
   }
 
-  void NDTVisual::setCell(ndt_map::NDTCellMsg cell){
+  void NDTVisual::setCell(ndt_map::NDTCellMsg cell, double resolution){
     Ogre::Vector3 position(cell.mean_x,cell.mean_y,cell.mean_z);
     //eigen values aka size of the elipsoid
     Eigen::Matrix3d cov;
     int m_itr=0;
     for(int i=0;i<3;i++){
       for(int j=0;j<3;j++){
-        cov(i,j)=cell.cov_matrix[m_itr];
+        cov(j,i)=cell.cov_matrix[m_itr];
         m_itr++;
       }
     }
@@ -34,11 +35,13 @@ namespace lslgeneric{
     evecs = Sol.eigenvectors().real();
     evals = Sol.eigenvalues().real();
     Eigen::Quaternion<double> q(evecs);
-   
-    Ogre::Vector3 scale(3*evals(0),3*evals(1),3*evals(2));
-    Ogre::Quaternion orient(q.x(),q.y(),q.z(),q.w());
+
+    Ogre::Vector3 scale(30*evals(0),30*evals(1),30*evals(2));
+    Ogre::Quaternion orient(q.w(),q.x(),q.y(),q.z());
     NDT_elipsoid_->setScale(scale);
+    NDT_elipsoid_->setPosition(position);
     NDT_elipsoid_->setOrientation(orient);
+   
   }
 
   void NDTVisual::setFramePosition( const Ogre::Vector3& position ){

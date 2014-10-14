@@ -483,7 +483,7 @@ public:
   /////////////////////////////////////////////////////////////////////////////
   // map publishing function
    bool publish_map(){
-     ndt_map::NDTMap map_msg;
+     ndt_map::NDTMapMsg map_msg;
      toMessage(fuser->map, map_msg,fuser_frame);
   //   //very heavy....
   //   std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> map_vector=fuser->map->getAllInitializedCells();

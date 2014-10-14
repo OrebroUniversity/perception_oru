@@ -23,7 +23,7 @@ int main(int argc, char** argv){
 
   lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
   ROS_INFO("loading from jff...\n");
-  if (nd.loadFromJFF("maps02.jff") < 0)
+  if (nd.loadFromJFF("map2m.jff") < 0)
     ROS_INFO("loading from jff failed\n");
   
   lslgeneric::toMessage(&nd,msg,"base");

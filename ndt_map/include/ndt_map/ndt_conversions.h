@@ -30,11 +30,8 @@ namespace lslgeneric
 	  ROS_ERROR("NO CELL SIZE");
 	  return false;
       }
-      ROS_INFO("number of cells %d",map_vector.size());
-      int w_gaussians=0;
       for (int cell_idx=0;cell_idx<map_vector.size();cell_idx++){
 	  if(map_vector[cell_idx]->hasGaussian_){ //????????????????????????
-	      w_gaussians++;
 	      ndt_map::NDTCellMsg cell;
 	      Eigen::Vector3d means=map_vector[cell_idx]->getMean();
 	      cell.mean_x=means(0);
@@ -48,11 +45,9 @@ namespace lslgeneric
 		  }
 	      }
 	      cell.N=map_vector[cell_idx]->getN();
-	      ROS_INFO("%d",cell.N);
 	      msg.cells.push_back(cell);
 	  }
       }
-      ROS_INFO("number of cells with gaussians %d",w_gaussians);
       return true;
   }
 
@@ -73,7 +68,6 @@ namespace lslgeneric
 
       map = new NDTMap(idx,msg.x_cen,msg.y_cen,msg.z_cen,msg.x_size,msg.y_size,msg.z_size);
       frame_name=msg.header.frame_id;
-      ROS_INFO("number of cells %d",msg.cells.size());
       int gaussians=0;
       for(int itr=0;itr<msg.cells.size();itr++){
 	  Eigen::Vector3d mean;
@@ -88,22 +82,7 @@ namespace lslgeneric
 	  }
 	  map->addDistributionToCell(cov,mean,msg.cells[itr].N);
 
-	  ROS_INFO("adding gaussian");
-	  ROS_INFO("%d",msg.cells[itr].N);
-	  gaussians++;
       }
-      ROS_INFO("%d",gaussians);
-      int w_gaussians=0;
-      std::vector<lslgeneric::NDTCell*> map_vector=map->getAllInitializedCells();
-      ROS_INFO("map vector size %d",map_vector.size());
-      for (int cell_idx=0;cell_idx<map_vector.size();cell_idx++){
-	  if(map_vector[cell_idx]->hasGaussian_){
-	      w_gaussians++;
-	  }
-      }
-      ROS_INFO("number of cells with gaussians %d",w_gaussians);
-
-      ROS_INFO("%d",map->getMyIndexInt());
       return true;
   }
 }

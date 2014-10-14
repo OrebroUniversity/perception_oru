@@ -1,3 +1,4 @@
+#include <ndt_mcl/ParticleFilter3D.h>
 /*
  * Implementation for the 6dof pose particle filtering
  */ 

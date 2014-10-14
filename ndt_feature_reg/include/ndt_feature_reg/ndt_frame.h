@@ -48,7 +48,7 @@
 #include <ndt_map/depth_camera.h>
 
 #include <ndt_feature_reg/ndt_frame_tools.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 
 namespace ndt_feature_reg
 {
@@ -66,7 +66,6 @@ double getDoubleTime()
     return getDoubleTime(time);
 }
 
-template <typename PointT>
 class NDTFrame
 {
 public:
@@ -74,7 +73,7 @@ public:
 public:
     NDTFrame() : supportSize(3),maxVar(0.3),current_res(0.2)
     {
-        ndt_map = lslgeneric::NDTMap<PointT>(&idx_prototype);
+        ndt_map = lslgeneric::NDTMap(&idx_prototype);
     }
     virtual ~NDTFrame()
     {
@@ -101,8 +100,8 @@ public:
         kpts.resize(0);
         pc_kpts.resize(0);
         pts.resize(0);
-        idx_prototype = lslgeneric::CellVector<PointT>();
-        ndt_map = lslgeneric::NDTMap<PointT>(&idx_prototype);
+        idx_prototype = lslgeneric::CellVector();
+        ndt_map = lslgeneric::NDTMap(&idx_prototype);
 
         //pc.resize(0);
         //kpts_pc_indices.resize(0);
@@ -113,19 +112,19 @@ public:
     size_t supportSize;
     double maxVar;
     double current_res;
-    lslgeneric::DepthCamera<PointT> cameraParams;
+    lslgeneric::DepthCamera<pcl::PointXYZ> cameraParams;
     std::vector<cv::KeyPoint> kpts;
-    pcl::PointCloud<PointT> pc_kpts; //cloud containing only keypoints
+    pcl::PointCloud<pcl::PointXYZ> pc_kpts; //cloud containing only keypoints
     /// \brief 3d points, linked to keypoints and SBA points for point-to-point matches. /pc_kpts in 4d vector
     std::vector<Eigen::Vector4d, Eigen::aligned_allocator<Eigen::Vector4d> > pts;
 
-    lslgeneric::CellVector<PointT> idx_prototype;
-    lslgeneric::NDTMap<PointT> ndt_map;
+    lslgeneric::CellVector idx_prototype;
+    lslgeneric::NDTMap ndt_map;
 
-    const PointT& getKeyPointCenter(int keyPointIdx)
+    const pcl::PointXYZ& getKeyPointCenter(int keyPointIdx)
     {
         //const std::vector<size_t> &indices = kpts_pc_indices[keyPointIdx];
-        const PointT &pt = pc_kpts[keyPointIdx]; // TODO - The first points is the centre only if the centre point is invalid...
+        const pcl::PointXYZ &pt = pc_kpts[keyPointIdx]; // TODO - The first points is the centre only if the centre point is invalid...
         return pt;
     }
 
@@ -136,7 +135,7 @@ public:
         pts.resize(pc_kpts.size());
         for (size_t i = 0; i < pc_kpts.size(); i++)
         {
-            const PointT& pt = pc_kpts[i];
+            const pcl::PointXYZ& pt = pc_kpts[i];
             pts[i].head(3) = Eigen::Vector3d(pt.x,pt.y,pt.z);
             pts[i](3) = 1.0;
             //std::cout<<"keypoint "<<i<<" at "<<pts[i].transpose()<<std::endl;
@@ -154,8 +153,8 @@ public:
         }
         else
         {
-            lslgeneric::LazyGrid<PointT> idx_prototype_grid(current_res);
-            ndt_map = lslgeneric::NDTMap<PointT>(&idx_prototype_grid);
+            lslgeneric::LazyGrid idx_prototype_grid(current_res);
+            ndt_map = lslgeneric::NDTMap(&idx_prototype_grid);
             //double t1 = getDoubleTime();
             ndt_map.loadDepthImage(depth_img,cameraParams);
             ndt_map.computeNDTCells();
@@ -343,21 +342,20 @@ public:
 };
 
 
-template <typename PointSource, typename PointTarget>
 class PoseEstimator
 {
 public:
     PoseEstimator(int NRansac,
                   double maxidx, double maxidd);
-    size_t estimate(const NDTFrame<PointSource> &f0, const NDTFrame<PointTarget> &f1);
-    size_t estimate(const NDTFrame<PointSource> &f0, const NDTFrame<PointTarget> &f1, const std::vector<cv::DMatch>& matches);
+    size_t estimate(const NDTFrame &f0, const NDTFrame &f1);
+    size_t estimate(const NDTFrame &f0, const NDTFrame &f1, const std::vector<cv::DMatch>& matches);
 
     const std::vector<cv::DMatch>& getInliers() const
     {
         return inliers;
     }
 
-    void matchFrames(const NDTFrame<PointSource>& f0, const NDTFrame<PointTarget>& f2, std::vector<cv::DMatch>& fwd_matches);
+    void matchFrames(const NDTFrame& f0, const NDTFrame& f2, std::vector<cv::DMatch>& fwd_matches);
 
     inline Eigen::Affine3f getTransform()
     {
@@ -396,6 +394,6 @@ public:
 
 } // namespace
 
-#include <ndt_feature_reg/impl/ndt_frame.hpp>
+//#include <ndt_feature_reg/impl/ndt_frame.hpp>
 
 #endif

@@ -47,6 +47,8 @@ namespace lslgeneric
 	      cell.N=map_vector[cell_idx]->getN();
 	      msg.cells.push_back(cell);
 	  }
+
+	  delete map_vector[cell_idx];
       }
       return true;
   }

@@ -42,7 +42,6 @@
 
 namespace ndt_feature_reg
 {
-template <typename PointT>
 class NDTFrameProc
 {
 public:
@@ -56,19 +55,19 @@ public:
 
 //	  void convertDepthToPC(const cv::Mat &depthImg, pcl::PointCloud<PointT> &pc) const;
 
-    void addFrame (NDTFrame<PointT> *f)
+    void addFrame (NDTFrame *f)
     {
         frames.push_back(f);
     }
 
-    void addFrameIncremental (NDTFrame<PointT> *f, bool skipMatching, bool ndtEstimateDI = false,
+    void addFrameIncremental (NDTFrame *f, bool skipMatching, bool ndtEstimateDI = false,
                               bool match_full = false, bool match_no_association = false);
     void trimNbFrames (size_t maxNbFrames);
 
     void processFrames (bool skipMatching, bool ndtEstimateDI = false,
                         bool match_full = false, bool match_no_association = false);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr createColoredFeaturePC(NDTFrame<PointT> &f, pcl::PointXYZRGB color);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr createColoredFeaturePC(NDTFrame &f, pcl::PointXYZRGB color);
 
     NDTFrameProc(int nb_ransac, double max_inldist_xy, double max_inldist_z): pe(nb_ransac, max_inldist_xy, max_inldist_z)
     {
@@ -82,9 +81,9 @@ public:
 
     }
 
-    PoseEstimator<PointT,PointT> pe;
+    PoseEstimator pe;
     typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
-    typename std::vector< NDTFrame<PointT>*,Eigen::aligned_allocator<NDTFrame<PointT> > > frames;
+    typename std::vector< NDTFrame*,Eigen::aligned_allocator<NDTFrame > > frames;
     typename std::vector<EigenTransform, Eigen::aligned_allocator<EigenTransform> > transformVector;
 
     inline void convertMatches(const std::vector<cv::DMatch> &in, std::vector<std::pair<int,int> > &out)
@@ -119,8 +118,8 @@ public:
     }
 private:
 
-    void detectKeypoints(NDTFrame<PointT> *f) const;
-    void calcDescriptors(NDTFrame<PointT> *f) const;
+    void detectKeypoints(NDTFrame *f) const;
+    void calcDescriptors(NDTFrame *f) const;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -133,5 +132,5 @@ public:
 
 } // namespace
 
-#include <ndt_feature_reg/impl/ndt_frame_proc.hpp>
+//#include <ndt_feature_reg/impl/ndt_frame_proc.hpp>
 #endif

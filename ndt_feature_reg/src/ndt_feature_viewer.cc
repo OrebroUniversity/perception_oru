@@ -11,7 +11,7 @@
 
 #include <ndt_map/depth_camera.h>
 #include <ndt_registration/ndt_matcher_d2d_feature.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 
 #include <cv.h>
 #include <highgui.h>
@@ -111,8 +111,8 @@ int main(int argc, char** argv)
 
     size_t support = support_size;
 
-    NDTFrame<pcl::PointXYZ> *frame1 = new NDTFrame<pcl::PointXYZ>();
-    NDTFrame<pcl::PointXYZ> *frame2 = new NDTFrame<pcl::PointXYZ>();
+    NDTFrame *frame1 = new NDTFrame();
+    NDTFrame *frame2 = new NDTFrame();
     frame1->img = cv::imread(std1_name, 0);
     frame2->img = cv::imread(std2_name, 0);
     frame1->supportSize = support;
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
          cout<<"img depth "<<frame1.img.depth()<<endl;
          cout<<"img channels "<<frame2.img.channels()<<endl;
     */
-    NDTFrameProc<pcl::PointXYZ> proc(nb_ransac, max_inldist_xy, max_inldist_z);
+    NDTFrameProc proc(nb_ransac, max_inldist_xy, max_inldist_z);
 
     if (debug)
         cout << "loading depth img : " << depth1_name << " and " << depth2_name << endl;
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
      cout<<"process per frame: "<<(t2-t1)/2<<endl;
 
      */
-    NDTFrameViewer<pcl::PointXYZ> viewer(&proc);
+    NDTFrameViewer viewer(&proc);
 
     viewer.showFeaturePC();
     viewer.showMatches(proc.pe.inliers);

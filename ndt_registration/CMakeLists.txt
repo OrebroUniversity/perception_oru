@@ -5,12 +5,12 @@ set(CMAKE_BUILD_TYPE Release)
 project(ndt_registration)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS ndt_map pointcloud_vrml tf tf_conversions pcl_ros)
+find_package(catkin REQUIRED COMPONENTS ndt_map tf tf_conversions pcl_ros)
 catkin_package(
     DEPENDS eigen libpcl-all-dev 
-    CATKIN_DEPENDS ndt_map pointcloud_vrml tf tf_conversions pcl_ros
+    CATKIN_DEPENDS ndt_map tf tf_conversions pcl_ros
     INCLUDE_DIRS include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME} 
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options system)
@@ -95,7 +95,7 @@ target_link_libraries(p2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
-install(TARGETS simple_test 
+install(TARGETS simple_test ${PROJECCT_NAME} 
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

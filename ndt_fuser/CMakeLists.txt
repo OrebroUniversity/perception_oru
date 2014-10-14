@@ -53,6 +53,10 @@ include_directories(${Boost_INCLUDE_DIRS})
 #message(STATUS "->" ${MRPT_LIBS})
 #message(STATUS "->" ${MRPT_LIBRARIES})
 
+set (${PROJECT_NAME}_LIB_SRCS
+	    src/ndt_fuser.cpp
+	    src/ndt_fuser_hmt.cpp
+	)
 
 #add_executable(test_ndt_fuser src/ndt_fuser_from_depth.cpp)
 #target_link_libraries(test_ndt_fuser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
@@ -69,15 +73,20 @@ catkin_package(
     DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
     CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime
     INCLUDE_DIRS include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME} 
 )
 
-add_executable(ndt_fuser src/ndt_fuser_node.cpp)
-add_dependencies(ndt_fuser ndt_fuser__generate_messages_cpp)
-target_link_libraries(ndt_fuser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+
+add_executable(ndt_fuser_node src/ndt_fuser_node.cpp)
+add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
+
+target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
-install(TARGETS ndt_fuser ${PROJECT_NAME}
+install(TARGETS ndt_fuser_node ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

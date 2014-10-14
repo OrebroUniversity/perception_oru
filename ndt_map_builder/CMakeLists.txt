@@ -4,11 +4,11 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map_builder)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS pcl_ros pointcloud_vrml ndt_map ndt_registration)
+find_package(catkin REQUIRED COMPONENTS pcl_ros ndt_map ndt_registration)
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
-    CATKIN_DEPENDS pcl_ros pointcloud_vrml ndt_map ndt_registration
+    CATKIN_DEPENDS pcl_ros ndt_map ndt_registration
     INCLUDE_DIRS include
     LIBRARIES # TODO
 )

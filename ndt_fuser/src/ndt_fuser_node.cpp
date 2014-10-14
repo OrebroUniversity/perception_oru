@@ -67,7 +67,7 @@ protected:
   double varz;
 	
   boost::mutex m, message_m;
-  lslgeneric::NDTFuserHMT<pcl::PointXYZ> *fuser;
+  lslgeneric::NDTFuserHMT *fuser;
   std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
     world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
@@ -185,7 +185,7 @@ public:
       ndtmap_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>( "NDTMAP", 0 );
       /////////////////////////////////////////////////
       if(matchLaser) match2D=true;
-      fuser = new lslgeneric::NDTFuserHMT<pcl::PointXYZ>(resolution,size_x,size_y,size_z,
+      fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
                                                          sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
 
       fuser->setSensorPose(sensor_pose_);
@@ -217,7 +217,7 @@ public:
       }
     } else {
       ///////////////////////////////////////////////////////FOR OFFLINE MAPPING /////////////////////////
-      fuser = new lslgeneric::NDTFuserHMT<pcl::PointXYZ>(resolution,size_x,size_y,size_z,
+      fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
                                                          sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
 
       fuser->setSensorPose(sensor_pose_);
@@ -389,7 +389,7 @@ public:
     T.setIdentity();
     this->processFrame(pcl_cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
-        publish_map();
+    publish_map();
     /////////////////////////////////////////////////   
 
   };
@@ -491,16 +491,16 @@ public:
   //   map.header.frame_id=fuser_frame;
 
      map_publisher_.publish(map_msg);
-     sendMapToRviz(*fuser->map);
+     //sendMapToRviz(*fuser->map);
      return true;
    }
   /////////////////////////////////////////////////////////////////////////////////
 
 
   ////////////////////////////////////////////////////////NDT TO RVIZ /////////////////////////////////
-void sendMapToRviz(lslgeneric::NDTMap<pcl::PointXYZ> &map){
+void sendMapToRviz(lslgeneric::NDTMap &map){
 
-	std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> ndts;
+	std::vector<lslgeneric::NDTCell*> ndts;
 	ndts = map.getAllCells();
 	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%lu components)\n",ndts.size());
 	visualization_msgs::MarkerArray marray;

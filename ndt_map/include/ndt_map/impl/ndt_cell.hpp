@@ -139,6 +139,7 @@ void NDTCell<PointT>::updateSampleVariance(const Eigen::Matrix3d &cov2,const Eig
 	}
     }
     if(N>maxnumpoints) N=maxnumpoints;
+    fprintf(stderr,"%f\n",this->occ);
     if(this->occ<0){
 	this->hasGaussian_ = false;
 	return;

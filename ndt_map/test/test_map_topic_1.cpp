@@ -22,7 +22,6 @@ void mapCallback(const ndt_map::NDTMapMsg::ConstPtr& msg)
   lslgeneric::LazyGrid *idx;
   std::string f;
   lslgeneric::fromMessage(idx,nd,*msg,f);
-  ROS_INFO("%d",nd->getMyIndexInt());
   ros::shutdown();
   if (nd->writeToJFF("transported.jff") < 0)
     ROS_INFO("writing to jff failed\n");

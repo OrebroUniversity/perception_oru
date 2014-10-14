@@ -350,6 +350,9 @@ void NDTMap<PointT>::addDistributionToCell(const Eigen::Matrix3d &ucov, const Ei
 //	std::cout<<ptCell->getCov()<<std::endl;
 	ptCell->updateSampleVariance(ucov, umean, numpointsindistribution, true, max_occupancy,maxnumpoints);
 	ptCell->setRGB(r,g,b);
+    fprintf(stderr,"occ %f\n",ptCell->getOccupancy());
+    fprintf(stderr,"has g %d\n",ptCell->hasGaussian_);
+    //    ptCell->setOccupancy(occ);
 //	std::cout<<"AFTER\n";
 //	std::cout<<ptCell->getMean().transpose()<<std::endl;
 //	std::cout<<ptCell->getCov()<<std::endl;
@@ -383,6 +386,71 @@ void NDTMap<PointT>::addDistributionToCell(const Eigen::Matrix3d &ucov, const Ei
     }
 #endif
 }
+
+template<typename PointT>
+void NDTMap<PointT>::addDistributionToCellOcc(const Eigen::Matrix3d &ucov, const Eigen::Vector3d &umean, unsigned int numpointsindistribution, double occ, 
+																					 float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
+{
+    PointT pt;
+    pt.x = umean[0];
+    pt.y = umean[1];
+    pt.z = umean[2];
+    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    NDTCell<PointT> *ptCell = NULL; //= dynamic_cast<NDTCell<PointT> *>(lz->getCellAt(pt));
+    lz->getNDTCellAt(pt,ptCell);
+    if(ptCell != NULL)
+    {
+      // ptCell->hasGaussian_=true;
+	//std::cout<<"BEFORE\n";
+	//std::cout<<"had G "<<ptCell->hasGaussian_<<" occ "<<ptCell->getOccupancy()<<std::endl;
+//	std::cout<<umean.transpose()<<" "<<numpointsindistribution <<std::endl;
+//	std::cout<<ucov<<std::endl;
+//	std::cout<<ptCell->getMean().transpose()<<std::endl;
+//	std::cout<<ptCell->getCov()<<std::endl;
+	ptCell->updateSampleVariance(ucov, umean, numpointsindistribution, true, max_occupancy,maxnumpoints);
+	ptCell->setRGB(r,g,b);
+    fprintf(stderr,"occ %f\n",ptCell->getOccupancy());
+    fprintf(stderr,"has g %d\n",ptCell->hasGaussian_);
+    //    ptCell->setOccupancy(occ);
+//	std::cout<<"AFTER\n";
+//	std::cout<<ptCell->getMean().transpose()<<std::endl;
+//	std::cout<<ptCell->getCov()<<std::endl;
+    }
+
+#if 0
+    double centerX,centerY,centerZ;
+    lz->getCenter(centerX, centerY, centerZ);
+    double cellSizeX,cellSizeY,cellSizeZ;
+    lz->getCellSize(cellSizeX, cellSizeY, cellSizeZ);
+    int sizeX,sizeY,sizeZ;
+    lz->getGridSize(sizeX, sizeY, sizeZ);
+
+    Cell<PointT> ****dataArray = lz->getDataArrayPtr();
+
+    NDTCell<PointT> *ptCell=NULL;
+    int idx,idy,idz;
+    idx = (int)(((pt.x - centerX)/cellSizeX+0.5) + sizeX/2);
+    idy = (int)(((pt.y - centerY)/cellSizeY+0.5) + sizeY/2);
+    idz = (int)(((pt.z - centerZ)/cellSizeZ+0.5) + sizeZ/2);
+
+    if(idx < sizeX && idy < sizeY && idz < sizeZ && idx >=0 && idy >=0 && idz >=0)
+    {
+        ptCell = dynamic_cast<NDTCell<PointT> *>  (dataArray[idx][idy][idz]);
+        if(ptCell != NULL)
+        {
+            ptCell->updateSampleVariance(ucov, umean, numpointsindistribution);
+						ptCell->setRGB(r,g,b);
+            //fprintf(stderr,"I AM UPDATING (%d %d %d)!! ",idx,idy,idz);
+        }
+    }
+#endif
+}
+
 
 ///Get the cell for which the point fall into (not the closest cell)
 template<typename PointT>

@@ -59,7 +59,7 @@ void sendMapToRviz(lslgeneric::NDTMap &map){
 
 	std::vector<lslgeneric::NDTCell*> ndts;
 	ndts = map.getAllCells();
-	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%lu components)\n",ndts.size());
+	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%u components)\n",ndts.size());
 	visualization_msgs::MarkerArray marray;
 	
 	for(unsigned int i=0;i<ndts.size();i++){

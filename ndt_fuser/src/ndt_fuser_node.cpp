@@ -359,7 +359,7 @@ public:
 	    
     this->processFrame(cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
-    //publish_map();
+    publish_map();
     /////////////////////////////////////////////////   
 
   };
@@ -389,7 +389,7 @@ public:
     T.setIdentity();
     this->processFrame(pcl_cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
-    //publish_map();
+    publish_map();
     /////////////////////////////////////////////////   
 
   };
@@ -445,7 +445,7 @@ public:
 
     this->processFrame(pcl_cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
-     // publish_map();
+      publish_map();
     /////////////////////////////////////////////////   
 
   };
@@ -491,7 +491,7 @@ public:
   //   map.header.frame_id=fuser_frame;
 
      map_publisher_.publish(map_msg);
-     sendMapToRviz(*fuser->map);
+     //sendMapToRviz(*fuser->map);
      return true;
    }
   /////////////////////////////////////////////////////////////////////////////////

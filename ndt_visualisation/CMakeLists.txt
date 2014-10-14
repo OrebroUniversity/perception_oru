@@ -39,7 +39,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 #)
 
 #common commands for building c++ executables and libraries
-add_library(${PROJECT_NAME} src/CMyEllipsoid.cpp src/Glut3D.cc)
+add_library(${PROJECT_NAME} src/CMyEllipsoid.cpp src/NDTVizGlut.cc)
 target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options thread)

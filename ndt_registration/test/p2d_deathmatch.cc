@@ -15,7 +15,7 @@
 
 using namespace std;
 
-//#define DODBG
+#define DODBG
 
 double getDoubleTime()
 {
@@ -131,6 +131,8 @@ main (int argc, char** argv)
     cloud_comb.height=cloud_comb.points.size();
     cloud_comb.is_dense = false;
     pcl::io::savePCDFileBinary ("test_pcd.pcd", cloud_comb);
+    pcl::io::savePCDFile ("test_pcd_fixed.pcd", cloud_fixed);
+    pcl::io::savePCDFile ("test_pcd_trans.pcd", cloud_trans);
 #endif
 
     return 0;

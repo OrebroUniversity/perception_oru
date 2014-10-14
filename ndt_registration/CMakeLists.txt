@@ -88,6 +88,13 @@ target_link_libraries(p2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin
 
 #target_link_libraries(test_ndt_mapper ${PROJECT_NAME} ndt_map pointcloud_vrml )
 
+add_executable(check_reg test/check_reg.cc)
+target_link_libraries(check_reg
+  ${PROJECT_NAME}
+  #${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  )
+
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs

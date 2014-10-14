@@ -225,9 +225,24 @@ bool NDTMatcherP2D::covariance( pcl::PointCloud<pcl::PointXYZ>& target,
     TR.setIdentity();
     Eigen::Matrix<double,6,1> sc;
     derivativesPointCloud(cloud,ndt,TR,sc,cov,true);
-    //cout<<"cov:"<<cov<<endl;
-    cov = 0.5*cov.inverse();
-    //cout<<"cov2:"<<cov<<endl;
+    // "cov", at this point, is the Hessian multiplied by -1
+
+    // Make sure that the Hessian is invertible
+    Eigen::FullPivLU<Eigen::Matrix<double,6,6> > dec(cov);
+    Eigen::Matrix<double,6,6> invH;
+    if (dec.isInvertible())
+    {
+      std::cout << "nice, we have invertible Hessian\n" << cov << "\n";
+    }
+    else
+    {
+      std::cerr << "Hessian is not invertible:\n" << cov << "\n";
+      return false;
+    }
+    invH = dec.inverse();
+    cov = 0.5*invH;    
+    //cov = 0.5*cov.inverse();
+
 
     return true;
 }
@@ -416,6 +431,21 @@ bool NDTMatcherP2D::match( NDTMap& targetNDT,
     this->finalscore = score/NUMBER_OF_ACTIVE_CELLS;
     return ret;
 }
+
+
+void NDTMatcherP2D::check( pcl::PointCloud<pcl::PointXYZ>& fixed,
+            pcl::PointCloud<pcl::PointXYZ>& moving,
+            Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T )
+{
+  // init
+  
+  // check score
+
+  // check hessian
+
+  // output something
+}
+            
 
 
 bool NDTMatcherP2D::update_score_gradient(Eigen::Matrix<double,6,1> &score_gradient,
@@ -713,9 +743,9 @@ void NDTMatcherP2D::derivativesPointCloud(pcl::PointCloud<pcl::PointXYZ> &source
             }
             cell = NULL;
         }
-    }
-    score_gradient = -score_gradient;
-    Hessian = -Hessian;
+    }    
+    score_gradient = -score_gradient * (1.0 / source.points.size());
+    Hessian = -Hessian * (1.0 / source.points.size());
 }
 
 //perform line search to find the best descent rate (More&Thuente)

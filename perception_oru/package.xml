@@ -29,11 +29,10 @@
   <!--<run_depend>ndt_feature_reg</run_depend>
   <run_depend>sdf_tracker</run_depend>-->
   <run_depend>ndt_map_builder</run_depend>-
-  <run_depend>pointcloud_vrml</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_visualisation</run_depend>
-<run_depend>ndt_rviz_plugin</run_depend>	
+  <run_depend>ndt_rviz_plugin</run_depend>	
   <!-- Dependencies needed only for running tests. -->
  <export> <metapackage/> </export>
 </package>

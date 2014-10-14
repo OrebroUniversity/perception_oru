@@ -21,7 +21,6 @@
   <!--<build_depend>common_rosdeps</build_depend>-->
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
-  <build_depend>pointcloud_vrml</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
 
@@ -29,7 +28,6 @@
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>libpcl-all-dev</run_depend>
   <run_depend>pcl_ros</run_depend>
-  <run_depend>pointcloud_vrml</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
 

@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 
     double t1, t2;
 
-    lslgeneric::DepthCamera<pcl::PointXYZ> cameraparams(fx,fy,cx,cy,dist,ds*scale,false);
+    lslgeneric::DepthCamera cameraparams(fx,fy,cx,cy,dist,ds*scale,false);
 
     typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
     std::vector<EigenTransform, Eigen::aligned_allocator<EigenTransform> > transformVector;
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
     }
 
     file_times<<"times = [";
-    NDTFuser<pcl::PointXYZ> fuser(resolution,size_x,size_y,size_z,visualize);
+    NDTFuser fuser(resolution,size_x,size_y,size_z,visualize);
     pcl::PointCloud<pcl::PointXYZ> pc;
     cv::Mat depth_img;
 

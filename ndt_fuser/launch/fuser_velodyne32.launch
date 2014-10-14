@@ -3,7 +3,7 @@
     <node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans">
 	<param name="calibration" value="$(find ndt_fuser)/launch/velo32.yaml" />
     </node>
-    <node pkg="ndt_fuser" type="ndt_fuser" name="fuser_3d" output="screen">
+    <node pkg="ndt_fuser" type="ndt_fuser_node" name="fuser_3d" output="screen">
 	<param name="points_topic" value="/velodyne_points" />
 	<param name="matchLaser" value="false" />
 	<param name="size_x_meters" value="30" />

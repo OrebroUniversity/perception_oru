@@ -25,7 +25,6 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
-  <build_depend>pointcloud_vrml</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tf_conversions</build_depend>
 
@@ -34,7 +33,6 @@
   <run_depend>ndt_map</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
-  <run_depend>pointcloud_vrml</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>tf_conversions</run_depend>
 
@@ -42,7 +40,6 @@
   <!-- <test_depend>common_rosdeps</test_depend> -->
   <!-- <test_depend>ndt_map</test_depend> -->
   <!-- <test_depend>pcl</test_depend> -->
-  <!-- <test_depend>pointcloud_vrml</test_depend> -->
   <!-- <test_depend>tf</test_depend> -->
   <!-- <test_depend>tf_conversions</test_depend> -->
 

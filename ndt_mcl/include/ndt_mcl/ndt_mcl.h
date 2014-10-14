@@ -62,7 +62,7 @@ class NDTMCL{
 
 	    std::vector<lslgeneric::NDTCell*> ndts;
 	    ndts = nd_map.getAllCells();
-	    fprintf(stderr,"NDT MAP with %lu components",ndts.size());
+	    fprintf(stderr,"NDT MAP with %u components",ndts.size());
 	    for(unsigned int i=0;i<ndts.size();i++){
 		Eigen::Vector3d m = ndts[i]->getMean();	
 		if(m[2]>zfilter){

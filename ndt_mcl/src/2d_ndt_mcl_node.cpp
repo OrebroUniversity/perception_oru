@@ -19,16 +19,9 @@
 
 #define USE_VISUALIZATION_DEBUG ///< Enable / Disable visualization
 
-
  
-#include <mrpt/utils/CTicTac.h>
-
 #ifdef USE_VISUALIZATION_DEBUG
-	#include <mrpt/gui.h>	
-	#include <mrpt/base.h>
-	#include <mrpt/opengl.h>
-	#include <GL/gl.h>
-	#include "ndt_mcl/CMyEllipsoid.h"
+    #include <ndt_visualisation/ndt_viz.h>
 #endif
 
 #include <ros/ros.h>
@@ -46,7 +39,7 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Pose.h"
 
-#include "ndt_mcl/impl/ndt_mcl.hpp"
+#include "ndt_mcl/ndt_mcl.h"
 #include <ndt_map/ndt_map.h>
 
 
@@ -55,7 +48,7 @@
 /// Visualization stuff
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef USE_VISUALIZATION_DEBUG
-#include "ndt_mcl/impl/mcl_visualization.hpp" ///< here is a punch of visualization code based on the MRPT's GUI components
+NDTViz ndt_viz;
 #endif
 ros::Publisher ndtmap_pub; 
 
@@ -309,12 +302,17 @@ bool sendROSOdoMessage(Eigen::Vector3d mean,Eigen::Matrix3d cov, ros::Time ts){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-mrpt::utils::CTicTac	TT;
-
+double time_end;
 std::string tf_odo_topic =   "odom_base_link";
 std::string tf_state_topic = "base_link";
 std::string tf_laser_link =  "base_laser_link";
 
+double getDoubleTime()
+{
+    struct timeval time;
+    gettimeofday(&time,NULL);
+    return time.tv_sec + time.tv_usec * 1e-6;
+}
 /**
  * Callback for laser scan messages 
  */
@@ -324,8 +322,8 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	counter++;
 	
 	static tf::TransformListener tf_listener;
-	double looptime = TT.Tac();
-	TT.Tic();
+	double time_now = getDoubleTime();  
+	double looptime = time_end - time_now;
 	fprintf(stderr,"Lt( %.1lfms %.1lfHz seq:%d) -",looptime*1000,1.0/looptime,scan->header.seq);
 	
 	if(has_sensor_offset_set == false) return;
@@ -359,9 +357,6 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	}
 	
 		
-	mrpt::utils::CTicTac	tictac;
-	tictac.Tic();
-	
 	///Number of scans
 	int N =(scan->angle_max - scan->angle_min)/scan->angle_increment;
 	/////
@@ -395,8 +390,6 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
 			Eigen::Vector3d dm = ndtmcl->getMean();
 			Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances();
 			sendROSOdoMessage(dm,cov, scan->header.stamp);
-			double Time = tictac.Tac();
-			fprintf(stderr,"Time elapsed %.1lfms\n",Time*1000);
 			return;
 		}
 	}
@@ -435,8 +428,8 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	Eigen::Vector3d dm = ndtmcl->getMean(); ///Maximum aposteriori pose
 	Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances(); ///Pose covariance
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	double Time = tictac.Tac();
-	fprintf(stderr,"Time elapsed %.1lfms (%lf %lf %lf) \n",Time*1000,dm[0],dm[1],dm[2]);
+	time_end = getDoubleTime();
+	fprintf(stderr,"Time elapsed %.1lfms (%lf %lf %lf) \n",time_end-time_now,dm[0],dm[1],dm[2]);
 	isFirstLoad = false;
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -448,31 +441,25 @@ void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	
 	///This is all for visualization
 #ifdef USE_VISUALIZATION_DEBUG
-	Eigen::Vector3d origin(dm[0] + L * cos(dm[2]+alpha),dm[1] + L * sin(dm[2]+alpha),0.1);
-	Eigen::Affine3d ppos = getAsAffine(dm[0],dm[1],dm[2]);
-	
-	//lslgeneric::transformPointCloudInPlace(Tgt, *cloud);
-	lslgeneric::transformPointCloudInPlace(ppos, *cloud);
-	mrpt::opengl::COpenGLScenePtr &scene = win3D.get3DSceneAndLock();	
-	win3D.setCameraPointingToPoint(gx,gy,1);
-	if(counter%2000==0) gl_points->clear();
-	scene->clear();
-	scene->insert(plane);
-	
-	addMap2Scene(ndtmcl->map, origin, scene);
-	addPoseCovariance(dm[0],dm[1],cov,scene);
-	addScanToScene(scene, origin, cloud);
-	addParticlesToWorld(ndtmcl->pf,Tgt.translation(),dm, Todo.translation());
-	scene->insert(gl_points);
-	scene->insert(gl_particles);
-	win3D.unlockAccess3DScene();
-	win3D.repaint();
+	if(counter%500==0){
+	    ndt_viz.clear();
+	    ndt_viz.plotNDTSAccordingToOccupancy(-1,&ndtmcl->map);
 
-	if (win3D.keyHit())
-	{
-		mrpt::gui::mrptKeyModifier kmods;
-		int key = win3D.getPushedKey(&kmods);
 	}
+	ndt_viz.clearParticles();
+	for(int i=0;i<ndtmcl->pf.NumOfParticles;i++){
+	    ndt_viz.addParticle(ndtmcl->pf.Particles[i].x, ndtmcl->pf.Particles[i].y, 0.5, 1.0, 1.0, 1.0);
+	}
+
+	ndt_viz.addTrajectoryPoint(dm[0],dm[1],0.5,1.0,0,0);	
+	ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1),0.5,1.0,1.0,1.0);	
+	ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1),0.5,0.0,1.0,0.0);	
+
+	ndt_viz.displayParticles();
+	ndt_viz.displayTrajectory();
+	ndt_viz.win3D->setCameraPointingToPoint(dm[0],dm[1],3.0);
+	ndt_viz.repaint();
+	
 #endif
 }
 
@@ -481,14 +468,10 @@ int main(int argc, char **argv){
 	ros::init(argc, argv, "NDT-MCL");
 	double resolution=0.4;
 	
-#ifdef USE_VISUALIZATION_DEBUG	
-	initializeScene();
-#endif
-
 	ros::NodeHandle n;
 	ros::NodeHandle nh;
 	ros::NodeHandle paramHandle ("~");
-	TT.Tic();
+	time_end = getDoubleTime();
 	
 	std::string tf_base_link,input_laser_topic; 
 	

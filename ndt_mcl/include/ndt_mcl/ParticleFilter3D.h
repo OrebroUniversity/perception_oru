@@ -71,6 +71,5 @@ class ParticleFilter3D{
 
 };
 
-#include "ndt_mcl/impl/ParticleFilter3D.hpp"
 
 #endif

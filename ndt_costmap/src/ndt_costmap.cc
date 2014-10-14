@@ -42,15 +42,15 @@ int main(int argc, char **argv){
     std::cout<<"loading "<<base_name<<" at resolution "<<resolution<<std::endl;
 
     //load NDT map. Only Lazy grid supported!
-    lslgeneric::NDTMap<pcl::PointXYZI> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZI>(resolution));
+    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
     ndmap.loadFromJFF(base_name.c_str());
     
-    NDTCostmap<pcl::PointXYZI> cmap(&ndmap);
+    NDTCostmap cmap(&ndmap);
     cmap.processMap(1.5, -1);
     cmap.saveCostMapIncr("cmap",0.25);
     
     //create visualizer
-    NDTViz<pcl::PointXYZI> *viewer = new NDTViz<pcl::PointXYZI>(true);
+    NDTViz *viewer = new NDTViz(true);
     //display map
     viewer->plotNDTSAccordingToClass(-1,&ndmap);
     while(viewer->win3D->isOpen()){

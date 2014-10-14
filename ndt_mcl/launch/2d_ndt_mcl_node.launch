@@ -1,6 +1,6 @@
 <launch>
 	
-	<node pkg="rosbag" type="play" name="play" args="-d 2 $(find ndt_mcl)/data/localization.bag"/>
+	<!--node pkg="rosbag" type="play" name="play" args="-d 2 $(find ndt_mcl)/data/localization.bag"/-->
 
 	<node pkg="ndt_mcl" type="2d_ndt_mcl_node" required="true" name="NDTMCL">
 		

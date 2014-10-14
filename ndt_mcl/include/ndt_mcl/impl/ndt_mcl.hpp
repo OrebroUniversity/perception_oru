@@ -13,15 +13,14 @@
 
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/ndt_cell.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 #include "ndt_mcl/CParticleFilter.h"
 /**
 * NDT MCL - Class implementation
 */
-template <typename PointT>
 class NDTMCL{
 	public:
-		lslgeneric::NDTMap<PointT> map; 		///<This is my map 
+		lslgeneric::NDTMap map; 		///<This is my map 
 		mcl::CParticleFilter pf; 						///<This is the particle filter
 		double resolution;
 		int counter;
@@ -30,8 +29,8 @@ class NDTMCL{
 		/**
 		* Constructor
 		*/
-		NDTMCL(double map_resolution, lslgeneric::NDTMap<PointT> &nd_map, double zfilter):
-			map(new lslgeneric::LazyGrid<PointT>(map_resolution))
+		NDTMCL(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
+			map(new lslgeneric::LazyGrid(map_resolution))
 		{
 				isInit = false;
 				forceSIR = false;
@@ -60,7 +59,7 @@ class NDTMCL{
 				
 				map.initialize(cx,cy,cz,wx,wy,wz);
 				
-				std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+				std::vector<lslgeneric::NDTCell*> ndts;
 				ndts = nd_map.getAllCells();
 				fprintf(stderr,"NDT MAP with %lu components",ndts.size());
 				for(unsigned int i=0;i<ndts.size();i++){
@@ -82,7 +81,7 @@ class NDTMCL{
 			pf.initializeNormalRandom(mcl::pose(x,y,yaw), mcl::pose(x_e,y_e,yaw_e),numParticles);
 		}
 		
-		void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<PointT> &cloud){
+		void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
 			Eigen::Vector3d tr = Tmotion.translation();
 			Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
 			
@@ -98,7 +97,7 @@ class NDTMCL{
 			**/
 			pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.1 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.1+0.001));
 			
-			lslgeneric::NDTMap<PointT> local_map(new lslgeneric::LazyGrid<PointT>(resolution));
+			lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution));
 			
 			/*
 			pcl::PointCloud<PointT> cl_f;
@@ -121,7 +120,7 @@ class NDTMCL{
 			for(int i=0;i<pf.NumOfParticles;i++){
 				Eigen::Affine3d T = getAsAffine(i);
 				
-				std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+				std::vector<lslgeneric::NDTCell*> ndts;
 				ndts = local_map.pseudoTransformNDT(T);
 				double score=1;
 				
@@ -131,8 +130,8 @@ class NDTMCL{
 					Eigen::Vector3d m = ndts[n]->getMean();	
 					if(m[2]<zfilt_min) continue;
 				
-					lslgeneric::NDTCell<PointT> *cell;
-					PointT p;
+					lslgeneric::NDTCell *cell;
+					pcl::PointXYZ p;
 					p.x = m[0];p.y=m[1];p.z=m[2];
 					
 					//if(map.getCellAtPoint(p,cell)){

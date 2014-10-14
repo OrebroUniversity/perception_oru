@@ -59,7 +59,7 @@ class NDTMCL3DNode {
 
     private:
 	ros::NodeHandle nh_;
-	NDTMCL3D<pcl::PointXYZ> *ndtmcl;
+	NDTMCL3D *ndtmcl;
         boost::mutex mcl_m,message_m;
 
         message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
@@ -79,7 +79,7 @@ class NDTMCL3DNode {
 	double resolution;
 	double subsample_level;
 	int pcounter;
-	NDTViz<pcl::PointXYZ> ndt_viz;
+	NDTViz ndt_viz;
 
 	ros::Publisher mcl_pub; ///< The output of MCL is published with this!
         message_filters::Synchronizer< PointsOdomSync > *sync_po_;
@@ -148,14 +148,14 @@ class NDTMCL3DNode {
 
 	    fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
 	    
-	    lslgeneric::NDTMap<pcl::PointXYZ> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZ>(resolution));
+	    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 	    ndmap.loadFromJFF(mapName.c_str());
 
 	    //////////////////////////////////////////////////////////
 	    /// Prepare MCL object 
 	    //////////////////////////////////////////////////////////
 
-	    ndtmcl = new NDTMCL3D<pcl::PointXYZ>(resolution,ndmap,-5);
+	    ndtmcl = new NDTMCL3D(resolution,ndmap,-5);
 	    param_nh.param<bool>("forceSIR", forceSIR, false);
 	    if(forceSIR) ndtmcl->forceSIR=true;
 

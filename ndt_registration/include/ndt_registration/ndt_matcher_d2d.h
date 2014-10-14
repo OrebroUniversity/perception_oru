@@ -49,7 +49,6 @@ namespace lslgeneric
 /**
  * This class implements NDT registration for 3D point cloud scans.
  */
-template <typename PointSource, typename PointTarget>
 class NDTMatcherD2D
 {
 public:
@@ -86,8 +85,8 @@ public:
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
      */
-    bool match( pcl::PointCloud<PointTarget>& target,
-                pcl::PointCloud<PointSource>& source,
+    bool match( pcl::PointCloud<pcl::PointXYZ>& target,
+                pcl::PointCloud<pcl::PointXYZ>& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
@@ -102,8 +101,8 @@ public:
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
      */
-    bool match( NDTMap<PointTarget>& target,
-                NDTMap<PointSource>& source,
+    bool match( NDTMap& target,
+                NDTMap& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
@@ -112,8 +111,8 @@ public:
       * note --- computes NDT distributions based on the resolution in res
       * result is returned in cov
       */
-    bool covariance( pcl::PointCloud<PointTarget>& target,
-                     pcl::PointCloud<PointSource>& source,
+    bool covariance( pcl::PointCloud<pcl::PointXYZ>& target,
+                     pcl::PointCloud<pcl::PointXYZ>& source,
                      Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                      Eigen::MatrixXd &cov
                    );
@@ -122,27 +121,27 @@ public:
       * computes the covariance of the match between moving and fixed, at T.
       * result is returned in cov
       */
-    bool covariance( NDTMap<PointTarget>& target,
-                     NDTMap<PointSource>& source,
+    bool covariance( NDTMap& target,
+                     NDTMap& source,
                      Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                      Eigen::MatrixXd &cov
                    );
 
     //compute the score of a point cloud to an NDT //UNUSED
-    virtual double scoreNDT(std::vector<NDTCell<PointSource>*> &source, NDTMap<PointTarget> &target);
+    virtual double scoreNDT(std::vector<NDTCell*> &source, NDTMap &target);
 
-    virtual double scoreNDT_OM(NDTMap<PointSource> &source, NDTMap<PointTarget> &target);
+    virtual double scoreNDT_OM(NDTMap &source, NDTMap &target);
 
 
-    virtual double scoreNDTPositive(std::vector<NDTCell<PointSource>*> &sourceNDT, NDTMap<PointTarget> &targetNDT,
+    virtual double scoreNDTPositive(std::vector<NDTCell*> &sourceNDT, NDTMap &targetNDT,
                                     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T);
 
     //compute the score gradient & hessian of a point cloud + transformation to an NDT
     // input: moving, fixed, tr, computeHessian
     //output: score_gradient, Hessian, returns: score!
     virtual double derivativesNDT(
-        const std::vector<NDTCell<PointSource>*> &source,
-        const NDTMap<PointTarget> &target,
+        const std::vector<NDTCell*> &source,
+        const NDTMap &target,
         Eigen::MatrixXd &score_gradient,
         Eigen::MatrixXd &Hessian,
         bool computeHessian
@@ -222,8 +221,8 @@ protected:
     //adapted from NOX
     double lineSearchMT(
         Eigen::Matrix<double,6,1> &increment,
-        std::vector<NDTCell<PointSource>*> &source,
-        NDTMap<PointTarget> &target) ;
+        std::vector<NDTCell*> &source,
+        NDTMap &target) ;
 
     //auxiliary functions for MoreThuente line search
     struct MoreThuente
@@ -268,5 +267,5 @@ public:
 
 } // end namespace
 
-#include <ndt_registration/impl/ndt_matcher_d2d.hpp>
+//#include <ndt_registration/impl/ndt_matcher_d2d.hpp>
 #endif

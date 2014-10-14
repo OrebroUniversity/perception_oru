@@ -3,15 +3,14 @@
 #include <fstream>
 #include <vector>
 #include <ndt_map/lazy_grid.h>
-#include <ndt_map/oc_tree.h>
+#include <ndt_registration/ndt_matcher_p2d.h>
 
 namespace lslgeneric
 {
 
 //#define DO_DEBUG_PROC
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::init(bool useDefaultGridResolutions, std::vector<double> _resolutions)
+void NDTMatcherP2D::init(bool useDefaultGridResolutions, std::vector<double> _resolutions)
 {
 
     ///////////
@@ -54,9 +53,8 @@ void NDTMatcherP2D<PointSource,PointTarget>::init(bool useDefaultGridResolutions
     precomputeAngleDerivatives(tt);
 }
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out, pcl::PointCloud<PointTarget>& fixed,
-        pcl::PointCloud<PointSource>& moving)
+void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::PointXYZ>& fixed,
+        pcl::PointCloud<pcl::PointXYZ>& moving)
 {
 
     std::ofstream lg(out,std::ios_base::out);
@@ -85,8 +83,8 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
         Eigen::MatrixXd S(6,N_LINEAR);
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
 
-        LazyGrid<PointTarget> prototype(current_resolution);
-        NDTMap<PointTarget> ndt( &prototype );
+        LazyGrid prototype(current_resolution);
+        NDTMap ndt( &prototype );
         ndt.loadPointCloud( fixed );
         ndt.computeNDTCells();
 
@@ -95,7 +93,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
         {
             T = Eigen::Translation<double,3>(x,0,0);
             //T = Eigen::Transform<double,3>(x,0,0);
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
 
             S(0,k) = scorePointCloud(cloud,ndt);
@@ -106,7 +104,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
         {
             T = Eigen::Translation<double,3>(0,x,0);
             //T = Eigen::Transform<double,3>(0,x,0);
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
 
             S(1,k) = scorePointCloud(cloud,ndt);
@@ -117,7 +115,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
         {
             T = Eigen::Translation<double,3>(0.,0.,x);
             //T = Eigen::Transform<double,3>(0.,0.,x);
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
 
             S(2,k) = scorePointCloud(cloud,ndt);
@@ -130,7 +128,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
             T = Eigen::AngleAxis<double>(r,Eigen::Vector3d::UnitX()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitZ()) ;
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
             S(3,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -141,7 +139,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
             T = Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitX()) *
                 Eigen::AngleAxis<double>(r,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitZ()) ;
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
 
             S(4,k) = scorePointCloud(cloud,ndt);
@@ -153,7 +151,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
             T = Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitX()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(r,Eigen::Vector3d::UnitZ()) ;
-            pcl::PointCloud<PointSource> cloud = moving;
+            pcl::PointCloud<pcl::PointXYZ> cloud = moving;
             lslgeneric::transformPointCloudInPlace(T,cloud);
 
             S(5,k) = scorePointCloud(cloud,ndt);
@@ -166,9 +164,8 @@ void NDTMatcherP2D<PointSource,PointTarget>::generateScoreDebug(const char* out,
 
 }
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>& target,
-        pcl::PointCloud<PointSource>& source,
+bool NDTMatcherP2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
+        pcl::PointCloud<pcl::PointXYZ>& source,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T )
 {
 
@@ -176,7 +173,7 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
     T.setIdentity();
 
     bool ret;
-    pcl::PointCloud<PointSource> moving;
+    pcl::PointCloud<pcl::PointXYZ> moving;
     if(subsample_size > 0) {
 	moving = subsample(source);
     } else {
@@ -189,8 +186,8 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
 	//std::cerr<<"RESOLUTION: "<<current_resolution<<std::endl;
 	//for(current_resolution = 2; current_resolution >= 0.5; current_resolution = current_resolution/2)
 
-	LazyGrid<PointTarget> prototype(current_resolution);
-	NDTMap<PointTarget> ndt( &prototype );
+	LazyGrid prototype(current_resolution);
+	NDTMap ndt( &prototype );
 	ndt.loadPointCloud( target );
 	ndt.computeNDTCells();
 
@@ -209,20 +206,19 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( pcl::PointCloud<PointTarget>
     return ret;
 }
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherP2D<PointSource,PointTarget>::covariance( pcl::PointCloud<PointTarget>& target,
-        pcl::PointCloud<PointSource>& source,
+bool NDTMatcherP2D::covariance( pcl::PointCloud<pcl::PointXYZ>& target,
+        pcl::PointCloud<pcl::PointXYZ>& source,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
         Eigen::Matrix<double,6,6> &cov
                                                        )
 {
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> TR;
-    pcl::PointCloud<PointSource> cloud = source;
+    pcl::PointCloud<pcl::PointXYZ> cloud = source;
     lslgeneric::transformPointCloudInPlace(T,cloud);
 
-    LazyGrid<PointTarget> prototype(current_resolution);
-    NDTMap<PointTarget> ndt( &prototype );
+    LazyGrid prototype(current_resolution);
+    NDTMap ndt( &prototype );
     ndt.loadPointCloud( target );
     ndt.computeNDTCells();
 
@@ -236,9 +232,8 @@ bool NDTMatcherP2D<PointSource,PointTarget>::covariance( pcl::PointCloud<PointTa
     return true;
 }
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherP2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetNDT,
-        pcl::PointCloud<PointSource>& source,
+bool NDTMatcherP2D::match( NDTMap& targetNDT,
+        pcl::PointCloud<pcl::PointXYZ>& source,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T )
 {
     ///////////
@@ -278,7 +273,7 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetN
     Eigen::Vector3d transformed_vec, mean;
     bool ret = true;
 
-    pcl::PointCloud<PointSource> prevCloud, nextCloud;
+    pcl::PointCloud<pcl::PointXYZ> prevCloud, nextCloud;
     prevCloud = source;
     nextCloud = source;
     T.setIdentity();
@@ -390,7 +385,7 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetN
         //eulerAngles<<pose_increment_v(3),pose_increment_v(4),pose_increment_v(5);
         //eulerAngles = T.rotation().eulerAngles(0,1,2);
 
-        prevCloud = lslgeneric::transformPointCloud<PointSource>(T,source);
+        prevCloud = lslgeneric::transformPointCloud<pcl::PointXYZ>(T,source);
         scoreP = score;
         score = scorePointCloud(prevCloud,targetNDT);
 	if(score < score_best) 
@@ -423,8 +418,7 @@ bool NDTMatcherP2D<PointSource,PointTarget>::match( NDTMap<PointTarget>& targetN
 }
 
 
-template <typename PointSource, typename PointTarget>
-bool NDTMatcherP2D<PointSource,PointTarget>::update_score_gradient(Eigen::Matrix<double,6,1> &score_gradient,
+bool NDTMatcherP2D::update_score_gradient(Eigen::Matrix<double,6,1> &score_gradient,
         Eigen::Vector3d &transformed,
         Eigen::Matrix3d & Cinv)
 {
@@ -453,8 +447,7 @@ bool NDTMatcherP2D<PointSource,PointTarget>::update_score_gradient(Eigen::Matrix
 
 }
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::update_hessian(Eigen::Matrix<double,6,6> &Hessian,
+void NDTMatcherP2D::update_hessian(Eigen::Matrix<double,6,6> &Hessian,
         Eigen::Vector3d &transformed,
         Eigen::Matrix3d & Cinv)
 {
@@ -479,8 +472,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::update_hessian(Eigen::Matrix<double
 
 }
 
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::precomputeAngleDerivatives(Eigen::Vector3d &eulerAngles)
+void NDTMatcherP2D::precomputeAngleDerivatives(Eigen::Vector3d &eulerAngles)
 {
     if(fabsf(eulerAngles(0)) < 10e-5) eulerAngles(0) = 0;
     if(fabsf(eulerAngles(1)) < 10e-5) eulerAngles(1) = 0;
@@ -544,8 +536,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::precomputeAngleDerivatives(Eigen::V
     std::cerr<<"f3 "<<f3.transpose() <<std::endl;
 */
 }
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::computeDerivatives(PointSource &pt)
+void NDTMatcherP2D::computeDerivatives(pcl::PointXYZ &pt)
 {
 
     if(useSimpleDerivatives)
@@ -616,13 +607,12 @@ void NDTMatcherP2D<PointSource,PointTarget>::computeDerivatives(PointSource &pt)
 
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::scorePointCloud(pcl::PointCloud<PointSource> &source,
-        NDTMap<PointTarget> &targetNDT)
+double NDTMatcherP2D::scorePointCloud(pcl::PointCloud<pcl::PointXYZ> &source,
+        NDTMap &targetNDT)
 {
     double score_here = 0;
     double score_native = 0;
-    NDTCell<PointTarget> *cell;
+    NDTCell *cell;
     Eigen::Matrix3d icov;
     Eigen::Vector3d mean;
     Eigen::Vector3d point;
@@ -631,7 +621,7 @@ double NDTMatcherP2D<PointSource,PointTarget>::scorePointCloud(pcl::PointCloud<P
     {
         point<<source.points[i].x,source.points[i].y,source.points[i].z;
 
-        std::vector<NDTCell<PointTarget>*> cells = targetNDT.getCellsForPoint(source.points[i],current_resolution);
+        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(source.points[i],current_resolution);
         for(unsigned int j=0; j<cells.size(); j++)
         {
             cell = cells[j];
@@ -662,9 +652,8 @@ double NDTMatcherP2D<PointSource,PointTarget>::scorePointCloud(pcl::PointCloud<P
 }
 
 //compute the score gradient of a point cloud + transformation to an NDT
-template <typename PointSource, typename PointTarget>
-void NDTMatcherP2D<PointSource,PointTarget>::derivativesPointCloud(pcl::PointCloud<PointSource> &source,
-        NDTMap<PointTarget> &targetNDT,
+void NDTMatcherP2D::derivativesPointCloud(pcl::PointCloud<pcl::PointXYZ> &source,
+        NDTMap &targetNDT,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &transform,
 //	Eigen::Vector3d &eulerAngles,
         Eigen::Matrix<double,6,1> &score_gradient,
@@ -672,7 +661,7 @@ void NDTMatcherP2D<PointSource,PointTarget>::derivativesPointCloud(pcl::PointClo
         bool computeHessian)
 {
 
-    NDTCell<PointTarget> *cell;
+    NDTCell *cell;
     Eigen::Vector3d transformed;
     Eigen::Matrix3d Cinv;
     //Eigen::Vector3d eulerAngles = transform.rotation().eulerAngles(0,1,2);
@@ -730,12 +719,11 @@ void NDTMatcherP2D<PointSource,PointTarget>::derivativesPointCloud(pcl::PointClo
 }
 
 //perform line search to find the best descent rate (More&Thuente)
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::lineSearchMT(  Eigen::Matrix<double,6,1> &score_gradient_init,
+double NDTMatcherP2D::lineSearchMT(  Eigen::Matrix<double,6,1> &score_gradient_init,
         Eigen::Matrix<double,6,1> &increment,
-        pcl::PointCloud<PointSource> &sourceCloud,
+        pcl::PointCloud<pcl::PointXYZ> &sourceCloud,
         Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &globalT,
-        NDTMap<PointTarget> &targetNDT)
+        NDTMap &targetNDT)
 {
 
     // default params
@@ -751,7 +739,7 @@ double NDTMatcherP2D<PointSource,PointTarget>::lineSearchMT(  Eigen::Matrix<doub
 
     double direction = 1.0;
     //my temporary variables
-    pcl::PointCloud<PointSource> cloudHere = sourceCloud;
+    pcl::PointCloud<pcl::PointXYZ> cloudHere = sourceCloud;
     //cloudHere = lslgeneric::transformPointCloud(globalT,cloud);
     double score_init = 0.0;
 
@@ -1048,8 +1036,7 @@ double NDTMatcherP2D<PointSource,PointTarget>::lineSearchMT(  Eigen::Matrix<doub
 }
 
 
-template <typename PointSource, typename PointTarget>
-int NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::cstep(double& stx, double& fx, double& dx,
+int NDTMatcherP2D::MoreThuente::cstep(double& stx, double& fx, double& dx,
         double& sty, double& fy, double& dy,
         double& stp, double& fp, double& dp,
         bool& brackt, double stmin, double stmax)
@@ -1247,20 +1234,17 @@ int NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::cstep(double& stx, doub
 
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::min(double a, double b)
+double NDTMatcherP2D::MoreThuente::min(double a, double b)
 {
     return (a < b ? a : b);
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::max(double a, double b)
+double NDTMatcherP2D::MoreThuente::max(double a, double b)
 {
     return (a > b ? a : b);
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::absmax(double a, double b, double c)
+double NDTMatcherP2D::MoreThuente::absmax(double a, double b, double c)
 {
     a = fabs(a);
     b = fabs(b);
@@ -1272,8 +1256,7 @@ double NDTMatcherP2D<PointSource,PointTarget>::MoreThuente::absmax(double a, dou
         return (b > c) ? b : c;
 }
 
-template <typename PointSource, typename PointTarget>
-pcl::PointCloud<PointSource> NDTMatcherP2D<PointSource,PointTarget>::subsample(pcl::PointCloud<PointSource>& original)
+pcl::PointCloud<pcl::PointXYZ> NDTMatcherP2D::subsample(pcl::PointCloud<pcl::PointXYZ>& original)
 {
 
     std::string subsampleType = "GRID";
@@ -1284,15 +1267,15 @@ pcl::PointCloud<PointSource> NDTMatcherP2D<PointSource,PointTarget>::subsample(p
     if(subsampleType == "GRID")
     {
         double subsampleRes = subsample_size;//current_resolution/2;
-        pcl::PointCloud<PointSource> res;
-        LazyGrid<PointSource> prototype(subsampleRes);
-        NDTMap<PointSource> ndt( &prototype );
+        pcl::PointCloud<pcl::PointXYZ> res;
+        LazyGrid prototype(subsampleRes);
+        NDTMap ndt( &prototype );
         ndt.loadPointCloud( original );
-        typename std::vector<Cell<PointSource>*>::iterator it = ndt.getMyIndex()->begin();
+        std::vector<NDTCell*>::iterator it = ndt.getMyIndex()->begin();
 
         while(it!=ndt.getMyIndex()->end())
         {
-            NDTCell<PointSource>* ndcell = dynamic_cast<NDTCell<PointSource>*>(*it);
+            NDTCell* ndcell = (*it);
             if(ndcell!=NULL)
             {
                 if(ndcell->points_.size() > 0)
@@ -1306,11 +1289,12 @@ pcl::PointCloud<PointSource> NDTMatcherP2D<PointSource,PointTarget>::subsample(p
 
     }
 
+#if 0
     if(subsampleType == "MEAN")
     {
-        pcl::PointCloud<PointSource> res;
+        pcl::PointCloud<pcl::PointXYZ> res;
 
-        NDTMap<PointSource> ndt( new OctTree<PointSource>() );
+        NDTMap ndt( new OctTree<PointSource>() );
         ndt.loadPointCloud( original );
         ndt.computeNDTCells();
         typename std::vector<Cell<PointSource>*>::iterator it = ndt.getMyIndex()->begin();
@@ -1362,13 +1346,12 @@ pcl::PointCloud<PointSource> NDTMatcherP2D<PointSource,PointTarget>::subsample(p
         }
         return res;
     }
-
+#endif
 
     return original;
 }
 
-template <typename PointSource, typename PointTarget>
-double NDTMatcherP2D<PointSource,PointTarget>::normalizeAngle(double a)
+double NDTMatcherP2D::normalizeAngle(double a)
 {
     //set the angle between -M_PI and M_PI
     return atan2(sin(a), cos(a));

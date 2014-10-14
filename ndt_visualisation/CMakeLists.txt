@@ -50,8 +50,8 @@ target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_L
 #add_executable(glut_test src/glut_test.cc)
 #target_link_libraries(glut_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(glut3d_test src/glut3d_test.cc)
-target_link_libraries(glut3d_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
+# add_executable(glut3d_test src/glut3d_test.cc)
+# target_link_libraries(glut3d_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
 
 #target_link_libraries(${PROJECT_NAME} another_library)
 #

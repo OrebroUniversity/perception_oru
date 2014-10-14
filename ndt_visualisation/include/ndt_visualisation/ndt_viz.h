@@ -102,7 +102,7 @@ class NDTViz {
 	    
 	    unsigned int accepted_ndts=1;
 	    double x = 0,y=0,s=0;
-	    fprintf(stderr,"-NDT:%lu-",global_ndts.size());
+	    fprintf(stderr,"-NDT:%u-",global_ndts.size());
 	    for(unsigned int i=0;i<global_ndts.size();i++){
 		Eigen::Vector3d m = global_ndts[i]->getMean();
 		if(!global_ndts[i]->hasGaussian_) continue;
@@ -141,7 +141,7 @@ class NDTViz {
 	    if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
+	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    win3D->clearScene();
 	    gl_ellipsoids.clear();
@@ -183,7 +183,7 @@ class NDTViz {
 	    if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
+	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    Eigen::Vector3d cFlat, cInclined, cRough, cVert, cUnknown, color;
 	    cFlat<<0,0.9,0;
@@ -247,7 +247,7 @@ class NDTViz {
 	  if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
+	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    win3D->clearScene();
 	    gl_ellipsoids.clear();

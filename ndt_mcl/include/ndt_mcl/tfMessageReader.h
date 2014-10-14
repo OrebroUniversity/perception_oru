@@ -13,6 +13,7 @@
 template<typename MessageType>
 class tfMessageReader
 {
+
 	public:
 		/**
 		* Open @bagfilename, subscribe to topic @message_topic_ use tf target_linkname_, which is fixed to fixed_link_

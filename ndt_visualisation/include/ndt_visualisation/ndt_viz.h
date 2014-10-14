@@ -22,15 +22,24 @@ class NDTViz {
 	    if(allocate_new_window) 
 	    {
 	      win3D = new NDTVizGlut();
+	      int argc=0;
+	      char** argv = NULL;
+	      win3D->win_run(&argc,argv);
 	    }
 	    else 
 	    {
 		win3D = NULL;
 	    }
-
+	    
 	    gl_points.setPointSize(4.5);
 	    gl_particles.setPointSize(2.5);
 
+	}
+	virtual ~NDTViz () {
+	    if(win3D!=NULL) {
+		win3D->win_close();
+		delete win3D;
+	    }
 	}
 	void repaint(){
 	    win3D->repaint();

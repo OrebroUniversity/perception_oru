@@ -1,8 +1,8 @@
 #include <ndt_registration/ndt_matcher_p2d.h>
-#include <ndt_registration/ndt_matcher_d2d_2d.h>
-#include <ndt_registration/ndt_matcher_d2d.h>
+//#include <ndt_registration/ndt_matcher_d2d_2d.h>
+//#include <ndt_registration/ndt_matcher_d2d.h>
 #include <ndt_map/ndt_map.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
 
 #include "pcl/point_cloud.h"
 #include "pcl/io/pcd_io.h"
@@ -86,8 +86,7 @@ main (int argc, char** argv)
     std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
     resolutions.push_back(res_max);
 
-    //lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-    lslgeneric::NDTMatcherP2D<pcl::PointXYZ,pcl::PointXYZ> matcherP2D(resolutions);
+    lslgeneric::NDTMatcherP2D matcherP2D(resolutions);
     matcherP2D.ITR_MAX = itr_max;
     matcherP2D.subsample_size = subsample;
     bool ret = matcherP2D.match(cloud_fixed,cloud_offset,Tout);

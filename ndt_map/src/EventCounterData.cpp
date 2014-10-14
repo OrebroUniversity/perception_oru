@@ -35,8 +35,6 @@
 #ifndef CEVENT_COUNTER_DATA_H
 #define CEVENT_COUNTER_DATA_H
 #include<cmath>
-#include <iostream>
-#include <cstdio>
 #include <Eigen/Dense>
 #include <inttypes.h>
 

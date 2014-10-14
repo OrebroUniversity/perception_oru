@@ -49,7 +49,6 @@ namespace lslgeneric
 /**
  * This class implements NDT registration for 3D point cloud scans.
  */
-template <typename PointSource, typename PointTarget>
 class NDTMatcherD2D_2D
 {
 public:
@@ -86,8 +85,8 @@ public:
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
      */
-    bool match( pcl::PointCloud<PointTarget>& target,
-                pcl::PointCloud<PointSource>& source,
+    bool match( pcl::PointCloud<pcl::PointXYZ>& target,
+                pcl::PointCloud<pcl::PointXYZ>& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
@@ -102,8 +101,8 @@ public:
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
      */
-    bool match( NDTMap<PointTarget>& target,
-                NDTMap<PointSource>& source,
+    bool match( NDTMap& target,
+                NDTMap& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                 bool useInitialGuess = false);
 
@@ -111,8 +110,8 @@ public:
     // input: moving, fixed, tr, computeHessian
     //output: score_gradient, Hessian, returns: score!
     virtual double derivativesNDT_2d(
-        const std::vector<NDTCell<PointSource>*> &source,
-        const NDTMap<PointTarget> &target,
+        const std::vector<NDTCell*> &source,
+        const NDTMap &target,
         Eigen::MatrixXd &score_gradient,
         Eigen::MatrixXd &Hessian,
         bool computeHessian
@@ -187,8 +186,8 @@ protected:
     //adapted from NOX
     double lineSearch2D(
         Eigen::Matrix<double,3,1> &increment,
-        std::vector<NDTCell<PointSource>*> &source,
-        NDTMap<PointTarget> &target) ;
+        std::vector<NDTCell*> &source,
+        NDTMap &target) ;
 
     //auxiliary functions for MoreThuente line search
     struct MoreThuente
@@ -209,5 +208,4 @@ public:
 
 } // end namespace
 
-#include <ndt_registration/impl/ndt_matcher_d2d_2d.hpp>
 #endif

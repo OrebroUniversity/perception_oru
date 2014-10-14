@@ -1,42 +1,34 @@
+#include <ndt_map/ndt_cell.h>
 #include <cstring>
 #include <cstdio>
-
-#define JFFERR(x) std::cerr << x << std::endl; return -1;
 
 namespace lslgeneric
 {
 
 
-template<typename PointT>
-bool NDTCell<PointT>::parametersSet_ = false;
-template<typename PointT>
-double NDTCell<PointT>::EVAL_ROUGH_THR;
-template<typename PointT>
-double NDTCell<PointT>::EVEC_INCLINED_THR;
-template<typename PointT>
-double NDTCell<PointT>::EVAL_FACTOR;
+bool NDTCell::parametersSet_ = false;
+double NDTCell::EVAL_ROUGH_THR;
+double NDTCell::EVEC_INCLINED_THR;
+double NDTCell::EVAL_FACTOR;
 
-template<typename PointT>
-void NDTCell<PointT>::setParameters(double _EVAL_ROUGH_THR   ,
+void NDTCell::setParameters(double _EVAL_ROUGH_THR   ,
                                     double _EVEC_INCLINED_THR,
                                     double _EVAL_FACTOR
                                    )
 {
 
-    NDTCell<PointT>::EVAL_ROUGH_THR    = _EVAL_ROUGH_THR   ;
-    NDTCell<PointT>::EVEC_INCLINED_THR = cos(_EVEC_INCLINED_THR);
-    NDTCell<PointT>::EVAL_FACTOR       = _EVAL_FACTOR      ;
+    NDTCell::EVAL_ROUGH_THR    = _EVAL_ROUGH_THR   ;
+    NDTCell::EVEC_INCLINED_THR = cos(_EVEC_INCLINED_THR);
+    NDTCell::EVAL_FACTOR       = _EVAL_FACTOR      ;
     parametersSet_ = true;
 }
 
-/// FIXME:: What is the difference between copy and clone?
 /**
 * produces a new Cell* of the same type
 */
-template<typename PointT>
-Cell<PointT>* NDTCell<PointT>::clone() const
+NDTCell* NDTCell::clone() const
 {
-    NDTCell<PointT> *ret = new NDTCell<PointT>();
+    NDTCell *ret = new NDTCell();
     ret->setDimensions(this->xsize_,this->ysize_,this->zsize_);
     ret->setCenter(this->center_);
     ret->setRGB(this->R,this->G,this->B);
@@ -51,18 +43,16 @@ Cell<PointT>* NDTCell<PointT>::clone() const
 /** produces a new Cell* of the same type and sets it to have the same
   * parameters as this cell.
   */
-template<typename PointT>
-Cell<PointT>* NDTCell<PointT>::copy() const
+NDTCell* NDTCell::copy() const
 {
-    NDTCell<PointT> *ret = new NDTCell<PointT>();
+    NDTCell *ret = new NDTCell();
 
     ret->setDimensions(this->xsize_,this->ysize_,this->zsize_);
     ret->setCenter(this->center_);
 
     for(unsigned int i=0; i<this->points_.size(); i++)
     {
-        PointT pt = this->points_[i];
-        ret->points_.push_back(pt);
+        ret->points_.push_back(this->points_[i]);
     }
 
     ret->setMean(this->getMean());
@@ -83,12 +73,9 @@ Cell<PointT>* NDTCell<PointT>::copy() const
 * give new sample mean @m2 and covariance @cov2,
 * which have been computed from @numpointsindistribution number of points
 */
-template<typename PointT>
-inline
-void NDTCell<PointT>::updateSampleVariance(const Eigen::Matrix3d &cov2,const Eigen::Vector3d &m2, unsigned int numpointsindistribution, 
-																					bool updateOccupancyFlag, float max_occu, unsigned int maxnumpoints)
+void NDTCell::updateSampleVariance(const Eigen::Matrix3d &cov2,const Eigen::Vector3d &m2, unsigned int numpointsindistribution, 
+	bool updateOccupancyFlag, float max_occu, unsigned int maxnumpoints)
 {
-
 
     if(numpointsindistribution<=2){
 	fprintf(stderr,"updateSampleVariance:: INVALID NUMBER OF POINTS\n");
@@ -147,9 +134,7 @@ void NDTCell<PointT>::updateSampleVariance(const Eigen::Matrix3d &cov2,const Eig
 }
 
 ///Just computes the normal distribution parameters from the points and leaves the points into the map 
-template<typename PointT>
-inline
-void NDTCell<PointT>::computeGaussianSimple(){
+void NDTCell::computeGaussianSimple(){
         Eigen::Vector3d meanSum_;
         Eigen::Matrix3d covSum_;
 			
@@ -187,8 +172,7 @@ void NDTCell<PointT>::computeGaussianSimple(){
 /// Robust estimation using Student-T 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-template<typename PointT>
-inline void NDTCell<PointT>::studentT(){
+void NDTCell::studentT(){
 	Eigen::Vector3d meanSum_, meantmp_;
 	Eigen::Matrix3d covSum_, covTmp_;
 
@@ -274,9 +258,7 @@ inline void NDTCell<PointT>::studentT(){
 		Attempts to fit a gaussian in the cell.
 		computes covariance and mean using observations
 */
-template<typename PointT>
-inline
-void NDTCell<PointT>::computeGaussian(int mode, unsigned int maxnumpoints, float occupancy_limit, Eigen::Vector3d origin, double sensor_noise)
+void NDTCell::computeGaussian(int mode, unsigned int maxnumpoints, float occupancy_limit, Eigen::Vector3d origin, double sensor_noise)
 {
     ///Occupancy update part
     ///This part infers the given "inconsistency" check done on update phase and
@@ -565,7 +547,7 @@ void NDTCell<PointT>::computeGaussian(int mode, unsigned int maxnumpoints, float
 
         m2 /= (points_.size());
 
-        PointT orig;
+	pcl::PointXYZ orig;
         orig.x = origin[0];
         orig.y=origin[1];
         orig.z = origin[2];
@@ -649,14 +631,14 @@ void NDTCell<PointT>::computeGaussian(int mode, unsigned int maxnumpoints, float
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 ///Default - Do nothing
-template<typename PointT>
-inline void NDTCell<PointT>::updateColorInformation()
+void NDTCell::updateColorInformation()
 {
 }
 
+//FIXME fix the template specialization here, is it still necessary?
+#if 0
 ///RGB
-template<>
-inline void NDTCell<pcl::PointXYZRGB>::updateColorInformation()
+inline void NDTCell::updateColorInformation()
 {
     double r=0,g=0,b=0;
     for(unsigned int i=0; i< points_.size(); i++)
@@ -680,10 +662,8 @@ inline void NDTCell<pcl::PointXYZRGB>::updateColorInformation()
         G = 0.9*G + 0.1*g;
         B = 0.9*B + 0.1*b;
     }
-
 }
 ///Intensity
-template<>
 inline void NDTCell<pcl::PointXYZI>::updateColorInformation()
 {
     double intensity=0;
@@ -693,7 +673,7 @@ inline void NDTCell<pcl::PointXYZI>::updateColorInformation()
     }
     this->setRGB(intensity/(double)points_.size(), intensity/(double)points_.size(),intensity/(double)points_.size());
 }
-
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -701,8 +681,7 @@ inline void NDTCell<pcl::PointXYZI>::updateColorInformation()
 * Rescales the covariance to protect against near sigularities
 * and computes the inverse - This does not change class member values
 */
-template<typename PointT>
-bool NDTCell<PointT>::rescaleCovariance(Eigen::Matrix3d &cov, Eigen::Matrix3d &invCov)
+bool NDTCell::rescaleCovariance(Eigen::Matrix3d &cov, Eigen::Matrix3d &invCov)
 {
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov);
 
@@ -760,8 +739,7 @@ bool NDTCell<PointT>::rescaleCovariance(Eigen::Matrix3d &cov, Eigen::Matrix3d &i
 
 
 ///////////////////////////////////////////////////////////////////////////////////
-template<typename PointT>
-void NDTCell<PointT>::rescaleCovariance()
+void NDTCell::rescaleCovariance()
 {
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov_);
 
@@ -816,8 +794,7 @@ void NDTCell<PointT>::rescaleCovariance()
 
 /** helper function for writeToJFF()
   */
-template<typename PointT>
-void NDTCell<PointT>::writeJFFMatrix(FILE * jffout, Eigen::Matrix3d &mat)
+void NDTCell::writeJFFMatrix(FILE * jffout, Eigen::Matrix3d &mat)
 {
 
     double dtemp[6];
@@ -835,8 +812,7 @@ void NDTCell<PointT>::writeJFFMatrix(FILE * jffout, Eigen::Matrix3d &mat)
 
 /** another helper function for writeToJFF()
   */
-template<typename PointT>
-void NDTCell<PointT>::writeJFFVector(FILE * jffout, Eigen::Vector3d &vec)
+void NDTCell::writeJFFVector(FILE * jffout, Eigen::Vector3d &vec)
 {
 
     double dtemp[3];
@@ -852,8 +828,7 @@ void NDTCell<PointT>::writeJFFVector(FILE * jffout, Eigen::Vector3d &vec)
 
 /** yet another helper function for writeToJFF()
   */
-template<typename PointT>
-void NDTCell<PointT>::writeJFFEventData(FILE * jffout, TEventData &evdata)
+void NDTCell::writeJFFEventData(FILE * jffout, TEventData &evdata)
 {
 
     float    ftemp[4];
@@ -873,12 +848,11 @@ void NDTCell<PointT>::writeJFFEventData(FILE * jffout, TEventData &evdata)
 
 /** output method to save the ndt cell as part of a jff v0.5 file
   */
-template<typename PointT>
-int NDTCell<PointT>::writeToJFF(FILE * jffout)
+int NDTCell::writeToJFF(FILE * jffout)
 {
 
-    PointT * center = &(this->center_);
-    fwrite(center, sizeof(PointT), 1, jffout);
+    pcl::PointXYZ * center = &(this->center_);
+    fwrite(center, sizeof(pcl::PointXYZ), 1, jffout);
     double cell_size[3] = {this->xsize_, this->ysize_, this->zsize_};
     fwrite(cell_size, sizeof(double), 3, jffout);
 
@@ -905,8 +879,7 @@ int NDTCell<PointT>::writeToJFF(FILE * jffout)
 
 /** helper function for loadFromJFF()
   */
-template<typename PointT>
-int NDTCell<PointT>::loadJFFMatrix(FILE * jffin, Eigen::Matrix3d &mat)
+int NDTCell::loadJFFMatrix(FILE * jffin, Eigen::Matrix3d &mat)
 {
 
     double dtemp[6];
@@ -930,8 +903,7 @@ int NDTCell<PointT>::loadJFFMatrix(FILE * jffin, Eigen::Matrix3d &mat)
 
 /** another helper function for loadFromJFF()
   */
-template<typename PointT>
-int NDTCell<PointT>::loadJFFVector(FILE * jffin, Eigen::Vector3d &vec)
+int NDTCell::loadJFFVector(FILE * jffin, Eigen::Vector3d &vec)
 {
 
     double dtemp[3];
@@ -947,8 +919,7 @@ int NDTCell<PointT>::loadJFFVector(FILE * jffin, Eigen::Vector3d &vec)
 
 /** yet another helper function for loadFromJFF()
   */
-template<typename PointT>
-int NDTCell<PointT>::loadJFFEventData(FILE * jffin, TEventData &evdata)
+int NDTCell::loadJFFEventData(FILE * jffin, TEventData &evdata)
 {
 
     float    ftemp[4];
@@ -974,12 +945,11 @@ int NDTCell<PointT>::loadJFFEventData(FILE * jffin, TEventData &evdata)
 
 /** input method to load the ndt cell from a jff v0.5 file
   */
-template<typename PointT>
-int NDTCell<PointT>::loadFromJFF(FILE * jffin)
+int NDTCell::loadFromJFF(FILE * jffin)
 {
 
-    PointT center;
-    if(fread(&center, sizeof(PointT), 1, jffin) <= 0)
+    pcl::PointXYZ center;
+    if(fread(&center, sizeof(pcl::PointXYZ), 1, jffin) <= 0)
         return -1;
     this->setCenter(center);
 
@@ -1033,8 +1003,7 @@ int NDTCell<PointT>::loadFromJFF(FILE * jffin)
     if smallest eigenval is bigger then roughness thershold, it's a rough cell
     evaluate inclination of the corresponding evector and classify as vertica, horizontal or inclined
   */
-template<typename PointT>
-void NDTCell<PointT>::classify()
+void NDTCell::classify()
 {
 
     cl_ = UNKNOWN;
@@ -1080,8 +1049,7 @@ void NDTCell<PointT>::classify()
     }
 }
 
-template<typename PointT>
-double NDTCell<PointT>::getLikelihood(const PointT &pt) const
+double NDTCell::getLikelihood(const pcl::PointXYZ &pt) const
 {
     //compute likelihood
     if(!hasGaussian_) return -1;
@@ -1097,8 +1065,7 @@ double NDTCell<PointT>::getLikelihood(const PointT &pt) const
 
 /** setter for covariance
   */
-template<typename PointT>
-void NDTCell<PointT>::setCov(const Eigen::Matrix3d &_cov)
+void NDTCell::setCov(const Eigen::Matrix3d &_cov)
 {
     cov_ = _cov;
     this->rescaleCovariance();
@@ -1113,9 +1080,7 @@ void NDTCell<PointT>::setCov(const Eigen::Matrix3d &_cov)
 * @param p1 One point along the ray
 * @param p2 second point along the ray (it must hold that p1 != p2);
 */
-template<typename PointT>
-inline
-double NDTCell<PointT>::computeMaximumLikelihoodAlongLine(const PointT &p1, const PointT &p2, Eigen::Vector3d &out)
+double NDTCell::computeMaximumLikelihoodAlongLine(const pcl::PointXYZ &p1, const pcl::PointXYZ &p2, Eigen::Vector3d &out)
 {
     Eigen::Vector3d v1,v2;
     v1 << p1.x,p1.y,p1.z;
@@ -1132,7 +1097,7 @@ double NDTCell<PointT>::computeMaximumLikelihoodAlongLine(const PointT &p1, cons
 
     Eigen::Vector3d X = L*t+v2; ///X marks the spot
 
-    PointT p;
+    pcl::PointXYZ p;
     p.x = X(0);
     p.y = X(1);
     p.z = X(2);

@@ -6,19 +6,16 @@
 #include <string>
 #include <climits>
 
-#include <ndt_map/oc_tree.h>
+//#include <ndt_map/oc_tree.h>
+#include <ndt_map/ndt_map.h>
 #include <ndt_map/lazy_grid.h>
 #include <ndt_map/cell_vector.h>
 
 #include <cstring>
 #include <cstdio>
 
-#define _JFFVERSION_ "#JFF V0.50"
-#define JFFERR(x) std::cerr << x << std::endl; return -1;
-
 namespace lslgeneric
 {
-
 /**
 * loadPointCloud - You can call this if you are only interested in dealing with one scan
 * without need for fusing several ones or representing empty space and occupancy
@@ -28,13 +25,12 @@ namespace lslgeneric
 * \param pc the PointCloud that is to be loaded
 * \note every subsequent call will destroy the previous map!
 */
-template<typename PointT>
-void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double range_limit)
+void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double range_limit)
 {
     if(index_ != NULL)
     {
         //std::cout<<"CLONE INDEX\n";
-        SpatialIndex<PointT> *si = index_->clone();
+        SpatialIndex *si = index_->clone();
         //cout<<"allocating index\n";
         if(!isFirstLoad_)
         {
@@ -51,7 +47,7 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
         return;
     }
     
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz == NULL)
     {
 	fprintf(stderr,"Unfortunately This works only with Lazygrid!\n");
@@ -64,7 +60,7 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
         return;
     }
 
-    typename pcl::PointCloud<PointT>::const_iterator it = pc.points.begin();
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
     if(guess_size_) 
     {
 	double maxDist = 0;//, distCeil = 200;
@@ -125,7 +121,7 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
 	    it++;
 	}
 	// cout<<"Points = " <<pc.points.size()<<" maxDist = "<<maxDist<<endl;
-	NDTCell<PointT> *ptCell = new NDTCell<PointT>();
+	NDTCell *ptCell = new NDTCell();
 	index_->setCellType(ptCell);
 	delete ptCell;
 	index_->setCenter(centroid(0),centroid(1),centroid(2));
@@ -142,7 +138,7 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
     else
     {
 	//set sizes
-	NDTCell<PointT> *ptCell = new NDTCell<PointT>();
+	NDTCell *ptCell = new NDTCell();
 	index_->setCellType(ptCell);
 	delete ptCell;
 	index_->setCenter(centerx,centery,centerz);
@@ -174,7 +170,7 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
             }
         }
         index_->addPoint(*it);
-	NDTCell<PointT> *ptCell;
+	NDTCell *ptCell;
 	lz->getNDTCellAt(*it,ptCell);
 #ifdef REFACTORED
 	if(ptCell!=NULL) {
@@ -194,11 +190,11 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, double ra
 * \param pc the PointCloud that is to be loaded
 * \note every subsequent call will destroy the previous map!
 */
-template<typename PointT>
-void NDTMap<PointT>::loadPointCloudCentroid(const pcl::PointCloud<PointT> &pc, const Eigen::Vector3d &origin,
-																						const Eigen::Vector3d &old_centroid,const Eigen::Vector3d &map_size, double range_limit){
+void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, const Eigen::Vector3d &origin,
+	const Eigen::Vector3d &old_centroid,const Eigen::Vector3d &map_size, double range_limit){
+    
     if(index_ != NULL){
-        SpatialIndex<PointT> *si = index_->clone();
+        SpatialIndex *si = index_->clone();
         if(!isFirstLoad_) delete index_;
         
         isFirstLoad_ = false;
@@ -210,11 +206,11 @@ void NDTMap<PointT>::loadPointCloudCentroid(const pcl::PointCloud<PointT> &pc, c
 
     if(index_ == NULL) return; ///Should never happen!
 
-    NDTCell<PointT> *ptCell = new NDTCell<PointT>();
+    NDTCell *ptCell = new NDTCell();
     index_->setCellType(ptCell);
     delete ptCell;
 
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz == NULL)
     {
 	fprintf(stderr,"Unfortunately This works only with Lazygrid!\n");
@@ -240,7 +236,7 @@ void NDTMap<PointT>::loadPointCloudCentroid(const pcl::PointCloud<PointT> &pc, c
     //ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
     //ROS_INFO("maxDist is %lf", maxDist);
 
-    typename pcl::PointCloud<PointT>::const_iterator it = pc.points.begin();
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
 
     while(it!=pc.points.end())
     {
@@ -264,7 +260,7 @@ void NDTMap<PointT>::loadPointCloudCentroid(const pcl::PointCloud<PointT> &pc, c
 	
 	//fprintf(stderr,"HEP!");
 	index_->addPoint(*it);
-	NDTCell<PointT> *ptCell=NULL;
+	NDTCell *ptCell=NULL;
 	lz->getNDTCellAt(*it,ptCell);
 #ifdef REFACTORED
 	if(ptCell!=NULL) update_set.insert(ptCell);
@@ -280,8 +276,7 @@ void NDTMap<PointT>::loadPointCloudCentroid(const pcl::PointCloud<PointT> &pc, c
 /**
  * Just adds the points, without raytracing and such
  */
-template<typename PointT>
-void NDTMap<PointT>::addPointCloudSimple(const pcl::PointCloud<PointT> &pc,double maxz)
+void NDTMap::addPointCloudSimple(const pcl::PointCloud<pcl::PointXYZ> &pc,double maxz)
 {
     if(isFirstLoad_)
     {
@@ -289,9 +284,9 @@ void NDTMap<PointT>::addPointCloudSimple(const pcl::PointCloud<PointT> &pc,doubl
         return;
     }
 
-    typename pcl::PointCloud<PointT>::const_iterator it = pc.points.begin();
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
     it = pc.points.begin();
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz == NULL)
     {
 	fprintf(stderr,"Unfortunately This works only with Lazygrid!\n");
@@ -311,7 +306,7 @@ void NDTMap<PointT>::addPointCloudSimple(const pcl::PointCloud<PointT> &pc,doubl
             continue;
         }
         index_->addPoint(*it);
-	NDTCell<PointT> *ptCell;
+	NDTCell *ptCell;
 	lz->getNDTCellAt(*it,ptCell);
 #ifdef REFACTORED
 	if(ptCell!=NULL) update_set.insert(ptCell);
@@ -324,21 +319,20 @@ void NDTMap<PointT>::addPointCloudSimple(const pcl::PointCloud<PointT> &pc,doubl
 /**
 * Add a distribution to the map
 */
-template<typename PointT>
-void NDTMap<PointT>::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vector3d &umean, unsigned int numpointsindistribution, 
-																					 float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
+void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vector3d &umean, unsigned int numpointsindistribution, 
+	float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
 {
-    PointT pt;
+    pcl::PointXYZ pt;
     pt.x = umean[0];
     pt.y = umean[1];
     pt.z = umean[2];
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz==NULL)
     {
         fprintf(stderr,"NOT LAZY GRID!!!\n");
         exit(1);
     }
-    NDTCell<PointT> *ptCell = NULL; //= dynamic_cast<NDTCell<PointT> *>(lz->getCellAt(pt));
+    NDTCell *ptCell = NULL; 
     lz->getNDTCellAt(pt,ptCell);
     if(ptCell != NULL)
     {
@@ -354,88 +348,26 @@ void NDTMap<PointT>::addDistributionToCell(const Eigen::Matrix3d &ucov, const Ei
 //	std::cout<<ptCell->getMean().transpose()<<std::endl;
 //	std::cout<<ptCell->getCov()<<std::endl;
     }
-
-#if 0
-    double centerX,centerY,centerZ;
-    lz->getCenter(centerX, centerY, centerZ);
-    double cellSizeX,cellSizeY,cellSizeZ;
-    lz->getCellSize(cellSizeX, cellSizeY, cellSizeZ);
-    int sizeX,sizeY,sizeZ;
-    lz->getGridSize(sizeX, sizeY, sizeZ);
-
-    Cell<PointT> ****dataArray = lz->getDataArrayPtr();
-
-    NDTCell<PointT> *ptCell=NULL;
-    int idx,idy,idz;
-    idx = (int)(((pt.x - centerX)/cellSizeX+0.5) + sizeX/2);
-    idy = (int)(((pt.y - centerY)/cellSizeY+0.5) + sizeY/2);
-    idz = (int)(((pt.z - centerZ)/cellSizeZ+0.5) + sizeZ/2);
-
-    if(idx < sizeX && idy < sizeY && idz < sizeZ && idx >=0 && idy >=0 && idz >=0)
-    {
-        ptCell = dynamic_cast<NDTCell<PointT> *>  (dataArray[idx][idy][idz]);
-        if(ptCell != NULL)
-        {
-            ptCell->updateSampleVariance(ucov, umean, numpointsindistribution);
-						ptCell->setRGB(r,g,b);
-            //fprintf(stderr,"I AM UPDATING (%d %d %d)!! ",idx,idy,idz);
-        }
-    }
-#endif
 }
 
 ///Get the cell for which the point fall into (not the closest cell)
-template<typename PointT>
-bool NDTMap<PointT>::getCellAtPoint(const PointT &refPoint, NDTCell<PointT> *&cell)
+bool NDTMap::getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell)
 {
-
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz==NULL)
     {
         fprintf(stderr,"NOT LAZY GRID!!!\n");
         exit(1);
     }
-    //cell = dynamic_cast<NDTCell<PointT> *>(lz->getCellAt(refPoint));
     lz->getNDTCellAt(refPoint,cell);
     return (cell != NULL);
-
-#if 0
-    double centerX,centerY,centerZ;
-    lz->getCenter(centerX, centerY, centerZ);
-    double cellSizeX,cellSizeY,cellSizeZ;
-    lz->getCellSize(cellSizeX, cellSizeY, cellSizeZ);
-    int sizeX,sizeY,sizeZ;
-    lz->getGridSize(sizeX, sizeY, sizeZ);
-
-    Cell<PointT> ****dataArray = lz->getDataArrayPtr();
-
-    int idx,idy,idz;
-    idx = (int)(((refPoint.x - centerX)/cellSizeX+0.5) + sizeX/2);
-    idy = (int)(((refPoint.y - centerY)/cellSizeY+0.5) + sizeY/2);
-    idz = (int)(((refPoint.z - centerZ)/cellSizeZ+0.5) + sizeZ/2);
-
-    if(idx < sizeX && idy < sizeY && idz < sizeZ && idx >=0 && idy >=0 && idz >=0)
-    {
-        cell = dynamic_cast<NDTCell<PointT> *>  (dataArray[idx][idy][idz]);
-        if(cell != NULL)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    return false;
-#endif
 }
 
 /**
  * Adds a new cloud: NDT-OM update step
  */
-template<typename PointT>
-void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<PointT> &pc, double classifierTh, double maxz, 
-																	double sensor_noise, double occupancy_limit)
+void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<pcl::PointXYZ> &pc, double classifierTh, double maxz, 
+	double sensor_noise, double occupancy_limit)
 {
     if(isFirstLoad_)
     {
@@ -447,20 +379,20 @@ void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::Poi
 			//ERR("Problem creating index, unimplemented method\n");
 			return;
     }
-    typename pcl::PointCloud<PointT>::const_iterator it = pc.points.begin();
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
 
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz==NULL)
     {
 			fprintf(stderr,"NOT LAZY GRID!!!\n");
 			exit(1);
     }
-    PointT po, pt;
+    pcl::PointXYZ po, pt;
     po.x = origin(0); po.y = origin(1); po.z = origin(2);
-    NDTCell<PointT>* ptCell = NULL; 
+    NDTCell* ptCell = NULL; 
 
 #ifdef REFACTORED
-    std::vector< NDTCell<PointT>*> cells; 
+    std::vector< NDTCell*> cells; 
     bool updatePositive = true;
     double max_range = 200.;
 
@@ -529,7 +461,7 @@ void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::Poi
 					//update_set.insert(ptCell);
 			}
 	if(updatePositive) {
-	    ptCell = dynamic_cast<NDTCell<PointT>*>(index_->addPoint(*it));
+	    ptCell = dynamic_cast<NDTCell*>(index_->addPoint(*it));
 	    if(ptCell!=NULL) {
 				update_set.insert(ptCell);
 	    }
@@ -546,7 +478,7 @@ void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::Poi
     int sizeX,sizeY,sizeZ;
     lz->getGridSize(sizeX, sizeY, sizeZ);
 
-    Cell<PointT> ****dataArray = lz->getDataArrayPtr();
+    NDTCell ****dataArray = lz->getDataArrayPtr();
 
     double min1 = std::min(cellSizeX,cellSizeY);
     double min2 = std::min(cellSizeZ,cellSizeY);
@@ -624,7 +556,7 @@ void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::Poi
             if(idx < sizeX && idy < sizeY && idz < sizeZ && idx >=0 && idy >=0 && idz >=0)
             {
                 //fprintf(stderr,"(in)");
-                ptCell = dynamic_cast<NDTCell<PointT> *>  (dataArray[idx][idy][idz]);
+                ptCell = (dataArray[idx][idy][idz]);
             }
             else
             {
@@ -691,9 +623,8 @@ void NDTMap<PointT>::addPointCloud(const Eigen::Vector3d &origin, const pcl::Poi
 * @param maxz threshold for the maximum z-coordinate value for the measurement point_cloud
 * @param sensor_noise The expected standard deviation of the sensor noise
 */
-template<typename PointT>
-void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin, 
-	const pcl::PointCloud<PointT> &pc, 
+void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin, 
+	const pcl::PointCloud<pcl::PointXYZ> &pc, 
 	const Eigen::Vector3d &localmapsize,
 	unsigned int maxnumpoints, float occupancy_limit,double maxz, double sensor_noise){
 
@@ -707,7 +638,7 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     if(index_ == NULL){
 	return;
     }
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz==NULL){
 	fprintf(stderr,"NOT LAZY GRID!!!\n");
 	exit(1);
@@ -720,8 +651,6 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     int sizeX,sizeY,sizeZ;
     lz->getGridSize(sizeX, sizeY, sizeZ);
 
-    //Cell<PointT> ****dataArray = lz->getDataArrayPtr();
-
     Eigen::Vector3d old_centroid;
     old_centroid(0) = centerX;
     old_centroid(1) = centerY;
@@ -732,7 +661,7 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     double resolution = std::min(min1,min2); ///Select the smallest resolution
 		//fprintf(stderr,"1:");
     ///Lets first create a local ndmap (this really works only if we have lazy grid as well)
-    lslgeneric::NDTMap<PointT> ndlocal(new lslgeneric::LazyGrid<PointT>(resolution));
+    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
     ndlocal.loadPointCloudCentroid(pc,origin, old_centroid, localmapsize, 70.0); ///FIXME:: fixed max length
     
     ///Use Student-T
@@ -742,25 +671,25 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     ndlocal.computeNDTCells();
 		
     ///TODO: This returns now copies --- should be pointers?
-    std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+    std::vector<lslgeneric::NDTCell*> ndts;
     ndts = ndlocal.getAllCells();
 		//fprintf(stderr,"2(%u):",ndts.size());
-    NDTCell<PointT> *ptCell=NULL;
+    NDTCell *ptCell=NULL;
 
-    PointT pt;
-    PointT po;
+    pcl::PointXYZ pt;
+    pcl::PointXYZ po;
     po.x = origin(0); po.y = origin(1); po.z = origin(2);
     //fprintf(stderr,"NUM = %d\n",ndts.size());
     int num_high = 0;
     for(unsigned int it=0;it<ndts.size();it++)
     {
 	if(ndts[it] == NULL){
-	    fprintf(stderr,"NDTMap<PointT>::addPointCloudMeanUpdate::GOT NULL FROM MAP -- SHOULD NEVER HAPPEN!!!\n");
+	    fprintf(stderr,"NDTMap::addPointCloudMeanUpdate::GOT NULL FROM MAP -- SHOULD NEVER HAPPEN!!!\n");
 	    continue;
 	}
 
 	if(!ndts[it]->hasGaussian_){
-	    fprintf(stderr,"NDTMap<PointT>::addPointCloudMeanUpdate::NO GAUSSIAN!!!! -- SHOULD NEVER HAPPEN!!!\n");
+	    fprintf(stderr,"NDTMap::addPointCloudMeanUpdate::NO GAUSSIAN!!!! -- SHOULD NEVER HAPPEN!!!\n");
 	    continue;
 	}
 
@@ -794,8 +723,6 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
 	if(m(2)>maxz){
 	    num_high++;
 	    updatePositive = false; ///Lets update negative even though the measurement was too high
-	    //fprintf(stderr,"NDTMap<PointT>::addPointCloudMeanUpdate::HIGH POINT!!!\n");
-
 	}
 	//std::cout<<"c: "<<ndts[it]->getCov()<<std::endl;
 
@@ -869,7 +796,7 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
 		    //ptCell->updateEmpty(-0.2*numpoints,l2target); ///The cell does not have gaussian, so we mark that we saw it empty...
 		}
 	    }else{
-		ptCell = dynamic_cast<NDTCell<PointT>*>(index_->addPoint(pt)); ///Add fake point to initialize!
+		ptCell = dynamic_cast<NDTCell*>(index_->addPoint(pt)); ///Add fake point to initialize!
 	    }
 	}
 	if(updatePositive){
@@ -893,8 +820,7 @@ void  NDTMap<PointT>::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
  * Adds one measurement to the map using NDT-OM update step
  * @return true if an inconsistency was detected
  */
-    template<typename PointT>
-bool NDTMap<PointT>::addMeasurement(const Eigen::Vector3d &origin, PointT endpoint, double classifierTh, double maxz, double sensor_noise)
+bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoint, double classifierTh, double maxz, double sensor_noise)
 {
 
     if(index_ == NULL)
@@ -904,7 +830,7 @@ bool NDTMap<PointT>::addMeasurement(const Eigen::Vector3d &origin, PointT endpoi
 
     bool retval = false;
 
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     double centerX,centerY,centerZ;
     lz->getCenter(centerX, centerY, centerZ);
     double cellSizeX,cellSizeY,cellSizeZ;
@@ -924,10 +850,10 @@ bool NDTMap<PointT>::addMeasurement(const Eigen::Vector3d &origin, PointT endpoi
         fprintf(stderr,"NOT LAZY GRID!!!\n");
         exit(1);
     }
-    NDTCell<PointT> *ptCell=NULL;
+    NDTCell *ptCell=NULL;
 
-    PointT pt;
-    PointT po;
+    pcl::PointXYZ pt;
+    pcl::PointXYZ po;
     po.x = origin(0),origin(1),origin(2);
 
     Eigen::Vector3d diff;
@@ -1048,18 +974,17 @@ bool NDTMap<PointT>::addMeasurement(const Eigen::Vector3d &origin, PointT endpoi
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename PointT>
-double NDTMap<PointT>::getDepth(Eigen::Vector3d origin, Eigen::Vector3d dir, double maxDepth){
+double NDTMap::getDepth(Eigen::Vector3d origin, Eigen::Vector3d dir, double maxDepth){
 	Eigen::Vector3d ray_endpos=origin + dir * maxDepth;
-	std::vector< NDTCell<PointT>*> cells; 
+	std::vector< NDTCell*> cells; 
 	
 	Eigen::Vector3d diff = ray_endpos - origin;
-	PointT endP;
+	pcl::PointXYZ endP;
 	endP.x = ray_endpos(0);
 	endP.y = ray_endpos(1);
 	endP.z = ray_endpos(2);
 	
-	LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+	LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
 	if(lz==NULL){
 		fprintf(stderr,"NOT LAZY GRID!!!\n");
 		exit(1);
@@ -1069,7 +994,7 @@ double NDTMap<PointT>::getDepth(Eigen::Vector3d origin, Eigen::Vector3d dir, dou
 		return maxDepth+1.0;
 	}
 	//fprintf(stderr,"Got trace with %d Cells (%lf)\n",cells.size(),(ray_endpos-origin).norm());
-	PointT po;
+	pcl::PointXYZ po;
 	po.x = origin(0);
 	po.y = origin(1);
 	po.z = origin(2);
@@ -1094,8 +1019,7 @@ double NDTMap<PointT>::getDepth(Eigen::Vector3d origin, Eigen::Vector3d dir, dou
 }
 
 
-template<typename PointT>
-double NDTMap<PointT>::getDepthSmooth(Eigen::Vector3d origin,
+double NDTMap::getDepthSmooth(Eigen::Vector3d origin,
                                       Eigen::Vector3d dir,
                                       double maxDepth,
                                       int n_neigh,
@@ -1104,15 +1028,15 @@ double NDTMap<PointT>::getDepthSmooth(Eigen::Vector3d origin,
                                       Eigen::Vector3d *hit)
 {
     Eigen::Vector3d ray_endpos=origin + dir * maxDepth;
-    std::vector< NDTCell<PointT>*> cells, surr; 
+    std::vector< NDTCell*> cells, surr; 
 
     Eigen::Vector3d diff = ray_endpos - origin;
-    PointT endP;
+    pcl::PointXYZ endP;
     endP.x = ray_endpos(0);
     endP.y = ray_endpos(1);
     endP.z = ray_endpos(2);
 
-    LazyGrid<PointT> *lz = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz==NULL){
 	fprintf(stderr,"NOT LAZY GRID!!!\n");
 	exit(1);
@@ -1122,7 +1046,7 @@ double NDTMap<PointT>::getDepthSmooth(Eigen::Vector3d origin,
 	return maxDepth+1.0;
     }
 
-    PointT startP, p;
+    pcl::PointXYZ startP, p;
     startP.x = origin(0);
     startP.y = origin(1);
     startP.z = origin(2);
@@ -1168,13 +1092,12 @@ double NDTMap<PointT>::getDepthSmooth(Eigen::Vector3d origin,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-template<typename PointT>
-void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, const std::vector<std::vector<size_t> > &indices)
+void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, const std::vector<std::vector<size_t> > &indices)
 {
 
     loadPointCloud(pc);
     // Specific function related to CellVector
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if (cl != NULL)
     {
         for (size_t i = 0; i < indices.size(); i++)
@@ -1188,9 +1111,9 @@ void NDTMap<PointT>::loadPointCloud(const pcl::PointCloud<PointT> &pc, const std
         //ERR("loading point clouds using indices are currently supported in CellVector index_.");
     }
 }
-
+#if 0
 template<typename PointT>
-void NDTMap<PointT>::loadDepthImage(const cv::Mat& depthImage, DepthCamera<PointT> &cameraParams)
+void NDTMap::loadDepthImage(const cv::Mat& depthImage, DepthCamera<PointT> &cameraParams)
 {
     pcl::PointCloud<PointT> pc;
     cameraParams.convertDepthImageToPointCloud(depthImage, pc);
@@ -1292,23 +1215,20 @@ pcl::PointCloud<PointT> NDTMap<PointT>::loadDepthImageFeatures(const cv::Mat& de
     keypoints = good_keypoints;
     return cloudOut;
 }
+#endif
 
 /** Helper function, computes the  NDTCells
 */
-template<typename PointT>
-void NDTMap<PointT>::computeNDTCells(int cellupdatemode, unsigned int maxnumpoints, float occupancy_limit, Eigen::Vector3d origin, double sensor_noise)
+void NDTMap::computeNDTCells(int cellupdatemode, unsigned int maxnumpoints, float occupancy_limit, Eigen::Vector3d origin, double sensor_noise)
 {
-    CellVector<PointT> *cv = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cv = dynamic_cast<CellVector*>(index_);
 
     conflictPoints.clear();
 #ifdef REFACTORED
-    //typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
-    typename std::set<NDTCell<PointT>*>::iterator it = update_set.begin();
-    //while (it != index_->end())
+    typename std::set<NDTCell*>::iterator it = update_set.begin();
     while (it != update_set.end())
     {
-        //NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        NDTCell<PointT> *cell = *it;
+        NDTCell *cell = *it;
         if(cell!=NULL)
         {
             cell->computeGaussian(cellupdatemode,maxnumpoints, occupancy_limit, origin,sensor_noise);
@@ -1322,7 +1242,7 @@ void NDTMap<PointT>::computeNDTCells(int cellupdatemode, unsigned int maxnumpoin
             {
                 // Set the mean to the cell's centre.
                 Eigen::Vector3d mean = cell->getMean();
-                PointT pt;
+                pcl::PointXYZ pt;
                 pt.x = mean[0];
                 pt.y = mean[1];
                 pt.z = mean[2];
@@ -1338,18 +1258,18 @@ void NDTMap<PointT>::computeNDTCells(int cellupdatemode, unsigned int maxnumpoin
     }
     update_set.clear();
 
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if(cl!=NULL)
     {
         cl->initKDTree();
     }
 #else
-typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+typename SpatialIndex::CellVectorItr it = index_->begin();
     //typename std::set<NDTCell<PointT>*>::iterator it = update_set.begin();
     while (it != index_->end())
     //while (it != update_set.end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
+        NDTCell *cell = (*it);
         //NDTCell<PointT> *cell = *it;
         if(cell!=NULL)
         {
@@ -1364,7 +1284,7 @@ typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
             {
                 // Set the mean to the cell's centre.
                 Eigen::Vector3d mean = cell->getMean();
-                PointT pt;
+                pcl::PointXYZ pt;
                 pt.x = mean[0];
                 pt.y = mean[1];
                 pt.z = mean[2];
@@ -1380,7 +1300,7 @@ typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
     }
     //update_set.clear();
 
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if(cl!=NULL)
     {
         cl->initKDTree();
@@ -1395,18 +1315,17 @@ typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
 /** 
 * Computes the normaldistribution parameters and leaves the points a
 */
-template<typename PointT>
-void NDTMap<PointT>::computeNDTCellsSimple()
+void NDTMap::computeNDTCellsSimple()
 {
-    CellVector<PointT> *cv = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cv = dynamic_cast<CellVector*>(index_);
 
     conflictPoints.clear();
 
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorItr it = index_->begin();
 
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
+        NDTCell *cell = (*it);
         if(cell!=NULL)
         {
             cell->computeGaussianSimple();
@@ -1415,7 +1334,7 @@ void NDTMap<PointT>::computeNDTCellsSimple()
             {
                 // Set the mean to the cell's centre.
                 Eigen::Vector3d mean = cell->getMean();
-                PointT pt;
+                pcl::PointXYZ pt;
                 pt.x = mean[0];
                 pt.y = mean[1];
                 pt.z = mean[2];
@@ -1430,7 +1349,7 @@ void NDTMap<PointT>::computeNDTCellsSimple()
         it++;
     }
 
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if(cl!=NULL)
     {
         cl->initKDTree();
@@ -1439,8 +1358,7 @@ void NDTMap<PointT>::computeNDTCellsSimple()
 
 /** output methods for saving the map in the jff format
  */
-template<typename PointT>
-int NDTMap<PointT>::writeToJFF(const char* filename)
+int NDTMap::writeToJFF(const char* filename)
 {
 
     if(filename == NULL)
@@ -1475,18 +1393,17 @@ int NDTMap<PointT>::writeToJFF(const char* filename)
 }
 
 
-template<typename PointT>
-int NDTMap<PointT>::writeCellVectorJFF(FILE * jffout)
+int NDTMap::writeCellVectorJFF(FILE * jffout)
 {
     int indexType[1] = {1};
     fwrite(indexType, sizeof(int), 1, jffout);
 
     // TODO: add CellVector specific stuff
 
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
+        NDTCell *cell = (*it);
         if(cell!=NULL)
         {
             if(cell->hasGaussian_)
@@ -1508,18 +1425,17 @@ int NDTMap<PointT>::writeCellVectorJFF(FILE * jffout)
 }
 
 
-template<typename PointT>
-int NDTMap<PointT>::writeOctTreeJFF(FILE * jffout)
+int NDTMap::writeOctTreeJFF(FILE * jffout)
 {
     int indexType[1] = {2};
     fwrite(indexType, sizeof(int), 1, jffout);
 
     // TODO: add OctTree specific stuff
 
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
+        NDTCell *cell = (*it);
         if(cell!=NULL)
         {
             if(cell->hasGaussian_)
@@ -1540,8 +1456,7 @@ int NDTMap<PointT>::writeOctTreeJFF(FILE * jffout)
 
 }
 
-template<typename PointT>
-int NDTMap<PointT>::writeLazyGridJFF(FILE * jffout)
+int NDTMap::writeLazyGridJFF(FILE * jffout)
 {
     int indexType[1] = {3};
     fwrite(indexType, sizeof(int), 1, jffout);
@@ -1550,7 +1465,7 @@ int NDTMap<PointT>::writeLazyGridJFF(FILE * jffout)
     double sizeXmeters, sizeYmeters, sizeZmeters;
     double cellSizeX, cellSizeY, cellSizeZ;
     double centerX, centerY, centerZ;
-    LazyGrid<PointT> *ind = dynamic_cast<LazyGrid<PointT>*>(index_);
+    LazyGrid *ind = dynamic_cast<LazyGrid*>(index_);
 
     ind->getGridSizeInMeters(sizeXmeters, sizeYmeters, sizeZmeters);
     ind->getCellSize(cellSizeX, cellSizeY, cellSizeZ);
@@ -1563,23 +1478,13 @@ int NDTMap<PointT>::writeLazyGridJFF(FILE * jffout)
 
     fwrite(lazyGridData, sizeof(double), 9, jffout);
 
-    fwrite(ind->getProtoType(), sizeof(Cell<PointT>), 1, jffout);
+    fwrite(ind->getProtoType(), sizeof(NDTCell), 1, jffout);
 
     // loop through all active cells
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        if(cell!=NULL)
-        {
-            //if(cell->hasGaussian_) {
-            if(cell->writeToJFF(jffout) < 0)	return -1;
-            // }
-        }
-        else
-        {
-            // do nothing
-        }
+	if((*it)->writeToJFF(jffout) < 0)	return -1;
         it++;
     }
 
@@ -1588,21 +1493,20 @@ int NDTMap<PointT>::writeLazyGridJFF(FILE * jffout)
 }
 
 /** method to load NDT maps from .jff files
-	USAGE:	create NDTMap with desired index and PointType (index type is
-			checked, but Point type is NOT checked) via e.g.
+USAGE:	create NDTMap with desired index and PointType (index type is
+checked, but Point type is NOT checked) via e.g.
 
-			lslgeneric::NDTMap<pcl::PointXYZ> nd1(
-				new lslgeneric::LazyGrid<pcl::PointXYZ>(0.4)); --> (*)
+lslgeneric::NDTMap<pcl::PointXYZ> nd1(
+new lslgeneric::LazyGrid<pcl::PointXYZ>(0.4)); --> (*)
 
-			and then call
+and then call
 
-			nd1.loadFromJFF("map0027.jff");
+nd1.loadFromJFF("map0027.jff");
 
-			*) use this constructor so index is not initialized and attributes
-			   can be set manually
+ *) use this constructor so index is not initialized and attributes
+ can be set manually
  */
-template<typename PointT>
-int NDTMap<PointT>::loadFromJFF(const char* filename)
+int NDTMap::loadFromJFF(const char* filename)
 {
 
     FILE * jffin;
@@ -1650,25 +1554,28 @@ int NDTMap<PointT>::loadFromJFF(const char* filename)
     {
     case 1:
     {
-        CellVector<PointT>* cv = dynamic_cast<CellVector<PointT> * >(index_);
+        CellVector* cv = dynamic_cast<CellVector * >(index_);
         if(cv->loadFromJFF(jffin) < 0)
         {
             JFFERR("Error loading CellVector");
         }
         break;
     }
+#if 0
     case 2:
     {
-        OctTree<PointT>* tr = dynamic_cast<OctTree<PointT>*>(index_);
+        OctTree* tr = dynamic_cast<OctTree*>(index_);
         if(tr->loadFromJFF(jffin) < 0)
         {
             JFFERR("Error loading OctTree");
         }
         break;
     }
+#endif
     case 3:
     {
-        LazyGrid<PointT>* gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+	std::cerr << "Map uses LazyGrid\n";
+        LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
         if(gr->loadFromJFF(jffin) < 0)
         {
             JFFERR("Error loading LazyGrid");
@@ -1679,7 +1586,7 @@ int NDTMap<PointT>::loadFromJFF(const char* filename)
         JFFERR("error casting index");
     }
 
-    NDTCell<PointT> *ptCell = new NDTCell<PointT>();
+    NDTCell *ptCell = new NDTCell();
     index_->setCellType(ptCell);
     delete ptCell;
 
@@ -1695,20 +1602,21 @@ int NDTMap<PointT>::loadFromJFF(const char* filename)
 
 
 /// returns the current spatial index as a string (debugging function)
-template<typename PointT>
-std::string NDTMap<PointT>::getMyIndexStr() const
+std::string NDTMap::getMyIndexStr() const
 {
-    CellVector<PointT>* cl = dynamic_cast<CellVector<PointT> * >(index_);
+    CellVector* cl = dynamic_cast<CellVector * >(index_);
     if(cl!=NULL)
     {
         return std::string("CellVector");
     }
+#if 0
     OctTree<PointT>* tr = dynamic_cast<OctTree<PointT>*>(index_);
     if(tr!=NULL)
     {
         return std::string("OctTree");
     }
-    LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+#endif
+    LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
     if(gr!=NULL)
     {
         return std::string("LazyGrid<PointT>");
@@ -1718,20 +1626,21 @@ std::string NDTMap<PointT>::getMyIndexStr() const
 }
 
 /// returns the current spatial index as an integer (debugging function)
-template<typename PointT>
-int NDTMap<PointT>::getMyIndexInt() const
+int NDTMap::getMyIndexInt() const
 {
-    CellVector<PointT>* cl = dynamic_cast<CellVector<PointT> * >(index_);
+    CellVector* cl = dynamic_cast<CellVector * >(index_);
     if(cl!=NULL)
     {
         return 1;
     }
+#if 0
     OctTree<PointT>* tr = dynamic_cast<OctTree<PointT>*>(index_);
     if(tr!=NULL)
     {
         return 2;
     }
-    LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+#endif
+    LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
     if(gr!=NULL)
     {
         return 3;
@@ -1741,28 +1650,32 @@ int NDTMap<PointT>::getMyIndexInt() const
 }
 
 //computes the *negative log likelihood* of a single observation
-template<typename PointT>
-double NDTMap<PointT>::getLikelihoodForPoint(PointT pt)
+double NDTMap::getLikelihoodForPoint(pcl::PointXYZ pt)
 {
     //assert(false);
     double uniform=0.00100;
-    NDTCell<PointT>* ndCell = NULL;
+    NDTCell* ndCell = NULL;
+    
+#if 0
     OctTree<PointT>* tr = dynamic_cast<OctTree<PointT>*>(index_);
 
     if(tr==NULL)
     {
-        LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
-        if(gr==NULL)
-        {
-            //cout<<"bad index - getLikelihoodForPoint\n";
-            return uniform;
-        }
-        ndCell = gr->getClosestNDTCell(pt);
+#endif
+	LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
+	if(gr==NULL)
+	{
+	    //cout<<"bad index - getLikelihoodForPoint\n";
+	    return uniform;
+	}
+	ndCell = gr->getClosestNDTCell(pt);
+#if 0
     }
     else
     {
         ndCell = tr->getClosestNDTCell(pt);
     }
+#endif
     if(ndCell == NULL) return uniform;
 
     double prob = ndCell->getLikelihood(pt);
@@ -1938,11 +1851,10 @@ double NDTMap<PointT>::getLikelihoodForPointWithInterpolation(PointT pt) {
 }
 */
 
-template<typename PointT>
-std::vector<NDTCell<PointT>*> NDTMap<PointT>::getInitializedCellsForPoint(const PointT pt) const
+std::vector<NDTCell*> NDTMap::getInitializedCellsForPoint(const pcl::PointXYZ pt) const
 {
-    std::vector<NDTCell<PointT>*> cells;
-    LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+    std::vector<NDTCell*> cells;
+    LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
     if(gr==NULL)
     {
         //cout<<"bad index - getCellsForPoint\n";
@@ -1953,12 +1865,11 @@ std::vector<NDTCell<PointT>*> NDTMap<PointT>::getInitializedCellsForPoint(const 
 
 }
 
-template<typename PointT>
-std::vector<NDTCell<PointT>*> NDTMap<PointT>::getCellsForPoint(const PointT pt, int n_neigh, bool checkForGaussian) const
+std::vector<NDTCell*> NDTMap::getCellsForPoint(const pcl::PointXYZ pt, int n_neigh, bool checkForGaussian) const
 {
     //assert(false);
-    std::vector<NDTCell<PointT>*> cells;
-    LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+    std::vector<NDTCell*> cells;
+    LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
     if(gr==NULL)
     {
         //cout<<"bad index - getCellsForPoint\n";
@@ -1972,24 +1883,25 @@ std::vector<NDTCell<PointT>*> NDTMap<PointT>::getCellsForPoint(const PointT pt, 
     //}
 }
 
-template<typename PointT>
-bool NDTMap<PointT>::getCellForPoint(const PointT &pt, NDTCell<PointT>* &out_cell, bool checkForGaussian) const
+bool NDTMap::getCellForPoint(const pcl::PointXYZ &pt, NDTCell* &out_cell, bool checkForGaussian) const
 {
 
     out_cell = NULL;
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if(cl!=NULL)
     {
         out_cell = cl->getClosestNDTCell(pt);
         return true;
     }
+#if 0
     OctTree<PointT>* tr = dynamic_cast<OctTree<PointT>*>(index_);
     if(tr!=NULL)
     {
         out_cell = tr->getClosestNDTCell(pt);
         return true;
     }
-    LazyGrid<PointT> *gr = dynamic_cast<LazyGrid<PointT>*>(index_);
+#endif
+    LazyGrid *gr = dynamic_cast<LazyGrid*>(index_);
     if(gr!=NULL)
     {
         out_cell = gr->getClosestNDTCell(pt,checkForGaussian);
@@ -1999,49 +1911,40 @@ bool NDTMap<PointT>::getCellForPoint(const PointT &pt, NDTCell<PointT>* &out_cel
     return false;
 }
 
-template<typename PointT>
-NDTMap<PointT>* NDTMap<PointT>::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
+NDTMap* NDTMap::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
 {
-    NDTMap<PointT>* map = new NDTMap<PointT>(new CellVector<PointT>());
-    CellVector<PointT>* idx = dynamic_cast<CellVector<PointT>*> (map->getMyIndex());
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    NDTMap* map = new NDTMap(new CellVector());
+    CellVector* idx = dynamic_cast<CellVector*> (map->getMyIndex());
+    typename SpatialIndex::CellVectorItr it = index_->begin();
 
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        if(cell!=NULL)
-        {
-            if(cell->hasGaussian_)
-            {
-                Eigen::Vector3d mean = cell->getMean();
-                Eigen::Matrix3d cov = cell->getCov();
-                mean = T*mean;
-                ///NOTE: The rotation of the covariance fixed by Jari 6.11.2012
-                cov = T.rotation()*cov*T.rotation().transpose();
-                NDTCell<PointT>* nd = (NDTCell<PointT>*)cell->clone();
-                nd->setMean(mean);
-                nd->setCov(cov);
-                idx->addNDTCell(nd);
-            }
-        }
-        else
-        {
-            //ERR("problem casting cell to NDT!\n");
-        }
+        NDTCell *cell = (*it);
+	if(cell->hasGaussian_)
+	{
+	    Eigen::Vector3d mean = cell->getMean();
+	    Eigen::Matrix3d cov = cell->getCov();
+	    mean = T*mean;
+	    ///NOTE: The rotation of the covariance fixed by Jari 6.11.2012
+	    cov = T.rotation()*cov*T.rotation().transpose();
+	    NDTCell* nd = (NDTCell*)cell->clone();
+	    nd->setMean(mean);
+	    nd->setCov(cov);
+	    idx->addNDTCell(nd);
+	}
         it++;
     }
     return map;
 }
 
-template<typename PointT>
-std::vector<NDTCell<PointT>*> NDTMap<PointT>::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
+std::vector<NDTCell*> NDTMap::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
 {
 
-    std::vector<NDTCell<PointT>*> ret;
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    std::vector<NDTCell*> ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
+        NDTCell *cell = (*it);
         if(cell!=NULL)
         {
             if(cell->hasGaussian_)
@@ -2051,7 +1954,7 @@ std::vector<NDTCell<PointT>*> NDTMap<PointT>::pseudoTransformNDT(Eigen::Transfor
                 mean = T*mean;
                 ///NOTE: The rotation of the covariance fixed by Jari 6.11.2012
                 cov = T.rotation()*cov*T.rotation().transpose();
-                NDTCell<PointT>* nd = (NDTCell<PointT>*)cell->clone();
+                NDTCell* nd = (NDTCell*)cell->clone();
                 nd->setMean(mean);
                 nd->setCov(cov);
                 ret.push_back(nd);
@@ -2066,11 +1969,9 @@ std::vector<NDTCell<PointT>*> NDTMap<PointT>::pseudoTransformNDT(Eigen::Transfor
     return ret;
 }
 
-template<typename PointT>
-NDTCell<PointT>*
-NDTMap<PointT>::getCellIdx(unsigned int idx) const
+NDTCell* NDTMap::getCellIdx(unsigned int idx) const
 {
-    CellVector<PointT> *cl = dynamic_cast<CellVector<PointT>*>(index_);
+    CellVector *cl = dynamic_cast<CellVector*>(index_);
     if (cl != NULL)
     {
         return cl->getCellIdx(idx);
@@ -2078,72 +1979,49 @@ NDTMap<PointT>::getCellIdx(unsigned int idx) const
     return NULL;
 }
 
-template<typename PointT>
-std::vector<lslgeneric::NDTCell<PointT>*> NDTMap<PointT>::getAllCells() const
+std::vector<lslgeneric::NDTCell*> NDTMap::getAllCells() const
 {
 
-    std::vector<NDTCell<PointT>*> ret;
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    std::vector<NDTCell*> ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        if(cell!=NULL)
-        {
-            if(cell->hasGaussian_)
-            {
-                NDTCell<PointT>* nd = (NDTCell<PointT>*)cell->copy();
-                ret.push_back(nd);
-            }
-        }
-        else
-        {
-        }
+        NDTCell *cell = (*it);
+	if(cell->hasGaussian_)
+	{
+	    NDTCell* nd = cell->copy();
+	    ret.push_back(nd);
+	}
         it++;
     }
     return ret;
 }
 
-template<typename PointT>
-std::vector<lslgeneric::NDTCell<PointT>*> NDTMap<PointT>::getAllInitializedCells()
+std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells()
 {
-
-    std::vector<NDTCell<PointT>*> ret;
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    std::vector<NDTCell*> ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        if(cell!=NULL)
-        {
-            NDTCell<PointT>* nd = (NDTCell<PointT>*)cell->copy();
-            ret.push_back(nd);
-        }
-        else
-        {
-        }
+	NDTCell* nd = (*it)->copy();
+	ret.push_back(nd);
         it++;
     }
     return ret;
 }
 
-
-
-template<typename PointT>
-int NDTMap<PointT>::numberOfActiveCells()
+int NDTMap::numberOfActiveCells()
 {
     int ret = 0;
     if(index_ == NULL) return ret;
-    typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorItr it = index_->begin();
     while (it != index_->end())
     {
-        NDTCell<PointT> *cell = dynamic_cast<NDTCell<PointT>*> (*it);
-        if(cell!=NULL)
-        {
-            if(cell->hasGaussian_)
-            {
-                ret++;
-            }
-        }
-        it++;
+	if((*it)->hasGaussian_)
+	{
+	    ret++;
+	}
+	it++;
     }
     return ret;
 }

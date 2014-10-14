@@ -37,7 +37,8 @@
 
 #include <ndt_map/spatial_index.h>
 #include <ndt_map/ndt_cell.h>
-#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/impl/kdtree_flann.hpp>
+#include <pcl/console/print.h>
 
 namespace lslgeneric
 {
@@ -45,54 +46,50 @@ namespace lslgeneric
 /** \brief A spatial index represented as a grid map
     \details A grid map with delayed allocation of cells.
 */
-template <typename PointT>
-class CellVector : public SpatialIndex<PointT>
+class CellVector : public SpatialIndex
 {
 public:
     CellVector();
-    CellVector(Cell<PointT>* cellPrototype);
-    CellVector(const CellVector<PointT>& other)
-    {
-        //std::cout<<"CREATE COPY CELL VECTOR\n";
-        this = other.copy();
-    }
+    CellVector(NDTCell* cellPrototype);
+    CellVector(const CellVector& other);
     virtual ~CellVector();
 
-    virtual Cell<PointT>* getCellForPoint(const PointT &point);
-    virtual Cell<PointT>* addPoint(const PointT &point);
-    void addCellPoints(pcl::PointCloud<PointT> pc, const std::vector<size_t> &indices);
-    void addCell(Cell<PointT>* cell);
-    void addNDTCell(NDTCell<PointT>* cell);
+    virtual NDTCell* getCellForPoint(const pcl::PointXYZ &point);
+    virtual NDTCell* addPoint(const pcl::PointXYZ &point);
+    void addCellPoints(pcl::PointCloud<pcl::PointXYZ> pc, const std::vector<size_t> &indices);
+    
+    void addCell(NDTCell* cell);
+    void addNDTCell(NDTCell* cell);
 
-    virtual typename SpatialIndex<PointT>::CellVectorItr begin();
-    virtual typename SpatialIndex<PointT>::CellVectorItr end();
+    virtual typename SpatialIndex::CellVectorItr begin();
+    virtual typename SpatialIndex::CellVectorItr end();
     virtual int size();
 
     ///clone - create an empty object with same type
-    virtual SpatialIndex<PointT>* clone() const;
+    virtual SpatialIndex* clone() const;
     ///copy - create the same object as a new instance
-    virtual SpatialIndex<PointT>* copy() const;
+    virtual SpatialIndex* copy() const;
 
     ///method to return all cells within a certain radius from a point
-    virtual void getNeighbors(const PointT &point, const double &radius, std::vector<Cell<PointT>*> &cells);
+    virtual void getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells);
 
     ///sets the cell factory type
-    virtual void setCellType(Cell<PointT> *type);
+    virtual void setCellType(NDTCell *type);
 
 
     void initKDTree();
 
-    NDTCell<PointT>* getClosestNDTCell(const PointT &pt);
-    std::vector<NDTCell<PointT>*> getClosestNDTCells(const PointT &point, double &radius);
-    NDTCell<PointT>* getCellIdx(unsigned int idx) const;
+    NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt);
+    std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &point, double &radius);
+    NDTCell* getCellIdx(unsigned int idx) const;
 
     void cleanCellsAboveSize(double size);
     int loadFromJFF(FILE * jffin);
 private:
-    std::vector<Cell<PointT>*> activeCells;
-    Cell<PointT> *protoType;
-    pcl::KdTreeFLANN<PointT> meansTree;
-    typename pcl::KdTree<PointT>::PointCloudPtr mp;
+    std::vector<NDTCell*> activeCells;
+    NDTCell *protoType;
+    pcl::KdTreeFLANN<pcl::PointXYZ> meansTree;
+    typename pcl::KdTree<pcl::PointXYZ>::PointCloudPtr mp;
     bool treeUpdated;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -100,6 +97,6 @@ public:
 
 
 }; //end namespace
-#include <ndt_map/impl/cell_vector.hpp>
+//#include <ndt_map/impl/cell_vector.hpp>
 
 #endif

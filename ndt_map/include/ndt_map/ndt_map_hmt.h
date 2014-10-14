@@ -38,7 +38,7 @@
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/spatial_index.h>
 #include <ndt_map/ndt_cell.h>
-#include <ndt_map/depth_camera.h>
+//#include <ndt_map/depth_camera.h>
 #include <ndt_map/lazy_grid.h>
 
 #include <cstdlib>
@@ -61,8 +61,7 @@ namespace lslgeneric
 * through an environment and scans with a limited range sensor. Border areas are tracked as separate 
 * LazyGrid maps and stored and loaded from disk when the robot switches the map region
 */
-template <typename PointT>
-class NDTMapHMT : public NDTMap<PointT>
+class NDTMapHMT : public NDTMap
 {
 public:
 
@@ -92,14 +91,14 @@ public:
 	    closedir(mdir);
 	}
 
-	LazyGrid<PointT> *lz = new LazyGrid<PointT>(resolution);
+	LazyGrid *lz = new LazyGrid(resolution);
 	this->index_ = lz;
 
 	//this is used to prevent memory de-allocation of the *si
 	//si was allocated outside the NDT class and should be deallocated outside
 	this->isFirstLoad_=true;
 
-	NDTCell<PointT> *ptCell = new NDTCell<PointT>();
+	NDTCell *ptCell = new NDTCell();
 	this->index_->setCellType(ptCell);
 	delete ptCell;
 	this->index_->setCenter(cenx,ceny,cenz);
@@ -115,7 +114,7 @@ public:
 	//create the grid of LazyGrids and set their centers
 	initializeGrids();
     }
-    NDTMapHMT(const NDTMapHMT<PointT>& other)
+    NDTMapHMT(const NDTMapHMT& other)
     {
         if(other.index_ != NULL)
         {
@@ -152,7 +151,7 @@ public:
     * \param pc the PointCloud that is to be loaded
     * \note every subsequent call will destroy the previous map!
     */
-    virtual void loadPointCloud(const pcl::PointCloud<PointT> &pc, double range_limit = -1);
+    virtual void loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, double range_limit = -1);
     /**
     	* Add new pointcloud to map - This is the main interface for NDT-OM!
     	* Performs raytracing, updates conflicts and adds points to cells
@@ -164,7 +163,7 @@ public:
     	* @param maxz threshold for the maximum z-coordinate value for the measurement point_cloud
     	* @param sensor_noise The expected standard deviation of the sensor noise
     	*/
-    virtual void addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<PointT> &pc, double classifierTh=0.06, 
+    virtual void addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<pcl::PointXYZ> &pc, double classifierTh=0.06, 
 				double maxz = 100.0, double sensor_noise = 0.25, double occupancy_limit = 255);
 
     /**
@@ -183,7 +182,7 @@ public:
      * @param sensor_noise The expected standard deviation of the sensor noise
      */
     virtual void addPointCloudMeanUpdate(const Eigen::Vector3d &origin, 
-	    const pcl::PointCloud<PointT> &pc, 
+	    const pcl::PointCloud<pcl::PointXYZ> &pc, 
 	    const Eigen::Vector3d &localmapsize,
 	    unsigned int maxnumpoints = 1e9, float occupancy_limit=255 ,double maxz = 100.0, double sensor_noise = 0.25);
 
@@ -212,18 +211,18 @@ public:
     int writeTo();
     int loadFrom();
     //cehck if there is a grid at this center and try to load it
-    bool tryLoad(const double &cx, const double &cy, const double &cz, LazyGrid<PointT> *&grid);
+    bool tryLoad(const double &cx, const double &cy, const double &cz, LazyGrid *&grid);
 
 ///------------------- non-essential stuff --------------///
     //computes the likelihood of a single observation
-    virtual double getLikelihoodForPoint(PointT pt);
+    virtual double getLikelihoodForPoint(pcl::PointXYZ pt);
 
     ///Get the cell for which the point fall into (not the closest cell)
-    virtual bool getCellAtPoint(const PointT &refPoint, NDTCell<PointT> *&cell);
+    virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell);
 
     virtual bool getCentroid(double &cx, double &cy, double &cz)
     {
-        LazyGrid<PointT> *lz = grid_[1][1];
+        LazyGrid *lz = grid_[1][1];
         if(lz == NULL) return false;
         lz->getCenter(cx, cy, cz);
         return true;
@@ -232,21 +231,21 @@ public:
      * returns the closest cell to refPoint
      * Does not work with NDT-OM
      */
-    virtual bool getCellForPoint(const PointT &refPoint, NDTCell<PointT> *&cell, bool checkForGaussian=true) const;
+    virtual bool getCellForPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell, bool checkForGaussian=true) const;
     /**
      * Returns all the cells within radius
      * Does not work with NDT-OM
      */
-    virtual std::vector<NDTCell<PointT>*> getCellsForPoint(const PointT pt, int n_neighbours, bool checkForGaussian=true) const;
+    virtual std::vector<NDTCell*> getCellsForPoint(const pcl::PointXYZ pt, int n_neighbours, bool checkForGaussian=true) const;
     /**
      * Returns all the cells within radius
      */
-    virtual std::vector<NDTCell<PointT>*> getInitializedCellsForPoint(const PointT pt) const;
+    virtual std::vector<NDTCell*> getInitializedCellsForPoint(const pcl::PointXYZ pt) const;
 
     /**
     * Returns a transformed NDT as a vector of NDT cells
     */
-    virtual std::vector<NDTCell<PointT>*> pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T);
+    virtual std::vector<NDTCell*> pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T);
 
     /**
      * Returns a transformed NDT as an NDT map with a CellVector data structure
@@ -256,12 +255,12 @@ public:
      * Returns all computed cells from the map
      * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
      */
-    virtual std::vector<lslgeneric::NDTCell<PointT>*> getAllCells() const;
+    virtual std::vector<lslgeneric::NDTCell*> getAllCells() const;
     /**
      * Returns all cells that have been initialized (including ones that do not contain gaussian at the moment).
      * This is useful if you want to use the empty cells or dynamic cells
      */
-    virtual std::vector<lslgeneric::NDTCell<PointT>*> getAllInitializedCells();
+    virtual std::vector<lslgeneric::NDTCell*> getAllInitializedCells();
 
     int numberOfActiveCells();
     void setInsertPosition(const Eigen::Vector3d &newPos);
@@ -269,7 +268,7 @@ public:
 protected:
     bool is3D;
     bool saveOnDelete;
-    SpatialIndex<PointT> *index_;
+    SpatialIndex *index_;
     bool isFirstLoad_;
     float map_sizex;
     float map_sizey;
@@ -279,23 +278,22 @@ protected:
     Eigen::Vector3d last_insert;
     std::string my_directory;
     double resolution;
-    std::set<NDTCell<PointT>*> update_set;
+    std::set<NDTCell*> update_set;
 
     double max_range_;
-    lslgeneric::LazyGrid<PointT>* grid_[3][3];
+    lslgeneric::LazyGrid* grid_[3][3];
     //helper functions
     void initializeGrids();
     
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    pcl::PointCloud<PointT> conflictPoints; ///< points that were conflicting during update
+    pcl::PointCloud<pcl::PointXYZ> conflictPoints; ///< points that were conflicting during update
 		
 
 };
 
 } // end namespace
 
-#include <ndt_map/impl/ndt_map_hmt.hpp>
 
 #endif

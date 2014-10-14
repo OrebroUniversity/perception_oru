@@ -10,7 +10,6 @@
 
 #warning "ALWAYS PLACE THE ndt_viz.h BEFORE THE ROS HEADERS!!!"
 
-template <typename PointT>
 class NDTViz {
 
     public:
@@ -81,7 +80,7 @@ class NDTViz {
 	/**
 	  * Add the laser scan to the scen 
 	  */
-	void addScan(Eigen::Vector3d orig, pcl::PointCloud<PointT> &cloud, double R=1.0,double G=1.0,double B=1.0){
+	void addScan(Eigen::Vector3d orig, pcl::PointCloud<pcl::PointXYZ> &cloud, double R=1.0,double G=1.0,double B=1.0){
 
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
 	    mrpt::opengl::CSetOfLinesPtr obj = mrpt::opengl::CSetOfLines::Create();
@@ -92,7 +91,7 @@ class NDTViz {
 	    scene->insert(obj);
 	    win3D->unlockAccess3DScene();
 	}
-	void addPointCloud(pcl::PointCloud<PointT> &cloud, double R=1.0,double G=1.0,double B=1.0){
+	void addPointCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, double R=1.0,double G=1.0,double B=1.0){
 
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
 	    mrpt::opengl::CPointCloudColouredPtr obj = mrpt::opengl::CPointCloudColoured::Create();
@@ -106,9 +105,9 @@ class NDTViz {
 
 
 
-	void plotNDTMap(lslgeneric::NDTMap<PointT> *map, double R=1.0,double G=1.0,double B=1.0, bool heightCoding=false, bool setCameraPos = true ){
+	void plotNDTMap(lslgeneric::NDTMap *map, double R=1.0,double G=1.0,double B=1.0, bool heightCoding=false, bool setCameraPos = true ){
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell<PointT>*> global_ndts;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
@@ -150,10 +149,10 @@ class NDTViz {
 
 	}
 
-	void plotNDTSAccordingToCost(float occupancy, double MAX_COST, lslgeneric::NDTMap<PointT> *map){
+	void plotNDTSAccordingToCost(float occupancy, double MAX_COST, lslgeneric::NDTMap *map){
 
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell<PointT>*> global_ndts;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
 
@@ -204,10 +203,10 @@ class NDTViz {
 
 	}
 	/** plots ndts according to the cell class, with an occupancy cutoff */
-	void plotNDTSAccordingToClass(float occupancy, lslgeneric::NDTMap<PointT> *map){
+	void plotNDTSAccordingToClass(float occupancy, lslgeneric::NDTMap *map){
 
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell<PointT>*> global_ndts;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
 
@@ -236,16 +235,16 @@ class NDTViz {
 		    objEllip->setCovMatrix(M);
 		    objEllip->setLocation(m[0], m[1], m[2]);
 		    switch(global_ndts[i]->getClass()) {
-			case lslgeneric::NDTCell<PointT>::HORIZONTAL : 
+			case lslgeneric::NDTCell::HORIZONTAL : 
 			    color = cFlat;
 			    break;
-			case lslgeneric::NDTCell<PointT>::VERTICAL :
+			case lslgeneric::NDTCell::VERTICAL :
 			    color = cVert;
 			    break;
-			case lslgeneric::NDTCell<PointT>::INCLINED :
+			case lslgeneric::NDTCell::INCLINED :
 			    color = cInclined;
 			    break;
-			case lslgeneric::NDTCell<PointT>::ROUGH :
+			case lslgeneric::NDTCell::ROUGH :
 			    color = cRough;
 			    break;
 			default:
@@ -278,9 +277,9 @@ class NDTViz {
 
 	}
 
-	void plotNDTSAccordingToOccupancy(float occupancy, lslgeneric::NDTMap<PointT> *map){
+	void plotNDTSAccordingToOccupancy(float occupancy, lslgeneric::NDTMap *map){
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell<PointT>*> global_ndts;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    fprintf(stderr," NUM NDT: %lu ", global_ndts.size());
 
@@ -329,14 +328,14 @@ class NDTViz {
 
 	}
 
-	void plotLocalNDTMap(pcl::PointCloud<PointT> &cloud, double resolution, double R=0, double G=1, double B=0, bool heightCoding=true){
+	void plotLocalNDTMap(pcl::PointCloud<pcl::PointXYZ> &cloud, double resolution, double R=0, double G=1, double B=0, bool heightCoding=true){
 	    if(win3D == NULL) return;
 
-	    lslgeneric::NDTMap<PointT> ndlocal(new lslgeneric::LazyGrid<PointT>(resolution));
+	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
 	    ndlocal.addPointCloudSimple(cloud);
 	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	    std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+	    std::vector<lslgeneric::NDTCell*> ndts;
 	    ndts = ndlocal.getAllCells();
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
 	    std::cout<<"LOCAL: "<<ndts.size()<<std::endl;
@@ -367,16 +366,16 @@ class NDTViz {
 
 	}
 
-	void plotLocalConflictNDTMap(lslgeneric::NDTMap<PointT> *map, pcl::PointCloud<PointT> &cloud, 
+	void plotLocalConflictNDTMap(lslgeneric::NDTMap *map, pcl::PointCloud<pcl::PointXYZ> &cloud, 
 		double resolution, double R=1, double G=0, double B=0, bool heightCoding=false, double maxz=0){
 	    if(win3D == NULL) return;
 
-	    lslgeneric::NDTMap<PointT> ndlocal(new lslgeneric::LazyGrid<PointT>(resolution));
+	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
 
 	    ndlocal.addPointCloudSimple(cloud);
 	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	    std::vector<lslgeneric::NDTCell<PointT>*> ndts;
+	    std::vector<lslgeneric::NDTCell*> ndts;
 	    ndts = ndlocal.getAllCells();
 
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
@@ -387,9 +386,9 @@ class NDTViz {
 
 		Eigen::Vector3d m = ndts[i]->getMean();
 		if(m[2]>maxz) continue;
-		PointT p;
+		pcl::PointXYZ p;
 		p.x = m[0]; p.y=m[1]; p.z = m[2];
-		lslgeneric::NDTCell<PointT> *map_cell=NULL;
+		lslgeneric::NDTCell *map_cell=NULL;
 		map->getCellAtPoint(p, map_cell);
 		if(map_cell == NULL) continue;
 
@@ -420,9 +419,9 @@ class NDTViz {
 	}
 
 
-	void plotNDTTraversabilityMap(lslgeneric::NDTMap<PointT> *map){
+	void plotNDTTraversabilityMap(lslgeneric::NDTMap *map){
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell<PointT>*> global_ndts;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 
 	    mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock();
@@ -442,13 +441,13 @@ class NDTViz {
 
 		//CC = global_ndts[i]->getClass();
 		// {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
-		if(global_ndts[i]->getClass() == lslgeneric::NDTCell<PointT>::HORIZONTAL){
+		if(global_ndts[i]->getClass() == lslgeneric::NDTCell::HORIZONTAL){
 		    objEllip->setColor(0,1.0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell<PointT>::VERTICAL){
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::VERTICAL){
 		    objEllip->setColor(1.0,0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell<PointT>::INCLINED){
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::INCLINED){
 		    objEllip->setColor(1.0,1.0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell<PointT>::ROUGH){
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::ROUGH){
 		    objEllip->setColor(0,0,1.0,1.0);
 		}else{
 		    objEllip->setColor(1.0,1.0,1.0,1.0);
@@ -472,7 +471,7 @@ class NDTViz {
 	 *  Computes and visualizes an NDT depth image, based on maximum likelihood estimation
 	 * 
 	 */
-	void ndtCoolCam(lslgeneric::NDTMap<PointT> *map ,const Eigen::Affine3d &spos, double maxDist=70.0, 
+	void ndtCoolCam(lslgeneric::NDTMap *map ,const Eigen::Affine3d &spos, double maxDist=70.0, 
 		unsigned int Nx=800, unsigned int Ny=600, double fx=800, double fy=600){
 	    Eigen::Matrix3d K;
 	    K << fx,0,(double)Nx/2.0,

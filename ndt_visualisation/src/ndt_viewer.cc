@@ -39,10 +39,10 @@ int main(int argc, char **argv){
     
     if(point_type == "XYZI") {
 	//load NDT map. Only Lazy grid supported!
-	lslgeneric::NDTMap<pcl::PointXYZI> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZI>(resolution));
+	lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 	ndmap.loadFromJFF(base_name.c_str());
 	//create visualizer
-	NDTViz<pcl::PointXYZI> *viewer = new NDTViz<pcl::PointXYZI>(true);
+	NDTViz *viewer = new NDTViz(true);
 	//display map
 	viewer->plotNDTSAccordingToOccupancy(-1,&ndmap);
 	while(viewer->win3D->isOpen()){
@@ -81,10 +81,10 @@ int main(int argc, char **argv){
 	delete viewer;
     } else {
 	//load NDT map. Only Lazy grid supported!
-	lslgeneric::NDTMap<pcl::PointXYZ> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZ>(resolution));
+	lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 	ndmap.loadFromJFF(base_name.c_str());
 	//create visualizer
-	NDTViz<pcl::PointXYZ> *viewer = new NDTViz<pcl::PointXYZ>(true);
+	NDTViz *viewer = new NDTViz(true);
 	//display map
 	viewer->plotNDTSAccordingToOccupancy(-1,&ndmap);
 	while(viewer->win3D->isOpen()){

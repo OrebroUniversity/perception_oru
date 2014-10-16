@@ -56,6 +56,7 @@ class NDTFuserHMT{
 	    doMultires = doMultires_;
 	    ctr =0;
 	    viewer = new NDTViz(visualize);
+	    viewer->win3D->start_main_loop_own_thread(); // Very very ugly to start it here... FIX ME.
 	    localMapSize<<sensor_range_,sensor_range_,map_size_z_;
 	    fuseIncomplete = fuseIncomplete_;
 	    matcher.ITR_MAX = max_itr;

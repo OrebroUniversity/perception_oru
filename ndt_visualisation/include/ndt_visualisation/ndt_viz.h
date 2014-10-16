@@ -3,8 +3,10 @@
 
 #include <ndt_map/ndt_map.h>
 #include <ndt_visualisation/NDTVizGlut.hh>
+#include <pthread.h>
 
 //#warning "ALWAYS PLACE THE ndt_viz.h BEFORE THE ROS HEADERS!!!"
+
 
 class NDTViz {
 
@@ -15,7 +17,7 @@ class NDTViz {
 	NDTVizGlutPointCloudColor gl_pointcloud;
 	NDTVizGlutSetOfLines gl_laserlines;
 	NDTVizGlutEllipsoids gl_ellipsoids;
-	
+
 	NDTViz(bool allocate_new_window=true)
 
 	{
@@ -41,6 +43,11 @@ class NDTViz {
 		delete win3D;
 	    }
 	}
+
+	void startEventLoop() {
+	  	
+	}
+
 	void repaint(){
 	    win3D->repaint();
 	}

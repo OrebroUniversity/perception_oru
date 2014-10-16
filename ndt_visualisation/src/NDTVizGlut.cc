@@ -16,6 +16,70 @@ void win_motion_(int x, int y) { glut3d_ptr->win_motion(x, y); }
 void win_idle_() { glut3d_ptr->win_idle(); }  
 void win_close_() { glut3d_ptr->win_close(); }
 
+void * glthread(void * pParam)
+{
+    int argc=0;
+    char** argv = NULL;
+	      
+    glutInit(&argc, argv);
+	  
+     // Create a window
+     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+     glutInitWindowSize(640,480);
+     
+     win = glutCreateWindow("NDTVizGlut");
+     
+     glEnable(GL_DEPTH_TEST);
+     
+     glEnable(GL_LIGHTING);
+     glEnable(GL_LIGHT0);
+     
+     // Create light components
+     GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+     GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
+     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+     GLfloat position[] = { -1.5f, 1.0f, -4.0f, 1.0f };
+     
+     // Assign created components to GL_LIGHT0
+     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+     glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+
+     // enable color tracking
+     glEnable(GL_COLOR_MATERIAL);
+     // set material properties which will be assigned by glColor
+     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+
+
+    glutReshapeFunc(win_reshape_);
+     glutDisplayFunc(win_redraw_);
+     glutKeyboardFunc(win_key_);
+     glutMouseFunc(win_mouse_);
+     glutMotionFunc(win_motion_);
+     glutPassiveMotionFunc(NULL);
+
+     // Idle loop callback
+     glutIdleFunc(win_idle_);
+
+     // Window close function
+     glutCloseFunc(win_close_);
+    /* Thread will loop here */
+
+     while (true) {
+         usleep(1000);
+         for (int i = 0; i < 10; i++)
+             glutMainLoopEvent();
+         glut3d_ptr->update_cam();
+         win_redraw_();
+     }
+     //glutMainLoop();
+     
+     return NULL;
+}
+
+
 NDTVizGlut::NDTVizGlut()
 {
      // GUI settings
@@ -75,7 +139,7 @@ NDTVizGlut::win_mouse(int button, int state, int x, int y)
 //    std::cerr << "win_mouse - b:" << button << " s: " << state << "[" << x << "," << y << "]" << std::endl;
     camera.update_mouse(button, state, x, y);
     update_cam();
-    win_redraw();
+    //win_redraw();
     return;
 }
 
@@ -85,7 +149,7 @@ NDTVizGlut::win_motion(int x, int y)
 //    std::cerr << "win_motion : " << x << "," << y << std::endl;
     camera.update_motion(x, y);
     update_cam();
-    win_redraw();
+    //win_redraw();
     return;
 }
 
@@ -204,57 +268,58 @@ NDTVizGlut::process_events()
 {
 //     if (do_save_inc)
 //	  save_inc();
-     glutMainLoopEvent();
+//     glutMainLoopEvent();
 }
 
 // Run the GUI
 int 
 NDTVizGlut::win_run(int *argc, char **argv)
 {
-     glutInit(argc, argv);
+    std::cerr << "win_run" << std::endl;
+     // glutInit(argc, argv);
 	  
-     // Create a window
-     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-     glutInitWindowSize(640,480);
+     // // Create a window
+     // glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+     // glutInitWindowSize(640,480);
      
-     win = glutCreateWindow("NDTVizGlut");
+     // win = glutCreateWindow("NDTVizGlut");
      
-     glEnable(GL_DEPTH_TEST);
+     // glEnable(GL_DEPTH_TEST);
      
-     glEnable(GL_LIGHTING);
-     glEnable(GL_LIGHT0);
+     // glEnable(GL_LIGHTING);
+     // glEnable(GL_LIGHT0);
      
-     // Create light components
-     GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-     GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
-     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-     GLfloat position[] = { -1.5f, 1.0f, -4.0f, 1.0f };
+     // // Create light components
+     // GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+     // GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
+     // GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+     // GLfloat position[] = { -1.5f, 1.0f, -4.0f, 1.0f };
      
-     // Assign created components to GL_LIGHT0
-     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-     glLightfv(GL_LIGHT0, GL_POSITION, position);
+     // // Assign created components to GL_LIGHT0
+     // glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+     // glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+     // glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+     // glLightfv(GL_LIGHT0, GL_POSITION, position);
 
 
-     // enable color tracking
-     glEnable(GL_COLOR_MATERIAL);
-     // set material properties which will be assigned by glColor
-     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+     // // enable color tracking
+     // glEnable(GL_COLOR_MATERIAL);
+     // // set material properties which will be assigned by glColor
+     // glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
      
 //     glutIgnoreKeyRepeat(1);
-     glutReshapeFunc(win_reshape_);
-     glutDisplayFunc(win_redraw_);
-     glutKeyboardFunc(win_key_);
-     glutMouseFunc(win_mouse_);
-     glutMotionFunc(win_motion_);
-     glutPassiveMotionFunc(NULL);
+     // glutReshapeFunc(win_reshape_);
+     // glutDisplayFunc(win_redraw_);
+     // glutKeyboardFunc(win_key_);
+     // glutMouseFunc(win_mouse_);
+     // glutMotionFunc(win_motion_);
+     // glutPassiveMotionFunc(NULL);
 
-     // Idle loop callback
-     glutIdleFunc(win_idle_);
+     // // Idle loop callback
+     // glutIdleFunc(win_idle_);
 
-     // Window close function
-     glutCloseFunc(win_close_);
+     // // Window close function
+     // glutCloseFunc(win_close_);
 
      return 0;
 }
@@ -322,7 +387,7 @@ NDTVizGlut::save(const std::string &fileName)
 
 void
 NDTVizGlut::repaint() {
-    this->win_redraw();
+    //this->win_redraw();
 
 }
 

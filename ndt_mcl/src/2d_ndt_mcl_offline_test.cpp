@@ -201,7 +201,7 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
 
 	ndt_viz.win3D->setCameraPointingToPoint(dm[0],dm[1],3.0);
 	ndt_viz.repaint();
-        ndt_viz.win3D->process_events();
+//        ndt_viz.win3D->process_events();
 #endif
 	
         counter++;
@@ -297,7 +297,10 @@ int main(int argc, char **argv){
 	has_sensor_offset_set = true;
 	
 	fprintf(stderr,"Sensor Pose = (%lf %lf %lf)\n",offx, offy, offa);	
-	
+
+#ifdef USE_VISUALIZATION_DEBUG       
+        ndt_viz.win3D->start_main_loop_own_thread();
+#endif	
 	///Loop while we have data in the bag
 	while(!reader.bagEnd() && ros::ok()){
 		sensor_msgs::LaserScan s;
@@ -320,7 +323,7 @@ int main(int argc, char **argv){
 			 callback(s,odo_pose,state_pose);
 		}
 #ifdef USE_VISUALIZATION_DEBUG       
-                ndt_viz.win3D->process_events();
+//                ndt_viz.win3D->process_events();
 #endif   
 	}
 

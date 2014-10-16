@@ -47,7 +47,7 @@ namespace lslgeneric {
 	    viewer->displayTrajectory();
 	    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 	    viewer->repaint();	
-	}
+        }
     }
 
     /**
@@ -171,8 +171,9 @@ namespace lslgeneric {
 			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
-			    viewer->repaint();	
-			}
+			    viewer->repaint();
+                            viewer->win3D->process_events();
+                        }
 			ctr++;
 		    }
 		}
@@ -226,8 +227,9 @@ namespace lslgeneric {
 			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
-			    viewer->repaint();	
-			}
+			    viewer->repaint();
+                            viewer->win3D->process_events();
+                        }
 			ctr++;
 		    }
 		}

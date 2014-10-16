@@ -15,7 +15,7 @@
 		<param name="map_file_name" value="$(find ndt_mcl)/maps/ndt_0040.ndmap" />
 
 		<param name="save_output_map" value="false" />
-		<param name="output_map_file_name" value="$(find ndt_mcl)/maps/ndt_mapper_output.ndmap" />
+ 		<param name="output_map_file_name" value="$(find ndt_mcl)/maps/ndt_mapper_output.ndmap" />
 		<param name="map_resolution" value="0.4" />
 		<param name="bagfile_name" value="$(find ndt_mcl)/data/localization.bag"/>
 	</node>   

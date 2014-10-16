@@ -356,6 +356,7 @@ public:
     virtual Eigen::Vector3f getPosition() const = 0;
     virtual Eigen::Vector3f getFocalPoint() const = 0;
     virtual Eigen::Vector3f getUpVector() const = 0;
+    virtual void setFocalPoint(const Eigen::Vector3f &fp) = 0;
 };
 
 //! This implements a XY-orbit camera movement
@@ -372,9 +373,9 @@ public:
     NDTVizGlutXYOrbitCamera() {
         last_button_ = -1; 
         last_state_ = -1;
-        distance = 5.;
-        yaw = 0.;
-        pitch = 1.;
+        distance = 30.;
+        yaw = 1.;
+        pitch = 0.7;
         focal_point_ = Eigen::Vector3f(0., 0., 0.);
     }
 
@@ -387,6 +388,9 @@ public:
     }
     Eigen::Vector3f getFocalPoint() const {
         return focal_point_;
+    }
+    void setFocalPoint(const Eigen::Vector3f &fp) {
+        focal_point_ = fp;
     }
     Eigen::Vector3f getUpVector() const {
         return Eigen::Vector3f(0., 0., 1.);
@@ -405,9 +409,9 @@ public:
             // Each wheel event reports like a button click, GLUT_DOWN then GLUT_UP
             if (state != GLUT_UP) { // Disregard redundant GLUT_UP events
                 if (button == 3) 
-                    distance *= 1.1;
-                else
                     distance *= 0.9;
+                else
+                    distance *= 1.1;
             }
         }       
         
@@ -435,7 +439,10 @@ public:
             //focal_point_[1] -= cos(yaw) * dx; // - sin(yaw) * dy;
             break;
         case GLUT_RIGHT_BUTTON:
-            distance += dy;
+            if (dy > 0)
+                distance *= 1.05;
+            else
+                distance *= 0.95;
             break;
         default:
             break;
@@ -497,10 +504,8 @@ public:
 
     void clearScene();
 
-    void setCameraPointingAt(double x, double y, double z);
-    void setCameraPointingToPoint(double x, double y, double z) { this->setCameraPointingAt(x,y,z); }
-
-    void setCameraPosition(double x, double y, double z);
+    void setCameraPointingToPoint(double x, double y, double z);
+    void setCameraPosition(double x, double y, double z); //Not used?
 
     bool isOpen() const;
 

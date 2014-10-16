@@ -332,19 +332,13 @@ NDTVizGlut::clearScene() {
 }
 
 void
-NDTVizGlut::setCameraPointingAt(double x, double y, double z) {
-    this->cam_dir[0] = x;
-    this->cam_dir[1] = y;
-    this->cam_dir[2] = z;
-
+NDTVizGlut::setCameraPointingToPoint(double x, double y, double z) {
+    camera.setFocalPoint(Eigen::Vector3f(x,y,z)); 
     update_cam();
 }
 
 void
 NDTVizGlut::setCameraPosition(double x, double y, double z) {
-    this->cam_pos[0] = x;
-    this->cam_pos[1] = y;
-    this->cam_pos[2] = z;
-
-    update_cam();
+    // Not really useful in this context. This will instead be interpreted as setCameraPointingAt. Note that the setCameraPointingAt will also move the camera. Is this function anyway used at all?
+    this->setCameraPointingToPoint(x,y,z);
 }

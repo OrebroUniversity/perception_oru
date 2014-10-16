@@ -97,7 +97,6 @@ std::string tf_laser_link =  "base_laser_link";
 void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Transform state_pose)
 {
 	static int counter = 0;
-	counter++;
 	
 	static tf::TransformListener tf_listener;
 	
@@ -188,7 +187,8 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
 	if(counter%500==0){
 	    ndt_viz.clear();
 	    ndt_viz.plotNDTSAccordingToOccupancy(-1,&ndtmcl->map);
-
+            ndt_viz.displayParticles();
+            ndt_viz.displayTrajectory();
 	}
 	ndt_viz.clearParticles();
 	for(int i=0;i<ndtmcl->pf.NumOfParticles;i++){
@@ -199,14 +199,12 @@ void callback(const sensor_msgs::LaserScan &scan, tf::Transform odo_pose, tf::Tr
 	ndt_viz.addTrajectoryPoint(Tgt.translation()(0), Tgt.translation()(1),0.5,1.0,1.0,1.0);	
 	ndt_viz.addTrajectoryPoint(Todo.translation()(0), Todo.translation()(1),0.5,0.0,1.0,0.0);	
 
-	ndt_viz.displayParticles();
-	ndt_viz.displayTrajectory();
 	ndt_viz.win3D->setCameraPointingToPoint(dm[0],dm[1],3.0);
 	ndt_viz.repaint();
+        ndt_viz.win3D->process_events();
 #endif
 	
-	
-
+        counter++;
 }
 
 int main(int argc, char **argv){
@@ -301,7 +299,7 @@ int main(int argc, char **argv){
 	fprintf(stderr,"Sensor Pose = (%lf %lf %lf)\n",offx, offy, offa);	
 	
 	///Loop while we have data in the bag
-	while(!reader.bagEnd()){
+	while(!reader.bagEnd() && ros::ok()){
 		sensor_msgs::LaserScan s;
 		tf::Transform odo_pose;
 		bool hasOdo = false;
@@ -321,6 +319,9 @@ int main(int argc, char **argv){
 		if(hasState && hasOdo){
 			 callback(s,odo_pose,state_pose);
 		}
+#ifdef USE_VISUALIZATION_DEBUG       
+                ndt_viz.win3D->process_events();
+#endif   
 	}
 
 	fprintf(stderr,"-- THE END --\n");

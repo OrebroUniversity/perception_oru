@@ -16,9 +16,7 @@
 * Known issues: in launch file (or hard coded parameters) you have to set the same resolution for NDT map as is saved -- otherwise it wont work
 */
 
-//#define USE_VISUALIZATION_DEBUG ///< Enable / Disable visualization
 #include <ndt_visualisation/ndt_viz.h>
-#include <mrpt/utils/CTicTac.h>
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
@@ -47,7 +45,7 @@
 #include "sensor_msgs/PointCloud2.h"
 
 //#include "ndt_mcl/impl/ndt_mcl.hpp"
-#include "ndt_mcl/impl/3d_ndt_mcl.hpp"
+#include "ndt_mcl/3d_ndt_mcl.h"
 #include <ndt_map/ndt_map.h>
 
 #define SYNC_FRAMES 20
@@ -198,7 +196,6 @@ class NDTMCL3DNode {
 	    Eigen::Quaterniond qd;
 	    Eigen::Affine3d Tm;
 	    pcl::PointCloud<pcl::PointXYZ> cloud, cloudT, cloudTO;
-	    mrpt::utils::CTicTac	tictac;
 	    
 	    qd.x() = odo_in->pose.pose.orientation.x;
 	    qd.y() = odo_in->pose.pose.orientation.y;
@@ -254,12 +251,9 @@ class NDTMCL3DNode {
 	    lslgeneric::transformPointCloudInPlace(sensorPoseT, cloud);
 	    //cloudT = lslgeneric::transformPointCloud(Tcum, cloud);
 
-	    tictac.Tic();	
 	    //update filter -> + add parameter to subsample ndt map in filter step
 	    ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
 
-	    double TimeElapsed = tictac.Tac();
-	    fprintf(stderr,"Time elapsed %lfs\n",TimeElapsed);		
 
 	    //update visualization
 	    ///DRAW STUFF///
@@ -334,303 +328,6 @@ class NDTMCL3DNode {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 };
 
-//Getting rid of RVIZ visualization for now...
-
-//TODO: this goes?
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Initial pose stuff (quick and dirty as always)
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if 0
-double ipos_x=0,ipos_y=0,ipos_yaw=0;
-double ivar_x=0,ivar_y=0,ivar_yaw=0;
-
-ros::Subscriber initial_pose_sub_;
-
-void initialPoseReceived(const geometry_msgs::PoseWithCovarianceStampedConstPtr& msg){
-	tf::Pose ipose;
-  tf::poseMsgToTF(msg->pose.pose, ipose);
-  ipos_x = ipose.getOrigin().x();
-  ipos_y = ipose.getOrigin().y();
-  double pitch, roll;
-  ipose.getBasis().getEulerYPR(ipos_yaw,pitch,roll);
-  
-  ivar_x = msg->pose.covariance[0];
-  ivar_x = msg->pose.covariance[6];
-  ivar_x = msg->pose.covariance[35];
-  
-  hasNewInitialPose=true;
-}
-#endif
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Globals
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-//new callback
-#if 0
-void callback(pcl::PointCloud<pcl::PointXYZI> &cloud)
-{
-    static int pcounter = 0;
-    mrpt::utils::CTicTac	tictac;
-    static tf::TransformListener tf_listener;
-
-    if(has_sensor_offset_set == false) return;
-    double gx,gy,gyaw,x,y,yaw;
-
-    ///Get state information
-    tf::StampedTransform transform;
-
-    ///Odometry 
-    try{
-	tf_listener.lookupTransform("world", tf_odo_topic, cloud->header.stamp, transform);
-	yaw = tf::getYaw(transform.getRotation());  
-	x = transform.getOrigin().x();
-	y = transform.getOrigin().y();
-    }
-    catch (tf::TransformException ex){
-	ROS_ERROR("%s",ex.what());
-	return;
-    }
-    
-    Eigen::Affine3d Ttot,Ts,Tbase,Tgt;
-
-    tf::TransformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose (according to odometry)
-    tf::TransformTFToEigen (T, Ts); ///<sensor offset
-    tf::TransformTFToEigen (basepose, Tgt); ///<Ground truth
-
-    ///Set the cloud to sensor frame with respect to base
-    tf::TransformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
-
-    if(counter == 0){
-
-	cloud_old = cloud;
-	Eigen::Vector3d tr = Tgt.translation();
-	Eigen::Vector3d rot = Tgt.rotation().eulerAngles(0,1,2);
-	Todo=Tgt;
-	Tsold = Ttot;
-	Tprev = Tgt;
-
-	Told = Tbase;
-
-	ndtmcl.initializeFilter(tr[0], tr[1],tr[2],rot[0],rot[1],rot[2],0.5, 0.5, 0.1, 2.0*M_PI/180.0, 2.0*M_PI/180.0 ,2.0*M_PI/180.0, 100);
-	counter ++;
-
-	ndt_viz.plotNDTMap(&ndtmcl.map,0,1.0,1.0,true, false);
-
-	return;
-    }
-    counter++;
-
-    Eigen::Affine3d Tmotion = Told.inverse()*Tbase;
-
-    if(Tmotion.translation().norm()<0.01 && fabs(Tmotion.rotation().eulerAngles(0,1,2)[2])<(0.5*M_PI/180.0)) return;
-
-    Tprev = Todo;
-    cloud_old = cloud;
-    Told = Tbase;
-
-    ///Set the cloud to sensor frame with respect to base
-    lslgeneric::transformPointCloudInPlace(Ts, cloud);
-
-    tictac.Tic();	
-    ndtmcl.updateAndPredictEff(Tmotion, cloud);
-
-    double TimeElapsed = tictac.Tac();
-    fprintf(stderr,"Time elapsed %lfs\n",TimeElapsed);		
-
-    ///DRAW STUFF///
-    pcounter++;
-    if(pcounter%500==0){
-	ndt_viz.clear();
-	ndt_viz.plotNDTMap(&ndtmcl.map,0,1.0,1.0,true, false);
-
-    }
-
-    if(pcounter%10==0){
-
-	ndt_viz.clearParticles();
-	for(int i=0;i<ndtmcl.pf.size();i++){
-	    double x,y,z;
-	    ndtmcl.pf.pcloud[i].getXYZ(x,y,z);
-	    ndt_viz.addParticle(x, y,z+0.5, 1.0, 1.0, 1.0);
-	}
-
-	Eigen::Affine3d mean = ndtmcl.pf.getMean();
-	ndt_viz.addTrajectoryPoint(mean.translation()[0],mean.translation()[1],mean.translation()[2]+0.5,1.0,0,0);	
-	Eigen::Vector3d tr = Tgt.translation();
-	ndt_viz.addTrajectoryPoint(tr[0],tr[1],tr[2]+0.5,0.0,1.0,0);	
-
-	ndt_viz.displayParticles();
-	ndt_viz.displayTrajectory();
-	ndt_viz.win3D->setCameraPointingToPoint(mean.translation()[0],mean.translation()[1],3.0);
-	ndt_viz.repaint();
-    }
-
-}
-
-mrpt::utils::CTicTac	TT;
-
-std::string tf_odo_topic =   "odom_base_link";
-std::string tf_state_topic = "base_link";
-std::string tf_laser_link =  "base_laser_link";
-
-/**
- * Callback for laser scan messages 
- */
-void callback(const sensor_msgs::LaserScan::ConstPtr& scan)
-{
-	static int counter = 0;
-	counter++;
-	
-	static tf::TransformListener tf_listener;
-	double looptime = TT.Tac();
-	TT.Tic();
-	fprintf(stderr,"Lt( %.1lfms %.1lfHz seq:%d) -",looptime*1000,1.0/looptime,scan->header.seq);
-	
-	if(has_sensor_offset_set == false) return;
-	double gx,gy,gyaw,x,y,yaw;
-	
-	///Get state information
-	tf::StampedTransform transform;
-	tf_listener.waitForTransform("world", tf_state_topic, scan->header.stamp,ros::Duration(1.0));
-	///Ground truth --- Not generally available so should be changed to the manual initialization
-	try{
-		tf_listener.lookupTransform("world", tf_state_topic, scan->header.stamp, transform);
-		gyaw = tf::getYaw(transform.getRotation());  
-	  gx = transform.getOrigin().x();
-	  gy = transform.getOrigin().y();
-	}
-	catch (tf::TransformException ex){
-		ROS_ERROR("%s",ex.what());
-		return;
-	}
-	
-	///Odometry 
-	try{
-		tf_listener.lookupTransform("world", tf_odo_topic, scan->header.stamp, transform);
-		yaw = tf::getYaw(transform.getRotation());  
-	  x = transform.getOrigin().x();
-	  y = transform.getOrigin().y();
-	}
-	catch (tf::TransformException ex){
-		ROS_ERROR("%s",ex.what());
-		return;
-	}
-	
-		
-	mrpt::utils::CTicTac	tictac;
-	tictac.Tic();
-	
-	///Number of scans
-	int N =(scan->angle_max - scan->angle_min)/scan->angle_increment;
-	/////
-	/// Pose conversions
-	////
-	
-	Eigen::Affine3d T = getAsAffine(x,y,yaw);
-	Eigen::Affine3d Tgt = getAsAffine(gx,gy,gyaw);
-	
-	if(userInitialPose && hasNewInitialPose){
-		gx = ipos_x;
-		gy = ipos_y;
-		gyaw = ipos_yaw;
-	}
-	
-	if(isFirstLoad || hasNewInitialPose){
-		fprintf(stderr,"Initializing to (%lf, %lf, %lf)\n",gx,gy,gyaw);
-		/// Initialize the particle filter
-		ndtmcl->initializeFilter(gx, gy,gyaw,0.2, 0.2, 2.0*M_PI/180.0, 150);
-		Told = T;
-		Todo = Tgt;
-		hasNewInitialPose = false;
-	}
-	
-	///Calculate the differential motion from the last frame
-	Eigen::Affine3d Tmotion = Told.inverse() * T;
-	Todo = Todo*Tmotion; ///< just integrates odometry for the visualization
-	
-	if(isFirstLoad==false){
-		if( (Tmotion.translation().norm()<0.005 && fabs(Tmotion.rotation().eulerAngles(0,1,2)[2])<(0.2*M_PI/180.0))){
-			Eigen::Vector3d dm = ndtmcl->getMean();
-			Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances();
-			sendROSOdoMessage(dm,cov, scan->header.stamp);
-			double Time = tictac.Tac();
-			fprintf(stderr,"Time elapsed %.1lfms\n",Time*1000);
-			return;
-		}
-	}
-	
-	Told = T;
-	
-	///Calculate the laser pose with respect to the base
-	float dy =offy;
-	float dx = offx;
-	float alpha = atan2(dy,dx);
-	float L = sqrt(dx*dx+dy*dy);
-	
-	///Laser pose in base frame
-	float lpx = L * cos(alpha);
-	float lpy = L * sin(alpha);
-	float lpa = offa;
-	
-	///Laser scan to PointCloud expressed in the base frame
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);	
-	for (int j=0;j<N;j++){
-		double r  = scan->ranges[j];
-		if(r>=scan->range_min && r<scan->range_max && r>0.3 && r<20.0){
-			double a  = scan->angle_min + j*scan->angle_increment;
-			pcl::PointXYZ pt;
-			pt.x = r*cos(a+lpa)+lpx;
-			pt.y = r*sin(a+lpa)+lpy;
-			pt.z = 0.1+0.02 * (double)rand()/(double)RAND_MAX;
-			cloud->push_back(pt);
-		}
-	}
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/// Now we have the sensor origin and pointcloud -- Lets do MCL
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	ndtmcl->updateAndPredict(Tmotion, *cloud); ///<predicts, updates and resamples if necessary (ndt_mcl.hpp)
-	
-	Eigen::Vector3d dm = ndtmcl->getMean(); ///Maximum aposteriori pose
-	Eigen::Matrix3d cov = ndtmcl->pf.getDistributionVariances(); ///Pose covariance
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	double Time = tictac.Tac();
-	fprintf(stderr,"Time elapsed %.1lfms (%lf %lf %lf) \n",Time*1000,dm[0],dm[1],dm[2]);
-	isFirstLoad = false;
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	sendROSOdoMessage(dm,cov, scan->header.stamp); ///Spit out the pose estimate
-	
-	///This is all for visualization
-#ifdef USE_VISUALIZATION_DEBUG
-	Eigen::Vector3d origin(dm[0] + L * cos(dm[2]+alpha),dm[1] + L * sin(dm[2]+alpha),0.1);
-	Eigen::Affine3d ppos = getAsAffine(dm[0],dm[1],dm[2]);
-	
-	//lslgeneric::transformPointCloudInPlace(Tgt, *cloud);
-	lslgeneric::transformPointCloudInPlace(ppos, *cloud);
-	mrpt::opengl::COpenGLScenePtr &scene = win3D.get3DSceneAndLock();	
-	win3D.setCameraPointingToPoint(gx,gy,1);
-	if(counter%2000==0) gl_points->clear();
-	scene->clear();
-	scene->insert(plane);
-	
-	addMap2Scene(ndtmcl->map, origin, scene);
-	addPoseCovariance(dm[0],dm[1],cov,scene);
-	addScanToScene(scene, origin, cloud);
-	addParticlesToWorld(ndtmcl->pf,Tgt.translation(),dm, Todo.translation());
-	scene->insert(gl_points);
-	scene->insert(gl_particles);
-	win3D.unlockAccess3DScene();
-	win3D.repaint();
-
-	if (win3D.keyHit())
-	{
-		mrpt::gui::mrptKeyModifier kmods;
-		int key = win3D.getPushedKey(&kmods);
-	}
-#endif
-}
-
-#endif
 
 int main(int argc, char **argv){
 	ros::init(argc, argv, "NDT-MCL");

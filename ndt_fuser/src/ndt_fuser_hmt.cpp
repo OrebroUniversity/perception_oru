@@ -41,7 +41,7 @@ namespace lslgeneric {
 	if(visualize) 
 	{
 	    viewer->plotNDTSAccordingToOccupancy(-1,map); 
-	    viewer->plotLocalNDTMap(cloud,resolution);
+	    //viewer->plotLocalNDTMap(cloud,resolution);
 	    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.5,1,0,0);
 	    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.5,0,1,0);
 	    viewer->displayTrajectory();
@@ -165,7 +165,7 @@ namespace lslgeneric {
 			{
 			    if(ctr%50==0) {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
-				viewer->plotLocalNDTMap(cloud,resolution); 
+				//viewer->plotLocalNDTMap(cloud,resolution); 
 			    }
 			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
 			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
@@ -220,7 +220,7 @@ namespace lslgeneric {
 			{
 			    if(ctr%2==0) {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
-				viewer->plotLocalNDTMap(cloud,resolution); 
+				//viewer->plotLocalNDTMap(cloud,resolution); 
 			    }
 			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
 			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);

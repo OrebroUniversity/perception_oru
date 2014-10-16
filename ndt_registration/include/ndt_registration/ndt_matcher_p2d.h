@@ -61,6 +61,7 @@ public:
     {
         this->init(false,other.resolutions);
     }
+
     /**
      * Register two point clouds. This method builds an NDT
      * representation of the "fixed" point cloud and uses that for
@@ -73,11 +74,34 @@ public:
      *   This is an input/output parameter. The initial value of \c T
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
+     * \return
+     *   False if registration terminated after the max number of
+     *   iterations (before convergence), true if registration
+     *   terminated because the convergence criteria were fulfilled.
      */
     bool match( pcl::PointCloud<pcl::PointXYZ>& target,
                 pcl::PointCloud<pcl::PointXYZ>& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T );
 
+
+  /** 
+   * Check whether two point clouds are aligned, using the NDT score and Hessian.
+   * 
+   * \param  fixed
+   *   Reference data. NDT structure is built for this point cloud (if needed).
+   * \param  moving
+   *   \c T will be applied to this point cloud.
+   * \param T 
+   *   Optional transformation that can be applied to \c moving. Defaults to zero.
+   * \return 
+   */
+  void check( pcl::PointCloud<pcl::PointXYZ>& fixed,
+              pcl::PointCloud<pcl::PointXYZ>& moving,
+              Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T
+              //= Eigen::Translation3f( 0.0, 0.0, 0.0 ) * Eigen::AngleAxisf( 0.0, Eigen::Vector3d( 1.0, 0.0, 0.0 ) )
+              );
+  
+  
     /**
      * Registers a point cloud to an NDT structure.
      * \param  fixed
@@ -88,11 +112,18 @@ public:
      *   This is an input/output parameter. The initial value of \c T
      *   gives the initial pose estimate of \c moving. When the
      *   algorithm terminates, \c T holds the registration result.
+     * \return
+     *   False if registration terminated after the max number of
+     *   iterations (before convergence), true if registration
+     *   terminated because the convergence criteria were fulfilled.
      */
     bool match( NDTMap& target,
                 pcl::PointCloud<pcl::PointXYZ>& source,
                 Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T );
 
+
+
+  
     /**
       * computes the covariance of the match between moving and fixed, at T.
       * note --- computes NDT distributions based on the resolution in res

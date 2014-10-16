@@ -67,9 +67,14 @@ class NDTViz {
 	void displayParticles(){
 	  win3D->addObject(&gl_particles);
 	}
-	void setCameraPointing(double x, double y, double z) {
-	  win3D->setCameraPointingAt(x,y,z);
+	void setCameraPointingToPoint(double x, double y, double z) {
+	  win3D->setCameraPointingToPoint(x,y,z);
 	}
+	void setCameraPointing(double x, double y, double z) {
+	  win3D->setCameraPointingToPoint(x,y,z);
+	}
+
+	
 
 	/**
 	  * Add the laser scan to the scen 
@@ -102,7 +107,7 @@ class NDTViz {
 	    
 	    unsigned int accepted_ndts=1;
 	    double x = 0,y=0,s=0;
-	    fprintf(stderr,"-NDT:%u-",global_ndts.size());
+	    //	    fprintf(stderr,"-NDT:%u-",global_ndts.size());
 	    for(unsigned int i=0;i<global_ndts.size();i++){
 		Eigen::Vector3d m = global_ndts[i]->getMean();
 		if(!global_ndts[i]->hasGaussian_) continue;
@@ -141,7 +146,7 @@ class NDTViz {
 	    if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
+	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    win3D->clearScene();
 	    gl_ellipsoids.clear();
@@ -183,7 +188,7 @@ class NDTViz {
 	    if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
+	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    Eigen::Vector3d cFlat, cInclined, cRough, cVert, cUnknown, color;
 	    cFlat<<0,0.9,0;
@@ -225,7 +230,6 @@ class NDTViz {
 			default:
 			    color = cUnknown;
 		    }
-		    std::cout << "color : " << color << std::endl;
 		    objEllip.setColor(color(0),color(1),color(2),0.6);
 
 		    objEllip.enableDrawSolid3D(true);
@@ -247,7 +251,7 @@ class NDTViz {
 	  if(win3D == NULL) return;
 	    std::vector<lslgeneric::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
-	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
+	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
 	    win3D->clearScene();
 	    gl_ellipsoids.clear();
@@ -282,141 +286,133 @@ class NDTViz {
 
 	}
 
-	/* void plotLocalNDTMap(pcl::PointCloud<pcl::PointXYZ> &cloud, double resolution, double R=0, double G=1, double B=0, bool heightCoding=true){ */
-	/*     if(win3D == NULL) return; */
+	void plotLocalNDTMap(pcl::PointCloud<pcl::PointXYZ> &cloud, double resolution, double R=0, double G=1, double B=0, bool heightCoding=true){
+	    if(win3D == NULL) return;
 
-	/*     lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution)); */
-	/*     ndlocal.addPointCloudSimple(cloud); */
-	/*     ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE); */
+	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+	    ndlocal.addPointCloudSimple(cloud);
+	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	/*     std::vector<lslgeneric::NDTCell*> ndts; */
-	/*     ndts = ndlocal.getAllCells(); */
-	/*     mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock(); */
-	/*     std::cout<<"LOCAL: "<<ndts.size()<<std::endl; */
+	    std::vector<lslgeneric::NDTCell*> ndts;
+	    ndts = ndlocal.getAllCells();
+	    std::cout<<"LOCAL: "<<ndts.size()<<std::endl;
 
-	/*     for(unsigned int i=0;i<ndts.size();i++){ */
-	/* 	Eigen::Vector3d m = ndts[i]->getMean(); */
-	/* 	//if(m[2]>3.0) continue; */
+	    for(unsigned int i=0;i<ndts.size();i++){
+		Eigen::Vector3d m = ndts[i]->getMean();
+		//if(m[2]>3.0) continue;
 
-	/* 	mrpt::opengl::CMyEllipsoidPtr objEllip = mrpt::opengl::CMyEllipsoid::Create(); */
-	/* 	Eigen::Matrix3d cov = ndts[i]->getCov(); */
-	/* 	cov = cov; */
+		NDTVizGlutEllipsoid objEllip;
+		Eigen::Matrix3d cov = ndts[i]->getCov();
+		objEllip.setCovMatrix(cov);
+		objEllip.setLocation(m[0], m[1], m[2]);
+		double hval=1.0;
+		if(heightCoding){
+		    hval = fabs(m[2]+1.5)/20.0;
+		}
+		objEllip.setColor(R/hval,G/hval,B/hval,0.4);
+		objEllip.enableDrawSolid3D(true);
+		gl_ellipsoids.push_back(objEllip);
+	    }
+	    win3D->addObject(&gl_ellipsoids);
+	    win3D->repaint();
+	    for(unsigned int i=0;i<ndts.size();i++){
+		delete ndts[i];
+	    }
 
-	/* 	mrpt::math::CMatrixDouble M = 0.5*cov; */
-	/* 	objEllip->setCovMatrix(M); */
-	/* 	objEllip->setLocation(m[0], m[1], m[2]); */
-	/* 	double hval=1.0; */
-	/* 	if(heightCoding){ */
-	/* 	    hval = fabs(m[2]+1.5)/20.0; */
-	/* 	} */
-	/* 	objEllip->setColor(R/hval,G/hval,B/hval,0.4); */
-	/* 	objEllip->enableDrawSolid3D(true); */
-	/* 	scene->insert( objEllip ); */
-	/*     } */
-	/*     win3D->unlockAccess3DScene(); */
-	/*     for(unsigned int i=0;i<ndts.size();i++){ */
-	/* 	delete ndts[i]; */
-	/*     } */
+	}
 
-	/* } */
+	void plotLocalConflictNDTMap(lslgeneric::NDTMap *map, pcl::PointCloud<pcl::PointXYZ> &cloud,
+		double resolution, double R=1, double G=0, double B=0, bool heightCoding=false, double maxz=0){
+	    if(win3D == NULL) return;
 
-	/* void plotLocalConflictNDTMap(lslgeneric::NDTMap *map, pcl::PointCloud<pcl::PointXYZ> &cloud,  */
-	/* 	double resolution, double R=1, double G=0, double B=0, bool heightCoding=false, double maxz=0){ */
-	/*     if(win3D == NULL) return; */
+	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
 
-	/*     lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution)); */
+	    ndlocal.addPointCloudSimple(cloud);
+	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	/*     ndlocal.addPointCloudSimple(cloud); */
-	/*     ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE); */
+	    std::vector<lslgeneric::NDTCell*> ndts;
+	    ndts = ndlocal.getAllCells();
+	    gl_ellipsoids.clear();
+	    win3D->clearScene();
 
-	/*     std::vector<lslgeneric::NDTCell*> ndts; */
-	/*     ndts = ndlocal.getAllCells(); */
+	    std::cout<<"LOCAL: "<<ndts.size()<<std::endl;
 
-	/*     mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock(); */
-	/*     std::cout<<"LOCAL: "<<ndts.size()<<std::endl; */
-
-	/*     for(unsigned int i=0;i<ndts.size();i++){ */
+	    for(unsigned int i=0;i<ndts.size();i++){
 
 
-	/* 	Eigen::Vector3d m = ndts[i]->getMean(); */
-	/* 	if(m[2]>maxz) continue; */
-	/* 	pcl::PointXYZ p; */
-	/* 	p.x = m[0]; p.y=m[1]; p.z = m[2]; */
-	/* 	lslgeneric::NDTCell *map_cell=NULL; */
-	/* 	map->getCellAtPoint(p, map_cell); */
-	/* 	if(map_cell == NULL) continue; */
+		Eigen::Vector3d m = ndts[i]->getMean();
+		if(m[2]>maxz) continue;
+		pcl::PointXYZ p;
+		p.x = m[0]; p.y=m[1]; p.z = m[2];
+		lslgeneric::NDTCell *map_cell=NULL;
+		map->getCellAtPoint(p, map_cell);
+		if(map_cell == NULL) continue;
 
-	/* 	if(map_cell->getOccupancy()>0.5) continue; */
+		if(map_cell->getOccupancy()>0.5) continue;
 
-	/* 	//	if(m[2]>3.0) continue; */
+		//	if(m[2]>3.0) continue;
+		NDTVizGlutEllipsoid objEllip;
+		Eigen::Matrix3d cov = ndts[i]->getCov();
+		objEllip.setCovMatrix(cov);
+		objEllip.setLocation(m[0], m[1], m[2]);
+		double hval=1.0;
+		if(heightCoding){
+		    hval = fabs(m[2]+1.5)/20.0;
+		}
+		objEllip.setColor(R/hval,G/hval,B/hval,0.6);
+		objEllip.enableDrawSolid3D(true);
+		gl_ellipsoids.push_back(objEllip);
+	    }
+	    win3D->addObject(&gl_ellipsoids);
+	    win3D->repaint();
+	    for(unsigned int i=0;i<ndts.size();i++){
+		delete ndts[i];
+	    }
 
-	/* 	mrpt::opengl::CMyEllipsoidPtr objEllip = mrpt::opengl::CMyEllipsoid::Create(); */
-	/* 	Eigen::Matrix3d cov = ndts[i]->getCov(); */
-	/* 	cov = cov; */
+	}
 
-	/* 	mrpt::math::CMatrixDouble M = 0.5*cov; */
-	/* 	objEllip->setCovMatrix(M); */
-	/* 	objEllip->setLocation(m[0], m[1], m[2]); */
-	/* 	double hval=1.0; */
-	/* 	if(heightCoding){ */
-	/* 	    hval = fabs(m[2]+1.5)/20.0; */
-	/* 	} */
-	/* 	objEllip->setColor(R/hval,G/hval,B/hval,0.6); */
-	/* 	objEllip->enableDrawSolid3D(true); */
-	/* 	scene->insert( objEllip ); */
-	/*     } */
-	/*     win3D->unlockAccess3DScene(); */
-	/*     for(unsigned int i=0;i<ndts.size();i++){ */
-	/* 	delete ndts[i]; */
-	/*     } */
+	void plotNDTTraversabilityMap(lslgeneric::NDTMap *map){
+	    if(win3D == NULL) return;
+	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    global_ndts = map->getAllCells();
 
-	/* } */
+	    gl_ellipsoids.clear();
+	    win3D->clearScene();
 
+	    for(unsigned int i=0;i<global_ndts.size();i++){
+		Eigen::Vector3d m = global_ndts[i]->getMean();
+		if(!global_ndts[i]->hasGaussian_) continue;
 
-	/* void plotNDTTraversabilityMap(lslgeneric::NDTMap *map){ */
-	/*     if(win3D == NULL) return; */
-	/*     std::vector<lslgeneric::NDTCell*> global_ndts; */
-	/*     global_ndts = map->getAllCells(); */
+		NDTVizGlutEllipsoid objEllip;
+		Eigen::Matrix3d cov = global_ndts[i]->getCov();
+		objEllip.setCovMatrix(cov);
+		objEllip.setLocation(m[0], m[1], m[2]);
 
-	/*     mrpt::opengl::COpenGLScenePtr &scene = win3D->get3DSceneAndLock(); */
+		//lslgeneric::CellClass CC;
+		//lslgeneric::NDTCell<PointT>::CellClass CC;
 
-	/*     for(unsigned int i=0;i<global_ndts.size();i++){ */
-	/* 	Eigen::Vector3d m = global_ndts[i]->getMean(); */
-	/* 	if(!global_ndts[i]->hasGaussian_) continue; */
+		//CC = global_ndts[i]->getClass();
+		// {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
+		if(global_ndts[i]->getClass() == lslgeneric::NDTCell::HORIZONTAL){
+		    objEllip.setColor(0,1.0,0,1.0);
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::VERTICAL){
+		    objEllip.setColor(1.0,0,0,1.0);
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::INCLINED){
+		    objEllip.setColor(1.0,1.0,0,1.0);
+		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::ROUGH){
+		    objEllip.setColor(0,0,1.0,1.0);
+		}else{
+		    objEllip.setColor(1.0,1.0,1.0,1.0);
+		}
 
-	/* 	mrpt::opengl::CMyEllipsoidPtr objEllip = mrpt::opengl::CMyEllipsoid::Create(); */
-	/* 	Eigen::Matrix3d cov = global_ndts[i]->getCov(); */
-	/* 	mrpt::math::CMatrixDouble M = 0.5*cov; */
-	/* 	objEllip->setCovMatrix(M); */
-	/* 	objEllip->setLocation(m[0], m[1], m[2]); */
+		objEllip.enableDrawSolid3D(true);
+		gl_ellipsoids.push_back(objEllip);
+	    }
+	    win3D->addObject(&gl_ellipsoids);
+	    win3D->repaint();
+	    for(unsigned int i=0;i<global_ndts.size();i++) delete global_ndts[i];
 
-	/* 	//lslgeneric::CellClass CC; */
-	/* 	//lslgeneric::NDTCell<PointT>::CellClass CC; */
-
-	/* 	//CC = global_ndts[i]->getClass(); */
-	/* 	// {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN}; */
-	/* 	if(global_ndts[i]->getClass() == lslgeneric::NDTCell::HORIZONTAL){ */
-	/* 	    objEllip->setColor(0,1.0,0,1.0); */
-	/* 	}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::VERTICAL){ */
-	/* 	    objEllip->setColor(1.0,0,0,1.0); */
-	/* 	}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::INCLINED){ */
-	/* 	    objEllip->setColor(1.0,1.0,0,1.0); */
-	/* 	}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::ROUGH){ */
-	/* 	    objEllip->setColor(0,0,1.0,1.0); */
-	/* 	}else{ */
-	/* 	    objEllip->setColor(1.0,1.0,1.0,1.0); */
-	/* 	} */
-
-	/* 	objEllip->enableDrawSolid3D(true); */
-	/* 	scene->insert( objEllip ); */
-
-	/*     } */
-
-	/*     win3D->unlockAccess3DScene(); */
-	/*     win3D->repaint(); */
-	/*     for(unsigned int i=0;i<global_ndts.size();i++) delete global_ndts[i]; */
-
-	/* } */
+	}
 	/* ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 	/* ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 	/* ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */

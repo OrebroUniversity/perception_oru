@@ -4,6 +4,17 @@
 namespace po = boost::program_options;
 
 
+void printUsage() {
+    fprintf(stderr,"========== USAGE =========\n");
+    fprintf(stderr,"[h] help\n");
+    fprintf(stderr,"[o] Just plot acording to occupancy \n");
+    fprintf(stderr,"[c] plot acording to class and occupancy \n");
+    fprintf(stderr,"[p] plot acording to cost-to-go from the path planner \n");
+    fprintf(stderr,"[t] plot traversability map \n");
+    fprintf(stderr,"[q] quit \n");
+    fprintf(stderr,"==========================\n");
+}
+
 int main(int argc, char **argv){
 
     std::string base_name;
@@ -33,6 +44,7 @@ int main(int argc, char **argv){
     }
 
     std::cout<<"loading "<<base_name<<" at resolution "<<resolution<<std::endl;
+    printUsage();
     
     //load NDT map. Only Lazy grid supported!
     lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
@@ -47,11 +59,28 @@ int main(int argc, char **argv){
 	{
 	    int key = viewer->win3D->getPushedKey();
 	    printf("Key pushed: %c (%i)\n",char(key),key);
-	    if(key =='q'){
+            
+            if(key =='o'){
+                viewer->plotNDTSAccordingToOccupancy(-1,&ndmap);
+            }
+            if(key =='c'){
+                viewer->plotNDTSAccordingToClass(-1,&ndmap);
+            }
+            if(key =='p'){
+                viewer->plotNDTSAccordingToCost(-1,10000,&ndmap);
+            }
+            if(key =='t'){
+                viewer->plotNDTTraversabilityMap(&ndmap);
+            }
+            if(key =='h'){
+                printUsage();
+            }
+
+            if(key =='q'){
 		break;
 	    }
 	}
-	usleep(100*1000);
+	usleep(1000);
     }
     delete viewer;
 

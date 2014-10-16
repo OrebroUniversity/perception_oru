@@ -21,13 +21,15 @@
   <!--<build_depend>common_rosdeps</build_depend>-->
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
+  <build_depend>pcl_conversions</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
-  <run_depend>libpcl-all-dev</run_depend>
+  <run_depend>libpcl-all</run_depend>
   <run_depend>pcl_ros</run_depend>
+  <run_depend>pcl_conversions</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
 

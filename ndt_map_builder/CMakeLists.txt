@@ -4,16 +4,20 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map_builder)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS pcl_ros ndt_map ndt_registration)
+find_package(catkin REQUIRED COMPONENTS pcl_ros pcl_conversions ndt_map ndt_registration)
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
-    CATKIN_DEPENDS pcl_ros ndt_map ndt_registration
+    CATKIN_DEPENDS pcl_ros ndt_map ndt_registration pcl_conversions 
     INCLUDE_DIRS include
-    LIBRARIES # TODO
+    LIBRARIES ${PROJECT_NAME} # TODO
 )
-include_directories(include ${catkin_INCLUDE_DIRS})
+set (${PROJECT_NAME}_LIB_SRCS
+  src/ndt_map_builder.cpp
+)
 
+include_directories(include ${catkin_INCLUDE_DIRS})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 #uncomment if you have defined messages
 #add_message_files(
 #  FILES
@@ -26,12 +30,14 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #)
 
 find_package(OpenMP)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -std=c++0x -ggdb")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
-#add_executable(test_ndt_mapper test/test_ndt_mapper.cc)
-#target_link_libraries(test_ndt_mapper ${catkin_LIBRARIES})
+add_executable(test_ndt_mapper test/test_ndt_mapper.cc)
+include_directories(include ${PCL_INCLUDE_DIRS})
 
+target_link_libraries(test_ndt_mapper ${PROJECT_NAME} ${catkin_LIBRARIES})
+link_directories(${catkin_LIBRARY_DIRS})
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
     #TODO DEPENDENCIES geometry_msgs std_msgs

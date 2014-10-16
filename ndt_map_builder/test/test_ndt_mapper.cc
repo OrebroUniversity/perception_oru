@@ -1,7 +1,8 @@
 #include <ndt_map_builder/ndt_map_builder.h>
-#include <ndt_map/oc_tree.h>
+//#include <ndt_map/oc_tree.h>
 #include <ndt_registration/ndt_matcher_d2d.h>
-#include <pointcloud_vrml/pointcloud_utils.h>
+#include <ndt_map/pointcloud_utils.h>
+#include <pcl/io/pcd_io.h>
 
 using namespace std;
 using namespace lslgeneric;
@@ -25,30 +26,27 @@ int main(int argc, char**argv)
     bool bD2D = ((strncmp(argv[5],"bD2D",4) == 0) || !(bICP || bP2D));
     int offset = atoi(argv[6]);
 
-    lslgeneric::OctTree<pcl::PointXYZ> histogramPrototype;
+    //    lslgeneric::LazyGrid *histogramPrototype;
     std::vector<double> resolutions;
+    double res;
 
     double __res1[] = {0.5, 1, 2};
     double __res2[] = {0.1,0.2,1,2,4};
-    if(!bKinect)
-    {
+    if(!bKinect){
         resolutions = std::vector<double>(__res1, __res1+sizeof(__res1)/sizeof(double));
-        histogramPrototype.BIG_CELL_SIZE = 2;
-        histogramPrototype.SMALL_CELL_SIZE = 0.2;
-
+        //histogramPrototype = new LazyGrid(2);
+        res=2;
     }
-    else
-    {
+    else{
         resolutions = std::vector<double>(__res2, __res2+sizeof(__res2)/sizeof(double));
-        histogramPrototype.BIG_CELL_SIZE = 0.5;
-        histogramPrototype.SMALL_CELL_SIZE = 0.1;
-
+        //  histogramPrototype=new LazyGrid(0.5);
+        res=0.5;
     }
 
-    lslgeneric::NDTMatcherD2D<pcl::PointXYZ,pcl::PointXYZ> matcherF2F(false, false, resolutions);
-    lslgeneric::NDTMatcherP2D<pcl::PointXYZ,pcl::PointXYZ> matcherP2F(resolutions);
+    lslgeneric::NDTMatcherD2D matcherF2F(false, false, resolutions);
+    lslgeneric::NDTMatcherP2D matcherP2F(resolutions);
 
-    NDTMapBuilder<pcl::PointXYZ> mapper(doHistogram);
+    NDTMapBuilder mapper(res,doHistogram);
     if(bD2D)
     {
         mapper.setMatcherF2F(&matcherF2F);
@@ -59,13 +57,13 @@ int main(int argc, char**argv)
         mapper.setMatcherP2F(&matcherP2F);
         cout<<"setting to P2D matcher\n";
     }
-    else
-    {
-        mapper.setICP();
-        cout<<"setting to ICP matcher\n";
-    }
+    // else
+    // {
+    //     mapper.setICP();
+    //     cout<<"setting to ICP matcher\n";
+    // }
 
-    mapper.tr = histogramPrototype;
+    //mapper.tr = histogramPrototype;
 
     int N_CLOUDS = atoi(argv[1]);
     char fname[600];
@@ -76,9 +74,10 @@ int main(int argc, char**argv)
 
     for (int i=offset; i<N_CLOUDS; i++)
     {
-        snprintf(fname,600,"%s%03d.wrl",argv[2],i);
-        cout<<fname<<endl;
-        pcl::PointCloud<pcl::PointXYZ> cl = lslgeneric::readVRML<pcl::PointXYZ>(fname);
+        snprintf(fname,600,"%s%03d.pcd",argv[2],i);
+        pcl::PointCloud<pcl::PointXYZ> cl;
+        pcl::io::loadPCDFile<pcl::PointXYZ> (fname, cl);
+
         pcl::PointCloud<pcl::PointXYZ> filtered;
         for(int q=0; q<cl.points.size(); q++)
         {
@@ -111,8 +110,8 @@ int main(int argc, char**argv)
     snprintf(fname,600,"%s.dat",argv[2]);
     mapper.saveDatlogFile(fname);
 
-    snprintf(fname,600,"%s_COMPLETE.wrl",argv[2]);
-    mapper.theMotherOfAllPointClouds(fname);
+    //    snprintf(fname,600,"%s_COMPLETE.wrl",argv[2]);
+    // mapper.theMotherOfAllPointClouds(fname);
 
     return 0;
 }

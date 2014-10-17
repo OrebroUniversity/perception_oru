@@ -6,20 +6,22 @@ project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros eigen)
 catkin_package(
-    DEPENDS libpcl-all-dev eigen mrpt glut libxmu-dev
+    DEPENDS libpcl-all-dev eigen glut #libxmu-dev mrpt 
     CATKIN_DEPENDS ndt_map pcl_ros
     INCLUDE_DIRS include
-    LIBRARIES ndt_visualisation
+    LIBRARIES ${PROJECT_NAME}
 )
-find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
-ADD_DEFINITIONS(-DLINUX_OS)
+
+#find_package(LibXml2 REQUIRED)
+#include_directories(${LIBXML2_INCLUDE_DIR})
+#ADD_DEFINITIONS(-DLINUX_OS)
+#find_package(GLU REQUIRED)
+#find_package(JPEG REQUIRED)
+#FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
+#include_directories(${JPEG_INCLUDE_DIR})
+
 find_package(OpenGL REQUIRED)
-find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
-find_package(JPEG REQUIRED)
-FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
-include_directories(${JPEG_INCLUDE_DIR})
 include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(include)
@@ -40,12 +42,12 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 #common commands for building c++ executables and libraries
 add_library(${PROJECT_NAME}  src/NDTVizGlut.cc)
-target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}) #${JPEG_LIBRARIES} ${LIBXML2_LIBRARIES} ${MRPT_LIBS} 
 
 find_package(Boost REQUIRED COMPONENTS program_options thread)
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(ndt_viewer src/ndt_viewer.cc)
-target_link_libraries(ndt_viewer ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
+target_link_libraries(ndt_viewer ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME}) # ${MRPT_LIBS} ${JPEG_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} 
 
 #add_executable(glut_test src/glut_test.cc)
 #target_link_libraries(glut_test ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})

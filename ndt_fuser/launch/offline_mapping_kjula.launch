@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="ndt_fuser" type="ndt_fuser" name="fuser_3d" output="screen" required="true" >
+    <node pkg="ndt_fuser" type="ndt_fuser_node" name="fuser_3d" output="screen" required="true" >
 	<param name="points_topic" value="/velodyne_points" />
 	<param name="off_line_mapping" value="true" />
 	<param name="bagfile_name" value="/media/DATA_BANK/DATA/WHEELOADER_DATA/KJULA/COMBINED/2014-08-27/PROCESSED/velodyne_points_2014-08-29-15-36-37.bag" />

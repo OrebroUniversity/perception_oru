@@ -46,9 +46,6 @@
   <build_depend>opencv2</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
-  <build_depend>mrpt_libs</build_depend>
-  <build_depend>glut</build_depend>
-  <build_depend>libxmu-dev</build_depend>
 
   <run_depend>ndt_map</run_depend>
   <run_depend>opencv2</run_depend>
@@ -56,9 +53,6 @@
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
-  <run_depend>mrpt_libs</run_depend>
-  <run_depend>glut</run_depend>
-  <run_depend>libxmu-dev</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

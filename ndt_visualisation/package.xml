@@ -24,18 +24,18 @@
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>ndt_map</build_depend>
-  <build_depend>mrpt_libs</build_depend>
+  <!--build_depend>mrpt_libs</build_depend>
+  <build_depend>libxmu-dev</build_depend-->
   <build_depend>glut</build_depend>
-  <build_depend>libxmu-dev</build_depend>
 	
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
   <run_depend>ndt_map</run_depend>
-  <run_depend>mrpt_libs</run_depend>
+  <!--run_depend>mrpt_libs</run_depend>
+  <run_depend>libxmu-dev</run_depend-->
   <run_depend>glut</run_depend>
-  <run_depend>libxmu-dev</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>common_rosdeps</test_depend> -->

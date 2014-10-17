@@ -90,6 +90,27 @@ namespace lslgeneric {
 
 	t1 = getDoubleTime();
 	Eigen::Affine3d Tinit = Tnow * Tmotion;
+	if(disableRegistration) {
+	    Tnow = Tinit;
+	    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+	    Eigen::Affine3d spose = Tnow*sensor_pose;
+	    map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
+	    if(visualize) //&&ctr%20==0) 
+	    {
+		if(ctr%50==0) {
+		    viewer->plotNDTSAccordingToOccupancy(-1,map); 
+		    //viewer->plotLocalNDTMap(cloud,resolution); 
+		}
+		viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
+		viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
+		viewer->displayTrajectory();
+		viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
+		viewer->repaint();	
+	    }
+	    ctr++;
+	    return Tnow;
+	}
+
 	if(doMultires) {
 	    //create two ndt maps with resolution = 3*resolution (or 5?)
 	    lslgeneric::NDTMap ndlocalLow(new lslgeneric::LazyGrid(3*resolution));

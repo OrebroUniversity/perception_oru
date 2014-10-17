@@ -72,7 +72,7 @@ protected:
     world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
   bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack, 
-    initPoseFromGT, initPoseFromTF, initPoseSet, offLineMapping;
+    initPoseFromGT, initPoseFromTF, initPoseSet, offLineMapping, renderGTmap;
 
   double pose_init_x,pose_init_y,pose_init_z,
     pose_init_r,pose_init_p,pose_init_t;
@@ -157,6 +157,9 @@ public:
     param_nh.param<std::string>("gt_topic",gt_topic,"groundtruth");
     ///if we want to get the initial pose of the vehicle relative to a different frame
     param_nh.param("initPoseFromGT",initPoseFromGT,false);
+    //plot the map from the GT track if available
+    param_nh.param("renderGTmap", renderGTmap,false);
+    renderGTmap &= plotGTTrack; //can't render if we don't have it
     //get it from TF?
     param_nh.param("initPoseFromTF",initPoseFromTF,false);
     //the frame to initialize to
@@ -201,14 +204,21 @@ public:
         }
       } else {
         laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
-        if(useOdometry) {
-          odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-          sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-          sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+        if(useOdometry && !renderGTmap) {
+	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+	    sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
+	    sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
               
+        } 
+	else if(!renderGTmap){
+	    laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
         } else {
-          laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
-        }
+	    //this render map directly from GT
+	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,gt_topic,10);
+	    sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
+	    sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+	    fuser->disableRegistration = true;
+	}
       }
       save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
           

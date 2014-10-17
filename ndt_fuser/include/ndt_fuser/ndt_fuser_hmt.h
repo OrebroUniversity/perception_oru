@@ -27,7 +27,7 @@ class NDTFuserHMT{
 	bool checkConsistency;			 ///perform a check for consistency against initial estimate
 	double max_translation_norm, max_rotation_norm;
 	double sensor_range;
-	bool be2D, doMultires, fuseIncomplete, beHMT;
+	bool be2D, doMultires, fuseIncomplete, beHMT, disableRegistration;
 	int ctr;
 	std::string prefix;
 	std::string hmt_map_dir;
@@ -38,6 +38,7 @@ class NDTFuserHMT{
 		    bool visualize_=false, bool be2D_=false, bool doMultires_=false, bool fuseIncomplete_=false, int max_itr=30, 
 		    std::string prefix_="", bool beHMT_=true, std::string hmt_map_dir_="map", bool _step_control=true){
 	    isInit = false;
+	    disableRegistration=false;
 	    resolution = map_resolution;
 	    sensor_pose.setIdentity();
 	    checkConsistency = false;

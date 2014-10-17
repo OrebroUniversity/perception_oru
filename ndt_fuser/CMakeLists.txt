@@ -15,22 +15,28 @@ find_package(catkin REQUIRED COMPONENTS
 #  message_generation
 )
 
+catkin_package(
+    DEPENDS eigen libpcl-all-dev 
+    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME} 
+)
 
-
-find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
-include_directories(${catkin_INCLUDE_DIRS})
-ADD_DEFINITIONS(-DLINUX_OS)
-#find_package(ndt_visualisation)
-find_package(OpenGL REQUIRED)
-find_package(GLU REQUIRED)
-find_package(GLUT REQUIRED)
-find_package(JPEG REQUIRED)
-include_directories(${JPEG_INCLUDE_DIR})
-include_directories(${GLUT_INCLUDE_DIR})
-include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(include)
-FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
+include_directories(${catkin_INCLUDE_DIRS})
+
+#find_package(LibXml2 REQUIRED)
+#include_directories(${LIBXML2_INCLUDE_DIR})
+#ADD_DEFINITIONS(-DLINUX_OS)
+#find_package(ndt_visualisation)
+#find_package(OpenGL REQUIRED)
+#find_package(GLU REQUIRED)
+#find_package(GLUT REQUIRED)
+#find_package(JPEG REQUIRED)
+#include_directories(${JPEG_INCLUDE_DIR})
+#include_directories(${GLUT_INCLUDE_DIR})
+#include_directories(${OPENGL_INCLUDE_DIR})
+#FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
 #find_package(MRPT REQUIRED)
 find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -69,20 +75,13 @@ set (${PROJECT_NAME}_LIB_SRCS
 #    DEPENDENCIES 
 #    std_msgs
 #)
-catkin_package(
-    DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
-    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME} 
-)
-
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(ndt_fuser_node src/ndt_fuser_node.cpp)
 add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
 
-target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package

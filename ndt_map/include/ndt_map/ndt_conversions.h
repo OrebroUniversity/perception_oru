@@ -12,8 +12,17 @@
 #include <string>
 
 
-namespace lslgeneric
-{
+namespace lslgeneric{
+  /** 
+   *
+   * \brief Message building fucntion
+   * \details Converts an object of type NDTMap into NDTMapMsg
+   * message. Message contain all the data strored in the object. 
+   * @param[in] map Pointer to NDTMap object.
+   * @param[out] msg formated message
+   * @param[in] frame_name name of the coordination frame for the transformed map
+   *   
+   */
   bool toMessage(NDTMap *map, ndt_map::NDTMapMsg &msg,std::string frame_name){
     std::vector<lslgeneric::NDTCell*> map_vector=map->getAllInitializedCells();
     msg.header.stamp=ros::Time::now();
@@ -31,7 +40,7 @@ namespace lslgeneric
 	  return false;
     }
     for (int cell_idx=0;cell_idx<map_vector.size();cell_idx++){
-	  if(map_vector[cell_idx]->hasGaussian_){ //????????????????????????
+	  if(map_vector[cell_idx]->hasGaussian_){ //we only send a cell with gaussian
         ndt_map::NDTCellMsg cell;
         Eigen::Vector3d means=map_vector[cell_idx]->getMean();
         cell.mean_x=means(0);
@@ -47,27 +56,26 @@ namespace lslgeneric
         cell.N=map_vector[cell_idx]->getN();
         msg.cells.push_back(cell);
 	  }
-
 	  delete map_vector[cell_idx];
     }
     return true;
   }
-
+  /** 
+   *
+   * \brief from message to NDTMap object
+   * \details Converts ndt map message into a NDTMap object
+   * @param[in,out] idx Pointer to lazy grid of the new NDTMap
+   * @param[out] map Pointer to NDTMap object
+   * @param[in] msg message to be converted
+   * @param[out] frame_name name of the coordination frame of the map
+   *   
+   */
   bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name){
-    if(!(msg.x_cell_size==msg.y_cell_size&&msg.y_cell_size==msg.z_cell_size)){ 
+    if(!(msg.x_cell_size==msg.y_cell_size&&msg.y_cell_size==msg.z_cell_size)){ //we assume that voxels are cubes
 	  ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 	  return false;
     }
     idx=new LazyGrid(msg.x_cell_size);
-    /* LazyGrid<PointT> *idx; */
-    /* if(msg.x_cell_size==msg.y_cell_size&&msg.y_cell_size==msg.z_cell_size){ */
-    /*   idx=new LazyGrid<PointT>(msg.x_cell_size); */
-    /* } */
-    /* else{ */
-    /*   ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); */
-    /*   return false; */
-    /* } */
-
     map = new NDTMap(idx,msg.x_cen,msg.y_cen,msg.z_cen,msg.x_size,msg.y_size,msg.z_size);
     frame_name=msg.header.frame_id;
     int gaussians=0;
@@ -86,6 +94,16 @@ namespace lslgeneric
     }
     return true;
   }
+  /**
+   *
+   * \brief builds ocuupancy grid message
+   * \details Builds 2D occupancy grid map based on 2D NDTMap
+   * @param[in] ndt_map 2D ndt map to conversion
+   * @param[out] occ_grid 2D cost map
+   * @param[in] resolution desired resolution of occupancy map
+   * @param[in] name of cooridnation frame for the map (same as the NDT map has)
+   * 
+   */
   bool toOccupancyGrid(NDTMap *ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
     double size_x, size_y, size_z;
     int size_x_cell_count, size_y_cell_count;

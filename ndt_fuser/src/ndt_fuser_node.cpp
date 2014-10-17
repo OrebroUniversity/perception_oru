@@ -30,8 +30,6 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
-//#include <ndt_fuser/ndt_cell.h>
-//#include <ndt_fuser/ndt_map.h>
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
@@ -72,7 +70,7 @@ protected:
     world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
   bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack, 
-    initPoseFromGT, initPoseFromTF, initPoseSet, offLineMapping;
+    initPoseFromGT, initPoseFromTF, initPoseSet;
 
   double pose_init_x,pose_init_y,pose_init_z,
     pose_init_r,pose_init_p,pose_init_t;
@@ -87,17 +85,13 @@ protected:
   message_filters::Synchronizer< PointsPoseSync > *sync_pp_;
   ros::ServiceServer save_map_;
 
-  /////////////////////////MAP PUBLISHIGN///////////////////////////
   ros::Publisher map_publisher_;
-  ros::Publisher ndtmap_publisher_;
-  /////////////////////////////////////////////////
+
   Eigen::Affine3d last_odom, this_odom;
 public:
   // Constructor
   NDTFuserNode(ros::NodeHandle param_nh) : nb_added_clouds_(0)
   {
-    ///if we want to build map reading scans directly from bagfile
-    param_nh.param<bool>("off_line_mapping",offLineMapping,false);
     ///if we want to build map reading scans directly from bagfile
     param_nh.param<std::string>("bagfile_name",bag_name,"data.bag");
 
@@ -178,70 +172,41 @@ public:
       Eigen::AngleAxis<double>(sensor_pose_r,Eigen::Vector3d::UnitX()) *
       Eigen::AngleAxis<double>(sensor_pose_p,Eigen::Vector3d::UnitY()) *
       Eigen::AngleAxis<double>(sensor_pose_t,Eigen::Vector3d::UnitZ()) ;
+    
+    map_publisher_=nh_.advertise<ndt_map::NDTMapMsg>("ndt_map",1000);
+    
+    if(matchLaser) match2D=true;
+    fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
+                                        sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
 
-    if(!offLineMapping){
-      /////////////////////////MAP PUBLISHIGN///////////////////////////
-      map_publisher_=nh_.advertise<ndt_map::NDTMapMsg>("ndt_map",1000);
-      ndtmap_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>( "NDTMAP", 0 );
-      /////////////////////////////////////////////////
-      if(matchLaser) match2D=true;
-      fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
-                                                         sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
-
-      fuser->setSensorPose(sensor_pose_);
+    fuser->setSensorPose(sensor_pose_);
           
-      if(!matchLaser) {
-        points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
-        if(useOdometry) {
-          odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-          sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
-          sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
-        } else {
-          points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
-        }
+    if(!matchLaser) {
+      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
+      if(useOdometry) {
+        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+        sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
+        sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
       } else {
-        laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
-        if(useOdometry) {
-          odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-          sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-          sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
-              
-        } else {
-          laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
-        }
-      }
-      save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
-          
-      if(plotGTTrack) {
-        gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTFuserNode::gt_callback, this);	
+        points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
       }
     } else {
-      ///////////////////////////////////////////////////////FOR OFFLINE MAPPING /////////////////////////
-      fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
-                                                         sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
-
-      fuser->setSensorPose(sensor_pose_);
-      rosbag::Bag bag;
-      bag.open(bag_name, rosbag::bagmode::Read);
-      if(!matchLaser){
-        rosbag::View clouds(bag, rosbag::TopicQuery(points_topic));
-        BOOST_FOREACH(rosbag::MessageInstance const message, clouds){ 
-          ROS_INFO("scan");
-          sensor_msgs::PointCloud2::ConstPtr cloud_message=message.instantiate<sensor_msgs::PointCloud2>();
-          pcl::PointCloud<pcl::PointXYZ> cloud;
-          pcl::fromROSMsg (*cloud_message, cloud);
-          T.setIdentity();
-          this->processFrame(cloud,T);
-        }
-        ROS_INFO("Saving current map to map directory %s", map_dir.c_str());
-        m.lock();
-        fuser->saveMap(); 
-        m.unlock();
-        ROS_INFO("EXITING");
-        exit(0);
+      laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
+      if(useOdometry) {
+        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+        sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
+        sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+              
+      } else {
+        laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
       }
-      ////////////////////////////////////////////////////////////////////////////////////////////////////
     }
+    save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
+          
+    if(plotGTTrack) {
+      gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTFuserNode::gt_callback, this);	
+    }
+  
     initPoseSet = false;
   }
 
@@ -269,22 +234,22 @@ public:
                  pose_.rotation().eulerAngles(0,1,2)(0));
 		fuser->initialize(pose_,cloud);
 		nb_added_clouds_++;
-	    } else {
-		nb_added_clouds_++;
-		//sanity check for odometry
-		if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
-		    std::cerr<<"Ignoring Odometry!\n";
-		    std::cerr<<Tmotion.translation().transpose()<<std::endl;
-		    Tmotion.setIdentity();
-		}
-		if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
-		    std::cerr<<"Ignoring Odometry!\n";
-		    std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
-		    Tmotion.setIdentity();
-		}
-		pose_ = fuser->update(Tmotion,cloud);
-	    }
-	    m.unlock();
+      } else {
+      nb_added_clouds_++;
+      //sanity check for odometry
+      if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
+        std::cerr<<"Ignoring Odometry!\n";
+        std::cerr<<Tmotion.translation().transpose()<<std::endl;
+        Tmotion.setIdentity();
+      }
+      if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
+        std::cerr<<"Ignoring Odometry!\n";
+        std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
+        Tmotion.setIdentity();
+      }
+      pose_ = fuser->update(Tmotion,cloud);
+    }
+    m.unlock();
     tf::Transform transform;
 #if ROS_VERSION_MINIMUM(1,9,0)
     //groovy
@@ -305,7 +270,6 @@ public:
     m.lock();
     ret = fuser->saveMap(); 
     m.unlock();
-
     return ret;
   }
 
@@ -320,10 +284,8 @@ public:
     T.setIdentity();
     this->processFrame(cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
-    
-    /////////////////////////////////////////////////   
-
-  };
+    publish_map();
+  }
 	
   // Callback
   void points2OdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg_in,
@@ -360,7 +322,6 @@ public:
     this->processFrame(cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
-    /////////////////////////////////////////////////   
   };
 	
   // Callback
@@ -384,13 +345,10 @@ public:
       }
     }
     //ROS_INFO("Got laser points");
-
     T.setIdentity();
     this->processFrame(pcl_cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
-    /////////////////////////////////////////////////   
-
   };
 	
   // Callback
@@ -441,12 +399,10 @@ public:
       }
     }
     //ROS_INFO("Got laser and odometry!");
-
     this->processFrame(pcl_cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
     /////////////////////////////////////////////////   
-
   };
 	
   // Callback
@@ -473,98 +429,19 @@ public:
     if(visualize){
       fuser->viewer->addTrajectoryPoint(gt_pose.translation()(0),gt_pose.translation()(1),gt_pose.translation()(2)+0.2,1,1,1);
       fuser->viewer->displayTrajectory();
-//      fuser->viewer->repaint();	
+      //      fuser->viewer->repaint();	
     }
     m.unlock();
   }
 
 public:
-  /////////////////////////////////////////////////////////////////////////////
   // map publishing function
-   bool publish_map(){
-     ndt_map::NDTMapMsg map_msg;
-     toMessage(fuser->map, map_msg,fuser_frame);
-  //   //very heavy....
-  //   std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> map_vector=fuser->map->getAllInitializedCells();
-  //   map.header.stamp=ros::Time::now();
-  //   map.header.frame_id=fuser_frame;
-
-     map_publisher_.publish(map_msg);
-     //  sendMapToRviz(*fuser->map);
-     return true;
-   }
-  /////////////////////////////////////////////////////////////////////////////////
-
-
-  ////////////////////////////////////////////////////////NDT TO RVIZ /////////////////////////////////
-void sendMapToRviz(lslgeneric::NDTMap &map){
-
-	std::vector<lslgeneric::NDTCell*> ndts;
-	ndts = map.getAllCells();
-	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%u components)\n",ndts.size());
-	visualization_msgs::MarkerArray marray;
-	
-	for(unsigned int i=0;i<ndts.size();i++){
-		Eigen::Matrix3d cov = ndts[i]->getCov();
-		Eigen::Vector3d m = ndts[i]->getMean();
-		
-		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov);
-
-    Eigen::Matrix3d evecs;
-    Eigen::Vector3d evals;
-
-    evecs = Sol.eigenvectors().real();
-    evals = Sol.eigenvalues().real();
-    
-    Eigen::Quaternion<double> q(evecs);
-	
-		visualization_msgs::Marker marker;
-		marker.header.frame_id = "world";
-		marker.header.stamp = ros::Time();
-		marker.ns = "NDT";
-		marker.id = i;
-		marker.type = visualization_msgs::Marker::SPHERE;
-		marker.action = visualization_msgs::Marker::ADD;
-		marker.pose.position.x = m[0];
-		marker.pose.position.y = m[1];
-		marker.pose.position.z = m[2];
-		
-		marker.pose.orientation.x = q.x();
-		marker.pose.orientation.y = q.y();
-		marker.pose.orientation.z = q.z();
-		marker.pose.orientation.w = q.w();
-		
-		marker.scale.x = 100.0*evals(0);
-		marker.scale.y = 100.0*evals(1);
-		marker.scale.z = 100.0*evals(2);
-		/*
-		marker.pose.orientation.x = 0;
-		marker.pose.orientation.y = 0;
-		marker.pose.orientation.z = 0;
-		marker.pose.orientation.w = 1;
-
-		marker.scale.x = 1;
-		marker.scale.y = 1;
-		marker.scale.z = 1;
-	*/	
-		
-		marker.color.a = 1.0;
-		marker.color.r = 0.0;
-		marker.color.g = 1.0;
-		marker.color.b = 0.0;
-		
-		marray.markers.push_back(marker);
-	}
-	
-	ndtmap_publisher_.publish(marray);
-	
-	for(unsigned int i=0;i<ndts.size();i++){
-		delete ndts[i];
-	}
-
-}
-
-  ////////////////////////////////////////////////////////////////////////////////////
+  bool publish_map(){
+    ndt_map::NDTMapMsg map_msg;
+    toMessage(fuser->map, map_msg,fuser_frame);
+    map_publisher_.publish(map_msg);
+    return true;
+  }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

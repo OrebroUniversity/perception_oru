@@ -9,6 +9,8 @@
 #include <deque>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues> 
+#include <boost/thread.hpp>
+
 
 inline void checkOpenGLError()
 {
@@ -32,6 +34,21 @@ inline void checkOpenGLError()
 //      float y;
 //      float z;
 // } glut3d_vector3_t;
+
+
+static int win;
+
+static void * glthread( void * pParam );
+
+static int create_gl_thread( void ) {
+    
+     pthread_t thread1;
+     
+     int iRet = pthread_create( &thread1, NULL, glthread, NULL );
+     
+     return iRet;
+}
+
 
 class NDTVizGlutColorPoint {
 public:
@@ -483,6 +500,20 @@ public:
     //! Process events
      virtual void process_events();
 
+    virtual void start_main_loop() {
+        glutMainLoop();
+    }
+
+    virtual void start_main_loop_own_thread() {
+        // boost::thread workerThread(workerFunc);
+        create_gl_thread();
+        // if(pthread_create(&glut_event_processing_thread, NULL, ndt_viz_event_loop_thread, this)) {
+	    
+        //     std::cerr << "Error creating thread\n";
+        // }
+    }
+
+
      virtual void draw_origin();
 
      //! Save an image (screenshot) of current view.
@@ -512,6 +543,9 @@ public:
     bool keyHit() const;
     unsigned char getPushedKey();
 
+     void update_cam();
+
+
 protected:
      //! Put the code to draw here.
      /*!
@@ -520,14 +554,16 @@ protected:
       */
      virtual void draw();
 
-     void update_cam();
      void cam_rotate();
 
      //! Saves a set of images.
      int save_inc();
 
+
+    pthread_t glut_event_processing_thread;
+
      // GUI settings
-     int win;
+//     int win;
      int gui_pause;
 //     int viewport_width;
 //     int viewport_height;

@@ -483,7 +483,7 @@ public:
     if(visualize){
       fuser->viewer->addTrajectoryPoint(gt_pose.translation()(0),gt_pose.translation()(1),gt_pose.translation()(2)+0.2,1,1,1);
       fuser->viewer->displayTrajectory();
-      fuser->viewer->repaint();	
+//      fuser->viewer->repaint();	
     }
     m.unlock();
   }

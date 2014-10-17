@@ -52,9 +52,10 @@ int main(int argc, char **argv){
     //create visualizer
     NDTViz *viewer = new NDTViz(true);
     //display map
+    viewer->win3D->start_main_loop_own_thread();
     viewer->plotNDTSAccordingToOccupancy(-1,&ndmap);
     while(viewer->win3D->isOpen()){
-	viewer->win3D->process_events();
+	//viewer->win3D->process_events();
 	if (viewer->win3D->keyHit())
 	{
 	    int key = viewer->win3D->getPushedKey();

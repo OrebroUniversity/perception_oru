@@ -23,13 +23,13 @@ namespace lslgeneric {
 	    bool alloc;
 	public:
 	    NDTCostmap(NDTMap *map) {
-		std::cerr<<"creating costmap\n";
+          //std::cerr<<"creating costmap\n";
 		map_ = map;
 		if(map_ != NULL) {
 		    grid_ = dynamic_cast<LazyGrid*>(map_->getMyIndex());
 		    if(grid_ != NULL) { 
 			grid_->getGridSize(sx,sy,sz);
-			std::cerr<<"got a lazy grid, size: "<<sx<<" "<<sy<<" "<<sz<<"\n";
+			//std::cerr<<"got a lazy grid, size: "<<sx<<" "<<sy<<" "<<sz<<"\n";
 			levels = new LevelSet*[sx];
 			for(int i=0; i<sx; ++i) {
 			    levels[i] = new LevelSet[sy];
@@ -57,11 +57,11 @@ namespace lslgeneric {
 
     void NDTCostmap::processMap(double robot_height, double occ) {
 	if(!alloc) return;
-	std::cerr<<"processing map\n";
+    //	std::cerr<<"processing map\n";
 	double cx,cy,cz;
 	grid_->getCellSize(cx,cy,cz);
 	int nheight_cells = ceil(robot_height/cz);
-	std::cerr<<"nh "<<nheight_cells<<" cz "<<cz<<std::endl;
+	//std::cerr<<"nh "<<nheight_cells<<" cz "<<cz<<std::endl;
 	for(int ix=0; ix<sx; ++ix) {
 	    for(int iy=0; iy<sy; ++iy) {
 		for(int iz=0; iz<sz-nheight_cells; ++iz) { //
@@ -219,7 +219,7 @@ namespace lslgeneric {
 		    }
 		}
 	    }
-	    std::cerr<<std::endl;
+	    //std::cerr<<std::endl;
 	}
 
 	std::set<std::pair<int,int>,PairComp >::reverse_iterator itr;
@@ -236,7 +236,7 @@ namespace lslgeneric {
 	//merge maps
 	for(itr=merge_maps.rbegin(); itr!=merge_maps.rend(); itr++) {
 	    bool did_insert = false;
-	    std::cerr<<"merge maps "<<itr->first<<" "<<itr->second<<std::endl;
+	    //std::cerr<<"merge maps "<<itr->first<<" "<<itr->second<<std::endl;
 	    //search for jtr == itr->first to define search region
 	    //std::cerr<<"at jtr "<<(*jtr)[0]<<std::endl;
 	    while((*jtr)[0] < itr->first) jtr++;
@@ -286,7 +286,7 @@ namespace lslgeneric {
 		//copy map
 		if(maps[(*jtr)[0]].n_samples > 20) {
 		    maps_final.push_back(maps[(*jtr)[0]]);
-		    std::cout<<(*jtr)[0]<<std::endl;
+		    //std::cout<<(*jtr)[0]<<std::endl;
 		}
 	    } else {
 		MapPair mp;
@@ -294,7 +294,7 @@ namespace lslgeneric {
 		mp.mean_height = 0;
 		mp.n_samples = 0;
 		for(int i=0; i<jtr->size(); ++i) {
-		    std::cout<<(*jtr)[i]<<" ";
+          //std::cout<<(*jtr)[i]<<" ";
 		    mp.mean_height += maps[(*jtr)[i]].mean_height;
 		    mp.image = mp.image | maps[(*jtr)[i]].image;
 		    mp.n_samples += maps[(*jtr)[i]].n_samples;
@@ -303,13 +303,13 @@ namespace lslgeneric {
 		    mp.mean_height /= mp.n_samples;
 		    maps_final.push_back(mp);
 		}
-		std::cout<<std::endl;
+		//std::cout<<std::endl;
 	    }
 	}
 
 	maps = maps_final;
 
-	std::cerr<<"Created "<<maps.size()<<" maps\n";
+	//std::cerr<<"Created "<<maps.size()<<" maps\n";
 	for(int q=0; q<maps.size(); ++q) {
 	    char win_name[300];
 	    snprintf(win_name,299,"Map Level %lf",maps[q].mean_height);
@@ -363,9 +363,9 @@ namespace lslgeneric {
 		    std::cerr<<"1";
 		}*/
 	    }
-	    std::cerr<<std::endl;
+        //	    std::cerr<<std::endl;
 	}
-	std::cerr<<"Created "<<maps.size()<<" maps\n";
+	//std::cerr<<"Created "<<maps.size()<<" maps\n";
 	for(int q=0; q<maps.size(); ++q) {
 	    char win_name[300];
 	    snprintf(win_name,299,"Map Level %lf",maps[q].mean_height);

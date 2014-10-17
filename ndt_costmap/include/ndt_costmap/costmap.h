@@ -52,7 +52,7 @@ namespace lslgeneric {
       }
     }
     void processMap(double robot_height, double occ);
-    bool toMessage(ndt_costmap::TraversabilityMapMsg msg);
+    //bool toMessage(ndt_costmap::TraversabilityMapMsg msg);
     void saveCostMap(std::string filename, double max_h);
     void saveCostMapIncr(std::string filename, double max_h);
   };

@@ -41,11 +41,13 @@ include_directories(${catkin_INCLUDE_DIRS})
 #)
 
 #common commands for building c++ executables and libraries
+find_package(Boost REQUIRED COMPONENTS program_options thread)
+include_directories(${Boost_INCLUDE_DIRS})
+
 add_library(${PROJECT_NAME}  src/NDTVizGlut.cc)
 target_link_libraries(${PROJECT_NAME} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}) #${JPEG_LIBRARIES} ${LIBXML2_LIBRARIES} ${MRPT_LIBS} 
 
-find_package(Boost REQUIRED COMPONENTS program_options thread)
-include_directories(${Boost_INCLUDE_DIRS})
+
 add_executable(ndt_viewer src/ndt_viewer.cc)
 target_link_libraries(ndt_viewer ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME}) # ${MRPT_LIBS} ${JPEG_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} 
 

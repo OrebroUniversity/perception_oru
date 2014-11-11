@@ -1,7 +1,8 @@
 #ifndef NDT_FUSER_HH
 #define NDT_FUSER_HH
-
+#ifndef NO_NDT_VIZ
 #include <ndt_visualisation/ndt_viz.h>
+#endif
 #include <ndt_map/ndt_map.h>
 #include <ndt_registration/ndt_matcher_d2d_2d.h>
 #include <ndt_registration/ndt_matcher_d2d.h>
@@ -25,8 +26,9 @@ class NDTFuser{
 	double max_translation_norm, max_rotation_norm;
 	double sensor_range;
 	bool be2D;
+#ifndef NO_NDT_VIZ
 	NDTViz *viewer;
-
+#endif
 	NDTFuser(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, double sensor_range_ = 3, bool visualize_=false, bool be2D_=false){
 	    isInit = false;
 	    resolution = map_resolution;
@@ -43,14 +45,18 @@ class NDTFuser{
 	    visualize = visualize_;
 	    be2D = be2D_;
 	    sensor_range = sensor_range_;
+#ifndef NO_NDT_VIZ
 	    viewer = new NDTViz(visualize);
+#endif
 	    std::cout<<"MAP: resolution: "<<resolution<<" size "<<map_size_x<<" "<<map_size_y<<" "<<map_size_z<<std::endl;
 	    map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
 	}
 	~NDTFuser()
 	{
 	    delete map;
+#ifndef NO_NDT_VIZ
 	    delete viewer;
+#endif
 	}
 
 	double getDoubleTime()

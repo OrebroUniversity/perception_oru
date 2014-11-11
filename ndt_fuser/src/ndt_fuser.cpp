@@ -15,8 +15,10 @@ namespace lslgeneric {
 	Tlast_fuse = Tnow;
 	if(visualize) 
 	{
+#ifndef NO_NDT_VIZ
 	    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 	    //viewer->plotLocalNDTMap(cloud,resolution); 
+#endif
 	}
     }
     Eigen::Affine3d NDTFuser::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
@@ -60,8 +62,10 @@ namespace lslgeneric {
 			Tlast_fuse = Tnow;
 			if(visualize) 
 			{
+#ifndef NO_NDT_VIZ
 			    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 			    //viewer->plotLocalNDTMap(cloud,resolution); 
+#endif
 			}
 		    }
 		}
@@ -103,8 +107,10 @@ namespace lslgeneric {
 			Tlast_fuse = Tnow;
 			if(visualize) 
 			{
+#ifndef NO_NDT_VIZ
 			    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 			    //viewer->plotLocalNDTMap(cloud,resolution); 
+#endif
 			}
 
 		    }

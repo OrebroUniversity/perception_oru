@@ -40,6 +40,8 @@ namespace lslgeneric {
 	Todom = Tnow;
 	if(visualize) 
 	{
+#ifndef NO_NDT_VIZ
+      //      # error compiling with visualization
 	    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 	    //viewer->plotLocalNDTMap(cloud,resolution);
 	    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.5,1,0,0);
@@ -47,6 +49,7 @@ namespace lslgeneric {
 	    viewer->displayTrajectory();
 	    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 	    viewer->repaint();	
+#endif
         }
     }
 
@@ -97,7 +100,9 @@ namespace lslgeneric {
 	    map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
 	    if(visualize) //&&ctr%20==0) 
 	    {
+#ifndef NO_NDT_VIZ
 		if(ctr%50==0) {
+
 		    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 		    //viewer->plotLocalNDTMap(cloud,resolution); 
 		}
@@ -106,6 +111,7 @@ namespace lslgeneric {
 		viewer->displayTrajectory();
 		viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 		viewer->repaint();	
+#endif
 	    }
 	    ctr++;
 	    return Tnow;
@@ -184,6 +190,7 @@ namespace lslgeneric {
 			Tlast_fuse = Tnow;
 			if(visualize) //&&ctr%20==0) 
 			{
+#ifndef NO_NDT_VIZ
 			    if(ctr%50==0) {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				//viewer->plotLocalNDTMap(cloud,resolution); 
@@ -193,8 +200,10 @@ namespace lslgeneric {
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 			    viewer->repaint();
-                            viewer->win3D->process_events();
-                        }
+                viewer->win3D->process_events();
+#endif
+            }
+
 			ctr++;
 		    }
 		}
@@ -240,6 +249,7 @@ namespace lslgeneric {
 			Tlast_fuse = Tnow;
 			if(visualize) //&&ctr%20==0) 
 			{
+#ifndef NO_NDT_VIZ
 			    if(ctr%2==0) {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				//viewer->plotLocalNDTMap(cloud,resolution); 
@@ -249,8 +259,9 @@ namespace lslgeneric {
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 			    viewer->repaint();
-                            viewer->win3D->process_events();
-                        }
+                viewer->win3D->process_events();
+#endif
+            }
 			ctr++;
 		    }
 		}

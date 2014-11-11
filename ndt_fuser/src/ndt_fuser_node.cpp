@@ -434,9 +434,11 @@ public:
       ROS_INFO("Set initial pose from GT track");
     }
     if(visualize){
+#ifndef NO_NDT_VIZ
       fuser->viewer->addTrajectoryPoint(gt_pose.translation()(0),gt_pose.translation()(1),gt_pose.translation()(2)+0.2,1,1,1);
       fuser->viewer->displayTrajectory();
       //      fuser->viewer->repaint();	
+#endif
     }
     m.unlock();
   }

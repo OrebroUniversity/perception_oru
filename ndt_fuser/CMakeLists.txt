@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs 
 #  message_generation
 )
-
+#add_definitions(-DNO_NDT_VIZ)
 catkin_package(
     DEPENDS eigen libpcl-all-dev 
     CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime
@@ -60,7 +60,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 #message(STATUS "->" ${MRPT_LIBRARIES})
 
 set (${PROJECT_NAME}_LIB_SRCS
-	    src/ndt_fuser.cpp
+#	    src/ndt_fuser.cpp
 	    src/ndt_fuser_hmt.cpp
 	)
 

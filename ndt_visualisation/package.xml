@@ -42,8 +42,8 @@
   <!-- <test_depend>pcl</test_depend> -->
   <!-- <test_depend>ndt_map</test_depend> -->
 
-<export>
+<!-- export>
     <cpp lflags="-L${prefix}/lib -lndt_visualisation " cflags="-I${prefix}/include"/>
-</export>
+</export -->
 
 </package>

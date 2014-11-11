@@ -1,7 +1,8 @@
 #ifndef NDT_FUSER_HMT_HH
 #define NDT_FUSER_HMT_HH
-
+#ifndef NO_NDT_VIZ
 #include <ndt_visualisation/ndt_viz.h>
+#endif
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/ndt_map_hmt.h>
 #include <ndt_registration/ndt_matcher_d2d_2d.h>
@@ -31,7 +32,9 @@ class NDTFuserHMT{
 	int ctr;
 	std::string prefix;
 	std::string hmt_map_dir;
+#ifndef NO_NDT_VIZ
 	NDTViz *viewer;
+#endif
 	FILE *fAddTimes, *fRegTimes;
 
 	NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, double sensor_range_ = 3, 
@@ -56,8 +59,10 @@ class NDTFuserHMT{
 	    prefix = prefix_;
 	    doMultires = doMultires_;
 	    ctr =0;
+#ifndef NO_NDT_VIZ
 	    viewer = new NDTViz(visualize);
 	    viewer->win3D->start_main_loop_own_thread(); // Very very ugly to start it here... FIX ME.
+#endif
 	    localMapSize<<sensor_range_,sensor_range_,map_size_z_;
 	    fuseIncomplete = fuseIncomplete_;
 	    matcher.ITR_MAX = max_itr;
@@ -77,7 +82,9 @@ class NDTFuserHMT{
 	~NDTFuserHMT()
 	{
 	    delete map;
+#ifndef NO_NDT_VIZ
 	    delete viewer;
+#endif
 	    if(fAddTimes!=NULL) fclose(fAddTimes);
 	    if(fRegTimes!=NULL) fclose(fRegTimes);
 	}

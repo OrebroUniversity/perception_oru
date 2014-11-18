@@ -11,6 +11,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )
+set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
 
 #find_package(LibXml2 REQUIRED)
 #include_directories(${LIBXML2_INCLUDE_DIR})
@@ -69,6 +70,7 @@ target_link_libraries(ndt_viewer ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJEC
 #)
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
+#install(TARGETS ndt_viewer ${PROJECT_NAME}
 install(TARGETS ndt_viewer ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -36,7 +36,10 @@
   <!--run_depend>mrpt_libs</run_depend>
   <run_depend>libxmu-dev</run_depend-->
   <run_depend>glut</run_depend>
-
+<run_depend>freeglut3-dev</run_depend>
+<build_depend>freeglut3-dev</build_depend>
+<build_depend>libxmu-dev</build_depend>
+<build_depend>libxi-dev</build_depend>
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>common_rosdeps</test_depend> -->
   <!-- <test_depend>pcl</test_depend> -->

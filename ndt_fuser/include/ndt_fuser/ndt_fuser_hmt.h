@@ -60,8 +60,10 @@ class NDTFuserHMT{
 	    doMultires = doMultires_;
 	    ctr =0;
 #ifndef NO_NDT_VIZ
-	    viewer = new NDTViz(visualize);
-	    viewer->win3D->start_main_loop_own_thread(); // Very very ugly to start it here... FIX ME.
+        if(visualize_){
+          viewer = new NDTViz(visualize);
+          viewer->win3D->start_main_loop_own_thread(); // Very very ugly to start it here... FIX ME.
+        }
 #endif
 	    localMapSize<<sensor_range_,sensor_range_,map_size_z_;
 	    fuseIncomplete = fuseIncomplete_;

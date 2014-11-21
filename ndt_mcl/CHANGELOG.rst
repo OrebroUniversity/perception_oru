@@ -2,6 +2,11 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* refactored mcl code
+* Contributors: Henrik Andreasson, Martin Magnusson, Todor Stoyanov, Tomasz Kuncer
+
 1.0.18 (2014-04-09)
 -------------------
 * fixes for backward support and compatibility on new ubuntu versions

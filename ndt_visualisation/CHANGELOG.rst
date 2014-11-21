@@ -2,6 +2,13 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removing mrpt dependency
+* Added NDTViz into a thread.
+* Added the glut NDT visualizer.
+* Contributors: Henrik Andreasson, Martin Magnusson, RVC, Todor Stoyanov, Tomasz Kucner, Tomasz Kuncer
+
 1.0.18 (2014-04-09)
 -------------------
 

@@ -2,6 +2,11 @@
 Changelog for package sdf_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixing problems with compatibility
+* Contributors: Todor Stoyanov
+
 1.0.18 (2014-04-09)
 -------------------
 * fixes for backward support and compatibility on new ubuntu versions

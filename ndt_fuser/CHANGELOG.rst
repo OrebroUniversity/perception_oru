@@ -2,6 +2,13 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removing mrpt dependency
+* map messages are now sent
+* refactored fuser
+* Contributors: Henrik Andreasson, Martin Magnusson, Todor Stoyanov, Tomasz Kucner
+
 1.0.18 (2014-04-09)
 -------------------
 

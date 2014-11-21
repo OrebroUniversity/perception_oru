@@ -2,8 +2,8 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2014-11-21)
+-------------------
 * refactored code
 * modified p2d registration, works again
 * Contributors: Martin Magnusson, Todor Stoyanov

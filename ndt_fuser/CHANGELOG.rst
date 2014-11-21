@@ -2,8 +2,8 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2014-11-21)
+-------------------
 * removing mrpt dependency
 * map messages are now sent
 * refactored fuser

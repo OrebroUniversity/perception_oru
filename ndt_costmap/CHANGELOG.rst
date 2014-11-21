@@ -2,8 +2,8 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2014-11-21)
+-------------------
 * ndt_costmap package first import. computes a set of traversability maps from a 3D ndt map
 * Contributors: Todor Stoyanov, Tomasz Kucner
 

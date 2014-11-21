@@ -1,12 +1,11 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package ndt_feature_reg
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package ndt_rviz_visualisation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.0.20 (2014-11-21)
 -------------------
-* refactoring complete, everything compiles
-* Added and updated the old ndt feature registraion based code.
-* Contributors: Henrik Andreasson, Todor Stoyanov
+* visualize ndt_map messages in rviz 
+* Contributors: Tomasz Kucner
 
 1.0.19 (2014-04-09 17:41)
 -------------------------

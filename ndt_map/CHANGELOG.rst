@@ -2,8 +2,8 @@
 Changelog for package ndt_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2014-11-21)
+-------------------
 * refactored ndt map
 * Contributors: Todor Stoyanov, Tomasz Kucner
 

@@ -2,8 +2,8 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.20 (2014-11-21)
+-------------------
 * refactored mcl code
 * Contributors: Henrik Andreasson, Martin Magnusson, Todor Stoyanov, Tomasz Kuncer
 

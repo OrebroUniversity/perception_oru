@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ndt_rviz_visualisation</name>
-  <version>0.0.0</version>
+  <version>1.0.19</version>
   <description>The ndt_rviz_visualisation package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

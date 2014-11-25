@@ -1,6 +1,6 @@
 <package>
   <name>ndt_map</name>
-  <version>1.0.22</version>
+  <version>1.0.23</version>
   <description>Contains the definitions of the 3D Normal Distributions Transform data structures, 
      used for mapping, registration, etc.</description>
   <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>

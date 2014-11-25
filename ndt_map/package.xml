@@ -29,6 +29,7 @@
   <build_depend>opencv2</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>nav_msgs</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>libpcl-all</run_depend>
@@ -38,6 +39,7 @@
   <run_depend>opencv2</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>nav_msgs</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>pcl</test_depend> -->

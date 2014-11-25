@@ -2,6 +2,9 @@
 Changelog for package ndt_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.23 (2014-11-25)
 -------------------
 * fix of nav_msgs bug

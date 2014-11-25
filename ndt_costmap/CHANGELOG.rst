@@ -2,6 +2,11 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* small fix with install targets
+* Contributors: Todor Stoyanov
+
 1.0.23 (2014-11-25)
 -------------------
 

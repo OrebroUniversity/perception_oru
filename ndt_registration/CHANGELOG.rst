@@ -2,6 +2,9 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.20 (2014-11-21)
 -------------------
 * refactored code

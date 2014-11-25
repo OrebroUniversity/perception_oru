@@ -2,6 +2,9 @@
 Changelog for package ndt_map_builder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.20 (2014-11-21)
 -------------------
 * ndt_map_builder and ndt_histogram update

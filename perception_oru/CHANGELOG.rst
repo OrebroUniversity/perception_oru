@@ -2,6 +2,9 @@
 Changelog for package perception_oru
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.20 (2014-11-21)
 -------------------
 * removed package pointcloud_vrml, added new packages

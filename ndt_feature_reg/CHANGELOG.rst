@@ -2,6 +2,9 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.20 (2014-11-21)
 -------------------
 * refactoring complete, everything compiles

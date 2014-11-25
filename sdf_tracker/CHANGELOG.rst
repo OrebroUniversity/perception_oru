@@ -2,6 +2,9 @@
 Changelog for package sdf_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.20 (2014-11-21)
 -------------------
 * fixing problems with compatibility

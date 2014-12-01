@@ -1,6 +1,6 @@
 <package>
   <name>ndt_feature_reg</name>
-  <version>1.0.24</version>
+  <version>1.0.25</version>
   <description>ndt_feature_reg</description>
 <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
 <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>

@@ -2,8 +2,8 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.25 (2014-12-01)
+-------------------
 * fixes for imported packages
 * Contributors: Todor Stoyanov
 

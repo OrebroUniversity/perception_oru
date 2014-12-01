@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   ndt_map 
   laser_geometry 
   sensor_msgs 
+  visualisation_msgs 
   ndt_visualisation 
   std_srvs 
 #  message_generation
@@ -17,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 #add_definitions(-DNO_NDT_VIZ)
 catkin_package(
     DEPENDS eigen libpcl-all-dev 
-    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime
+    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs message_runtime visualization_msgs
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME} 
 )

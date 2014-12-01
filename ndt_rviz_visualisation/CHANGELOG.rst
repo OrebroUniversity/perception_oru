@@ -2,6 +2,9 @@
 Changelog for package ndt_rviz_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.24 (2014-11-25)
 -------------------
 

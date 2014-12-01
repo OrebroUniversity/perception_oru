@@ -2,6 +2,11 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixes for imported packages
+* Contributors: Todor Stoyanov
+
 1.0.24 (2014-11-25)
 -------------------
 

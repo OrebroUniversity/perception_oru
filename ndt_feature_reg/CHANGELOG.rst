@@ -2,6 +2,9 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.25 (2014-12-01)
 -------------------
 * fixes for imported packages

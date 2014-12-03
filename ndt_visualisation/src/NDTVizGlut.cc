@@ -51,7 +51,7 @@ void * glthread(void * pParam)
      glEnable(GL_COLOR_MATERIAL);
      // set material properties which will be assigned by glColor
      glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
+     glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 
     glutReshapeFunc(win_reshape_);
      glutDisplayFunc(win_redraw_);

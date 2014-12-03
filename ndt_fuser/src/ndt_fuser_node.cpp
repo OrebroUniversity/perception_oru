@@ -242,8 +242,12 @@ public:
 		fuser->initialize(pose_,cloud);
 		nb_added_clouds_++;
       } else {
-      nb_added_clouds_++;
       //sanity check for odometry
+      if(Tmotion.translation().norm() <0.01 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.01) {
+        std::cerr<<"No motion, skipping Frame\n";
+	m.unlock();
+	return;
+      }
       if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
         std::cerr<<"Ignoring Odometry!\n";
         std::cerr<<Tmotion.translation().transpose()<<std::endl;
@@ -254,6 +258,7 @@ public:
         std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
         Tmotion.setIdentity();
       }
+      nb_added_clouds_++;
       pose_ = fuser->update(Tmotion,cloud);
     }
     m.unlock();

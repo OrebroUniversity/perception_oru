@@ -106,8 +106,8 @@ namespace lslgeneric {
 		    viewer->plotNDTSAccordingToOccupancy(-1,map); 
 		    //viewer->plotLocalNDTMap(cloud,resolution); 
 		}
-		viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
-		viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
+		viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.2,0,1,0);
+		viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.2,0.5,0,0.5);
 		viewer->displayTrajectory();
 		viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 		viewer->repaint();	
@@ -191,16 +191,16 @@ namespace lslgeneric {
 			if(visualize) //&&ctr%20==0) 
 			{
 #ifndef NO_NDT_VIZ
-			    if(ctr%50==0) {
+			    if(ctr%30==0) {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				//viewer->plotLocalNDTMap(cloud,resolution); 
 			    }
-			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
-			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
+			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.2,0,1,0);
+			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.2,0.5,0,0.5);
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 			    viewer->repaint();
-                viewer->win3D->process_events();
+			    //viewer->win3D->process_events();
 #endif
             }
 
@@ -254,8 +254,8 @@ namespace lslgeneric {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				//viewer->plotLocalNDTMap(cloud,resolution); 
 			    }
-			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),1,0,0);
-			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2),0,1,0);
+			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.2,0,1,0);
+			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.2,0.5,0,0.5);
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 			    viewer->repaint();

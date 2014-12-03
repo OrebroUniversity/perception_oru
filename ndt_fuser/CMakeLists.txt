@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   ndt_map 
   laser_geometry 
   sensor_msgs 
-  visualisation_msgs 
+  visualization_msgs 
   ndt_visualisation 
   std_srvs 
 #  message_generation

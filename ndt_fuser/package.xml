@@ -34,8 +34,8 @@
   <run_depend>laser_geometry</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
-  <run_depend>visualization_msgs</run_depend>
   <run_depend>ndt_visualisation</run_depend>
+  <run_depend>visualization_msgs</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
   <run_depend>message_runtime</run_depend>
   <!-- Dependencies needed only for running tests. -->

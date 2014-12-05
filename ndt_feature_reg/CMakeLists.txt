@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_feature_reg)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge OpenCV)
+find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge)
 catkin_package(
     DEPENDS eigen libpcl-all-dev #mrpt glut libxmu-dev  
     CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs image_geometry cv_bridge
@@ -11,6 +11,7 @@ catkin_package(
 )
 
 
+find_package(OpenCV REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS})
 ADD_DEFINITIONS(-DLINUX_OS)
 include_directories(include)
@@ -38,17 +39,17 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/ndt_frame_viewer.cpp
 	)
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
 add_executable(ndt_feature_reg_node src/ndt_feature_reg_node.cc)
-target_link_libraries(ndt_feature_reg_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(ndt_feature_reg_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(ndt_feature_eval src/ndt_feature_eval.cc)
-target_link_libraries(ndt_feature_eval ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(ndt_feature_eval ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(ndt_feature_viewer src/ndt_feature_viewer.cc)
-target_link_libraries(ndt_feature_viewer ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries(ndt_feature_viewer ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBRARIES})
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package

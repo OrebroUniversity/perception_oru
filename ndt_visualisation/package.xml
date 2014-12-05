@@ -35,6 +35,8 @@
   <run_depend>libpcl-all-dev</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>glut</run_depend>
+  <run_depend>message_runtime</run_depend>
+
   <!--run_depend>freeglut3-dev</run_depend-->
   
 

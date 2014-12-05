@@ -2,8 +2,8 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.28 (2014-12-05)
+-------------------
 * added opengl and image_transport as deps
 * Contributors: Todor Stoyanov
 

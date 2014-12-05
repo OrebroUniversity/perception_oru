@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>sdf_tracker</name>
-  <version>1.0.27</version>
+  <version>1.0.28</version>
   <description>The sdf_tracker package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

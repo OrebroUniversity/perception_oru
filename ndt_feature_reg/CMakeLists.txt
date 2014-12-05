@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_feature_reg)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge)
+find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge image_transport)
 catkin_package(
     DEPENDS eigen libpcl-all-dev #mrpt glut libxmu-dev  
-    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs image_geometry cv_bridge
+    CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs image_geometry cv_bridge image_transport
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )

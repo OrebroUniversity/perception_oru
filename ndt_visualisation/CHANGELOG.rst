@@ -2,6 +2,11 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* added opengl and image_transport as deps
+* Contributors: Todor Stoyanov
+
 1.0.27 (2014-12-05)
 -------------------
 * fixes to package.xml files

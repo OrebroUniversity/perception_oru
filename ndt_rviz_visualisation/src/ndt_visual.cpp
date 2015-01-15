@@ -25,19 +25,32 @@ namespace lslgeneric{
     int m_itr=0;
     for(int i=0;i<3;i++){
       for(int j=0;j<3;j++){
-        cov(j,i)=cell.cov_matrix[m_itr];
+        cov(i,j)=cell.cov_matrix[m_itr];
         m_itr++;
       }
     }
-    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov);
-    Eigen::Matrix3d evecs;
-    Eigen::Vector3d evals;
-    evecs = Sol.eigenvectors().real();
-    evals = Sol.eigenvalues().real();
-    Eigen::Quaternion<double> q(evecs);
+    Eigen::Matrix3d m_eigVec = Eigen::Matrix3d::Zero(3,3);
+    Eigen::Matrix3d m_eigVal = Eigen::Matrix3d::Zero(3,3);
+    Eigen::EigenSolver<Eigen::Matrix3d> es(cov);
+    m_eigVal = es.pseudoEigenvalueMatrix();
+    m_eigVec = es.pseudoEigenvectors();
+    m_eigVal = m_eigVal.cwiseSqrt();
 
-    Ogre::Vector3 scale(30*evals(0),30*evals(1),30*evals(2));
+    Eigen::Quaternion<double> q(m_eigVec);
+    Ogre::Vector3 scale(3*m_eigVal(0,0),3*m_eigVal(1,1),3*m_eigVal(2,2));
     Ogre::Quaternion orient(q.w(),q.x(),q.y(),q.z());
+
+    // Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov);
+    // Eigen::Matrix3d evecs;
+    // Eigen::Vector3d evals;
+    // evecs = Sol.eigenvectors().real();
+    // evals = Sol.eigenvalues().real();
+    // Eigen::Quaternion<double> q(evecs);
+    // Ogre::Vector3 scale(30*evals(0),30*evals(1),30*evals(2));
+    // Ogre::Quaternion orient(q.w(),q.x(),q.y(),q.z());
+
+
+
     NDT_elipsoid_->setScale(scale);
     NDT_elipsoid_->setPosition(position);
     NDT_elipsoid_->setOrientation(orient);

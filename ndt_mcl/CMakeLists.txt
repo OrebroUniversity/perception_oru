@@ -35,7 +35,7 @@ if(OPENMP_FOUND)
 endif()
 
 #Only needed for the visualization
-FIND_PACKAGE(MRPT REQUIRED gui)
+#FIND_PACKAGE(MRPT REQUIRED gui)
 
 set (${PROJECT_NAME}_LIB_SRCS
 	src/CParticleFilter.cpp
@@ -45,17 +45,17 @@ set (${PROJECT_NAME}_LIB_SRCS
 )
 
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
 
 #an example of 2d ndt-mcl
 add_executable(2d_ndt_mcl_offline_test src/2d_ndt_mcl_offline_test.cpp)
-target_link_libraries(2d_ndt_mcl_offline_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
+target_link_libraries(2d_ndt_mcl_offline_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
 
 add_executable(2d_ndt_mcl_node src/2d_ndt_mcl_node.cpp)
-target_link_libraries(2d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
+target_link_libraries(2d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
 
 add_executable(3d_ndt_mcl_node src/3d_ndt_mcl_node.cpp)
-target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
+target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
 
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(

@@ -5,7 +5,10 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS cv_bridge eigen roscpp pcl_ros pcl_conversions 
+
+find_package(cmake_modules REQUIRED )
+find_package(Eigen REQUIRED )
+find_package(catkin REQUIRED COMPONENTS cv_bridge roscpp pcl_ros pcl_conversions 
   std_msgs
   nav_msgs
    message_generation  )

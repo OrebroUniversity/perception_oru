@@ -20,6 +20,7 @@
   <!-- Dependencies needed to compile this package. -->
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>rosbag</build_depend>
+  <build_depend>cmake_modules</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
@@ -29,9 +30,6 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
   <build_depend>visualization_msgs</build_depend>
-  <build_depend>mrpt</build_depend>
-  <build_depend>glut</build_depend>
-  <build_depend>libxmu-dev</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>ndt_visualisation</run_depend>
@@ -45,9 +43,6 @@
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>visualization_msgs</run_depend>
-  <run_depend>mrpt</run_depend>
-  <run_depend>glut</run_depend>
-  <run_depend>libxmu-dev</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>ndt_visualisation</test_depend> -->

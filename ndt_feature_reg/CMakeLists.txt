@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_feature_reg)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge image_transport)
+find_package(catkin REQUIRED COMPONENTS cmake_modules rosconsole ndt_registration ndt_map laser_geometry sensor_msgs std_srvs image_geometry cv_bridge image_transport)
 catkin_package(
     DEPENDS eigen libpcl-all-dev #mrpt glut libxmu-dev  
     CATKIN_DEPENDS ndt_registration ndt_map laser_geometry sensor_msgs ndt_visualisation std_srvs image_geometry cv_bridge image_transport
@@ -10,7 +10,15 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
 )
 
-
+###############################################################################################################################
+#NOTE: to make this work, you need to install a local copy of openCV with the non-free modules built
+#for ubuntu 14.04, do the following:
+#mkdir tmp && cd tmp && wget  https://raw.githubusercontent.com/jayrambhia/Install-OpenCV/master/Ubuntu/2.4/opencv2_4_9.sh
+#chmod a+x opencv2_4_9.sh
+#edit opencv2_4_9.sh. Add -D WITH_OPENCL=OFF -D BUILD_opencv_nonfree=ON to the cmake command on line 30
+#run the script and verify you have installed the opencv library in /usr/local
+###############################################################################################################################
+set(OpenCV_DIR "/usr/local/")
 find_package(OpenCV REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS})
 ADD_DEFINITIONS(-DLINUX_OS)
@@ -38,6 +46,9 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/ndt_frame.cpp
 	src/ndt_frame_viewer.cpp
 	)
+
+link_directories(/usr/local/lib)
+
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 

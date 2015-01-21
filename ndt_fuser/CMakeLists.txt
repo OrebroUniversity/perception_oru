@@ -5,7 +5,8 @@ set(CMAKE_BUILD_TYPE Release)
 project(ndt_fuser)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS 
-  rosconsole 
+  rosconsole
+  cmake_modules 
   ndt_registration 
   ndt_map 
   laser_geometry 

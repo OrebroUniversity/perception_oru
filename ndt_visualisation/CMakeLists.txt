@@ -4,7 +4,9 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros eigen)
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
+find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros)
 catkin_package(
     DEPENDS libpcl-all-dev eigen glut opengl#libxmu-dev mrpt 
     CATKIN_DEPENDS ndt_map pcl_ros message_runtime

@@ -7,6 +7,7 @@ set(CMAKE_VERBOSE_MAKEFILE)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cmake_modules
   ndt_map 
   ndt_visualisation
 )

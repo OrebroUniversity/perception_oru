@@ -19,6 +19,8 @@
 
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
+  
+  <build_depend>cmake_modules</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>pcl_conversions</build_depend>

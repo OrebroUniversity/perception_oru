@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_mcl)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs)
+find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs cmake_modules)
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen mrpt
@@ -18,12 +18,12 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-find_package(JPEG REQUIRED)
+#find_package(GLUT REQUIRED)
+#find_package(JPEG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS signals)
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${JPEG_INCLUDE_DIR})
-include_directories(${GLUT_INCLUDE_DIR})
+#include_directories(${JPEG_INCLUDE_DIR})
+#include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
 
 #if you want to use multi-threading
@@ -45,17 +45,17 @@ set (${PROJECT_NAME}_LIB_SRCS
 )
 
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
 
 #an example of 2d ndt-mcl
 add_executable(2d_ndt_mcl_offline_test src/2d_ndt_mcl_offline_test.cpp)
-target_link_libraries(2d_ndt_mcl_offline_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
+target_link_libraries(2d_ndt_mcl_offline_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
 
 add_executable(2d_ndt_mcl_node src/2d_ndt_mcl_node.cpp)
-target_link_libraries(2d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
+target_link_libraries(2d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES})
 
 add_executable(3d_ndt_mcl_node src/3d_ndt_mcl_node.cpp)
-target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS})
+target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
 
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(

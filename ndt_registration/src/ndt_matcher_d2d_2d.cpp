@@ -490,7 +490,7 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
     Eigen::MatrixXd score_here_omp;
     Eigen::MatrixXd Hessian_omp;
 
-#define N_THREADS_2D 2
+#define N_THREADS_2D 6
 
     //n_threads = omp_get_num_threads();
     score_gradient_omp.resize(n_dimensions,N_THREADS_2D);

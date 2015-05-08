@@ -33,7 +33,7 @@ class NDTViz {
 		win3D = NULL;
 	    }
 	    
-	    gl_points.setPointSize(4.5);
+	    gl_points.setPointSize(8.5);
 	    gl_particles.setPointSize(2.5);
 
 	}

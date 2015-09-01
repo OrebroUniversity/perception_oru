@@ -164,12 +164,16 @@ public:
   void setColor4(float R, float G, float B, float A) {
     m_color.R = R; m_color.G = G; m_color.B = B; m_color.A = A;
   }
+  void setThickness(float thickness) {
+    m_thickness = thickness;
+  }
 
 private:
   float m_lineWidth;
   NDTVizGlutColor4f m_color;
   bool m_antiAliasing;
   float m_pointSize;
+  float m_thickness;
   std::vector<NDTVizGlutLine> lines;
 };
 
@@ -379,6 +383,49 @@ public:
   virtual Eigen::Vector3f getFocalPoint() const = 0;
   virtual Eigen::Vector3f getUpVector() const = 0;
   virtual void setFocalPoint(const Eigen::Vector3f &fp) = 0;
+  virtual void setPosition(const Eigen::Vector3f &p) = 0;
+
+  virtual void update_mouse(int button, int state, int x, int y) = 0;
+  virtual void update_motion(int x, int y) = 0;
+};
+
+//! Implements a camera without (mouse)interaction
+class NDTVizGlutFixedCamera : public NDTVizGlutCamera {
+private:
+  Eigen::Vector3f position_;
+  Eigen::Vector3f focal_point_;
+public:
+  NDTVizGlutFixedCamera() {
+    position_ = Eigen::Vector3f(0., 0., 1.);
+    focal_point_ = Eigen::Vector3f(1., 0., 0.);
+  }
+  
+  Eigen::Vector3f getPosition() const {
+    return position_;
+  }
+
+  Eigen::Vector3f getFocalPoint() const {
+    return focal_point_;
+  }
+
+  Eigen::Vector3f getUpVector() const {
+    return Eigen::Vector3f(0., 0., 1.);
+  }
+  
+  void setFocalPoint(const Eigen::Vector3f &fp) {
+    focal_point_ = fp;
+  }
+
+  void setPosition(const Eigen::Vector3f &p) {
+    position_ = p;
+  }
+  
+  void update_mouse(int button, int state, int x, int y) {
+    // Nothing
+  }
+  void update_motion(int x, int y) {
+    // Nothing
+  }
 };
 
 //! This implements a XY-orbit camera movement
@@ -413,6 +460,23 @@ public:
   }
   void setFocalPoint(const Eigen::Vector3f &fp) {
     focal_point_ = fp;
+  }
+  void setPosition(const Eigen::Vector3f &p) {
+    Eigen::Vector3f diff = p-getFocalPoint();
+    distance = diff.norm();
+    yaw = atan2(diff(1),diff(0));
+    pitch = acos(diff(2) / distance);
+    
+    while (pitch > M_PI/2.) {
+      pitch -= M_PI;
+    }
+    while (pitch < -M_PI/2.) {
+      pitch += M_PI;
+    }
+      
+    // std::cout << "distance : " << distance << std::endl;
+    // std::cout << "yaw : " << yaw << std::endl;
+    // std::cout << "pitch : " << pitch << std::endl;
   }
   Eigen::Vector3f getUpVector() const {
     return Eigen::Vector3f(0., 0., 1.);
@@ -521,6 +585,11 @@ public:
 
   virtual void draw_origin();
 
+  void setFullScreen(bool fs);
+  bool getFullScreen() const;
+  void setMotionBlurFrames(int f);
+  int getMotionBlurFrames() const;
+
   //! Save an image (screenshot) of current view.
   int save(const std::string &fileName);
 
@@ -550,6 +619,11 @@ public:
 
   void update_cam();
 
+  void switchCamera(const std::string &type);
+  void setAspectRatioFactor(float ratio);
+
+  const NDTVizGlutCamera* getCameraConstPtr() const;
+  NDTVizGlutCamera* getCameraPtr();
 
 protected:
   //! Put the code to draw here.
@@ -580,13 +654,13 @@ protected:
   Eigen::Vector3f cam_pos;
   Eigen::Vector3f cam_dir;
 
-  float cam_radius;
-  float cam_sweep_ang;
-  float cam_azim;
+  // float cam_radius;
+  // float cam_sweep_ang;
+  // float cam_azim;
      
-  float cam_sweep_speed;
+  // float cam_sweep_speed;
 
-  bool cam_sweep;
+  // bool cam_sweep;
 
   int save_inc_counter;
   bool do_save_inc;
@@ -595,9 +669,15 @@ protected:
 
   // // Objects to draw
   std::vector<NDTVizGlutObject*> objects;
-  NDTVizGlutXYOrbitCamera camera;
+  NDTVizGlutCamera* camera;
+  NDTVizGlutXYOrbitCamera orbit_camera;
+  NDTVizGlutFixedCamera fixed_camera;
 
   std::deque<unsigned char> pressed_keys;
+
+  float aspect_ratio_factor;
+  bool full_screen;
+  int motion_blur_frames;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -83,20 +83,21 @@ void * glthread(void * pParam)
 NDTVizGlut::NDTVizGlut()
 {
      // GUI settings
+     camera = &orbit_camera;
      gui_pause = 0;
 
 
-     cam_radius = 10.0f;
-     cam_azim = 0.5f;
-     cam_sweep_ang = 0.0f;
+     // cam_radius = 10.0f;
+     // cam_azim = 0.5f;
+     // cam_sweep_ang = 0.0f;
 
      // cam_sweep_origin.x = 0.0f;
      // cam_sweep_origin.y = 0.0f;
      // cam_sweep_origin.z = 0.0f;
 
-     cam_sweep_speed = 0.002;
+     // cam_sweep_speed = 0.002;
 
-     cam_sweep = 0;
+     // cam_sweep = 0;
 
      glut3d_ptr = this;
 
@@ -113,14 +114,33 @@ NDTVizGlut::~NDTVizGlut()
 
 }
 
+void NDTVizGlut::setFullScreen(bool fs) 
+{
+     this->full_screen = fs;
+}
+
+bool NDTVizGlut::getFullScreen() const
+{
+     return this->full_screen;
+}
+
+void NDTVizGlut::setMotionBlurFrames(int f) 
+{
+  this->motion_blur_frames = f;
+}
+
+int NDTVizGlut::getMotionBlurFrames() const
+{
+  return this->motion_blur_frames;
+}
 
 void
 NDTVizGlut::update_cam()
 {
      glLoadIdentity();
-     Eigen::Vector3f cp = camera.getPosition();
-     Eigen::Vector3f fp = camera.getFocalPoint();
-     Eigen::Vector3f up = camera.getUpVector();
+     Eigen::Vector3f cp = camera->getPosition();
+     Eigen::Vector3f fp = camera->getFocalPoint();
+     Eigen::Vector3f up = camera->getUpVector();
      gluLookAt(cp[0], cp[1], cp[2],
 	       fp[0], fp[1], fp[2],
 	       up[0], up[1], up[2]);
@@ -137,7 +157,7 @@ void
 NDTVizGlut::win_mouse(int button, int state, int x, int y)
 {
 //    std::cerr << "win_mouse - b:" << button << " s: " << state << "[" << x << "," << y << "]" << std::endl;
-    camera.update_mouse(button, state, x, y);
+    camera->update_mouse(button, state, x, y);
     update_cam();
     //win_redraw();
     return;
@@ -147,7 +167,7 @@ void
 NDTVizGlut::win_motion(int x, int y)
 {
 //    std::cerr << "win_motion : " << x << "," << y << std::endl;
-    camera.update_motion(x, y);
+    camera->update_motion(x, y);
     update_cam();
     //win_redraw();
     return;
@@ -398,12 +418,41 @@ NDTVizGlut::clearScene() {
 
 void
 NDTVizGlut::setCameraPointingToPoint(double x, double y, double z) {
-    camera.setFocalPoint(Eigen::Vector3f(x,y,z)); 
+    camera->setFocalPoint(Eigen::Vector3f(x,y,z)); 
     update_cam();
 }
 
 void
 NDTVizGlut::setCameraPosition(double x, double y, double z) {
-    // Not really useful in this context. This will instead be interpreted as setCameraPointingAt. Note that the setCameraPointingAt will also move the camera. Is this function anyway used at all?
-    this->setCameraPointingToPoint(x,y,z);
+  camera->setPosition(Eigen::Vector3f(x,y,z));
+  update_cam();
+}
+
+void
+NDTVizGlut::switchCamera(const std::string &type) {
+
+  if (type == std::string("orbit")) {
+    camera = &orbit_camera;
+  }
+  else if (type == std::string("fixed")) {
+    camera = &fixed_camera;
+  }
+  else {
+    assert(false);
+  }
+}
+
+void
+NDTVizGlut::setAspectRatioFactor(float factor) {
+  aspect_ratio_factor = factor;
+}
+
+const NDTVizGlutCamera* 
+NDTVizGlut::getCameraConstPtr() const {
+  return camera;
+}
+
+NDTVizGlutCamera* 
+NDTVizGlut::getCameraPtr() {
+  return camera;
 }

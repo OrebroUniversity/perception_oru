@@ -17,6 +17,9 @@ class NDTViz {
 	NDTVizGlutPointCloudColor gl_pointcloud;
 	NDTVizGlutSetOfLines gl_laserlines;
 	NDTVizGlutEllipsoids gl_ellipsoids;
+        NDTVizGlutSetOfLines gl_grid;
+        NDTVizGlutSetOfLines gl_polygonboundary;
+        NDTVizGlutSetOfLines gl_pathline;
 
 	NDTViz(bool allocate_new_window=true)
 
@@ -82,6 +85,21 @@ class NDTViz {
 	}
 
 	
+  void addGrid(size_t nbCells, double cellSize, double lineWidth = 1., double R = 1.0, double G = 0.4, double B = 0., double A = 0.8) {
+          double length = nbCells*cellSize;
+          double offset = length * 0.5;
+          for (size_t i = 0; i <= nbCells; i++) {
+            gl_grid.appendLine(i*cellSize-offset, -offset, 0, i*cellSize-offset, nbCells*cellSize-offset, 0);
+            
+            for (size_t i = 0; i <= nbCells; i++) {
+              gl_grid.appendLine(-offset, i*cellSize-offset, 0, nbCells*cellSize-offset, i*cellSize-offset, 0);
+            }
+          }
+          gl_grid.setColor4(R,G,B,A);
+          gl_grid.setThickness(lineWidth);
+          win3D->addObject(&gl_grid);
+        }
+  
 
 	/**
 	  * Add the laser scan to the scen 
@@ -95,6 +113,40 @@ class NDTViz {
 	  gl_laserlines.setColor(R,G,B);
 	  win3D->addObject(&gl_laserlines);
 	}
+
+        void addPolygon(std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > &pts, double R=1.0, double G=1.0, double B=1.0)  {
+          gl_polygonboundary.clear();
+          if (pts.size() < 2)
+            return;
+          for (unsigned int i = 0; i < pts.size(); i++) {
+            unsigned int j = i+1;
+            if (i >= pts.size() - 1) {
+              j = 0; // final one - connect to first
+            }
+            gl_polygonboundary.appendLine(pts[i](0),pts[i](1),0.,
+                                          pts[j](0),pts[j](1),0.);
+          }
+          gl_polygonboundary.setColor(R,G,B);
+          gl_polygonboundary.setThickness(10.);
+          win3D->addObject(&gl_polygonboundary);
+        }
+
+        void addPathLine(std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > &pts, double R=1.0, double G=1.0, double B=1.0)  {
+          gl_pathline.clear();
+          if (pts.size() < 2)
+            return;
+          for (unsigned int i = 0; i < pts.size()-1; i++) {
+            unsigned int j = i+1;
+            gl_pathline.appendLine(pts[i](0),pts[i](1),0.,
+                                   pts[j](0),pts[j](1),0.);
+          }
+          gl_pathline.setColor(R,G,B);
+          gl_pathline.setThickness(5.);
+          win3D->addObject(&gl_pathline);
+        }
+
+
+
 	void addPointCloud(pcl::PointCloud<pcl::PointXYZ> &cloud, double R=1.0,double G=1.0,double B=1.0){
 
 	  gl_pointcloud.setPointSize(2.5);

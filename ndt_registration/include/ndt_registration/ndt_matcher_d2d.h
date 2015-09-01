@@ -163,6 +163,14 @@ public:
     bool regularize;
     //how many neighbours to use in the objective
     int n_neighbours;
+
+    //perform line search to find the best descent rate (Mohre&Thuente)
+    //adapted from NOX
+    double lineSearchMT(
+        Eigen::Matrix<double,6,1> &increment,
+        std::vector<NDTCell*> &source,
+        NDTMap &target) ;
+
 protected:
 
     Eigen::Matrix<double,3,6> Jest;
@@ -216,13 +224,6 @@ protected:
                                  Eigen::Matrix<double,3,18> &_Zest,
                                  Eigen::Matrix<double,18,18> &_ZHest,
                                  bool computeHessian);
-    
-    //perform line search to find the best descent rate (Mohre&Thuente)
-    //adapted from NOX
-    double lineSearchMT(
-        Eigen::Matrix<double,6,1> &increment,
-        std::vector<NDTCell*> &source,
-        NDTMap &target) ;
 
     //auxiliary functions for MoreThuente line search
     struct MoreThuente

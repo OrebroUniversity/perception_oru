@@ -11,12 +11,22 @@ catkin_package(
 )
 
 ###############################################################################################################################
-#NOTE: to make this work, you need to install a local copy of openCV with the non-free modules built
+#NOTE: There are two options
+#1) 
+# In order to fix : 'opencv2/nonfree/features2d.hpp no such file or directory' type of errors add the following pkg.
+#
+# sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+# sudo apt-get update 
+# sudo apt-get install libopencv-nonfree-dev
+#
+#2) 
+#install a local copy of openCV with the non-free modules built
 #for ubuntu 14.04, do the following:
 #mkdir tmp && cd tmp && wget  https://raw.githubusercontent.com/jayrambhia/Install-OpenCV/master/Ubuntu/2.4/opencv2_4_9.sh
 #chmod a+x opencv2_4_9.sh
 #edit opencv2_4_9.sh. Add -D WITH_OPENCL=OFF -D BUILD_opencv_nonfree=ON to the cmake command on line 30
 #run the script and verify you have installed the opencv library in /usr/local
+
 ###############################################################################################################################
 set(OpenCV_DIR "/usr/local/")
 find_package(OpenCV REQUIRED)

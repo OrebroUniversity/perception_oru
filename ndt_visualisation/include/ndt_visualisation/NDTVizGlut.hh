@@ -94,11 +94,13 @@ class NDTVizGlutPointCloudColor : public NDTVizGlutObject
 {
 public:
   NDTVizGlutPointCloudColor() {
-        
+    //m_pointSize = -1;
   }
   void draw() {
+    //glEnable(GL_POINT_SMOOTH);
+    //if (m_pointSize > 0.)
+    //  glPointSize( m_pointSize );
     glBegin(GL_POINTS);
-    //glPointSize( m_pointSize );
     for (size_t i = 0; i < pts.size(); i++) {
       glColor3fv(pts[i].col);
       glVertex3fv(pts[i].pos);
@@ -598,7 +600,10 @@ public:
 
   //! Add an object to draw.
   void addObject(NDTVizGlutObject* object) {
-    objects.push_back(object);
+    // Only add objects if they are NOT in the objects.
+    if ( std::find(objects.begin(), objects.end(), object)==objects.end() ) {
+      objects.push_back(object);
+    }
   }
      
   //! Set the drawing style

@@ -67,6 +67,15 @@ void * glthread(void * pParam)
      glutCloseFunc(win_close_);
     /* Thread will loop here */
 
+     glClearColor(0.0, 0.0, 0.0, 0.0);
+     /* Thread will loop here */
+     int f = 0;
+     int n = glut3d_ptr->getMotionBlurFrames();
+     if (glut3d_ptr->getFullScreen()) {
+       glutFullScreen();
+     }
+
+#if 0
      while (true) {
          usleep(1000);
          for (int i = 0; i < 10; i++)
@@ -75,15 +84,46 @@ void * glthread(void * pParam)
          win_redraw_();
      }
      //glutMainLoop();
-     
+#endif
+
+     while (true) {
+       for (int i = 0; i < 2; i++) {
+         glutMainLoopEvent();
+       }
+       
+       glut3d_ptr->update_cam();
+       win_redraw_();
+       if (n == 0) {
+         glutSwapBuffers();
+         usleep(10000);
+       }
+       else {
+         // Performing motion bluring
+         if(f == 0)
+           glAccum(GL_LOAD, 1.0 / n);
+         else
+           glAccum(GL_ACCUM, 1.0 / n);
+         f++;
+         
+         if(f >= n) {
+           f = 0;
+           glAccum(GL_RETURN, 1.0);
+           glutSwapBuffers();
+           usleep(10000);
+         }
+       }
+     }
+
      return NULL;
 }
 
 
 NDTVizGlut::NDTVizGlut()
 {
+  aspect_ratio_factor = 1.;
+  camera = &orbit_camera;
+
      // GUI settings
-     camera = &orbit_camera;
      gui_pause = 0;
 
 
@@ -107,6 +147,8 @@ NDTVizGlut::NDTVizGlut()
      update_cam();
 
      open = true;
+     full_screen = false;
+     motion_blur_frames = 0;
 }
 
 NDTVizGlut::~NDTVizGlut()
@@ -183,7 +225,7 @@ NDTVizGlut::win_reshape(int width, int height)
      if(height == 0)
 	  height = 1;
      
-     float ratio = 1.0f * width / height;
+     float ratio = aspect_ratio_factor * width / height;
      // Reset the coordinate system before modifying
      glMatrixMode(GL_PROJECTION);
      glLoadIdentity();

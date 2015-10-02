@@ -451,10 +451,9 @@ public:
   }
 
   Eigen::Vector3f getPosition() const {
-    Eigen::Vector3f p = Eigen::Vector3f(
-                                        cos(yaw)*cos(pitch)*distance,
-                                        sin(yaw)*cos(pitch)*distance,
-                                        sin(pitch)*distance);
+    Eigen::Vector3f p = Eigen::Vector3f(distance*sin(pitch)*cos(yaw),
+                                        distance*sin(pitch)*sin(yaw),
+                                        distance*cos(pitch));
     return p + getFocalPoint();
   }
   Eigen::Vector3f getFocalPoint() const {

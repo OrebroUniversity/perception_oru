@@ -2,8 +2,8 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.29 (2015-10-08)
+-------------------
 * Fixed transform error in the orbit camera.
 * Added check to avoid duplicate drawing objects.
 * Added new functionalities to the visualization class.

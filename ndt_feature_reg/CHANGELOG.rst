@@ -2,8 +2,8 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.29 (2015-10-08)
+-------------------
 *non-free features from opencv are used, you may need to build from source in ubuntu
 * Contributors: Henrik Andreasson, Todor Stoyanov
 

@@ -2,8 +2,8 @@
 Changelog for package perception_oru
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.29 (2015-10-08)
+-------------------
 * major refactoring of code. templates are gone. opencv from source is needed for non-free features in ndt_feature_reg
 
 1.0.28 (2014-12-05)

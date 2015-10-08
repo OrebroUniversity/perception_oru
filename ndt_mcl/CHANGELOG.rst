@@ -2,6 +2,11 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* major code refactoring of MCL
+* Contributors: Todor Stoyanov, Tomasz Kucner
+
 1.0.28 (2014-12-05)
 -------------------
 

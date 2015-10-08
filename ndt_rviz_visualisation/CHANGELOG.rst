@@ -2,6 +2,11 @@
 Changelog for package ndt_rviz_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rviz plugin bug fix: now it looks that elipsoids are correctly orientaded
+* Contributors: Tomasz Kucner
+
 1.0.28 (2014-12-05)
 -------------------
 

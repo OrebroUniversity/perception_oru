@@ -2,6 +2,11 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removed outdated opencv2 dependency
+* Contributors: Todor Stoyanov
+
 1.0.28 (2014-12-05)
 -------------------
 

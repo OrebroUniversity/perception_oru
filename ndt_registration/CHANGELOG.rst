@@ -2,6 +2,11 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+*major refactoring
+* Contributors: Henrik Andreasson
+
 1.0.28 (2014-12-05)
 -------------------
 

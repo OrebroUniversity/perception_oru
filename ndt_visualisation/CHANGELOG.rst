@@ -2,6 +2,14 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed transform error in the orbit camera.
+* Added check to avoid duplicate drawing objects.
+* Added new functionalities to the visualization class.
+*removed dependency on mrpt
+* Contributors: Henrik Andreasson, Todor Stoyanov
+
 1.0.28 (2014-12-05)
 -------------------
 * added opengl and image_transport as deps

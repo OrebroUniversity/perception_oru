@@ -2,6 +2,12 @@
 Changelog for package ndt_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removed outdated opencv2 dependency
+* major refactoring of source code, be warned
+* Contributors: Todor Stoyanov
+
 1.0.28 (2014-12-05)
 -------------------
 

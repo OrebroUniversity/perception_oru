@@ -44,12 +44,12 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>eigen</build_depend>
-  <build_depend>opencv2</build_depend>
+  <build_depend>cv_bridge</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
 
   <run_depend>ndt_map</run_depend>
-  <run_depend>opencv2</run_depend>
+  <run_depend>cv_bridge</run_depend>
   <run_depend>eigen</run_depend>
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>pcl_ros</run_depend>

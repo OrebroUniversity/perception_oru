@@ -2,6 +2,11 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* added opengl explicit reference
+* Contributors: Todor Stoyanov
+
 1.0.29 (2015-10-08)
 -------------------
 * removed outdated opencv2 dependency

@@ -2,8 +2,8 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.30 (2015-10-09)
+-------------------
 * added opengl explicit reference
 * Contributors: Todor Stoyanov
 

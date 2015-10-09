@@ -7,7 +7,7 @@ project(ndt_mcl)
 find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs cmake_modules)
 
 catkin_package(
-    DEPENDS libpcl-all-dev eigen mrpt
+    DEPENDS libpcl-all-dev eigen
     CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}

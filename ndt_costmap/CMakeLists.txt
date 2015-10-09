@@ -17,14 +17,14 @@ find_package(Boost REQUIRED COMPONENTS system)
 #find_package(LibXml2 REQUIRED)
 #include_directories(${LIBXML2_INCLUDE_DIR})
 #ADD_DEFINITIONS(-DLINUX_OS)
-#find_package(OpenGL REQUIRED)
+find_package(OpenGL REQUIRED)
 #find_package(GLU REQUIRED)
 #find_package(GLUT REQUIRED)
 #find_package(JPEG REQUIRED)
 #FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
 #include_directories(${JPEG_INCLUDE_DIR})
 #include_directories(${GLUT_INCLUDE_DIR})
-#include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -96,7 +96,7 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES ndt_costmap
   CATKIN_DEPENDS ndt_map ndt_visualisation
-  DEPENDS opencv2 eigen libpcl-all-dev
+  DEPENDS opencv2 eigen libpcl-all-dev opengl
 )
 
 ###########
@@ -124,7 +124,7 @@ add_executable(ndt_costmap src/ndt_costmap.cc)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ndt_costmap
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES}
 )
 
 #############

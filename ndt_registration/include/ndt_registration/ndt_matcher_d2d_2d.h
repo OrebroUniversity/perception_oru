@@ -125,6 +125,8 @@ public:
     bool step_control;
     ///the change in score after which we converge. Set to 1e-3 in constructor
     double DELTA_SCORE;
+    //how many neighbours to use in the objective
+    int n_neighbours;
 protected:
 
     Eigen::Matrix<double,3,3> Jest;

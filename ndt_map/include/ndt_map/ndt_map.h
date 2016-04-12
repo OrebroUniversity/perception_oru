@@ -149,7 +149,7 @@ public:
 
         //this is used to prevent memory de-allocation of the *si
         //si was allocated outside the NDT class and should be deallocated outside
-        isFirstLoad_=false;
+        isFirstLoad_=true;//////////////////////////////////////////////////////////////////////////////false; Henrik - was false, but why?
 
         NDTCell *ptCell = new NDTCell();
         index_->setCellType(ptCell);
@@ -211,6 +211,7 @@ public:
             delete index_;
 						index_ = NULL;
         }
+        //std::cout<<"DELETE MAP - DONE\n";
         
     }
 

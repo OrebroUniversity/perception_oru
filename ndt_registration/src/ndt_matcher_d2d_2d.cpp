@@ -39,7 +39,7 @@ void NDTMatcherD2D_2D::init(bool _isIrregularGrid,
     ITR_MAX = 50;
     DELTA_SCORE = 10e-3*current_resolution;
     step_control = true;
-
+    n_neighbours = 2;
 }
 
 bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
@@ -175,17 +175,17 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
 //        double score_here = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,true);
         double score_here = derivativesNDT_2d(nextNDT,targetNDT,score_gradient_2d,H,true);
 	scg = score_gradient_2d;
-//	std::cout<<"itr "<<itr_ctr<<" score "<<score_here<<std::endl;
+	std::cout<<"itr "<<itr_ctr<<" score "<<score_here<<std::endl;
 	if(score_here < score_best) 
 	{
 	    Tbest = T;
 	    score_best = score_here;
-//	    std::cout<<"best score "<<score_best<<" at "<<itr_ctr<<std::endl;
+	    std::cout<<"best score "<<score_best<<" at "<<itr_ctr<<std::endl;
 	}
 
         if (score_gradient_2d.norm()<= 10e-2*DELTA_SCORE)
         {
-            std::cout<<"\%gradient vanished\n";
+          std::cout<<"\%gradient vanished, norm : " << score_gradient_2d.norm() << std::endl;
             for(unsigned int i=0; i<nextNDT.size(); i++)
             {
                 if(nextNDT[i]!=NULL)
@@ -220,8 +220,8 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
             H = evecs*Lam*(evecs.transpose());
             //std::cerr<<"regularizing\n";
         }
-//        std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
-//        std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
+        std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
+        std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
 
         pose_increment_v = -H.ldlt().solve(scg);
         double dginit = pose_increment_v.dot(scg);
@@ -539,7 +539,7 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
             point.x = meanMoving(0);
             point.y = meanMoving(1);
             point.z = meanMoving(2);
-            std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+            std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
             for(unsigned int j=0; j<cells.size(); j++)
             {
                 cell = cells[j];
@@ -611,7 +611,7 @@ double NDTMatcherD2D_2D::derivativesNDT_2d(
         point.x = meanMoving(0);
         point.y = meanMoving(1);
         point.z = meanMoving(2);
-        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
         for(int j=0; j<cells.size(); j++)
         {
             cell = cells[j];

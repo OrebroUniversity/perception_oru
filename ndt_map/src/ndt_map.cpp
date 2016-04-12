@@ -232,9 +232,9 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
     index_->setSize(map_size(0),map_size(1),map_size(2));
     //lz->initializeAll();
 
-    //fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),pc.size());
-    //ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
-    //ROS_INFO("maxDist is %lf", maxDist);
+    fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),pc.size());
+    // ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
+    // ROS_INFO("maxDist is %lf", maxDist);
 
     pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
 
@@ -247,6 +247,8 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	    continue;
 	}
 	
+        //        std::cout << "centoroid add point [" << it->x << "," << it->y << "," <<it->z <<std::endl;
+
 	if(range_limit>0)
 	{
 	    d << it->x, it->y, it->z;
@@ -255,7 +257,7 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	    {
 		it++;
 		continue;
-	    }
+            }
 	}
 	
 	//fprintf(stderr,"HEP!");
@@ -263,7 +265,27 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	NDTCell *ptCell=NULL;
 	lz->getNDTCellAt(*it,ptCell);
 #ifdef REFACTORED
-	if(ptCell!=NULL) update_set.insert(ptCell);
+	if(ptCell!=NULL) {
+          update_set.insert(ptCell);
+          //          std::cout << "insert" << std::endl;
+        }
+        else {
+          std::cout << "invalid cell..." << std::endl;
+          int indX, indY, indZ;
+          lz->getIndexForPoint(*it, indX, indY, indZ);
+          std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
+        }
+        {
+          // int indX, indY, indZ;
+          // lz->getIndexForPoint(*it, indX, indY, indZ);
+          // //          std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
+          // double dx,dy,dz;
+          // lz->getCenter(dx,dy,dz);
+          // //          std::cout << "center : " << dx << "," << dy << "," << dz << std::endl;
+          // int indX, indY, indZ;
+          // lz->getGridSize(indX, indY, indZ);
+          // //          std::cout << "gridsize : " << indX << "," << indY << "," << indZ << std::endl;
+        }
 #endif
 	it++;
     }
@@ -1095,7 +1117,7 @@ double NDTMap::getDepthSmooth(Eigen::Vector3d origin,
 void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, const std::vector<std::vector<size_t> > &indices)
 {
 
-    loadPointCloud(pc);
+  //    loadPointCloud(pc);
     // Specific function related to CellVector
     CellVector *cl = dynamic_cast<CellVector*>(index_);
     if (cl != NULL)
@@ -1514,6 +1536,11 @@ int NDTMap::loadFromJFF(const char* filename)
     }
 
     jffin = fopen(filename,"r+b");
+    if (jffin == NULL) {
+      JFFERR("file not found");
+      std::cerr << "Failed to open : " << filename << std::endl;
+      return -5;
+    }
 
     char versionBuf[16];
     if(fread(&versionBuf, sizeof(char), strlen(_JFFVERSION_), jffin) <= 0)

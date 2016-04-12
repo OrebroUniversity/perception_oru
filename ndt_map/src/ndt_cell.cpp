@@ -138,7 +138,7 @@ void NDTCell::computeGaussianSimple(){
         Eigen::Vector3d meanSum_;
         Eigen::Matrix3d covSum_;
 			
-				if(points_.size()<6){
+        if(points_.size()</*6*/3){ // Henrik (!)
 					points_.clear();
 					return;
 				}
@@ -340,7 +340,9 @@ void NDTCell::computeGaussian(int mode, unsigned int maxnumpoints, float occupan
     ***/
     
 		if((hasGaussian_==false && points_.size()< 3) || points_.size()==0){
-			points_.clear();
+                  // HENRIK... std::cout << "--------------------------------- CLEARING POINTS ---------------------------" << std::endl;
+                  points_.clear();
+                  //			points_.clear(); // Henrik
 			return; ///< not enough to compute the gaussian
 		}
 		

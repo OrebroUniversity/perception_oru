@@ -289,7 +289,7 @@ public:
     ///use this to set the parameters for the NDTCell. \note be careful, remember that the parameters are static, thus global
     static void setParameters(double _EVAL_ROUGH_THR   =0.1,
                               double _EVEC_INCLINED_THR=8*M_PI/18,
-                              double _EVAL_FACTOR      =100);
+                              double _EVAL_FACTOR      =1000);
     /**
     * Get likelihood for a given point
     */
@@ -299,7 +299,7 @@ public:
     * Adds a new point to distribution (does not update the distribution)
     * Call computeGaussian() to update the content
     */
-    virtual void addPoint(pcl::PointXYZ &pt)
+    virtual void addPoint(const pcl::PointXYZ &pt)
     {
         points_.push_back(pt);
     }

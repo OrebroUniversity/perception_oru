@@ -41,9 +41,14 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rviz</build_depend>
+  
+  <!-- Dependencies for the message generation -->
+  <build_depend>ndt_map</build_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>ndt_map</run_depend>
+  <run_depend>message_runtime</run_depend>
+
   <run_depend>rviz</run_depend>
-
-
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

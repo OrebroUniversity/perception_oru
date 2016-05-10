@@ -1,0 +1,17 @@
+<launch>
+  <param name="/use_sim_time" value="true" />
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 world map 100" />
+  <!-- node pkg="rosbag" type="play" name="player" output="screen" args="-clock -r 0.25 /home/tzkr/indigo_workspaces/default/src/perception_oru/ndt_fuser/data/localization.bag"/-->
+  <node name="ndt_mcl" pkg="g_ndt_mcl" type="g_ndt_mcl_node" output="screen"><!-- launch-prefix="xterm -e gdb - -args" -->
+    <param name="map_file" value="/home/tzkr/indigo_workspaces/default/src/perception_oru/ndt_fuser/maps/basement2d_map.jff"  />
+    <param name="res_file" value="/home/tzkr/ndt_init_500.csv"/>
+    <param name="show_particles" value="true" />
+    <param name="use_laser" value="false" />
+    <param name="experiment" value="true" />
+    <param name="init_type" value="ndt" />
+    <param name="particle_count" value="500" />
+    <param name="resolution" value="0.2" />
+    <param name="counter_limit" value="300" />
+  </node>
+  <node pkg="rviz" type="rviz" name="view" args="-d /home/tzkr/indigo_workspaces/default/src/perception_oru/g_ndt_mcl/launch/simple.rviz" />
+</launch>

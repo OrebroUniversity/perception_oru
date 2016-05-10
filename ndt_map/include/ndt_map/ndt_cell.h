@@ -173,6 +173,18 @@ public:
     {
         return center_;
     }
+
+inline void getCenter(double &cx,double &cy,double &cz) const
+    {
+      cx=center_.x;
+      cy=center_.y;
+      cz=center_.z;
+       
+    }
+
+
+
+
     inline void getDimensions(double &xs, double &ys, double &zs) const
     {
         xs = xsize_;

@@ -1,0 +1,43 @@
+<launch>
+    <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 /map /map_n 10" /> -->
+    <param name="use_sim_time" value="true" />
+     <node name="ndt_mcl" pkg="ndt_mcl" type="velodyne_ndt_mcl_node" output="screen">
+        <param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+
+        <param name="map_file" value="/home/tzkr/Dropbox/MAPS_SMALL_0.5-0.25/schiphol_full_jff/schiphol_full_map.jff"/>
+        <param name="resolution" value="0.5" />
+
+        <param name="show_particles" value="true" />
+
+        <param name="sensor_pose_y" value="-0.260" />
+        <param name="sensor_pose_x" value="0.058" />
+
+        <param name="sensor_pose_z" value="1.363" />
+        <param name="sensor_pose_t" value="-1.577" />
+        <param name="sensor_pose_r" value="0.008" />
+
+        <param name="v_size_x" value="60" />
+        <param name="v_size_y" value="60" />
+        <param name="v_size_z" value="10" />
+        <param name="initial_x" value="-115.303" />
+        <param name="initial_y" value="-262" />
+        <param name="initial_th" value="0.9" />
+	    <param name="fraction" value="0.9" />
+	    <param name="init_var" value="1" />
+        <param name="range" value="80" />
+        <param name="particle_count" value="600" />
+        <param name="show_pose" value="false"/>
+        <param name="force_SIR" value="false" />
+    </node>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="/home/tzkr/Dropbox/MAPS_SMALL_0.5-0.25/schiphol_full_new/schiphol_full_map.yml" />
+
+
+       <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+        <param name="map_file" value="/home/tzkr/Dropbox/MAPS_SMALL_0.5-0.25/schiphol_full_jff/schiphol_full_map.jff"/>
+        <param name="resolution" value="0.5" />
+        <param name="map_rate" value="0.1" />
+      </node>
+
+
+</launch>

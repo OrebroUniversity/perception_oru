@@ -171,6 +171,20 @@ public:
         std::vector<NDTCell*> &source,
         NDTMap &target) ;
 
+
+    //auxiliary functions for MoreThuente line search
+    struct MoreThuente
+    {
+        static double min(double a, double b);
+        static double max(double a, double b);
+        static double absmax(double a, double b, double c);
+        static int cstep(double& stx, double& fx, double& dx,
+                         double& sty, double& fy, double& dy,
+                         double& stp, double& fp, double& dp,
+                         bool& brackt, double stmin, double stmax);
+    }; //end MoreThuente
+
+
 protected:
 
     Eigen::Matrix<double,3,6> Jest;
@@ -224,18 +238,6 @@ protected:
                                  Eigen::Matrix<double,3,18> &_Zest,
                                  Eigen::Matrix<double,18,18> &_ZHest,
                                  bool computeHessian);
-
-    //auxiliary functions for MoreThuente line search
-    struct MoreThuente
-    {
-        static double min(double a, double b);
-        static double max(double a, double b);
-        static double absmax(double a, double b, double c);
-        static int cstep(double& stx, double& fx, double& dx,
-                         double& sty, double& fy, double& dy,
-                         double& stp, double& fp, double& dp,
-                         bool& brackt, double stmin, double stmax);
-    }; //end MoreThuente
 
     //perform a subsampling depending on user choice
     int NUMBER_OF_POINTS;

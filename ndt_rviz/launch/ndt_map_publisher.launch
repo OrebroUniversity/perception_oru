@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ndt_localization" type="ndt_map_publisher" name="ndt_map_publisher">
+	<param name="map_file" value="$(find ndt_rviz)/maps/test_0.5.jff" />
+	<param name="resolution" value="0.5"/>
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_rviz)/launch/ndt_map_publisher.rivz" />
+
+</launch>

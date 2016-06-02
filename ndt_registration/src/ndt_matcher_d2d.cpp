@@ -793,7 +793,8 @@ double NDTMatcherD2D::scoreNDT(std::vector<NDTCell*> &sourceNDT, NDTMap &targetN
         point.x = meanMoving(0);
         point.y = meanMoving(1);
         point.z = meanMoving(2);
-        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,2); //targetNDT.getAllCells(); //
+        std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
+        std::cout << "cells.size() : " << cells.size() << std::endl;
         for(unsigned int j=0; j<cells.size(); j++)
         {
             cell = cells[j];
@@ -866,7 +867,7 @@ double NDTMatcherD2D::scoreNDT_OM(NDTMap &sourceNDT, NDTMap &targetNDT)
         NDTCell* cell=NULL;
         point = source->getCenter();
         //SWITCHME
-        std::vector<NDTCell*> all_cells = targetNDT.getCellsForPoint(point,2,false);
+        std::vector<NDTCell*> all_cells = targetNDT.getCellsForPoint(point,n_neighbours,false);
 
         for(unsigned int j=0; j<all_cells.size(); j++) {
             cell = all_cells[j];
@@ -2003,7 +2004,7 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
     TR.setIdentity();
 
     std::vector<NDTCell*> sourceNDTN = sourceNDT.pseudoTransformNDT(T);
-    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(T);
+    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(TR); // WHY T? // HENRIK T-> TR.
 
     Eigen::MatrixXd scg(6,1); //column vectors
     int NM = sourceNDTN.size() + targetNDTN.size();
@@ -2117,6 +2118,11 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
         delete sourceNDTN[q];
     }
     sourceNDTN.clear();
+    for(unsigned int q=0; q<targetNDTN.size(); q++)
+    {
+        delete targetNDTN[q];
+    }
+    targetNDTN.clear();
 
     return true;
 }

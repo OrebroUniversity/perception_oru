@@ -118,10 +118,18 @@ namespace lslgeneric{
     occ_grid.info.width=size_x_cell_count;
     occ_grid.info.height=size_y_cell_count;
     occ_grid.info.resolution=resolution;
+    occ_grid.info.map_load_time=ros::Time::now();
+    occ_grid.info.origin.position.x=orig_x;
+    occ_grid.info.origin.position.y=orig_y;
     occ_grid.header.stamp=ros::Time::now();
     occ_grid.header.frame_id=frame_id;
-    for(double px=orig_x+resolution/2.0;px<orig_x+size_x;px+=resolution){
-      for(double py=orig_y+resolution/2.0;py<orig_y+size_x;py+=resolution){
+    // for(double py=orig_y+resolution/2.0;py<orig_y+size_x;py+=resolution){
+    //   for(double px=orig_x+resolution/2.0;px<orig_x+size_x;px+=resolution){
+    for(int iy = 0; iy < size_y_cell_count; iy++) {
+      for(int ix = 0; ix < size_x_cell_count; ix++) {
+        double px = orig_x + resolution*ix + resolution*0.5;
+        double py = orig_y + resolution*iy + resolution*0.5;
+
         pcl::PointXYZ pt(px,py,0);
         lslgeneric::NDTCell *cell;
         if(!ndt_map->getCellAtPoint(pt, cell)){

@@ -5,13 +5,18 @@ catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-include(${QT_USE_FILE})
+# find_package(Qt5 COMPONENTS QtCore QtGui REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+# MESSAGE( STATUS "THE BAD INCLUDE:         " ${Qt5Core_INCLUDE_DIRS} )
+# include(${QT_USE_FILE})
+include_directories(${Qt5Core_INCLUDE_DIRS})
+include_directories(${Qt5Gui_INCLUDE_DIRS})
 
 add_definitions(-DQT_NO_KEYWORDS)
 
 
-qt4_wrap_cpp(MOC_FILES
+qt5_wrap_cpp(MOC_FILES
   src/ndt_display.hpp
 )
 

@@ -39,26 +39,41 @@
 #include <vector>
 
 namespace lslgeneric{
+
+  /**
+   * \short
+   * Histogram of NDT cells, to be used as a global appearance
+   * descriptor of a scene.
+   *
+   * This is a reimplementation of the code used in the following
+   * paper.
+   *
+   * - Magnusson, M. , Andreasson, H. , Nüchter, A. & Lilienthal,
+   *   A. J. (2009). Automatic appearance-based loop detection from
+   *   three-dimensional laser data using the normal distributions
+   *   transform. Journal of field robotics, 26 (11-12), 892-914.
+   */
   class NDTHistogram{
   private:
-    std::vector<int> histogramBinsFlat;
-    std::vector<int> histogramBinsLine;
-    std::vector<int> histogramBinsSphere;
+    std::vector<int> histogramBinsFlat; ///< The flat (planar, according to the planarity threshold) histogram bins.
+    std::vector<int> histogramBinsLine; ///< The linear (according to the linearity threshold) histogram bins.
+    std::vector<int> histogramBinsSphere; ///< The histogram bins that are not "linear" or "flat".
     
-    int N_LINE_BINS;
-    int N_FLAT_BINS;
-    int N_SPHERE_BINS;
-    double D1, D2;
-    bool inited;
+    int N_LINE_BINS; ///< Number of linear bins to use.
+    int N_FLAT_BINS; ///< Number of flat bins to use.
+    int N_SPHERE_BINS; ///< Number of spherical bins to use.
+    double D1, D2; 
+    bool inited; ///< Whether the histogram is initialised or not.
 
-    std::vector< Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>,Eigen::aligned_allocator<Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> > > topThree;
-    double topThreeS[3];
+    std::vector< Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>,Eigen::aligned_allocator<Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> > > topThree; 
+    double topThreeS[3]; 
 
     std::vector<int> dist_histogramBinsFlat[3];
     std::vector<int> dist_histogramBinsLine[3];
     std::vector<int> dist_histogramBinsSphere[3];
 
     std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> > averageDirections;
+
     void constructHistogram(NDTMap &map);
     void incrementLineBin(double d);
     void incrementFlatBin(Eigen::Vector3d &normal, double d);
@@ -66,21 +81,55 @@ namespace lslgeneric{
 
     void computeDirections();
     void closedFormSolution(pcl::PointCloud<pcl::PointXYZ> &src, pcl::PointCloud<pcl::PointXYZ> &trgt,Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T);
+
   public:
+    /** 
+     * Default constructor.
+     * 
+     * @param linear_classes 
+     * @param flat_classes 
+     * @param spherical_classes 
+     */
     NDTHistogram (int linear_classes = 1,
                   int flat_classes = 40,
                   int spherical_classes = 10 );
+
+    /** 
+     * Construct a histogram from an NDTMap. 
+     * 
+     * @param map The 3D data to generate a histogram from. This typically comes from a single 3D scan.
+     * @param linear_classes 
+     * @param flat_classes 
+     * @param spherical_classes 
+     */
     NDTHistogram (NDTMap &map,
                   int linear_classes = 1,
                   int flat_classes = 40,
                   int spherical_classes = 10 );
+
+    /** 
+     * Copy constructor.
+     */
     NDTHistogram (const NDTHistogram& other);
     
-    //get the transform that brings me close to target
+    /**
+     * Get the transform that brings me close to target.
+     */
     void bestFitToHistogram(NDTHistogram &target, Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T, bool bound_transform = true);
+
+    /** 
+     * Print out histogram data on stdout. 
+     * 
+     * @param bMatlab Whether to print in a format suitable for matlab
+     * plotting.
+     */
     void printHistogram(bool bMatlab=false);
 
-    //call this to get the 1/2/3 best option, AFTER a call to bestFitToHistogram
+    
+    /**
+     * Call this to get the 1/2/3 best option, _after_ a call to
+     * bestFitToHistogram.
+     */
     double getTransform(size_t FIT_NUMBER, Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T){
       double ret = -1;
       T.setIdentity();
@@ -92,12 +141,18 @@ namespace lslgeneric{
     }
 
     pcl::PointCloud<pcl::PointXYZ> getDominantDirections(int nDirections);
+
+    /**
+     * Compute similarity measure w.r.t. another histogram.
+     */
     double getSimilarity(NDTHistogram &other);
+
     double getSimilarity(NDTHistogram &other, Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T);
 
     std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> > directions;
+
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-      };
+  };
 }
 #endif

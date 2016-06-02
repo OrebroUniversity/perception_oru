@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ndt_costmap</name>
-  <version>1.0.28</version>
+  <version>1.0.30</version>
   <description>The ndt_costmap package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
@@ -44,16 +44,18 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>eigen</build_depend>
-  <build_depend>opencv2</build_depend>
+  <build_depend>cv_bridge</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>opengl</build_depend>
 
   <run_depend>ndt_map</run_depend>
-  <run_depend>opencv2</run_depend>
+  <run_depend>cv_bridge</run_depend>
   <run_depend>eigen</run_depend>
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
+  <run_depend>opengl</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

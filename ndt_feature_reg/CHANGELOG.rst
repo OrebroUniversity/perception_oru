@@ -2,6 +2,16 @@
 Changelog for package ndt_feature_reg
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.30 (2015-10-09)
+-------------------
+* added opengl explicit reference
+* Contributors: Todor Stoyanov
+
+1.0.29 (2015-10-08)
+-------------------
+*non-free features from opencv are used, you may need to build from source in ubuntu
+* Contributors: Henrik Andreasson, Todor Stoyanov
+
 1.0.28 (2014-12-05)
 -------------------
 * added opengl and image_transport as deps

@@ -57,8 +57,8 @@
   <!-- <test_depend>ndt_registration</test_depend> -->
   <!-- <test_depend>visualization_msgs</test_depend> -->
 
-<!--export>
-    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/src"/>
-</export-->
+<export>
+    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
+</export>
 
 </package>

@@ -269,12 +269,12 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
           update_set.insert(ptCell);
           //          std::cout << "insert" << std::endl;
         }
-        else {
-          std::cout << "invalid cell..." << std::endl;
-          int indX, indY, indZ;
-          lz->getIndexForPoint(*it, indX, indY, indZ);
-          std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
-        }
+        // else {
+        //   std::cout << "invalid cell..." << *it << std::endl;
+        //   int indX, indY, indZ;
+        //   lz->getIndexForPoint(*it, indX, indY, indZ);
+        //   std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
+        // }
         {
           // int indX, indY, indZ;
           // lz->getIndexForPoint(*it, indX, indY, indZ);
@@ -1937,7 +1937,7 @@ bool NDTMap::getCellForPoint(const pcl::PointXYZ &pt, NDTCell* &out_cell, bool c
 
 NDTMap* NDTMap::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
 {
-    NDTMap* map = new NDTMap(new CellVector());
+    NDTMap* map = new NDTMap(new CellVector(), true);
     CellVector* idx = dynamic_cast<CellVector*> (map->getMyIndex());
     typename SpatialIndex::CellVectorItr it = index_->begin();
 

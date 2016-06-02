@@ -2004,7 +2004,7 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
     TR.setIdentity();
 
     std::vector<NDTCell*> sourceNDTN = sourceNDT.pseudoTransformNDT(T);
-    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(T);
+    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(TR); // WHY T? // HENRIK T-> TR.
 
     Eigen::MatrixXd scg(6,1); //column vectors
     int NM = sourceNDTN.size() + targetNDTN.size();
@@ -2118,6 +2118,11 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
         delete sourceNDTN[q];
     }
     sourceNDTN.clear();
+    for(unsigned int q=0; q<targetNDTN.size(); q++)
+    {
+        delete targetNDTN[q];
+    }
+    targetNDTN.clear();
 
     return true;
 }

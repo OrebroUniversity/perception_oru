@@ -67,8 +67,13 @@ namespace lslgeneric{
     void computeDirections();
     void closedFormSolution(pcl::PointCloud<pcl::PointXYZ> &src, pcl::PointCloud<pcl::PointXYZ> &trgt,Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T);
   public:
-    NDTHistogram();
-    NDTHistogram (NDTMap &map);
+    NDTHistogram (int linear_classes = 1,
+                  int flat_classes = 40,
+                  int spherical_classes = 10 );
+    NDTHistogram (NDTMap &map,
+                  int linear_classes = 1,
+                  int flat_classes = 40,
+                  int spherical_classes = 10 );
     NDTHistogram (const NDTHistogram& other);
     
     //get the transform that brings me close to target

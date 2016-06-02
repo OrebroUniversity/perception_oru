@@ -93,7 +93,7 @@ namespace lslgeneric
 *  There is also an implementation of modeling of the dynamics (edata structure in ndt_cell): "Independent Markov chain occupancy grid maps for representation of dynamic environments,"
 *  in IROS2012 Conference Proceedings, Vilamoura, Algarve, Portugal: IEEE, 2012, pp. 3489-3495.
 *
-* In addition, this class provide the basis for NDT registration, which is further discussed in the \ref ndt_registration package. The relevant publications are:
+* In addition, this class provide the basis for NDT registration, which is further discussed in the \ref ndt_registration package. \todo The relevant publications are:
 *
 *
 */

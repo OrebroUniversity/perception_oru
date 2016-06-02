@@ -4,10 +4,12 @@
 
 namespace lslgeneric{
 
-  NDTHistogram::NDTHistogram(){
-    N_LINE_BINS = 1;
-    N_FLAT_BINS = 40;
-    N_SPHERE_BINS = 10;
+  NDTHistogram::NDTHistogram (int linear_classes,
+                              int flat_classes,
+                              int spherical_classes ){
+    N_LINE_BINS = linear_classes;
+    N_FLAT_BINS = flat_classes;
+    N_SPHERE_BINS = spherical_classes;
 
     histogramBinsLine = std::vector<int>(N_LINE_BINS,0);
     histogramBinsFlat = std::vector<int>(N_FLAT_BINS,0);
@@ -62,11 +64,14 @@ namespace lslgeneric{
     inited = true;
   }
 
-  NDTHistogram::NDTHistogram (NDTMap &map){
+  NDTHistogram::NDTHistogram (NDTMap &map,
+                              int linear_classes,
+                              int flat_classes,
+                              int spherical_classes ){
 
-    N_LINE_BINS = 1;
-    N_FLAT_BINS = 40;
-    N_SPHERE_BINS = 10;
+    N_LINE_BINS = linear_classes;
+    N_FLAT_BINS = flat_classes;
+    N_SPHERE_BINS = spherical_classes;
 
     histogramBinsLine = std::vector<int>(N_LINE_BINS,0);
     histogramBinsFlat = std::vector<int>(N_FLAT_BINS,0);

@@ -81,7 +81,7 @@ add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(ndt_fuser_node src/ndt_fuser_node.cpp)
-add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
+# add_dependencies(ndt_fuser_node ndt_fuser_generate_messages_cpp)
 
 target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
 

@@ -7,7 +7,7 @@ project(sdf_tracker)
 ## is used, also find other catkin packages
 
 find_package(cmake_modules REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs cv_bridge)
 
 catkin_package(
@@ -35,8 +35,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   # TODO: List your msg files here
 #)
 
-include_directories(${EIGEN_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${VTK_INCLUDE_DIRS} include)
-add_definitions(${EIGEN_DEFINITIONS})
+include_directories(${EIGEN3_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${VTK_INCLUDE_DIRS} include)
+add_definitions(${EIGEN3_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${VTK_LIBRARIES})
 target_link_libraries(sdf_tracker_node ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${PROJECT_NAME})
 

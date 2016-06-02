@@ -7,7 +7,7 @@ project(ndt_map)
 # Load catkin and all dependencies required for this package
 
 find_package(cmake_modules REQUIRED )
-find_package(Eigen REQUIRED )
+find_package(Eigen3 REQUIRED )
 find_package(catkin REQUIRED COMPONENTS cv_bridge roscpp pcl_ros pcl_conversions 
   std_msgs
   nav_msgs
@@ -51,9 +51,9 @@ add_executable(test_occ_map_topic test/test_occ_map_topic.cpp)
 
 find_package(OpenCV REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(include ${EIGEN_INCLUDE_DIRS})
+include_directories(include ${EIGEN3_INCLUDE_DIRS})
 include_directories(include ${PCL_INCLUDE_DIRS})
-add_definitions(${EIGEN_DEFINITIONS})
+add_definitions(${EIGEN3_DEFINITIONS})
 link_directories(${catkin_LIBRARY_DIRS})
 
 #uncomment if you have defined messages

@@ -5,7 +5,7 @@ set(CMAKE_BUILD_TYPE Release)
 project(ndt_visualisation)
 # Load catkin and all dependencies required for this package
 find_package(cmake_modules REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS ndt_map pcl_ros)
 catkin_package(
     DEPENDS libpcl-all-dev eigen glut opengl#libxmu-dev mrpt 
@@ -28,7 +28,7 @@ find_package(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 #FIND_PACKAGE(MRPT REQUIRED graphslam;gui)
 

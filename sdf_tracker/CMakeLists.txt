@@ -8,6 +8,20 @@ project(sdf_tracker)
 
 find_package(cmake_modules REQUIRED)
 find_package(Eigen3 REQUIRED)
+
+#Solve weird bug that has an eigen3 version not defining the good CMake variable
+if(NOT EIGEN3_INCLUDE_DIRS)              
+    if(NOT EIGEN3_INCLUDE_DIR)               
+		message(FATAL_ERROR "Undefined EIGEN include dir env var.")
+	else()
+		set(EIGEN3_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
+		message(STATUS EIGEN3 include dir found)
+	endif()
+else()
+    message(STATUS EIGEN3 include dir found)
+endif()
+
+
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs cv_bridge)
 
 catkin_package(

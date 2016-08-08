@@ -119,13 +119,16 @@ namespace lslgeneric{
   }
 
 
-  void NDTHistogram::constructHistogram(NDTMap &map){
+  void NDTHistogram::constructHistogram(NDTMap &map,
+                                        double linear_factor,
+                                        double flat_factor
+                                        ){
 
     SpatialIndex *si = map.getMyIndex();
     if(si==NULL) return;
 
-    double LINEAR_FACTOR = 50;
-    double FLAT_FACTOR = 50;
+    // double LINEAR_FACTOR = 50;
+    // double FLAT_FACTOR = 50;
 
     typename std::vector<NDTCell*>::iterator it = si->begin();
     while(it!=si->end())
@@ -157,13 +160,13 @@ namespace lslgeneric{
         double dist = (*it)->getMean().norm();
         //three cases:
         //maxEval >> midEval -> linear
-        if(maxEval > midEval*LINEAR_FACTOR){
+        if(maxEval > midEval*linear_factor){
           incrementLineBin(dist);
           it++;
           continue;
         }
         //maxEval ~ midEval >> minEval -> planar
-        if(midEval > minEval*FLAT_FACTOR){
+        if(midEval > minEval*flat_factor){
             Eigen::Vector3d normal = evecs.col(idMin);
             Eigen::Vector3d mean = (*it)->getMean();
             if(normal.dot(mean) < 0){

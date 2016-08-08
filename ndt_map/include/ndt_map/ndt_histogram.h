@@ -74,7 +74,26 @@ namespace lslgeneric{
 
     std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> > averageDirections;
 
-    void constructHistogram(NDTMap &map);
+    /** 
+     * Build a histogram descriptor given an NDT map.
+     * 
+     * The cells in the NDT map are sorted into histogram bins
+     * depending on the eigenvalues of the distribution in the cell
+     * and the thresholds linear_factor and flat_factor. Each NDT cell
+     * has 3 eigenvalues (in the 3D case),
+     * sorted as follows: \f$e_1 \leq e_2 \leq e_3\f$.
+     *
+     * In Magnusson et al. (2009), \f$ l = f = 10 = 1/t_e\f$.
+     * 
+     * @param map The input data.
+     * @param l Threshold for what is a "linear" distribution. If \f$e_3 > l \cdot e_2\f$ then it is classified as linear.
+     * @param f Threshold for what is a "flat" distribution. If \f$e_2 > f \cdot e_1\f$, and it is not linear, then it is classified as flat.
+     */
+    void constructHistogram(NDTMap &map,
+                            double l = 50,
+                            double f = 50
+                            );
+
     void incrementLineBin(double d);
     void incrementFlatBin(Eigen::Vector3d &normal, double d);
     void incrementSphereBin(double d);

@@ -34,7 +34,7 @@ void NDTMatcherD2D::init(bool _isIrregularGrid,
         resolutions = _resolutions;
     }
 
-    current_resolution = 0.1; // Argggg!!! This is very important to have initiated! (one day debugging later) :-) TODO do we need to set it to anything better?
+    current_resolution = 0.1; // TODO do we need to set it to anything better?
     lfd1 = 1; //lfd1/(double)sourceNDT.getMyIndex()->size(); //current_resolution*2.5;
     lfd2 = 0.05; //0.1/current_resolution;
     ITR_MAX = 30;
@@ -45,6 +45,8 @@ void NDTMatcherD2D::init(bool _isIrregularGrid,
     //how many neighbours to use in the objective
     n_neighbours =2;
 
+    nb_match_calls = 0;
+    nb_success_reg = 0;
 }
 
 bool NDTMatcherD2D::match( pcl::PointCloud<pcl::PointXYZ>& target,

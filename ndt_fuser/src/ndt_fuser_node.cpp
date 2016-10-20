@@ -171,6 +171,18 @@ public:
     param_nh.param("matchLaser",matchLaser,false);
 
     param_nh.param<std::string>("tf_pose_frame", tf_pose_frame_, std::string(""));
+
+    lslgeneric::MotionModel2d::Params motion_params;
+    param_nh.param<double>("motion_params_Cd", motion_params.Cd, 0.005);
+    param_nh.param<double>("motion_params_Ct", motion_params.Ct, 0.01);
+    param_nh.param<double>("motion_params_Dd", motion_params.Dd, 0.001);
+    param_nh.param<double>("motion_params_Dt", motion_params.Dt, 0.01);
+    param_nh.param<double>("motion_params_Td", motion_params.Td, 0.001);
+    param_nh.param<double>("motion_params_Tt", motion_params.Tt, 0.005);
+
+    bool do_soft_constraints;
+    param_nh.param<bool>("do_soft_constraints", do_soft_constraints, false);
+
     use_tf_listener_ = false;
     if (tf_pose_frame_ != std::string("")) {
       use_tf_listener_ = true;
@@ -190,10 +202,11 @@ public:
     
     if(matchLaser) match2D=true;
     fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
-                                        sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
+                                        sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true, do_soft_constraints);
 
+    fuser->setMotionParams(motion_params);
     fuser->setSensorPose(sensor_pose_);
-          
+    
     if(!matchLaser) {
       points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
       if(useOdometry) {

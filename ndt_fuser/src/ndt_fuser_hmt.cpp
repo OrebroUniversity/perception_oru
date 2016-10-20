@@ -69,7 +69,7 @@ namespace lslgeneric {
 	lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
 	t0 = getDoubleTime();
 	///Create local map
-	lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+	lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution*resolution_local_factor));
 	ndlocal.guessSize(0,0,0,sensor_range,sensor_range,map_size_z);
 	ndlocal.loadPointCloud(cloud,sensor_range);
 	ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -217,7 +217,43 @@ namespace lslgeneric {
 	{
 
 	    t2 = getDoubleTime();
-	    if(matcher.match( *map, ndlocal,Tinit,true) || fuseIncomplete){
+            bool match_ret = false;
+            if (doSoftConstraints) {
+              // Local covariance matrix in vehicle frame.
+              Eigen::MatrixXd local_cov = motionModel2D.getCovMatrix6(Tmotion, 1., 1., 1.); //0.0000000000001, 0.0000000000001, 0.0000000000001);
+              
+              Eigen::MatrixXd local_cov_pos = local_cov.block(0,0,3,3);
+
+              // Convert it into the clobal frame.
+              Eigen::MatrixXd global_cov_pos = Tinit.rotation()*local_cov_pos*Tinit.rotation().transpose();
+              if (visualize) {
+#ifndef NO_NDT_VIZ
+                viewer->setPoseCov(Tinit.translation(), global_cov_pos);
+                viewer->displayPoseCov();
+#endif
+              }
+
+              Eigen::MatrixXd global_cov = local_cov;
+              global_cov.block<3,3>(0,0) = global_cov_pos;
+
+              // // Include global constraints? -> roll, pitch and z (height).
+              // // Force initialization to be only yaw. Set roll, pitch and height to zero + put in a covariance with relative low variance in height, roll and pitch...
+              // Tinit.translation()(2) = 0.;
+              // // Get "robust yaw"..., set roll/pitch to zero.
+              // double yaw = Tinit.rotation().eulerAngles(0,1,2)(2);
+              // Tinit.rotation() = Eigen::AngleAxis<double>(0.,Eigen::Vector3d::UnitX()) *
+              //   Eigen::AngleAxis<double>(0.,Eigen::Vector3d::UnitY()) *
+              //   Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
+
+              matcherSC.only_xy_motion = false;//true;
+              //              matcherSC.lock_zrp_motion = true;
+              match_ret = matcherSC.match(*map, ndlocal,Tinit,global_cov);
+              std::cout << matcherSC.nb_match_calls << " successes : " << matcherSC.nb_success_reg << std::endl;
+            }
+            else {
+              match_ret = matcher.match( *map, ndlocal,Tinit,true);
+            }
+	    if(match_ret || fuseIncomplete){
 		t3 = getDoubleTime();
 		Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 
@@ -254,8 +290,8 @@ namespace lslgeneric {
 				viewer->plotNDTSAccordingToOccupancy(-1,map); 
 				//viewer->plotLocalNDTMap(cloud,resolution); 
 			    }
-			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+0.2,0,1,0);
-			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+0.2,0.5,0,0.5);
+			    viewer->addTrajectoryPoint(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+2.2,0,1,0);
+			    viewer->addTrajectoryPoint(Todom.translation()(0),Todom.translation()(1),Todom.translation()(2)+2.2,0.5,0,0.5);
 			    viewer->displayTrajectory();
 			    viewer->setCameraPointing(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2)+3);
 			    viewer->repaint();

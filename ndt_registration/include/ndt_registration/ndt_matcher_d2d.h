@@ -265,6 +265,11 @@ protected:
     Eigen::Matrix<double,1,3> TMP1, xtB;
 
 public:
+    int nb_match_calls;
+    int nb_success_reg;
+
+
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

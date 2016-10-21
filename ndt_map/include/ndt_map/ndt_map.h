@@ -445,6 +445,13 @@ public:
         lz->getCellSize(cx, cy, cz);
         return true;
     }
+    bool getCellSizeInMeters(double &cx, double &cy, double &cz) const 
+    {
+        LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+        if(lz == NULL) return false;
+        lz->getCellSize(cx, cy, cz);
+        return true;
+    }
     /**
     * \param guess_size try to guess the size based on point cloud. Otherwise use pre-set map size
     */

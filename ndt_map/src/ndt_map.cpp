@@ -2050,4 +2050,20 @@ int NDTMap::numberOfActiveCells()
     return ret;
 }
 
+int NDTMap::numberOfActiveCells() const 
+{
+    int ret = 0;
+    if(index_ == NULL) return ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
+    while (it != index_->end())
+    {
+	if((*it)->hasGaussian_)
+	{
+	    ret++;
+	}
+	it++;
+    }
+    return ret;
+}
+
 }

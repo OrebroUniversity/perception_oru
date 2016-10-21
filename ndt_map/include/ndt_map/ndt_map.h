@@ -407,6 +407,7 @@ public:
 
 
     int numberOfActiveCells();
+    int numberOfActiveCells() const ;
 
     virtual bool getCentroid(double &cx, double &cy, double &cz)
     {
@@ -424,6 +425,13 @@ public:
     }
 
     bool getGridSizeInMeters(double &cx, double &cy, double &cz)
+    {
+        LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+        if(lz == NULL) return false;
+        lz->getGridSizeInMeters(cx, cy, cz);
+        return true;
+    }
+    bool getGridSizeInMeters(double &cx, double &cy, double &cz) const
     {
         LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
         if(lz == NULL) return false;

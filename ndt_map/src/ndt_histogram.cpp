@@ -4,10 +4,12 @@
 
 namespace lslgeneric{
 
-  NDTHistogram::NDTHistogram(){
-    N_LINE_BINS = 1;
-    N_FLAT_BINS = 40;
-    N_SPHERE_BINS = 10;
+  NDTHistogram::NDTHistogram (int linear_classes,
+                              int flat_classes,
+                              int spherical_classes ){
+    N_LINE_BINS = linear_classes;
+    N_FLAT_BINS = flat_classes;
+    N_SPHERE_BINS = spherical_classes;
 
     histogramBinsLine = std::vector<int>(N_LINE_BINS,0);
     histogramBinsFlat = std::vector<int>(N_FLAT_BINS,0);
@@ -62,11 +64,14 @@ namespace lslgeneric{
     inited = true;
   }
 
-  NDTHistogram::NDTHistogram (NDTMap &map){
+  NDTHistogram::NDTHistogram (NDTMap &map,
+                              int linear_classes,
+                              int flat_classes,
+                              int spherical_classes ){
 
-    N_LINE_BINS = 1;
-    N_FLAT_BINS = 40;
-    N_SPHERE_BINS = 10;
+    N_LINE_BINS = linear_classes;
+    N_FLAT_BINS = flat_classes;
+    N_SPHERE_BINS = spherical_classes;
 
     histogramBinsLine = std::vector<int>(N_LINE_BINS,0);
     histogramBinsFlat = std::vector<int>(N_FLAT_BINS,0);
@@ -114,13 +119,16 @@ namespace lslgeneric{
   }
 
 
-  void NDTHistogram::constructHistogram(NDTMap &map){
+  void NDTHistogram::constructHistogram(NDTMap &map,
+                                        double linear_factor,
+                                        double flat_factor
+                                        ){
 
     SpatialIndex *si = map.getMyIndex();
     if(si==NULL) return;
 
-    double LINEAR_FACTOR = 50;
-    double FLAT_FACTOR = 50;
+    // double LINEAR_FACTOR = 50;
+    // double FLAT_FACTOR = 50;
 
     typename std::vector<NDTCell*>::iterator it = si->begin();
     while(it!=si->end())
@@ -152,13 +160,13 @@ namespace lslgeneric{
         double dist = (*it)->getMean().norm();
         //three cases:
         //maxEval >> midEval -> linear
-        if(maxEval > midEval*LINEAR_FACTOR){
+        if(maxEval > midEval*linear_factor){
           incrementLineBin(dist);
           it++;
           continue;
         }
         //maxEval ~ midEval >> minEval -> planar
-        if(midEval > minEval*FLAT_FACTOR){
+        if(midEval > minEval*flat_factor){
             Eigen::Vector3d normal = evecs.col(idMin);
             Eigen::Vector3d mean = (*it)->getMean();
             if(normal.dot(mean) < 0){

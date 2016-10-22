@@ -55,9 +55,10 @@ protected:
   message_filters::Subscriber<sensor_msgs::LaserScan> *laser_sub_;
   message_filters::Subscriber<nav_msgs::Odometry> *odom_sub_;
   ros::Subscriber gt_sub;
-
+  
   // Components for publishing
   tf::TransformBroadcaster tf_;
+  tf::TransformListener tf_listener_;
   ros::Publisher output_pub_;
   Eigen::Affine3d pose_, T, sensor_pose_;
 
@@ -88,6 +89,9 @@ protected:
   ros::Publisher map_publisher_;
 
   Eigen::Affine3d last_odom, this_odom;
+  std::string tf_pose_frame_;
+  bool use_tf_listener_;
+  Eigen::Affine3d last_tf_frame_;
 public:
   // Constructor
   NDTFuserNode(ros::NodeHandle param_nh) : nb_added_clouds_(0)
@@ -165,6 +169,24 @@ public:
  
     ///enable for LaserScan message input
     param_nh.param("matchLaser",matchLaser,false);
+
+    param_nh.param<std::string>("tf_pose_frame", tf_pose_frame_, std::string(""));
+
+    lslgeneric::MotionModel2d::Params motion_params;
+    param_nh.param<double>("motion_params_Cd", motion_params.Cd, 0.005);
+    param_nh.param<double>("motion_params_Ct", motion_params.Ct, 0.01);
+    param_nh.param<double>("motion_params_Dd", motion_params.Dd, 0.001);
+    param_nh.param<double>("motion_params_Dt", motion_params.Dt, 0.01);
+    param_nh.param<double>("motion_params_Td", motion_params.Td, 0.001);
+    param_nh.param<double>("motion_params_Tt", motion_params.Tt, 0.005);
+
+    bool do_soft_constraints;
+    param_nh.param<bool>("do_soft_constraints", do_soft_constraints, false);
+
+    use_tf_listener_ = false;
+    if (tf_pose_frame_ != std::string("")) {
+      use_tf_listener_ = true;
+    }
 	    
     pose_ =  Eigen::Translation<double,3>(pose_init_x,pose_init_y,pose_init_z)*
       Eigen::AngleAxis<double>(pose_init_r,Eigen::Vector3d::UnitX()) *
@@ -180,18 +202,24 @@ public:
     
     if(matchLaser) match2D=true;
     fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
-                                        sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true);
+                                        sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true, do_soft_constraints);
 
+    fuser->setMotionParams(motion_params);
     fuser->setSensorPose(sensor_pose_);
-          
+    
     if(!matchLaser) {
       points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
       if(useOdometry) {
         odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
         sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
         sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
-      } 
-    } else {
+      }
+      else {
+        points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
+      }
+    } 
+    else 
+    {
 	laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_,laser_topic,2);
 	if(useOdometry && !renderGTmap) {
 	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
@@ -243,18 +271,18 @@ public:
 		nb_added_clouds_++;
       } else {
       //sanity check for odometry
-      if(Tmotion.translation().norm() <0.01 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.01) {
+      if((Tmotion.translation().norm() <0.01 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.01) && useOdometry) {
         std::cerr<<"No motion, skipping Frame\n";
 	m.unlock();
 	return;
       }
       if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
-        std::cerr<<"Ignoring Odometry!\n";
+        std::cerr<<"Ignoring Odometry (max transl)!\n";
         std::cerr<<Tmotion.translation().transpose()<<std::endl;
         Tmotion.setIdentity();
       }
       if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
-        std::cerr<<"Ignoring Odometry!\n";
+        std::cerr<<"Ignoring Odometry (max rot)!\n";
         std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
         Tmotion.setIdentity();
       }
@@ -285,16 +313,56 @@ public:
     return ret;
   }
 
+  inline bool getAffine3dTransformFromTF(const ros::Time &time, Eigen::Affine3d& ret) {
+    tf::StampedTransform transform;
+    tf_listener_.waitForTransform("/world", tf_pose_frame_, time,ros::Duration(1.0));
+    try{
+      tf_listener_.lookupTransform("/world", tf_pose_frame_, time, transform);
+      tf::poseTFToEigen(transform, ret);
+    }
+    catch (tf::TransformException ex){
+      ROS_ERROR("%s",ex.what());
+      return false;
+    }
+    return true;
+  }
 
   // Callback
   void points2Callback(const sensor_msgs::PointCloud2::ConstPtr& msg_in)
   {
+
+    ROS_INFO_STREAM("points2Callback");
+    //ROS_INFO_STREAM("last_odom : " << last_odom);
     pcl::PointCloud<pcl::PointXYZ> cloud;
     message_m.lock();
     pcl::fromROSMsg (*msg_in, cloud);
     message_m.unlock();
     T.setIdentity();
-    this->processFrame(cloud,T);
+    if (!use_tf_listener_) {
+      this->processFrame(cloud,T);
+      publish_map();
+      return;
+    }
+    
+    // TF...
+
+    Eigen::Affine3d transf, Tm;
+    if (!getAffine3dTransformFromTF(msg_in->header.stamp, transf)) {
+      ROS_ERROR("Failed to find the transform, will ignore these points");
+      return;
+    }
+    ROS_INFO_STREAM("transf: "<<transf.translation().transpose()<<" "<<transf.rotation().eulerAngles(0,1,2));
+    if (nb_added_clouds_  == 0)
+    {
+      last_tf_frame_ = transf;
+      Tm.setIdentity();
+    } 
+    else {
+      Tm = last_tf_frame_.inverse()*transf;
+      ROS_INFO_STREAM("delta from last update: "<<Tm.translation().transpose()<<" "<<Tm.rotation().eulerAngles(0,1,2)[2]);
+      last_tf_frame_ = transf;
+    }
+    this->processFrame(cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
   }
@@ -303,6 +371,9 @@ public:
   void points2OdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg_in,
                            const nav_msgs::Odometry::ConstPtr& odo_in)
   {
+
+    ROS_INFO("got points2OdomCallback()");
+
     Eigen::Quaterniond qd;
     Eigen::Affine3d Tm;
     pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -320,7 +391,7 @@ public:
 		Tm.setIdentity();
       } else {
       Tm = last_odom.inverse()*this_odom;
-      //std::cout<<"delta from last update: "<<Tm.translation().transpose()<<" "<<Tm.rotation().eulerAngles(0,1,2)[2] << std::endl;
+      std::cout<<"delta from last update: "<<Tm.translation().transpose()<<" "<<Tm.rotation().eulerAngles(0,1,2)[2] << std::endl;
       //if(Tm.translation().norm()<0.2 && fabs(Tm.rotation().eulerAngles(0,1,2)[2])<(5*M_PI/180.0)) {
       //    message_m.unlock();
       //    return;
@@ -334,6 +405,8 @@ public:
     this->processFrame(cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
+    ROS_INFO("got points2OdomCallback() - done.");
+        
   };
 	
   // Callback
@@ -451,10 +524,12 @@ public:
 public:
   // map publishing function
   bool publish_map(){
+#if 0
     ndt_map::NDTMapMsg map_msg;
     toMessage(fuser->map, map_msg,fuser_frame);
     map_publisher_.publish(map_msg);
-    return true;
+#endif    
+return true;
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

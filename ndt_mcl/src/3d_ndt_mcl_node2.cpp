@@ -48,6 +48,9 @@
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include <ndt_map/ndt_map.h>
 
+#include <ndt_rviz/ndt_rviz.h>
+//#include <ndt_feature/ndt_feature_rviz.h>
+
 #define SYNC_FRAMES 20
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsOdomSync;
@@ -62,6 +65,7 @@ class NDTMCL3DNode {
 
         message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
         message_filters::Subscriber<nav_msgs::Odometry> *odom_sub_;
+        ros::Subscriber gt_sub;
 
 	///Laser sensor offset
 	Eigen::Affine3d sensorPoseT; //<<Sensor offset with respect to odometry frame
@@ -80,9 +84,24 @@ class NDTMCL3DNode {
 	NDTViz ndt_viz;
 
 	ros::Publisher mcl_pub; ///< The output of MCL is published with this!
-        message_filters::Synchronizer< PointsOdomSync > *sync_po_;
+  ros::Publisher marker_pub_;
+  message_filters::Synchronizer< PointsOdomSync > *sync_po_;
 
-	std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic;
+  std::string tf_base_link, tf_sensor_link, points_topic, odometry_topic, odometry_frame;
+
+  ros::Timer heartbeat_slow_visualization_;
+  ros::Timer heartbeat_fast_visualization_;
+bool do_pub_ndt_markers_;
+  bool do_pub_particles_markers_;
+
+  int numParticles;
+  std::ofstream gt_file_;
+  std::ofstream est_file_;
+  std::ofstream est2d_file_;
+  std::string gt_topic;
+
+  bool use_initial_pose_from_gt;
+
     public:
 	NDTMCL3DNode(ros::NodeHandle param_nh) {
 	    
@@ -98,7 +117,8 @@ class NDTMCL3DNode {
 
 	    param_nh.param<bool>("set_sensor_pose", use_sensor_pose, true);
 	    param_nh.param<bool>("set_initial_pose", use_initial_pose, false);
-	    
+            param_nh.param<bool>("set_initial_pose_from_gt", use_initial_pose_from_gt, false);
+
 	    if(use_initial_pose) {
 		///initial pose of the vehicle with respect to the map
 		param_nh.param("pose_init_x",pose_init_x,0.);
@@ -139,12 +159,11 @@ class NDTMCL3DNode {
 	    //////////////////////////////////////////////////////////
 	    param_nh.param<std::string>("map_file_name", mapName, std::string("basement.ndmap"));
 	    param_nh.param<bool>("save_output_map", saveMap, true);
-	    param_nh.param<bool>("do_visualize", do_visualize, true);
 	    param_nh.param<std::string>("output_map_file_name", output_map_name, std::string("ndt_mapper_output.ndmap"));
 	    param_nh.param<double>("map_resolution", resolution , 0.2);
 	    param_nh.param<double>("subsample_level", subsample_level , 1);
 
-	    fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
+            fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
 	    
 	    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 	    ndmap.loadFromJFF(mapName.c_str());
@@ -158,7 +177,15 @@ class NDTMCL3DNode {
 	    if(forceSIR) ndtmcl->forceSIR=true;
 
 	    fprintf(stderr,"*** FORCE SIR = %d****",forceSIR);
-	    mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl",10);
+	    param_nh.param<double>("SIR_varP_threshold", ndtmcl->SIR_varP_threshold, 0.006);
+            param_nh.param<int>("SIR_max_iters_wo_resampling", ndtmcl->SIR_max_iters_wo_resampling, 25);
+            param_nh.param<int>("numParticles", numParticles, 100);
+
+            param_nh.getParam("motion_model", ndtmcl->motion_model);
+            param_nh.getParam("motion_model_offset", ndtmcl->motion_model_offset);
+            
+
+            mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl",10);
 	    
 	    //////////////////////////////////////////////////////////
 	    /// Prepare the callbacks and message filters
@@ -171,6 +198,7 @@ class NDTMCL3DNode {
 	    param_nh.param<std::string>("points_topic",points_topic,"points");
 	    ///topic to wait for odometry messages
 	    param_nh.param<std::string>("odometry_topic",odometry_topic,"odometry");
+            param_nh.param<std::string>("odometry_frame", odometry_frame, "/world");
 
 	    points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
 	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
@@ -179,13 +207,90 @@ class NDTMCL3DNode {
 
 	    isFirstLoad=true;
 	    pcounter =0;
+
+            //////////////////////////////////////////////////////////
+            /// Visualization
+            //////////////////////////////////////////////////////////
+            param_nh.param<bool>("do_visualize", do_visualize, true);
+	    param_nh.param<bool>("do_pub_ndt_markers", do_pub_ndt_markers_, true);
+            param_nh.param<bool>("do_pub_particles_markers", do_pub_particles_markers_, true);
+
+            if (do_visualize) {
+              ndt_viz.win3D->start_main_loop_own_thread();
+            }
+            marker_pub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 3);
+            heartbeat_slow_visualization_   = nh_.createTimer(ros::Duration(1.0),&NDTMCL3DNode::publish_visualization_slow,this);
+            heartbeat_fast_visualization_   = nh_.createTimer(ros::Duration(0.1),&NDTMCL3DNode::publish_visualization_fast,this);
+    
+            //////////////////////////////////////////////////////////
+            /// Evaluation
+            //////////////////////////////////////////////////////////
+            std::string gt_filename, est_filename, est2d_filename;
+            param_nh.param<std::string>("gt_topic",gt_topic,"");
+            ROS_ERROR_STREAM("gt_topic : " << gt_topic);
+            param_nh.param<std::string>("output_gt_file",  gt_filename, "loc_gt_pose.txt");
+            param_nh.param<std::string>("output_est_file", est_filename, "loc_est_pose.txt"); 
+            param_nh.param<std::string>("output_est2d_file", est2d_filename, "loc_est2d_pose.txt");
+            if (gt_filename != std::string("")) {
+              gt_file_.open(gt_filename.c_str());
+            }
+            if (est_filename != std::string("")) {
+              est_file_.open(est_filename.c_str());
+            }
+            if (est2d_filename != std::string("")) {
+              est2d_file_.open(est2d_filename.c_str());
+            }
+            
+            if (!gt_file_.is_open() || !est_file_.is_open() || !est2d_file_.is_open())
+            {
+              ROS_ERROR_STREAM("Failed to open : " << est_file_ << " | " << est2d_file_ << " | " << gt_file_); 
+            }
+                        
+            if (gt_topic != std::string("")) 
+            {
+              ROS_ERROR_STREAM("Subscribing to : " << gt_topic);
+              gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTMCL3DNode::gt_callback, this);	
+            }
+        
+
 	}
 	~NDTMCL3DNode() {
+          if (gt_file_.is_open())
+            gt_file_.close();
+          if (est_file_.is_open())
+            est_file_.close();
+          if (est2d_file_.is_open())
+            est2d_file_.close();
+          
 	    delete points2_sub_;
 	    delete odom_sub_;
 	    delete sync_po_;
 	    delete ndtmcl;
 	}
+
+    void publish_visualization_fast(const ros::TimerEvent &event) {
+                if (do_pub_particles_markers_) 
+                {
+                  mcl_m.lock();
+                  marker_pub_.publish(ndt_visualisation::markerParticlesNDTMCL3D(*ndtmcl, -1, "particles"));
+                  mcl_m.unlock();
+                }
+    }
+
+  void publish_visualization_slow(const ros::TimerEvent &event) {
+                if (do_pub_ndt_markers_)
+                {
+                  // visualization_msgs::Marker markers_ndt;
+                  // ndt_visualisation::markerNDTCells2(*(graph->getLastFeatureFuser()->map),
+                  //                                    graph->getT(), 1, "nd_global_map_last", markers_ndt);
+                  // marker_pub_.publish(markers_ndt);
+                  mcl_m.lock();
+                  marker_pub_.publish(ndt_visualisation::markerNDTCells(ndtmcl->map, 1, "nd_map"));
+                  mcl_m.unlock();
+                }
+  }
+
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//new callback: looks up transforms on TF
 	void callback(const sensor_msgs::PointCloud2::ConstPtr& cloud_in,
@@ -207,16 +312,17 @@ class NDTMCL3DNode {
 	    
 	    pcl::fromROSMsg (*cloud_in, cloud);
 	    
-	    fprintf(stderr,"cloud has %zu points\n",cloud.points.size());		
+	    fprintf(stderr,"cloud has %d points\n",(int)cloud.points.size());		
 	    //check if sensor pose is known, if not, look it up on TF
 	    if(!hasSensorPose) {
 
 	    }
 	    //check if we have done iterations 
 	    if(isFirstLoad) {
-		//if not, check if initial robot pose has been set
+              //if not, check if initial robot pose has been set
 		if(!hasInitialPose) {
 		    //can't do anything, wait for pose message...
+                  ROS_INFO("waiting for initial pose");
 		    mcl_m.unlock();
 		    return;
 		}
@@ -227,7 +333,8 @@ class NDTMCL3DNode {
 		Todo_old=Todo;
 		Tcum = initPoseT;
 
-		ndtmcl->initializeFilter(tr[0], tr[1],tr[2],rot[0],rot[1],rot[2],0.5, 0.5, 0.1, 2.0*M_PI/180.0, 2.0*M_PI/180.0 ,2.0*M_PI/180.0, 100);
+		ndtmcl->initializeFilter(tr[0], tr[1],tr[2],rot[0],rot[1],rot[2],0.5, 0.5, 0.1, 2.0*M_PI/180.0, 2.0*M_PI/180.0 ,2.0*M_PI/180.0, this->numParticles);
+                //		ndtmcl->initializeFilter(tr[0], tr[1],tr[2],rot[0],rot[1],rot[2],2, 2, 0.3, 20.0*M_PI/180.0, 2.0*M_PI/180.0 ,2.0*M_PI/180.0, this->numParticles);
 		//ndt_viz.plotNDTMap(&ndtmcl->map,0,1.0,1.0,true, false); 
                 ndt_viz.plotNDTSAccordingToOccupancy(-1,&ndtmcl->map);
 		isFirstLoad = false;
@@ -258,7 +365,7 @@ class NDTMCL3DNode {
 	    //update visualization
 	    ///DRAW STUFF///
 	    if(do_visualize) {
-		pcounter++;
+              pcounter++;
 		if(pcounter%500==0){
 		    ndt_viz.clear();
 		    ndt_viz.plotNDTSAccordingToOccupancy(-1,&ndtmcl->map);
@@ -290,6 +397,8 @@ class NDTMCL3DNode {
 	    sendROSOdoMessage(ndtmcl->pf.getMean(),odo_in->header.stamp);
 	    mcl_m.unlock();
 
+            
+
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//FIXME: this should be in 3D
@@ -299,7 +408,7 @@ class NDTMCL3DNode {
 	    static int seq = 0;
 	    O.header.stamp = ts;
 	    O.header.seq = seq;
-	    O.header.frame_id = "/world";
+	    O.header.frame_id = odometry_frame;
 	    O.child_frame_id = "/mcl_pose";
 
 	    O.pose.pose.position.x = mean.translation()[0];
@@ -323,9 +432,45 @@ class NDTMCL3DNode {
 	    transform.setRotation( qtf );
 	    br.sendTransform(tf::StampedTransform(transform, ts, "world", "mcl_pose"));
 
+            if (est_file_.is_open()) {
+              est_file_ << ts << " " << lslgeneric::transformToEvalString(mean);
+            }
+            if (est2d_file_.is_open()) {
+              est2d_file_ << ts << " " << lslgeneric::transformToEval2dString(mean);
+            }
 	    return true;
 	}
+
+	// Callback
+	void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
+	{
+	    Eigen::Quaterniond qd;
+	    Eigen::Affine3d gt_pose;
+
+	    qd.x() = msg_in->pose.pose.orientation.x;
+	    qd.y() = msg_in->pose.pose.orientation.y;
+	    qd.z() = msg_in->pose.pose.orientation.z;
+	    qd.w() = msg_in->pose.pose.orientation.w;
+	    
+	    gt_pose = Eigen::Translation3d (msg_in->pose.pose.position.x,
+		    msg_in->pose.pose.position.y,msg_in->pose.pose.position.z) * qd;
+	     
+            //	    ROS_INFO("got GT pose from GT track");
+            if (gt_file_.is_open()) {
+              gt_file_ << msg_in->header.stamp << " " << lslgeneric::transformToEvalString(gt_pose);
+            }
+
+	    // m.lock();
+            if(use_initial_pose_from_gt && !hasInitialPose) {
+              hasInitialPose = true;
+              ROS_INFO("Set initial pose from GT track");
+              initPoseT = gt_pose;
+            }
+	    // m.unlock();
+	}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 };
 
 

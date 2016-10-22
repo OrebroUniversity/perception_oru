@@ -7,7 +7,7 @@
 namespace lslgeneric
 {
 
-LazyGrid::LazyGrid(double cellSize) 
+LazyGrid::LazyGrid(double cellSize)  : protoType(NULL)
 {
     initialized = false;
     centerIsSet = false;
@@ -467,6 +467,9 @@ void LazyGrid::setCellType(NDTCell *type)
 {
     if(type!=NULL)
     {
+      if (protoType != NULL) {
+        delete protoType;
+      }
         protoType = type->clone();
     }
 }
@@ -519,6 +522,8 @@ int LazyGrid::loadFromJFF(FILE * jffin)
     centerIsSet = false;
     sizeIsSet = false;
 
+    if (protoType != NULL)
+      delete protoType;
     protoType = prototype_.clone();
 
     std::cerr<<"size meters: "<<lazyGridData[0]<<" "<<lazyGridData[1]<<" "<<lazyGridData[2]<<std::endl;

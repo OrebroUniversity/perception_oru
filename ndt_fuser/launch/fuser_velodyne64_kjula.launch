@@ -25,8 +25,9 @@
 	<param name="map_name_prefix" value="kjula3d" />
 	
 	<param name="beHMT" value="true" />
-	<param name="match2D" value="flase" />
+	<param name="match2D" value="false" />
 	<param name="useOdometry" value="false" />
+	<param name="odometry" value="/odometry" />
 	<param name="visualize" value="true" />
 	<param name="plotGTTrack" value="false" />
 	<param name="initPoseFromGT" value="false" />

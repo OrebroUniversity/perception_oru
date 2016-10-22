@@ -18,7 +18,7 @@ CellVector::CellVector(NDTCell* cellPrototype):mp(new pcl::PointCloud<pcl::Point
     treeUpdated = false;
 }
 
-CellVector::CellVector(const CellVector& other)
+CellVector::CellVector(const CellVector& other):protoType(NULL)
 {
     for(unsigned int i =0; i< other.activeCells.size(); i++)
     {
@@ -41,6 +41,8 @@ CellVector::~CellVector()
             delete activeCells[i];
         }
     }
+    if (protoType != NULL)
+      delete protoType;
 }
 
 NDTCell* CellVector::getCellForPoint(const pcl::PointXYZ &point)

@@ -1472,8 +1472,7 @@ void SDFTracker::SaveSDF(const std::string &filename)
   //vtkImageData *sdf_volume = vtkImageData::New();
   
   vtkSmartPointer<vtkImageData> sdf_volume = vtkSmartPointer<vtkImageData>::New();
-
-  sdf_volume->SetDimensions(parameters_.XSize,parameters_.YSize,parameters_.ZSize);
+  sdf_volume->SetExtent(0,parameters_.XSize-1,0,parameters_.YSize-1,0,parameters_.ZSize-1);
   sdf_volume->SetOrigin(  parameters_.resolution*parameters_.XSize/2,
                           parameters_.resolution*parameters_.YSize/2,
                           parameters_.resolution*parameters_.ZSize/2);

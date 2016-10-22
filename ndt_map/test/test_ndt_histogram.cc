@@ -86,9 +86,9 @@ int main (int argc, char** argv) {
     lslgeneric::NDTHistogram nh(nd);
     lslgeneric::NDTHistogram nh2(nd2);
     cout<<"1 =========== \n";
-    nh.printHistogram(true);
+    nh.printHistogram(false);
     cout<<"2 =========== \n";
-    nh2.printHistogram(true);
+    nh2.printHistogram(false);
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
 

@@ -35,7 +35,7 @@ class ParticleFilter3D{
 	 */
 	void SIRUpdate();
 
-	unsigned int size(){return pcloud.size();}
+	unsigned int size() const {return pcloud.size();}
 
 	/**
 	 * Performs the normalization step

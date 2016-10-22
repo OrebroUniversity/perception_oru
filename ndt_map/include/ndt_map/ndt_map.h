@@ -93,7 +93,7 @@ namespace lslgeneric
 *  There is also an implementation of modeling of the dynamics (edata structure in ndt_cell): "Independent Markov chain occupancy grid maps for representation of dynamic environments,"
 *  in IROS2012 Conference Proceedings, Vilamoura, Algarve, Portugal: IEEE, 2012, pp. 3489-3495.
 *
-* In addition, this class provide the basis for NDT registration, which is further discussed in the \ref ndt_registration package. The relevant publications are:
+* In addition, this class provide the basis for NDT registration, which is further discussed in the \ref ndt_registration package. \todo The relevant publications are:
 *
 *
 */
@@ -109,18 +109,18 @@ public:
      *	is used as a factory every time that loadPointCloud is called.
      *	it can/should be deallocated outside the class after the destruction of the NDTMap
     */
-    NDTMap(SpatialIndex *idx)
+  NDTMap(SpatialIndex *idx, bool dealloc = false)
     {
 
         index_ = idx;
         //this is used to prevent memory de-allocation of the *si
         //si was allocated outside the NDT class and should be deallocated outside
-        isFirstLoad_=true;
+        isFirstLoad_ = !dealloc;
         map_sizex = -1.0;
         map_sizey = -1.0;
         map_sizez = -1.0;
         is3D = true;
-				guess_size_ = true;
+        guess_size_ = true;
     }
 
     NDTMap(const NDTMap& other)
@@ -149,7 +149,7 @@ public:
 
         //this is used to prevent memory de-allocation of the *si
         //si was allocated outside the NDT class and should be deallocated outside
-        isFirstLoad_=false;
+        isFirstLoad_=true;//////////////////////////////////////////////////////////////////////////////false; Henrik - was false, but why?
 
         NDTCell *ptCell = new NDTCell();
         index_->setCellType(ptCell);
@@ -167,8 +167,10 @@ public:
             exit(1);
         }
         lz->initializeAll();
-				guess_size_ = false;
+        guess_size_ = false;
     }
+
+  
 
     /**
     	* Initilize with known values - normally this is done automatically, but in some cases you want to
@@ -204,14 +206,11 @@ public:
     	*/
     virtual ~NDTMap()
     {
-        //std::cout<<"DELETE MAP\n";
         if(index_ !=NULL && !isFirstLoad_)
         {
-            //std::cout<<"DELETE INDEX\n";
-            delete index_;
-						index_ = NULL;
+          delete index_;
+          index_ = NULL;
         }
-        
     }
 
     void setMode(bool is3D_)
@@ -408,6 +407,7 @@ public:
 
 
     int numberOfActiveCells();
+    int numberOfActiveCells() const ;
 
     virtual bool getCentroid(double &cx, double &cy, double &cz)
     {
@@ -431,7 +431,21 @@ public:
         lz->getGridSizeInMeters(cx, cy, cz);
         return true;
     }
+    bool getGridSizeInMeters(double &cx, double &cy, double &cz) const
+    {
+        LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+        if(lz == NULL) return false;
+        lz->getGridSizeInMeters(cx, cy, cz);
+        return true;
+    }
     bool getCellSizeInMeters(double &cx, double &cy, double &cz)
+    {
+        LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+        if(lz == NULL) return false;
+        lz->getCellSize(cx, cy, cz);
+        return true;
+    }
+    bool getCellSizeInMeters(double &cx, double &cy, double &cz) const 
     {
         LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
         if(lz == NULL) return false;

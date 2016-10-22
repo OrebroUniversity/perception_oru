@@ -7,4 +7,13 @@
     </description>
     <message_type>ndt_map/NDTMapMsg</message_type>
   </class>
+  <class name="ndt_rviz_visualisation/NDTLine"
+         type="lslgeneric::NDTLineDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays lines representing ndt map.
+    </description>
+    <message_type>ndt_map/NDTMapMsg</message_type>
+  </class>
+
 </library>

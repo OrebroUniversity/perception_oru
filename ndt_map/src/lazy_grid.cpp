@@ -7,7 +7,7 @@
 namespace lslgeneric
 {
 
-LazyGrid::LazyGrid(double cellSize) 
+LazyGrid::LazyGrid(double cellSize)  : protoType(NULL)
 {
     initialized = false;
     centerIsSet = false;
@@ -296,13 +296,13 @@ void LazyGrid::getNeighbors(const pcl::PointXYZ &point, const double &radius, st
         return;
     }
 
-    for(int x = indX - radius/cellSizeX; x<indX+radius/cellSizeX; x++)
+    for(int x = indX - radius/cellSizeX; x<=indX+radius/cellSizeX; x++)
     {
         if(x < 0 || x >= sizeX) continue;
-        for(int y = indY - radius/cellSizeY; y<indY+radius/cellSizeY; y++)
+        for(int y = indY - radius/cellSizeY; y<=indY+radius/cellSizeY; y++)
         {
             if(y < 0 || y >= sizeY) continue;
-            for(int z = indZ - radius/cellSizeZ; z<indZ+radius/cellSizeZ; z++)
+            for(int z = indZ - radius/cellSizeZ; z<=indZ+radius/cellSizeZ; z++)
             {
                 if(z < 0 || z >= sizeZ) continue;
                 if(dataArray[x][y][z]==NULL) continue;
@@ -467,6 +467,9 @@ void LazyGrid::setCellType(NDTCell *type)
 {
     if(type!=NULL)
     {
+      if (protoType != NULL) {
+        delete protoType;
+      }
         protoType = type->clone();
     }
 }
@@ -519,6 +522,8 @@ int LazyGrid::loadFromJFF(FILE * jffin)
     centerIsSet = false;
     sizeIsSet = false;
 
+    if (protoType != NULL)
+      delete protoType;
     protoType = prototype_.clone();
 
     std::cerr<<"size meters: "<<lazyGridData[0]<<" "<<lazyGridData[1]<<" "<<lazyGridData[2]<<std::endl;

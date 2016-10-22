@@ -74,12 +74,12 @@ public:
 
     /**
      * Register two point clouds. This method builds an NDT
-     * representation of the "fixed" point cloud and uses that for
-     * registering the "moving" point cloud.
-     * \param  fixed
+     * representation of the "target" point cloud and uses that for
+     * registering the "source" point cloud.
+     * \param  target
      *   Reference data. NDT structure is built for this point cloud.
-     * \param  moving
-     *   The output transformation registers this point cloud to \c fixed.
+     * \param  source
+     *   The output transformation registers this point cloud to \c target.
      * \param  T
      *   This is an input/output parameter. The initial value of \c T
      *   gives the initial pose estimate of \c moving. When the
@@ -92,10 +92,10 @@ public:
 
     /**
      * Registers a point cloud to an NDT structure.
-     * \param  fixed
+     * \param  target
      *   Reference data.
-     * \param  moving
-     *   The output transformation registers this point cloud to \c fixed.
+     * \param  source
+     *   The output transformation registers this point cloud to \c source.
      * \param  T
      *   This is an input/output parameter. The initial value of \c T
      *   gives the initial pose estimate of \c moving. When the
@@ -107,7 +107,7 @@ public:
                 bool useInitialGuess = false);
 
     /**
-      * computes the covariance of the match between moving and fixed, at T.
+      * @brief computes the covariance of the match between target and source, at T.
       * note --- computes NDT distributions based on the resolution in res
       * result is returned in cov
       */

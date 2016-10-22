@@ -23,7 +23,7 @@ namespace lslgeneric{
    * @param[in] frame_name name of the coordination frame for the transformed map
    *   
    */
-  bool toMessage(NDTMap *map, ndt_map::NDTMapMsg &msg,std::string frame_name){
+  inline bool toMessage(NDTMap *map, ndt_map::NDTMapMsg &msg,std::string frame_name){
     std::vector<lslgeneric::NDTCell*> map_vector=map->getAllInitializedCells();
     msg.header.stamp=ros::Time::now();
     msg.header.frame_id=frame_name;//is it in *map?    
@@ -70,7 +70,7 @@ namespace lslgeneric{
    * @param[out] frame_name name of the coordination frame of the map
    *   
    */
-  bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name){
+  inline bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name){
     if(!(msg.x_cell_size==msg.y_cell_size&&msg.y_cell_size==msg.z_cell_size)){ //we assume that voxels are cubes
 	  ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 	  return false;
@@ -104,7 +104,7 @@ namespace lslgeneric{
    * @param[in] name of cooridnation frame for the map (same as the NDT map has)
    * 
    */
-  bool toOccupancyGrid(NDTMap *ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
+  inline bool toOccupancyGrid(NDTMap *ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
     double size_x, size_y, size_z;
     int size_x_cell_count, size_y_cell_count;
     double cen_x, cen_y, cen_z;

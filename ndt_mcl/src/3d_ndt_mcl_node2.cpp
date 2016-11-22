@@ -167,12 +167,14 @@ bool do_pub_ndt_markers_;
 	    
 	    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
 	    ndmap.loadFromJFF(mapName.c_str());
+            ROS_INFO_STREAM("Loaded map: " << mapName << " containing " << ndmap.getAllCells().size() << " cells");
+            
 
 	    //////////////////////////////////////////////////////////
 	    /// Prepare MCL object 
 	    //////////////////////////////////////////////////////////
 
-	    ndtmcl = new NDTMCL3D(resolution,ndmap,-5);
+	    ndtmcl = new NDTMCL3D(resolution,ndmap,-1000);
 	    param_nh.param<bool>("forceSIR", forceSIR, false);
 	    if(forceSIR) ndtmcl->forceSIR=true;
 

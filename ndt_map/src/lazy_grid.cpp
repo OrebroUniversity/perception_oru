@@ -16,6 +16,18 @@ LazyGrid::LazyGrid(double cellSize)  : protoType(NULL)
 
 }
 
+  LazyGrid::LazyGrid(double cellSizeX_, double cellSizeY_, double cellSizeZ_)
+{
+    initialized = false;
+    centerIsSet = false;
+    sizeIsSet = false;
+    cellSizeX = cellSizeX_;
+    cellSizeY = cellSizeY_;
+   cellSizeZ = cellSizeZ_;
+
+}
+
+
 LazyGrid::LazyGrid(LazyGrid *prot)
 {
 
@@ -105,6 +117,14 @@ void LazyGrid::initializeAll()
     {
         this->initialize();
     }
+
+    int idcX, idcY, idcZ;
+    pcl::PointXYZ center;
+    center.x = centerX;
+    center.y = centerY;
+    center.z = centerZ;
+    this->getIndexForPoint(center, idcX,idcY,idcZ);
+    
     pcl::PointXYZ centerCell;
     for(int i=0; i<sizeX; i++)
     {
@@ -115,15 +135,10 @@ void LazyGrid::initializeAll()
                 dataArray[i][j][k] = new NDTCell();
                 dataArray[i][j][k]->setDimensions(cellSizeX,cellSizeY,cellSizeZ);
 
-                int idcX, idcY, idcZ;
-                pcl::PointXYZ center;
-                center.x = centerX;
-                center.y = centerY;
-                center.z = centerZ;
-                this->getIndexForPoint(center, idcX,idcY,idcZ);
                 centerCell.x = centerX + (i-idcX)*cellSizeX;
                 centerCell.y = centerY + (j-idcY)*cellSizeY;
                 centerCell.z = centerZ + (k-idcZ)*cellSizeZ;
+
                 dataArray[i][j][k]->setCenter(centerCell);
                 activeCells.push_back(dataArray[i][j][k]);
             }
@@ -145,6 +160,7 @@ void LazyGrid::initialize()
             memset(dataArray[i][j],0,sizeZ*sizeof(NDTCell*));
         }
     }
+
     initialized = true;
 }
 
@@ -196,13 +212,14 @@ NDTCell* LazyGrid::getCellForPoint(const pcl::PointXYZ &point)
     return dataArray[indX][indY][indZ];
 }
 
-NDTCell* LazyGrid::addPoint(const pcl::PointXYZ &point_c)
-{
 
-    pcl::PointXYZ point = point_c;
+void LazyGrid::getCellAtAllocate(const pcl::PointXYZ &pt, NDTCell* &cell)
+{
+    cell = NULL;
+    pcl::PointXYZ point = pt;
     if(std::isnan(point.x) ||std::isnan(point.y) ||std::isnan(point.z))
     {
-        return NULL;
+        return;
     }
     int indX,indY,indZ;
     this->getIndexForPoint(point,indX,indY,indZ);
@@ -210,13 +227,13 @@ NDTCell* LazyGrid::addPoint(const pcl::PointXYZ &point_c)
 
     if(indX >= sizeX || indY >= sizeY || indZ >= sizeZ || indX<0 || indY<0 || indZ<0)
     {
-        return NULL;
+        return;
     }
 
-    if(!initialized) return NULL;
-    if(dataArray == NULL) return NULL;
-    if(dataArray[indX] == NULL) return NULL;
-    if(dataArray[indX][indY] == NULL) return NULL;
+    if(!initialized) return;
+    if(dataArray == NULL) return;
+    if(dataArray[indX] == NULL) return;
+    if(dataArray[indX][indY] == NULL) return;
 
     if(dataArray[indX][indY][indZ]==NULL)
     {
@@ -244,8 +261,17 @@ NDTCell* LazyGrid::addPoint(const pcl::PointXYZ &point_c)
          */
         activeCells.push_back(dataArray[indX][indY][indZ]);
     }
-    dataArray[indX][indY][indZ]->addPoint(point);
-    return dataArray[indX][indY][indZ];
+    cell = dataArray[indX][indY][indZ];
+}
+
+
+NDTCell* LazyGrid::addPoint(const pcl::PointXYZ &point_c)
+{
+  NDTCell* cell;
+  this->getCellAtAllocate(point_c, cell);
+  if (cell != NULL)
+    cell->addPoint(point_c);
+  return cell;
 }
 
 typename SpatialIndex::CellVectorItr LazyGrid::begin()
@@ -538,7 +564,8 @@ int LazyGrid::loadFromJFF(FILE * jffin)
 
     this->setCenter(lazyGridData[6], lazyGridData[7], lazyGridData[8]);
 
-    this->initializeAll();
+    //this->initializeAll();
+    this->initialize();
     int indX, indY, indZ;
     float r,g,b;
     double xs,ys,zs;
@@ -600,7 +627,6 @@ int LazyGrid::loadFromJFF(FILE * jffin)
 
 	} else {
 	    //initialize cell
-	    std::cerr<<"NEW CELL\n";
 	    dataArray[indX][indY][indZ] = prototype_.copy();
 	    activeCells.push_back(dataArray[indX][indY][indZ]);
 	}
@@ -754,4 +780,51 @@ bool LazyGrid::traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::P
 
 }
 
+
+
+
+bool LazyGrid::insertCell(NDTCell cell){
+    pcl::PointXYZ centerCell;
+    int indX,indY,indZ;
+    float r,g,b;
+    double xs,ys,zs;
+    float occ;
+    unsigned int N;
+    centerCell = cell.getCenter();
+    this->getIndexForPoint(centerCell, indX, indY, indZ);
+    if(indX < 0 || indX >= sizeX) return false;
+    if(indY < 0 || indY >= sizeY) return false;
+    if(indZ < 0 || indZ >= sizeZ) return false;
+    if(!initialized) return false;
+    if(dataArray == NULL) return false;
+    if(dataArray[indX] == NULL) return false;
+    if(dataArray[indX][indY] == NULL) return false;
+
+    if(dataArray[indX][indY][indZ] != NULL)
+    {
+      NDTCell* ret = dataArray[indX][indY][indZ];
+      cell.getRGB(r,g,b);
+      cell.getDimensions(xs,ys,zs);
+
+      ret->setDimensions(xs,ys,zs);
+      ret->setCenter(centerCell);
+      ret->setMean(cell.getMean());
+      ret->setCov(cell.getCov());
+      ret->setRGB(r,g,b);
+      ret->setOccupancy(cell.getOccupancy());
+      ret->setEmptyval(cell.getEmptyval());
+      ret->setEventData(cell.getEventData());
+      ret->setN(cell.getN());
+      ret->isEmpty = cell.isEmpty;
+      ret->hasGaussian_ = cell.hasGaussian_;
+      ret->consistency_score = cell.consistency_score;
+
+    } else {
+      //initialize cell
+     // std::cerr<<"NEW CELL\n";
+      dataArray[indX][indY][indZ] = cell.copy();
+      activeCells.push_back(dataArray[indX][indY][indZ]);
+    }
+    return true;
+    }
 } //end namespace

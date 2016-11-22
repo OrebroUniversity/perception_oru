@@ -76,6 +76,9 @@ int main(int argc, char **argv){
     lslgeneric::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame;
     std::string velodyne_config_file;
+    std::string velodyne_packets_topic;
+    std::string velodyne_frame_id;
+    std::string tf_topic;
     
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -104,6 +107,7 @@ int main(int argc, char **argv){
 	("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
         ("COOP", "if parameters from the COOP data set should be used (sensorpose)")
         ("VCE", "if sensorpose parameters from VCE should be used") 
+        ("VCEnov16", "if sensorpose parameters from VCE 16 nov data collection should be used")
         ("dustcart", "if the sensorpose parameters from dustcart should be used")
         ("do-soft-constraints", "if soft constraints from odometry should be used")
         ("Dd", po::value<double>(&motion_params.Dd)->default_value(1.), "forward uncertainty on distance traveled")
@@ -118,6 +122,8 @@ int main(int argc, char **argv){
       ("tf_gt_link", po::value<std::string>(&tf_gt_link)->default_value(std::string("/state_base_link")), "tf ground truth link")
       ("velodyne_config_file", po::value<std::string>(&velodyne_config_file)->default_value(std::string("velo32.yaml")), "configuration file for the scanner")
       ("tf_world_frame", po::value<std::string>(&tf_world_frame)->default_value(std::string("/world")), "tf world frame")
+      ("velodyne_packets_topic", po::value<std::string>(&velodyne_packets_topic)->default_value(std::string("velodyne_packets")), "velodyne packets topic used")
+      ("velodyne_frame_id", po::value<std::string>(&velodyne_frame_id)->default_value(std::string("/velodyne")), "frame_id of the velodyne")
       ("alive", "keep the mapper/visualization running even though it is completed (e.g. to take screen shots etc.")
       ("nb_neighbours", po::value<int>(&nb_neighbours)->default_value(2), "number of neighbours used in the registration")
       ("max_range", po::value<double>(&max_range)->default_value(70.), "maximum range used from scanner")
@@ -127,6 +133,7 @@ int main(int argc, char **argv){
       ("nb_scan_msgs", po::value<int>(&nb_scan_msgs)->default_value(1), "number of scan messages that should be loaded at once from the bag")
       ("use_gt_as_interp_link", "use gt when performing point interplation while unwrapping the velodyne scans")
       ("save_clouds", "save all clouds that are added to the map")
+      ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ;
 
 
@@ -163,6 +170,7 @@ int main(int argc, char **argv){
     bool do_soft_constraints = vm.count("do-soft-constraints");
     bool COOP = vm.count("COOP");
     bool VCE = vm.count("VCE");
+    bool VCEnov16 = vm.count("VCEnov16");
     bool dustcart = vm.count("dustcart");
     bool alive = vm.count("alive");
     bool save_map = vm.count("save_map");
@@ -187,7 +195,7 @@ int main(int argc, char **argv){
 
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
-    sensor_link.child_frame_id_ = "/velodyne";
+    sensor_link.child_frame_id_ = velodyne_frame_id;
     //sensor_link.frame_id_ = "/state_base_link";
     sensor_link.frame_id_ = tf_base_link; //"/odom_base_link";
     tf::Quaternion quat; 
@@ -206,6 +214,12 @@ int main(int argc, char **argv){
       trans[1] = 0.;
       trans[2] = 3.2; // 1.2
       quat.setRPY(0, 0.18, 0);
+    }
+    if (VCEnov16) {
+      trans[0] = 3.0;
+      trans[1] = 0.;
+      trans[2] = 1.2;
+      quat.setRPY(0, 0.01, 0);
     }
     if (dustcart) {
       trans[0] = -0.5;
@@ -235,10 +249,17 @@ int main(int argc, char **argv){
        return -1;	
     }
     sort(scanfiles.begin(),scanfiles.end());
+    {
+      std::cout << "files to be loaded : " << std::endl;
+      for (size_t i = 0; i < scanfiles.size(); i++) {
+        std::cout << " " << scanfiles[i] << std::flush;
+      }
+      std::cout << std::endl;
+    }
     Eigen::Affine3d Told,Tprev,Tsold;
     int counter = 0;
 
-    std::ofstream gt_file, odom_file, est_file;
+    std::ofstream gt_file, odom_file, est_file, sensorpose_est_file;
     std::string filename;
     { 
       filename = base_name + std::string("_gt.txt");
@@ -247,6 +268,10 @@ int main(int argc, char **argv){
     { 
       filename = base_name + std::string("_est.txt");
       est_file.open(filename.c_str());
+    }
+    {
+      filename = base_name + std::string("_sensorpose_est.txt");
+      sensorpose_est_file.open(filename.c_str());
     }
     { 
       filename = base_name + std::string("_odom.txt");
@@ -268,10 +293,10 @@ int main(int argc, char **argv){
 	fprintf(stderr,"Opening %s\n",bagfilename.c_str());
 	VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file, 
 		bagfilename,
-                "velodyne_packets",  //"/velodyne_packets"
-		"/velodyne", 
+                velodyne_packets_topic,  //"/velodyne_packets"
+		velodyne_frame_id, 
 		tf_world_frame,
-		"/tf",
+		tf_topic,
 		ros::Duration(30),
                                                  &sensor_link, max_range, min_range);  
 
@@ -288,7 +313,6 @@ int main(int argc, char **argv){
 
 	    if(cloud_nofilter.size()==0) continue;
 	    tf::Transform baseodo;
-
 
 	    if(filter_fov) {
 		filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
@@ -331,8 +355,10 @@ int main(int argc, char **argv){
 
 		ndtslammer.setSensorPose(Ts);
                 ndtslammer.setMotionParams(motion_params);
-
+                
+                std::cout << "initializing ..." << std::endl;
 		ndtslammer.initialize(Tgt,cloud,preload);
+                std::cout << "initializing done" << std::endl;
 		Told = Tbase; 
 		//Told = Tgt;//for gt
 
@@ -397,17 +423,24 @@ int main(int argc, char **argv){
             gt_file << frame_time << " " << transformToEvalString(Tgt);
             odom_file << frame_time << " " << transformToEvalString(Tbase);
             est_file << frame_time << " " << transformToEvalString(Todo);
+            sensorpose_est_file << frame_time << " " << transformToEvalString(Todo * Ts); 
 	}
     }
 
     gt_file.close();
     odom_file.close();
     est_file.close();
+    sensorpose_est_file.close();
 
     if (save_map) {
       std::cout << "Saving map" << std::endl;
-      ndtslammer.map->writeToJFF("map.jff");
-      std::cout << "Done." << std::endl;
+      if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+        ndtslammer.map->writeToJFF("map.jff");
+        std::cout << "Done." << std::endl;
+      }
+      else {
+        std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+      }
     }
 
     if (alive) {

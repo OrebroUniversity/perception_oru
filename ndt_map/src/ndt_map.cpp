@@ -232,7 +232,7 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
     index_->setSize(map_size(0),map_size(1),map_size(2));
     //lz->initializeAll();
 
-    fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),pc.size());
+    fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),(int)pc.size());
     // ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
     // ROS_INFO("maxDist is %lf", maxDist);
 
@@ -342,7 +342,7 @@ void NDTMap::addPointCloudSimple(const pcl::PointCloud<pcl::PointXYZ> &pc,double
 * Add a distribution to the map
 */
 void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vector3d &umean, unsigned int numpointsindistribution, 
-	float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
+                                   float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
 {
     pcl::PointXYZ pt;
     pt.x = umean[0];
@@ -355,7 +355,9 @@ void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vec
         exit(1);
     }
     NDTCell *ptCell = NULL; 
-    lz->getNDTCellAt(pt,ptCell);
+    //    lz->getNDTCellAt(pt,ptCell);
+    lz->getCellAtAllocate(pt,ptCell);
+    
     if(ptCell != NULL)
     {
 	//std::cout<<"BEFORE\n";
@@ -369,6 +371,9 @@ void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vec
 //	std::cout<<"AFTER\n";
 //	std::cout<<ptCell->getMean().transpose()<<std::endl;
 //	std::cout<<ptCell->getCov()<<std::endl;
+    }
+    else {
+      //      std::cerr << "addDistributionToCell: failed to get a cell to add the distribution to" << std::endl;
     }
 }
 

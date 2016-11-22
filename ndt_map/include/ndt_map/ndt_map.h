@@ -195,8 +195,9 @@ public:
             fprintf(stderr,"Unfortunately This constructor works only with Lazygrid!\n");
             exit(1);
         }
-        lz->initializeAll();
-				guess_size_ = false;
+        //        lz->initializeAll();
+        lz->initialize();
+        guess_size_ = false;
     }
 
 

@@ -59,6 +59,6 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-
+    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
   </export>
 </package>

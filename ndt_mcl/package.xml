@@ -19,6 +19,7 @@
   
   <!-- Dependencies needed to compile this package. -->
   <build_depend>ndt_visualisation</build_depend>
+  <build_depend>ndt_rviz</build_depend>
   <build_depend>rosbag</build_depend>
   <build_depend>cmake_modules</build_depend>
   <build_depend>tf</build_depend>
@@ -43,6 +44,7 @@
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>visualization_msgs</run_depend>
+  <run_depend>ndt_rviz</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>ndt_visualisation</test_depend> -->

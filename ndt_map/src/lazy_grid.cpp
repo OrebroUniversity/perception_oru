@@ -279,7 +279,17 @@ typename SpatialIndex::CellVectorItr LazyGrid::begin()
     return activeCells.begin();
 }
 
+typename SpatialIndex::CellVectorConstItr LazyGrid::begin() const
+{
+    return activeCells.begin();
+}
+
 typename SpatialIndex::CellVectorItr LazyGrid::end()
+{
+    return activeCells.end();
+}
+
+typename SpatialIndex::CellVectorConstItr LazyGrid::end() const
 {
     return activeCells.end();
 }

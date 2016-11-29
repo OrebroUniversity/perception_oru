@@ -62,8 +62,10 @@ public:
     //these two don't make much sense...
     ///iterator through all cells in index, points at the begining
     virtual typename SpatialIndex::CellVectorItr begin();
+    virtual typename SpatialIndex::CellVectorConstItr begin() const;
     ///iterator through all cells in index, points at the end
     virtual typename SpatialIndex::CellVectorItr end();
+    virtual typename SpatialIndex::CellVectorConstItr end() const;
     virtual int size();
 
     ///clone - create an empty object with same type

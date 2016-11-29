@@ -93,9 +93,12 @@ class VelodyneBagReader{
 		ros::Duration dur = ros::Duration(3600),
 		tf::StampedTransform *sensor_link=NULL,
 		double velodyne_max_range=130.0, 
-		double velodyne_min_range=2.0) 
+		double velodyne_min_range=2.0,
+		double sensor_time_offset=0.0) 
+      
 	{
 	    dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range); 
+	    sensor_time_offset_ = ros::Duration(sensor_time_offset);
 	    fprintf(stderr,"Opening '%s'\n",bagfilename.c_str());
 
 	    bag.open(bagfilename, rosbag::bagmode::Read);
@@ -140,11 +143,11 @@ class VelodyneBagReader{
 
 		    // process each packet provided by the driver
 		    tf::Transform T;
-		    ros::Time t0=scan->header.stamp; 
+		    ros::Time t0=scan->header.stamp + sensor_time_offset_; 
 		    if(odosync->getTransformationForTime(t0, tf_pose_id_, sensor_pose)){
 			for (size_t next = 0; next < scan->packets.size(); ++next){
 			    dataParser.unpack(scan->packets[next], pnts); // unpack the raw data
-			    ros::Time t1=scan->packets[next].stamp;
+			    ros::Time t1=scan->packets[next].stamp + sensor_time_offset_;
 
 			    if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
 				pcl_ros::transformPointCloud(pnts,conv_points,T);
@@ -179,7 +182,7 @@ class VelodyneBagReader{
 	    velodyne_rawdata::VPointCloud pnts,conv_points;
 
 	    if(!getNextScanMsg()) return false;
-	    t0 = global_scan->header.stamp;
+	    t0 = global_scan->header.stamp + sensor_time_offset_ ;
 	    timestamp_of_last_sensor_message = t0;
 
 	    if(!odosync->getTransformationForTime(t0, tf_pose_id_, sensor_pose)){
@@ -187,7 +190,7 @@ class VelodyneBagReader{
 		return true; //false for eof
 	    }
 	    for (size_t next = 0; next < global_scan->packets.size(); ++next){
-		ros::Time t1=global_scan->packets[next].stamp;
+		ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
 		dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
 
 		//if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
@@ -212,7 +215,7 @@ class VelodyneBagReader{
 
 		for (size_t next = 0; next < global_scan->packets.size(); ++next){
 		    dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
-		    ros::Time t1=global_scan->packets[next].stamp;
+		    ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
 
 		    //if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
 		    if(odosync->getTransformationForTime(t1,tf_pose_id_,T)){
@@ -296,6 +299,7 @@ class VelodyneBagReader{
 	    std::string tf_pose_id_;
 	    velodyne_msgs::VelodyneScan::ConstPtr global_scan;
 	    ros::Time timestamp_of_last_sensor_message;
+	    ros::Duration sensor_time_offset_;
 #ifdef READ_RMLD_MESSAGES
 	    SynchronizedRMLD *rmldsync;
 		public:

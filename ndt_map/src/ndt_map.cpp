@@ -1966,11 +1966,11 @@ NDTMap* NDTMap::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Ei
     return map;
 }
 
-std::vector<NDTCell*> NDTMap::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
+std::vector<NDTCell*> NDTMap::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T) const
 {
 
     std::vector<NDTCell*> ret;
-    typename SpatialIndex::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorConstItr it = index_->begin();
     while (it != index_->end())
     {
         NDTCell *cell = (*it);

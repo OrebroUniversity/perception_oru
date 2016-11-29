@@ -22,6 +22,18 @@
 namespace po = boost::program_options;
 using namespace std;
 
+inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
+  if (fabs(euler[0]) > M_PI/2) {
+    euler[0] += M_PI;
+    euler[1] += M_PI;
+    euler[2] += M_PI;
+    
+    euler[0] = angles::normalize_angle(euler[0]);
+    euler[1] = angles::normalize_angle(euler[1]);
+    euler[2] = angles::normalize_angle(euler[2]);
+  }
+}
+
 template<class T> std::string toString (const T& x)
 {
      std::ostringstream o;
@@ -52,6 +64,12 @@ std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,
   return stream.str();
 }
 
+void saveCloud(int counter, const pcl::PointCloud<pcl::PointXYZ> &cloud) {
+    std::string pcd_file = std::string("cloud") + toString(counter) + std::string(".pcd");
+    std::cout << "saving : " << pcd_file << std::endl;
+    pcl::io::savePCDFileASCII (pcd_file, cloud);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////7
 /////////////////////////////////////////////////////////////////////////////////7
@@ -79,7 +97,8 @@ int main(int argc, char **argv){
     std::string velodyne_packets_topic;
     std::string velodyne_frame_id;
     std::string tf_topic;
-    
+    double sensor_time_offset;
+
     po::options_description desc("Allowed options");
     desc.add_options()
 	("help", "produce help message")
@@ -134,7 +153,8 @@ int main(int argc, char **argv){
       ("use_gt_as_interp_link", "use gt when performing point interplation while unwrapping the velodyne scans")
       ("save_clouds", "save all clouds that are added to the map")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
-      ;
+	("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
+	;
 
 
     po::variables_map vm;
@@ -216,10 +236,16 @@ int main(int argc, char **argv){
       quat.setRPY(0, 0.18, 0);
     }
     if (VCEnov16) {
-      trans[0] = 3.0;
-      trans[1] = 0.;
-      trans[2] = 1.2;
-      quat.setRPY(0, 0.01, 0);
+	sensor_time_offset = -0.04886; //-0.0921114;
+	trans[0] = 3.34925;
+        trans[1] = 0.00668733;
+	trans[2] = 1.17057819451374;
+	quat.setRPY(0.0003905, 0.0331966, 0.0105067);
+
+      // trans[0] = 3.0;//3.0;
+      // trans[1] = 0.;
+      // trans[2] = 1.2;//1.2;
+      // quat.setRPY(0, 0.0, 0); // 0.01
     }
     if (dustcart) {
       trans[0] = -0.5;
@@ -292,13 +318,14 @@ int main(int argc, char **argv){
 	std::string bagfilename = scanfiles[i];
 	fprintf(stderr,"Opening %s\n",bagfilename.c_str());
 	VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file, 
-		bagfilename,
-                velodyne_packets_topic,  //"/velodyne_packets"
-		velodyne_frame_id, 
-		tf_world_frame,
-		tf_topic,
-		ros::Duration(30),
-                                                 &sensor_link, max_range, min_range);  
+						 bagfilename,
+						 velodyne_packets_topic,  //"/velodyne_packets"
+						 velodyne_frame_id, 
+						 tf_world_frame,
+						 tf_topic,
+						 ros::Duration(3600),
+                                                 &sensor_link, max_range, min_range,
+						 sensor_time_offset);  
 
 	pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;	
 	tf::Transform sensor_pose;
@@ -363,9 +390,7 @@ int main(int argc, char **argv){
 		//Told = Tgt;//for gt
 
                 if (save_clouds) {
-                  std::string pcd_file = std::string("cloud") + toString(counter) + std::string(".pcd");
-                  std::cout << "saving : " << pcd_file << std::endl;
-                  pcl::io::savePCDFileASCII (pcd_file, cloud);
+		    saveCloud(counter-1, cloud);
                 }
 
 		counter ++;
@@ -374,38 +399,22 @@ int main(int argc, char **argv){
 		continue;
 	    }
 
-#if 0	
-	    //this is for ground truth eval
-	    Eigen::Affine3d Tmotion = Told.inverse()*Tgt;
-	    if(Tmotion.translation().norm()<0.1 && fabs(Tmotion.rotation().eulerAngles(0,1,2)[2])<(5*M_PI/180.0)) return;
-	    ndtslammer.update(Tmotion,cloud);
-	    if(counter%100==0){
-		std::cout<<"\n\n--------------------plotting------------------\n\n";
-		plotNDTSAccordingToOccupancy(-1,win3D,*ndtslammer.map);
-	    }
-	    Told = Tgt;
-	    gl_points->push_back(Tgt.translation()(0), Tgt.translation()(1),0.02, 1.0 ,0,0);
-	    win3D.setCameraPointingToPoint(Tgt.translation()[0],Tgt.translation()[1],3.0);
-	    win3D.repaint();
-	    return;
-#endif
+
 	    Eigen::Affine3d Tmotion = Told.inverse()*Tbase;
+	    Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
+	    normalizeEulerAngles(Tmotion_euler);
 	    if(!use_odometry) {
 		Tmotion.setIdentity();
 	    } else {
 
-              // add params to the distance?
-		if(Tmotion.translation().norm()<min_dist && fabs(Tmotion.rotation().eulerAngles(0,1,2)[2])<(min_rot_in_deg*M_PI/180.0)) {
+  		if(Tmotion.translation().norm()<min_dist && fabs(Tmotion_euler[2])<(min_rot_in_deg*M_PI/180.0)) {
 		    cloud.clear();	
-		    cloud_nofilter.clear();
+		    cloud_nofilter.clear();	
 		    continue;
 		}
-		//if(Tmotion.translation().norm()<0.1 && fabs(Tmotion.rotation().eulerAngles(0,1,2)[2])<(5.0*M_PI/180.0)) return; ///< working
 	    }
             if (save_clouds) {
-              std::string pcd_file = std::string("cloud") + toString(counter) + std::string(".pcd");
-              std::cout << "saving : " << pcd_file << std::endl;
-              pcl::io::savePCDFileASCII (pcd_file, cloud);
+		saveCloud(counter-1, cloud);
             }
 
 	    counter++;

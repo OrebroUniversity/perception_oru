@@ -42,7 +42,7 @@ int main(int argc, char **argv){
     double max_translation;
     double min_rotation;
     double sensor_time_offset;
-  
+    double resolution;
     po::options_description desc("Allowed options");
     desc.add_options()
 	("help", "produce help message")
@@ -72,6 +72,7 @@ int main(int argc, char **argv){
         ("cey", "calibrate pitch")
         ("cez", "calibrate yaw")
         ("ct", "calibrate time offset")
+	("resolution", po::value<double>(&resolution)->default_value(2.), "NDT map resolution")
         ;
 
 
@@ -113,7 +114,7 @@ int main(int argc, char **argv){
     std::cout << "got : " << pairs.size() << " scan pairs" << std::endl;
 
     std::cout << "Computing NDTMap... " << std::endl;
-    pairs.computeNDTMap();
+    pairs.computeNDTMap(resolution);
     std::cout << "done." << std::endl;
 
     std::cout << "Setting up pose interpolation" << std::endl;

@@ -151,7 +151,7 @@ class VelodyneBagReader{
 
 			    if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
 				pcl_ros::transformPointCloud(pnts,conv_points,T);
-				for(size_t i = 0;i<pnts.size();i++){
+				for(size_t i = 0;i<pnts.size();i++){  // TODO - shouldn't this be conv_points that are stored (and not pnts?)
 				    PointT p;
 
 				    p.x = pnts.points[i].x; p.y=pnts.points[i].y; p.z=pnts.points[i].z;//p.intensity = pnts.points[i].intensity;

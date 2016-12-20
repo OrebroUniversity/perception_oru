@@ -59,8 +59,8 @@ public:
     }
   }
     
-  void computeNDTMap() {
-    ndtmap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(2.0), true);
+  void computeNDTMap(double resolution) {
+    ndtmap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution), true);
     ndtmap->loadPointCloud(this->cloud);
     ndtmap->computeNDTCellsSimple();
   }
@@ -192,12 +192,12 @@ public:
     return e;
   }
 
-  void computeNDTMap() {
+  void computeNDTMap(double resolution) {
     if (first.ndtmap == NULL) {
-      first.computeNDTMap();
+      first.computeNDTMap(resolution);
     }
     if (second.ndtmap == NULL) {
-      second.computeNDTMap();
+      second.computeNDTMap(resolution);
     }
   }
 
@@ -230,9 +230,9 @@ public:
     }
   }
 
-  void computeNDTMap() {
+  void computeNDTMap(double resolution) {
     for (size_t i = 0;  i < this->size(); i++) {
-      (*this)[i].computeNDTMap();
+      (*this)[i].computeNDTMap(resolution);
     }
   }
 };

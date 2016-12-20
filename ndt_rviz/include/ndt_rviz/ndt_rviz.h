@@ -4,7 +4,9 @@
 #include <ndt_mcl/3d_ndt_mcl.h>
 #include <ros/ros.h>
 #include <tf_conversions/tf_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <ndt_rviz/utils.h>
 
@@ -30,6 +32,11 @@ namespace ndt_visualisation {
     pt.z = p(2);
     return pt;
   }
+
+inline geometry_msgs::Point toPointFromEigen( const Eigen::Affine3d &T)
+{
+    return toPointFromEigen(T.translation());
+}
 
   void assignDefault(visualization_msgs::Marker &m)
   {
@@ -328,6 +335,73 @@ visualization_msgs::Marker markerParticlesNDTMCL3D(const NDTMCL3D &mcl, int colo
     Eigen::Vector3d p2 = T*Eigen::Vector3d(0.3, 0., 0.);
     m.points.push_back(toPointFromEigen(p2));
   }  
+  return m;
+}
+
+
+// Visualization markers.
+void appendMarkerArray(visualization_msgs::MarkerArray &array, const visualization_msgs::MarkerArray &add) {
+  for (size_t i = 0; i < add.markers.size(); i++) {
+    array.markers.push_back(add.markers[i]);
+  }
+}
+
+
+visualization_msgs::Marker getMarkerArrowAffine3d(const Eigen::Affine3d &T, int id, int color, const std::string &ns) {
+  visualization_msgs::Marker m;
+  assignDefault(m);
+  assignColor(m, color);
+  m.ns = ns;
+  m.type = visualization_msgs::Marker::ARROW;
+  m.action = visualization_msgs::Marker::ADD;
+  m.scale.y = 0.1; m.scale.z = 0.1;
+  m.id = id;
+  tf::poseEigenToMsg (T, m.pose);
+  return m;
+} 
+
+
+visualization_msgs::Marker getMarkerCylinder(const Eigen::Affine3d &T,
+                                                  int id, int color,
+                                                  double length, double radius,
+                                                  const std::string &ns) {
+  visualization_msgs::Marker m;
+  assignDefault(m);
+  assignColor(m, color);
+  m.ns = ns;
+  m.type = visualization_msgs::Marker::CYLINDER;
+  m.action = visualization_msgs::Marker::ADD;
+  m.id = id;
+
+  m.scale.x = radius; m.scale.y = radius; m.scale.z = length;
+  tf::poseEigenToMsg(T, m.pose);
+  return m;
+}
+
+/// Draw an x,y,z coordsystem given an affine3d.
+visualization_msgs::MarkerArray getMarkerFrameAffine3d(const Eigen::Affine3d &T, const std::string &ns, double length, double radius) {
+
+  visualization_msgs::MarkerArray m;
+  // X
+  {
+    Eigen::Affine3d T_x =
+      Eigen::Translation3d(length / 2.0, 0, 0) * Eigen::AngleAxisd(M_PI / 2.0, Eigen::Vector3d::UnitY());
+    T_x = T * T_x;
+    m.markers.push_back(getMarkerCylinder(T_x, 0, 0, length, radius, ns));
+  }
+  // Y
+  {
+    Eigen::Affine3d T_y =
+      Eigen::Translation3d(0, length / 2.0, 0) * Eigen::AngleAxisd(M_PI / 2.0, Eigen::Vector3d::UnitX());
+    T_y = T * T_y;
+    m.markers.push_back(getMarkerCylinder(T_y, 1, 1, length, radius, ns));
+  }
+  // Z
+  {
+    Eigen::Affine3d T_z = Eigen::Translation3d(0, 0, length / 2.0) * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ());
+    T_z = T * T_z;
+    m.markers.push_back(getMarkerCylinder(T_z, 2, 2, length, radius, ns));
+  }
   return m;
 }
 

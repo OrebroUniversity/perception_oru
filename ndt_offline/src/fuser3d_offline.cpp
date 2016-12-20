@@ -97,6 +97,8 @@ int main(int argc, char **argv){
     std::string velodyne_packets_topic;
     std::string velodyne_frame_id;
     std::string tf_topic;
+    Eigen::Vector3d transl;
+    Eigen::Vector3d euler;
     double sensor_time_offset;
 
     po::options_description desc("Allowed options");
@@ -153,6 +155,12 @@ int main(int argc, char **argv){
       ("use_gt_as_interp_link", "use gt when performing point interplation while unwrapping the velodyne scans")
       ("save_clouds", "save all clouds that are added to the map")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
+       	("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
+	("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
+	("z", po::value<double>(&transl[2])->default_value(0.), "sensor pose - translation vector z")
+	("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
+	("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
+	("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
 	("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
 	;
 
@@ -216,13 +224,11 @@ int main(int argc, char **argv){
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
     sensor_link.child_frame_id_ = velodyne_frame_id;
-    //sensor_link.frame_id_ = "/state_base_link";
     sensor_link.frame_id_ = tf_base_link; //"/odom_base_link";
     tf::Quaternion quat; 
 
-    quat.setRPY(0,0,-M_PI/2.0 -1.5*M_PI/180.0 );
-    tf::Vector3 trans(1.18,-0.3,2.0); // 2.0		
-    //tf::Vector3 trans(1.25,-0.2,2.0);		
+    quat.setRPY(euler[0], euler[1], euler[2]);
+    tf::Vector3 trans(transl[0], transl[1], transl[2]);
     if (COOP) {
       trans[0] = 0.96;
       trans[1] = 0.34;

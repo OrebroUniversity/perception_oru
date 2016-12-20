@@ -796,7 +796,6 @@ double NDTMatcherD2D::scoreNDT(std::vector<NDTCell*> &sourceNDT, NDTMap &targetN
         point.y = meanMoving(1);
         point.z = meanMoving(2);
         std::vector<NDTCell*> cells = targetNDT.getCellsForPoint(point,n_neighbours); //targetNDT.getAllCells(); //
-        std::cout << "cells.size() : " << cells.size() << std::endl;
         for(unsigned int j=0; j<cells.size(); j++)
         {
             cell = cells[j];

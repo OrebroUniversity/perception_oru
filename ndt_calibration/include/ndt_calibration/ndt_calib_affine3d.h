@@ -1,5 +1,7 @@
 #pragma once
 
+//#include <ndt_rviz/utils.h>
+
 #include <string>
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
@@ -70,4 +72,15 @@ Eigen::VectorXd getTranslationEulerAnglesVectorFromAffine3d(const Eigen::Affine3
   ret[5] = rot[2];
   
   return ret;
+}
+
+
+void getTranslationEulerAnglesVectorsFromAffine3d(const Eigen::Affine3d &T, Eigen::Vector3d &transl, Eigen::Vector3d &rot) {
+
+transl[0] = T.translation()[0];
+transl[1] = T.translation()[1];
+transl[2] = T.translation()[2];
+
+rot = T.rotation().eulerAngles(0,1,2);
+normalizeEulerAngles(rot);
 }

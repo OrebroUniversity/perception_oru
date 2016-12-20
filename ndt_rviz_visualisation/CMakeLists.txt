@@ -13,6 +13,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 qt4_wrap_cpp(MOC_FILES
   src/ndt_display.hpp
+  src/ndt_line_display.hpp
 )
 
 ## Here we specify the list of source files, including the output of
@@ -20,6 +21,8 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   src/ndt_display.cpp
   src/ndt_visual.cpp
+  src/ndt_line_display.cpp
+  src/ndt_line_visual.cpp
   ${MOC_FILES}
 )
 

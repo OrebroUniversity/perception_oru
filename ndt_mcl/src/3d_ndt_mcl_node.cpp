@@ -207,7 +207,7 @@ class NDTMCL3DNode {
 	    
 	    pcl::fromROSMsg (*cloud_in, cloud);
 	    
-	    fprintf(stderr,"cloud has %d points\n",cloud.points.size());		
+	    fprintf(stderr,"cloud has %zu points\n",cloud.points.size());		
 	    //check if sensor pose is known, if not, look it up on TF
 	    if(!hasSensorPose) {
 

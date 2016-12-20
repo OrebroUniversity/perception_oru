@@ -59,6 +59,7 @@ protected:
 public:
     typedef std::vector<NDTCell*> CellPtrVector;
     typedef typename CellPtrVector::iterator CellVectorItr;
+    typedef typename CellPtrVector::const_iterator CellVectorConstItr;
 
     virtual ~SpatialIndex()
     {
@@ -70,8 +71,11 @@ public:
 
     ///iterator through all cells in index, points at the begining
     virtual CellVectorItr begin() = 0;
+    virtual CellVectorConstItr begin() const = 0;
     ///iterator through all cells in index, points at the end
     virtual CellVectorItr end() = 0;
+    virtual CellVectorConstItr end() const = 0;
+    
     // should be 'pure'?
     virtual int size() const
     {

@@ -1,0 +1,47 @@
+<launch>
+    <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 /map /map_n 10" /> -->
+    <param name="/use_sim_time" value="true" />
+    <node name="ndt_mcl" pkg="ndt_mcl" type="velodyne_ndt_mcl_node" output="screen">
+        <param name="calibration" value="/home/tzkr/indigo_workspaces/default/src/velodyne/velodyne_pointcloud/params/VLP16db.yaml" />
+        <!-- <param name="map_file" value="$(find ndt_fuser)/maps/Shipohol_gate_b_05_map.jff"/>
+        <param name="resolution" value="0.5" /> -->
+
+
+        <param name="map_file" value="$(find ndt_fuser)/maps/Freiburg_08_n_map.jff"/>
+        <param name="resolution" value="0.8" />
+
+        <param name="show_particles" value="true" />
+
+        <param name="sensor_pose_x" value="-0.260" />
+        <param name="sensor_pose_y" value="0.058" />
+        <param name="sensor_pose_z" value="1.363" />
+        <param name="sensor_pose_t" value="-1.577" />
+        <param name="sensor_pose_r" value="0.008" />
+
+        <param name="v_size_x" value="100" />
+        <param name="v_size_y" value="100" />
+        <param name="v_size_z" value="10" />
+
+        <param name="particle_count" value="200" />
+        <param name="show_pose" value="false"/>
+        <param name="force_SIR" value="false" />
+    </node>
+
+
+    <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+     <param name="map_file" value="$(find ndt_fuser)/maps/Freiburg_08_n_map.jff"/>
+     <param name="resolution" value="0.8" />
+     <param name="map_rate" value="0.1" />
+   </node>
+
+
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/tzkr/indigo_workspaces/SPENCER/src/spencer_soft/mapping/ndt_mcl/maps/b101_o.yaml" />
+
+   <!-- <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+    <param name="map_file" value="$(find ndt_fuser)/maps/Shipohol_gate_b_05_map.jff"/>
+    <param name="resolution" value="0.5" />
+    <param name="map_rate" value="0.1" />
+  </node> -->
+
+
+</launch>

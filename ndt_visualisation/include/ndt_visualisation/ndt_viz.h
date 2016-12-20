@@ -20,6 +20,7 @@ class NDTViz {
         NDTVizGlutSetOfLines gl_grid;
         NDTVizGlutSetOfLines gl_polygonboundary;
         NDTVizGlutSetOfLines gl_pathline;
+        NDTVizGlutEllipsoid gl_posecov;
 
 	NDTViz(bool allocate_new_window=true)
 
@@ -36,7 +37,7 @@ class NDTViz {
 		win3D = NULL;
 	    }
 	    
-	    gl_points.setPointSize(4.5);
+	    gl_points.setPointSize(8.5);
 	    gl_particles.setPointSize(2.5);
 
 	}
@@ -83,6 +84,15 @@ class NDTViz {
 	void setCameraPointing(double x, double y, double z) {
 	  win3D->setCameraPointingToPoint(x,y,z);
 	}
+        void setPoseCov(const Eigen::Vector3d &mean, const Eigen::Matrix3d &cov) {
+          gl_posecov.setLocation(mean(0), mean(1), mean(2));
+          gl_posecov.setCovMatrix(cov);
+          gl_posecov.setColor(0.0,1.0,1.0,1.0);
+          gl_posecov.enableDrawSolid3D(true);
+        }
+        void displayPoseCov() { 
+          win3D->addObject(&gl_posecov);
+        }
 
 	
   void addGrid(size_t nbCells, double cellSize, double lineWidth = 1., double R = 1.0, double G = 0.4, double B = 0., double A = 0.8) {

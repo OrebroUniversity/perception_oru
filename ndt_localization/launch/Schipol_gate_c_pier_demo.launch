@@ -1,0 +1,25 @@
+<launch>
+    <!-- run dual-laser localisation -->
+   <node name="ndt_mcl" pkg="ndt_mcl" type="ndt_mcl_2_laser_node" output="screen">
+      <!-- jff file with map -->
+    <param name="map_file" value="$(find ndt_mcl)/maps/gotoC4.jff"/>
+    <!-- resolution of jff map -->
+    <param name="resolution" value="0.8" />
+    <!-- show aprticles for debug purposes -->
+    <param name="show_particles" value="true" />
+    <!-- particle count for ndt-mcl -->
+    <param name="particle_count" value="400" />
+    <param name="show_pose" value="false"/>
+    <param name="force_SIR" value="false" />
+  </node>
+
+  <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+    <param name="map_file" value="$(find ndt_mcl)/maps/gotoC4.jff"/>
+    <param name="resolution" value="0.8" />
+    <param name="map_rate" value="0.1" />
+  </node>
+
+
+</launch>
+
+

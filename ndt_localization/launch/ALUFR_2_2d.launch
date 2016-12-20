@@ -1,0 +1,26 @@
+<launch>
+    <!-- run dual-laser localisation -->
+  <node name="ndt_mcl" pkg="ndt_mcl" type="ndt_mcl_2_laser_node" output="screen">
+      <!-- jff file with map -->
+    <param name="map_file" value="$(find ndt_mcl)/maps/ALUFR101_2_map.jff"  />
+    <!-- resolution of jff map -->
+    <param name="resolution" value="0.5" />
+    <!-- show aprticles for debug purposes -->
+    <param name="show_particles" value="false" />
+    <!-- particle count for ndt-mcl -->
+    <param name="particle_count" value="100" />
+    <param name="show_pose" value="false"/>
+    <param name="force_SIR" value="false" />
+    <param name="sensor_range" value="40" />
+    <param name="close_cut" value="0.5" />
+  </node>
+<!-- Map publishing node -->
+<!--
+  <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+    <param name="map_file" value="$(find ndt_mcl)/maps/ALUFR101_2_map.jff"  />
+    <param name="resolution" value="0.5" />
+    <param name="map_rate" value="0.1" />
+  </node>
+-->
+
+</launch>

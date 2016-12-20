@@ -1,0 +1,7 @@
+<launch>
+   <node name="ndt_map" pkg="ndt_mcl" type="ndt_map_publisher" output="screen">
+    <param name="map_file" value="$(find ndt_fuser)/maps/full_run_2_2/lz_0.000000_0.000000_0.000000.jff"/>
+    <param name="resolution" value="0.5" />
+    <param name="map_rate" value="0.1" />
+  </node>
+</launch>

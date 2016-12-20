@@ -7,7 +7,9 @@
 #include <ndt_map/ndt_map_hmt.h>
 #include <ndt_registration/ndt_matcher_d2d_2d.h>
 #include <ndt_registration/ndt_matcher_d2d.h>
+#include <ndt_registration/ndt_matcher_d2d_sc.h>
 #include <ndt_map/pointcloud_utils.h>
+#include <ndt_fuser/motion_model_2d.h>
 
 #include <Eigen/Eigen>
 #include <pcl/point_cloud.h>
@@ -28,7 +30,7 @@ class NDTFuserHMT{
 	bool checkConsistency;			 ///perform a check for consistency against initial estimate
 	double max_translation_norm, max_rotation_norm;
 	double sensor_range;
-	bool be2D, doMultires, fuseIncomplete, beHMT, disableRegistration;
+        bool be2D, doMultires, fuseIncomplete, beHMT, disableRegistration, doSoftConstraints;
 	int ctr;
 	std::string prefix;
 	std::string hmt_map_dir;
@@ -39,7 +41,7 @@ class NDTFuserHMT{
 
 	NDTFuserHMT(double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, double sensor_range_ = 3, 
 		    bool visualize_=false, bool be2D_=false, bool doMultires_=false, bool fuseIncomplete_=false, int max_itr=30, 
-		    std::string prefix_="", bool beHMT_=true, std::string hmt_map_dir_="map", bool _step_control=true){
+		    std::string prefix_="", bool beHMT_=true, std::string hmt_map_dir_="map", bool _step_control=true, bool doSoftConstraints_ = false, int nb_neighbours = 2, double resolutionLocalFactor = 1.){
 	    isInit = false;
 	    disableRegistration=false;
 	    resolution = map_resolution;
@@ -60,7 +62,8 @@ class NDTFuserHMT{
 	    sensor_range = sensor_range_;
 	    prefix = prefix_;
 	    doMultires = doMultires_;
-	    ctr =0;
+            doSoftConstraints = doSoftConstraints_;
+            ctr =0;
 #ifndef NO_NDT_VIZ
         if(visualize_){
           viewer = new NDTViz(visualize);
@@ -71,11 +74,16 @@ class NDTFuserHMT{
 	    fuseIncomplete = fuseIncomplete_;
 	    matcher.ITR_MAX = max_itr;
 	    matcher2D.ITR_MAX = max_itr;
+            matcherSC.ITR_MAX = max_itr;
 	    matcher.step_control=_step_control;
 	    matcher2D.step_control=_step_control;
+            matcherSC.step_control =_step_control;
+            matcher.n_neighbours = nb_neighbours;
+            matcher2D.n_neighbours = nb_neighbours;
+            matcherSC.n_neighbours = nb_neighbours;
 	    beHMT = beHMT_;
 	    hmt_map_dir=hmt_map_dir_;
-
+            resolution_local_factor = resolutionLocalFactor;
 	    
 	    char fname[1000];
 	    snprintf(fname,999,"%s_addTime.txt",prefix.c_str());
@@ -103,6 +111,10 @@ class NDTFuserHMT{
 	    sensor_pose = spose;
 	}
 	
+        void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
+          motionModel2D.setParams(p);
+        }
+
 	bool wasInit()
 	{
 	    return isInit;
@@ -148,7 +160,11 @@ class NDTFuserHMT{
 	Eigen::Affine3d sensor_pose;
 	lslgeneric::NDTMatcherD2D matcher;
 	lslgeneric::NDTMatcherD2D_2D matcher2D;
+        lslgeneric::NDTMatcherD2DSC matcherSC;
 	Eigen::Vector3d localMapSize;
+
+        lslgeneric::MotionModel2d motionModel2D;
+        double resolution_local_factor;
 
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

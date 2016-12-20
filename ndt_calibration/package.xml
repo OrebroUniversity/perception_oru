@@ -57,6 +57,7 @@
   <build_depend>eigen_conversions</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>angles</build_depend>
+  <build_depend>libgsl</build_depend>
   
   <run_depend>ndt_offline</run_depend>
   <run_depend>ndt_map</run_depend>
@@ -74,6 +75,7 @@
   <run_depend>eigen_conversions</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>angles</run_depend>
+  <run_depend>libgsl</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

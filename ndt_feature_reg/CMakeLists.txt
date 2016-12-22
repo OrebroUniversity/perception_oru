@@ -11,12 +11,22 @@ catkin_package(
 )
 
 ###############################################################################################################################
-#NOTE: to make this work, you need to install a local copy of openCV with the non-free modules built
+#NOTE: There are two options for compiling this
+#1) 
+# In order to fix : 'opencv2/nonfree/features2d.hpp no such file or directory' type of errors add the following pkg.
+#
+# sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+# sudo apt-get update 
+# sudo apt-get install libopencv-nonfree-dev
+#
+#2) 
+#install a local copy of openCV with the non-free modules built
 #for ubuntu 14.04, do the following:
 #mkdir tmp && cd tmp && wget  https://raw.githubusercontent.com/jayrambhia/Install-OpenCV/master/Ubuntu/2.4/opencv2_4_9.sh
 #chmod a+x opencv2_4_9.sh
 #edit opencv2_4_9.sh. Add -D WITH_OPENCL=OFF -D BUILD_opencv_nonfree=ON to the cmake command on line 30
 #run the script and verify you have installed the opencv library in /usr/local
+
 ###############################################################################################################################
 set(OpenCV_DIR "/usr/local/")
 find_package(OpenCV REQUIRED)
@@ -26,18 +36,6 @@ include_directories(include)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 find_package(VTK REQUIRED)
-
-
-#uncomment if you have defined messages
-#add_message_files(
-#  FILES
-  # TODO: List your msg files here
-#)
-#uncomment if you have defined services
-#add_service_files(
-#  FILES
-  # TODO: List your msg files here
-#)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -49,22 +47,19 @@ set (${PROJECT_NAME}_LIB_SRCS
 
 link_directories(/usr/local/lib)
 
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-
-add_executable(ndt_feature_reg_node src/ndt_feature_reg_node.cc)
-target_link_libraries(ndt_feature_reg_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(ndt_feature_eval src/ndt_feature_eval.cc)
-target_link_libraries(ndt_feature_eval ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-add_executable(ndt_feature_viewer src/ndt_feature_viewer.cc)
-target_link_libraries(ndt_feature_viewer ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBRARIES})
+#uncomment these lines to build project binaries
+#add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+#add_executable(ndt_feature_reg_node src/ndt_feature_reg_node.cc)
+#target_link_libraries(ndt_feature_reg_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+#add_executable(ndt_feature_eval src/ndt_feature_eval.cc)
+#target_link_libraries(ndt_feature_eval ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+#add_executable(ndt_feature_viewer src/ndt_feature_viewer.cc)
+#target_link_libraries(ndt_feature_viewer ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBRARIES})
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
-install(TARGETS ndt_feature_reg_node ${PROJECT_NAME} ndt_feature_eval
+install(TARGETS #ndt_feature_reg_node ${PROJECT_NAME} ndt_feature_eval
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -79,5 +74,8 @@ install(FILES
 )
 
 install(DIRECTORY eval/
-	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/eval/
+)
+install(DIRECTORY src/
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/src/
 )

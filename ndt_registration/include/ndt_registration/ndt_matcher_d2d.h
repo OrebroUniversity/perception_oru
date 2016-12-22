@@ -163,6 +163,28 @@ public:
     bool regularize;
     //how many neighbours to use in the objective
     int n_neighbours;
+
+    //perform line search to find the best descent rate (Mohre&Thuente)
+    //adapted from NOX
+    double lineSearchMT(
+        Eigen::Matrix<double,6,1> &increment,
+        std::vector<NDTCell*> &source,
+        NDTMap &target) ;
+
+
+    //auxiliary functions for MoreThuente line search
+    struct MoreThuente
+    {
+        static double min(double a, double b);
+        static double max(double a, double b);
+        static double absmax(double a, double b, double c);
+        static int cstep(double& stx, double& fx, double& dx,
+                         double& sty, double& fy, double& dy,
+                         double& stp, double& fp, double& dp,
+                         bool& brackt, double stmin, double stmax);
+    }; //end MoreThuente
+
+
 protected:
 
     Eigen::Matrix<double,3,6> Jest;
@@ -216,25 +238,6 @@ protected:
                                  Eigen::Matrix<double,3,18> &_Zest,
                                  Eigen::Matrix<double,18,18> &_ZHest,
                                  bool computeHessian);
-    
-    //perform line search to find the best descent rate (Mohre&Thuente)
-    //adapted from NOX
-    double lineSearchMT(
-        Eigen::Matrix<double,6,1> &increment,
-        std::vector<NDTCell*> &source,
-        NDTMap &target) ;
-
-    //auxiliary functions for MoreThuente line search
-    struct MoreThuente
-    {
-        static double min(double a, double b);
-        static double max(double a, double b);
-        static double absmax(double a, double b, double c);
-        static int cstep(double& stx, double& fx, double& dx,
-                         double& sty, double& fy, double& dy,
-                         double& stp, double& fp, double& dp,
-                         bool& brackt, double stmin, double stmax);
-    }; //end MoreThuente
 
     //perform a subsampling depending on user choice
     int NUMBER_OF_POINTS;
@@ -260,6 +263,11 @@ protected:
     //vars for hessian
     Eigen::Matrix<double,6,6> JtBJ, xtBZBJ, xtBH, xtBZBZBx, xtBZhBx;
     Eigen::Matrix<double,1,3> TMP1, xtB;
+
+public:
+    int nb_match_calls;
+    int nb_success_reg;
+
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

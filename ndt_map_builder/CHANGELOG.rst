@@ -2,6 +2,14 @@
 Changelog for package ndt_map_builder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.30 (2015-10-09)
+-------------------
+
+1.0.29 (2015-10-08)
+-------------------
+* package builds, still outdated functionalities. check ndt_fuser for building maps instead
+* Contributors: Todor Stoyanov
+
 1.0.28 (2014-12-05)
 -------------------
 

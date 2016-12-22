@@ -18,7 +18,7 @@ CellVector::CellVector(NDTCell* cellPrototype):mp(new pcl::PointCloud<pcl::Point
     treeUpdated = false;
 }
 
-CellVector::CellVector(const CellVector& other)
+CellVector::CellVector(const CellVector& other):protoType(NULL)
 {
     for(unsigned int i =0; i< other.activeCells.size(); i++)
     {
@@ -41,6 +41,8 @@ CellVector::~CellVector()
             delete activeCells[i];
         }
     }
+    if (protoType != NULL)
+      delete protoType;
 }
 
 NDTCell* CellVector::getCellForPoint(const pcl::PointXYZ &point)
@@ -107,7 +109,18 @@ typename SpatialIndex::CellVectorItr CellVector::begin()
     return activeCells.begin();
 }
 
+typename SpatialIndex::CellVectorConstItr CellVector::begin() const
+{
+    //cout<<"active cells "<<activeCells.size()<<endl;
+    return activeCells.begin();
+}
+
 typename SpatialIndex::CellVectorItr CellVector::end()
+{
+    return activeCells.end();
+}
+
+typename SpatialIndex::CellVectorConstItr CellVector::end() const
 {
     return activeCells.end();
 }

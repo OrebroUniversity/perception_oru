@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>sdf_tracker</name>
-  <version>1.0.28</version>
+  <version>1.0.30</version>
   <description>The sdf_tracker package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
@@ -35,14 +35,14 @@
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>cv_bridge</build_depend>
-  <build_depend>opencv2</build_depend>
+  <!--build_depend>opencv2</build_depend-->
   <build_depend>eigen</build_depend>
   <build_depend>libvtk</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>cv_bridge</run_depend>
-  <run_depend>opencv2</run_depend>
+  <!--run_depend>opencv2</run_depend-->
   <run_depend>libvtk</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->

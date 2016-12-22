@@ -101,10 +101,17 @@ void NDTCell::updateSampleVariance(const Eigen::Matrix3d &cov2,const Eigen::Vect
 	    return;
 	}
 	mean_ = (msum1 + msum2) / (divider);
-
+#if 1
 	double w1 =  ((double) N / (double)(numpointsindistribution*(N+numpointsindistribution)));
 	double w2 = (double) (numpointsindistribution)/(double) N;
-	Eigen::Matrix3d	csum3 = csum1 + csum2 + w1 * (w2 * msum1 - msum2) * ( w2 * msum1 - msum2).transpose();
+        Eigen::Matrix3d	csum3 = csum1 + csum2 + w1 * (w2 * msum1 - msum2) * ( w2 * msum1 - msum2).transpose();
+#else
+        // Modifications from Ulf.
+        Eigen::Vector3d d1 = msum1/(double) N - mean_;
+        Eigen::Vector3d d2 = msum2/(double)numpointsindistribution - mean_;
+        Eigen::Matrix3d csum3 = csum1 + csum2 + N*d1*d1.transpose() + numpointsindistribution*d2*d2.transpose();
+#endif
+        // Modifications from Ulf - end
 	N = N + numpointsindistribution;
 	cov_ = 1.0/((double)N-1.0)  * csum3;
 	if(updateOccupancyFlag){
@@ -138,7 +145,7 @@ void NDTCell::computeGaussianSimple(){
         Eigen::Vector3d meanSum_;
         Eigen::Matrix3d covSum_;
 			
-				if(points_.size()<6){
+        if(points_.size()<6){
 					points_.clear();
 					return;
 				}
@@ -340,7 +347,9 @@ void NDTCell::computeGaussian(int mode, unsigned int maxnumpoints, float occupan
     ***/
     
 		if((hasGaussian_==false && points_.size()< 3) || points_.size()==0){
-			points_.clear();
+                  // HENRIK... std::cout << "--------------------------------- CLEARING POINTS ---------------------------" << std::endl;
+                  points_.clear();
+                  //			points_.clear(); // Henrik
 			return; ///< not enough to compute the gaussian
 		}
 		

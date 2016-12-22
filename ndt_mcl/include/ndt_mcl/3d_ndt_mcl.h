@@ -27,13 +27,17 @@ class NDTMCL3D{
 	int counter;
 	double zfilt_min;
 	bool forceSIR;
-	/**
+        double SIR_varP_threshold;
+        int SIR_max_iters_wo_resampling;
+        std::vector<double> motion_model, motion_model_offset;
+
+        /**
 	 * Constructor
 	 */
 	NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
-	    map(new lslgeneric::LazyGrid(map_resolution))
+          map(new lslgeneric::LazyGrid(map_resolution)), SIR_varP_threshold(0.006), SIR_max_iters_wo_resampling(25)
 	{
-	    isInit = false;
+            isInit = false;
 	    forceSIR = false;
 	    resolution=map_resolution;
 	    resolution_sensor = resolution;
@@ -63,7 +67,7 @@ class NDTMCL3D{
 
 	    std::vector<lslgeneric::NDTCell*> ndts;
 	    ndts = nd_map.getAllCells();
-	    fprintf(stderr,"NDT MAP with %d components",ndts.size());
+	    fprintf(stderr,"NDT MAP with %d components",(int)ndts.size());
 	    for(unsigned int i=0;i<ndts.size();i++){
 		Eigen::Vector3d m = ndts[i]->getMean();	
 		if(m[2]>zfilter){
@@ -73,6 +77,55 @@ class NDTMCL3D{
 		    map.addDistributionToCell(cov, m,nump);
 		}
 	    }
+
+            motion_model.push_back(0.05);
+            motion_model.push_back(0.05);
+            motion_model.push_back(0.02);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.02);
+    
+            motion_model.push_back(0.05);
+            motion_model.push_back(0.1);
+            motion_model.push_back(0.02);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.02);
+
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.1);
+            motion_model.push_back(0.001);
+            motion_model.push_back(0.001);
+            motion_model.push_back(0.001);
+
+            motion_model.push_back(0.001);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.1);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.001);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.1);
+            motion_model.push_back(0.01);
+
+            motion_model.push_back(0.1);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.001);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.01);
+            motion_model.push_back(0.1);
+
+            motion_model_offset.push_back(0.002);
+            motion_model_offset.push_back(0.002);
+            motion_model_offset.push_back(0.002);
+            motion_model_offset.push_back(0.001);
+            motion_model_offset.push_back(0.001);
+            motion_model_offset.push_back(0.001);
 	}
 
 	/**
@@ -85,6 +138,8 @@ class NDTMCL3D{
 	{
 	    pf.initializeNormalRandom(numParticles, x,y,z,roll,pitch, yaw, x_e,y_e,z_e,roll_e,pitch_e,yaw_e);
 	}
+
+    void predict(Eigen::Affine3d Tmotion);
 
 	void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud);
 
@@ -101,7 +156,7 @@ class NDTMCL3D{
 	    //Eigen::Vector3d mm; mm<<m.x,m.y,m.a;
 	    //return mm;
 	}
-
+  
 
     private:
 	bool isInit;

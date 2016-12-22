@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_rviz_visualisation)
-find_package(catkin REQUIRED COMPONENTS rviz)
+find_package(catkin REQUIRED COMPONENTS rviz ndt_map)
 catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -13,6 +13,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 qt4_wrap_cpp(MOC_FILES
   src/ndt_display.hpp
+  src/ndt_line_display.hpp
 )
 
 ## Here we specify the list of source files, including the output of
@@ -20,6 +21,8 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   src/ndt_display.cpp
   src/ndt_visual.cpp
+  src/ndt_line_display.cpp
+  src/ndt_line_visual.cpp
   ${MOC_FILES}
 )
 

@@ -39,6 +39,7 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/ndt_matcher_d2d_2d.cpp	
       	src/ndt_matcher_d2d_feature.cpp  
 	src/ndt_matcher_p2d.cpp
+	src/ndt_matcher_d2d_sc.cpp
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

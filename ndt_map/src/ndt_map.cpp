@@ -232,9 +232,9 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
     index_->setSize(map_size(0),map_size(1),map_size(2));
     //lz->initializeAll();
 
-    //fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),pc.size());
-    //ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
-    //ROS_INFO("maxDist is %lf", maxDist);
+    fprintf(stderr,"centroid is %lf,%lf,%lf (origin: %lf %lf %lf) (map_size %lf %lf %lf) N=%d", centroid(0),centroid(1),centroid(2), origin(0),origin(1),origin(2), map_size(0), map_size(1), map_size(2),(int)pc.size());
+    // ROS_INFO("centroid is %f,%f,%f", centroid(0),centroid(1),centroid(2));
+    // ROS_INFO("maxDist is %lf", maxDist);
 
     pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
 
@@ -247,6 +247,8 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	    continue;
 	}
 	
+        //        std::cout << "centoroid add point [" << it->x << "," << it->y << "," <<it->z <<std::endl;
+
 	if(range_limit>0)
 	{
 	    d << it->x, it->y, it->z;
@@ -255,7 +257,7 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	    {
 		it++;
 		continue;
-	    }
+            }
 	}
 	
 	//fprintf(stderr,"HEP!");
@@ -263,7 +265,27 @@ void NDTMap::loadPointCloudCentroid(const pcl::PointCloud<pcl::PointXYZ> &pc, co
 	NDTCell *ptCell=NULL;
 	lz->getNDTCellAt(*it,ptCell);
 #ifdef REFACTORED
-	if(ptCell!=NULL) update_set.insert(ptCell);
+	if(ptCell!=NULL) {
+          update_set.insert(ptCell);
+          //          std::cout << "insert" << std::endl;
+        }
+        // else {
+        //   std::cout << "invalid cell..." << *it << std::endl;
+        //   int indX, indY, indZ;
+        //   lz->getIndexForPoint(*it, indX, indY, indZ);
+        //   std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
+        // }
+        {
+          // int indX, indY, indZ;
+          // lz->getIndexForPoint(*it, indX, indY, indZ);
+          // //          std::cout << "ind : " << indX << "," << indY << "," << indZ << std::endl;
+          // double dx,dy,dz;
+          // lz->getCenter(dx,dy,dz);
+          // //          std::cout << "center : " << dx << "," << dy << "," << dz << std::endl;
+          // int indX, indY, indZ;
+          // lz->getGridSize(indX, indY, indZ);
+          // //          std::cout << "gridsize : " << indX << "," << indY << "," << indZ << std::endl;
+        }
 #endif
 	it++;
     }
@@ -320,7 +342,7 @@ void NDTMap::addPointCloudSimple(const pcl::PointCloud<pcl::PointXYZ> &pc,double
 * Add a distribution to the map
 */
 void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vector3d &umean, unsigned int numpointsindistribution, 
-	float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
+                                   float r, float g,float b,  unsigned int maxnumpoints, float max_occupancy)
 {
     pcl::PointXYZ pt;
     pt.x = umean[0];
@@ -333,7 +355,9 @@ void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vec
         exit(1);
     }
     NDTCell *ptCell = NULL; 
-    lz->getNDTCellAt(pt,ptCell);
+    //    lz->getNDTCellAt(pt,ptCell);
+    lz->getCellAtAllocate(pt,ptCell);
+    
     if(ptCell != NULL)
     {
 	//std::cout<<"BEFORE\n";
@@ -347,6 +371,9 @@ void NDTMap::addDistributionToCell(const Eigen::Matrix3d &ucov, const Eigen::Vec
 //	std::cout<<"AFTER\n";
 //	std::cout<<ptCell->getMean().transpose()<<std::endl;
 //	std::cout<<ptCell->getCov()<<std::endl;
+    }
+    else {
+      //      std::cerr << "addDistributionToCell: failed to get a cell to add the distribution to" << std::endl;
     }
 }
 
@@ -1095,7 +1122,7 @@ double NDTMap::getDepthSmooth(Eigen::Vector3d origin,
 void NDTMap::loadPointCloud(const pcl::PointCloud<pcl::PointXYZ> &pc, const std::vector<std::vector<size_t> > &indices)
 {
 
-    loadPointCloud(pc);
+  //    loadPointCloud(pc);
     // Specific function related to CellVector
     CellVector *cl = dynamic_cast<CellVector*>(index_);
     if (cl != NULL)
@@ -1514,6 +1541,11 @@ int NDTMap::loadFromJFF(const char* filename)
     }
 
     jffin = fopen(filename,"r+b");
+    if (jffin == NULL) {
+      JFFERR("file not found");
+      std::cerr << "Failed to open : " << filename << std::endl;
+      return -5;
+    }
 
     char versionBuf[16];
     if(fread(&versionBuf, sizeof(char), strlen(_JFFVERSION_), jffin) <= 0)
@@ -1588,6 +1620,105 @@ int NDTMap::loadFromJFF(const char* filename)
     delete ptCell;
 
     fclose(jffin);
+
+   // std::cout << "map loaded successfully " << versionBuf << std::endl;
+
+    isFirstLoad_ = false;
+
+    return 0;
+
+}
+
+/** method to load NDT maps from .jff files
+USAGE:	create NDTMap with desired index and PointType (index type is
+checked, but Point type is NOT checked) via e.g.
+
+lslgeneric::NDTMap<pcl::PointXYZ> nd1(
+new lslgeneric::LazyGrid<pcl::PointXYZ>(0.4)); --> (*)
+
+and then call
+
+nd1.loadFromJFF("map0027.jff");
+
+ *) use this constructor so index is not initialized and attributes
+ can be set manually
+ */
+int NDTMap::loadFromJFF(FILE * jffin)
+{
+
+
+    char versionBuf[16];
+    if(fread(&versionBuf, sizeof(char), strlen(_JFFVERSION_), jffin) <= 0)
+    {
+        JFFERR("reading version failed");
+    }
+    versionBuf[strlen(_JFFVERSION_)] = '\0';
+
+    int indexType;
+    if(fread(&indexType, sizeof(int), 1, jffin) <= 0)
+    {
+        JFFERR("reading version failed");
+    }
+
+    if(indexType != this->getMyIndexInt())
+    {
+        switch(indexType)
+        {
+        case 1:
+            std::cerr << "Map uses CellVector\n";
+            return -1;
+            break;
+        case 2:
+            std::cerr << "Map uses OctTree\n";
+            return -2;
+            break;
+        case 3:
+            std::cerr << "Map uses LazyGrid\n";
+            return -3;
+            break;
+        }
+    }
+
+    switch(indexType)
+    {
+    case 1:
+    {
+        CellVector* cv = dynamic_cast<CellVector * >(index_);
+        if(cv->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading CellVector");
+        }
+        break;
+    }
+#if 0
+    case 2:
+    {
+        OctTree* tr = dynamic_cast<OctTree*>(index_);
+        if(tr->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading OctTree");
+        }
+        break;
+    }
+#endif
+    case 3:
+    {
+	std::cerr << "Map uses LazyGrid\n";
+        LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
+        if(gr->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading LazyGrid");
+        }
+        break;
+    }
+    default:
+        JFFERR("error casting index");
+    }
+
+    NDTCell *ptCell = new NDTCell();
+    index_->setCellType(ptCell);
+    delete ptCell;
+
 
    // std::cout << "map loaded successfully " << versionBuf << std::endl;
 
@@ -1910,7 +2041,7 @@ bool NDTMap::getCellForPoint(const pcl::PointXYZ &pt, NDTCell* &out_cell, bool c
 
 NDTMap* NDTMap::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
 {
-    NDTMap* map = new NDTMap(new CellVector());
+    NDTMap* map = new NDTMap(new CellVector(), true);
     CellVector* idx = dynamic_cast<CellVector*> (map->getMyIndex());
     typename SpatialIndex::CellVectorItr it = index_->begin();
 
@@ -1934,11 +2065,11 @@ NDTMap* NDTMap::pseudoTransformNDTMap(Eigen::Transform<double,3,Eigen::Affine,Ei
     return map;
 }
 
-std::vector<NDTCell*> NDTMap::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T)
+std::vector<NDTCell*> NDTMap::pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T) const
 {
 
     std::vector<NDTCell*> ret;
-    typename SpatialIndex::CellVectorItr it = index_->begin();
+    typename SpatialIndex::CellVectorConstItr it = index_->begin();
     while (it != index_->end())
     {
         NDTCell *cell = (*it);
@@ -2022,5 +2153,33 @@ int NDTMap::numberOfActiveCells()
     }
     return ret;
 }
+
+int NDTMap::numberOfActiveCells() const 
+{
+    int ret = 0;
+    if(index_ == NULL) return ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
+    while (it != index_->end())
+    {
+	if((*it)->hasGaussian_)
+	{
+	    ret++;
+	}
+	it++;
+    }
+    return ret;
+}
+NDTCell* NDTMap::getCellAtID(int x,int y,int z){
+    NDTCell* cell;
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    lz->getCellAt(x,y,z,cell);
+    return cell;
+}
+
+bool NDTMap::insertCell(NDTCell cell){
+    LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
+    gr->insertCell(*cell.copy());
+}
+
 
 }

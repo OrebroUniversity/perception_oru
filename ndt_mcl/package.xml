@@ -1,6 +1,6 @@
 <package>
   <name>ndt_mcl</name>
-  <version>1.0.28</version>
+  <version>1.0.30</version>
   <description>ndt_mcl</description>
   <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
@@ -30,6 +30,12 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
   <build_depend>visualization_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>velodyne_msgs</build_depend>
+  <build_depend>velodyne_pointcloud</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>ndt_visualisation</run_depend>
@@ -43,6 +49,11 @@
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>visualization_msgs</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>velodyne_msgs</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>eigen_conversions</run_depend>
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>ndt_visualisation</test_depend> -->
@@ -57,8 +68,8 @@
   <!-- <test_depend>ndt_registration</test_depend> -->
   <!-- <test_depend>visualization_msgs</test_depend> -->
 
-<!--export>
-    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/src"/>
-</export-->
+<export>
+    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
+</export>
 
 </package>

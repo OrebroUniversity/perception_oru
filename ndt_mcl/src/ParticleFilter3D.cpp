@@ -132,8 +132,8 @@ Eigen::Affine3d ParticleFilter3D::getMean(){
 	double pitch_x = 0, pitch_y=0;
 	double yaw_x = 0, yaw_y=0;
 	
-	
-	
+        Eigen::Matrix3d sumRot = Eigen::Matrix3d::Zero();
+        
 	for(unsigned int i=0;i<pcloud.size();i++){		
 	    //Eigen::Quaternion<double> q(pcloud[i].T.rotation());
 	    //qm=qm+pcloud[i].p * q;
@@ -152,8 +152,19 @@ Eigen::Affine3d ParticleFilter3D::getMean(){
 
 	    yaw_x+=pcloud[i].p*cos(rot[2]); 
 	    yaw_y+=pcloud[i].p*sin(rot[2]);
+
+            sumRot += pcloud[i].p*pcloud[i].T.rotation();
 	}
-	return xyzrpy2affine(mx,my,mz, atan2(roll_y,roll_x), atan2(pitch_y,pitch_x), atan2(yaw_y,yaw_x));
+
+	Eigen::JacobiSVD<Eigen::Matrix3d> svd(sumRot,  Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::Matrix3d averageRot = svd.matrixU() * svd.matrixV().transpose();
+
+        Eigen::Affine3d ret;
+        ret.translation() = Eigen::Vector3d(mx,my,mz);
+        ret.linear() = averageRot;
+        return ret; //Eigen::Translation3d v(mx,my,mz)*Eigen::Rotation3d(averageRot);
+
+        //	return xyzrpy2affine(mx,my,mz, atan2(roll_y,roll_x), atan2(pitch_y,pitch_x), atan2(yaw_y,yaw_x));
 	
 	
 	//qm.normalize();

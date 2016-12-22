@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ndt_costmap)
 
 set(CMAKE_BUILD_TYPE Release) 
-set(CMAKE_VERBOSE_MAKEFILE)    
+set(CMAKE_VERBOSE_MAKEFILE)  
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3")  
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -106,6 +107,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+include_directories(${GLUT_INCLUDE_DIR})
+include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(
   include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
 )
@@ -117,6 +122,10 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(ndt_costmap src/ndt_costmap.cc)
+add_executable(2d_occ_map src/2d_occ_map.cpp)
+add_executable(traversability_map_simple src/traversability_map_simple.cpp)
+add_executable(traversability_map_simple_HMT src/traversability_map_simple_HMT.cpp)
+add_executable(level_splitter src/level_splitter.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -124,7 +133,24 @@ add_executable(ndt_costmap src/ndt_costmap.cc)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ndt_costmap
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES}
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+  ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES}
+)
+
+target_link_libraries(2d_occ_map
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+)
+
+target_link_libraries(traversability_map_simple
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+)
+
+target_link_libraries(traversability_map_simple_HMT
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+)
+
+target_link_libraries(level_splitter
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
 
 #############

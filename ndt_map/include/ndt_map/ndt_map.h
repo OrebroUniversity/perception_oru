@@ -350,7 +350,7 @@ public:
     int writeOctTreeJFF(FILE * jffout);
 
     int loadFromJFF(const char* filename);
-
+    int loadFromJFF(FILE * jffin);
     inline SpatialIndex* getMyIndex() const
     {
         return index_;
@@ -405,6 +405,7 @@ public:
      * This is useful if you want to use the empty cells or dynamic cells
      */
     virtual std::vector<lslgeneric::NDTCell*> getAllInitializedCells();
+    bool insertCell(NDTCell cell);
 
 
     int numberOfActiveCells();
@@ -477,7 +478,7 @@ public:
                           double weight = 5.0,
                           double threshold = 0.2,
                           Eigen::Vector3d *hit = NULL);
-    
+ NDTCell* getCellAtID(int x,int y,int z);
 protected:
     bool is3D;
     SpatialIndex *index_;

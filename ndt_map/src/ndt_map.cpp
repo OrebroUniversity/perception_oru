@@ -1629,6 +1629,105 @@ int NDTMap::loadFromJFF(const char* filename)
 
 }
 
+/** method to load NDT maps from .jff files
+USAGE:	create NDTMap with desired index and PointType (index type is
+checked, but Point type is NOT checked) via e.g.
+
+lslgeneric::NDTMap<pcl::PointXYZ> nd1(
+new lslgeneric::LazyGrid<pcl::PointXYZ>(0.4)); --> (*)
+
+and then call
+
+nd1.loadFromJFF("map0027.jff");
+
+ *) use this constructor so index is not initialized and attributes
+ can be set manually
+ */
+int NDTMap::loadFromJFF(FILE * jffin)
+{
+
+
+    char versionBuf[16];
+    if(fread(&versionBuf, sizeof(char), strlen(_JFFVERSION_), jffin) <= 0)
+    {
+        JFFERR("reading version failed");
+    }
+    versionBuf[strlen(_JFFVERSION_)] = '\0';
+
+    int indexType;
+    if(fread(&indexType, sizeof(int), 1, jffin) <= 0)
+    {
+        JFFERR("reading version failed");
+    }
+
+    if(indexType != this->getMyIndexInt())
+    {
+        switch(indexType)
+        {
+        case 1:
+            std::cerr << "Map uses CellVector\n";
+            return -1;
+            break;
+        case 2:
+            std::cerr << "Map uses OctTree\n";
+            return -2;
+            break;
+        case 3:
+            std::cerr << "Map uses LazyGrid\n";
+            return -3;
+            break;
+        }
+    }
+
+    switch(indexType)
+    {
+    case 1:
+    {
+        CellVector* cv = dynamic_cast<CellVector * >(index_);
+        if(cv->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading CellVector");
+        }
+        break;
+    }
+#if 0
+    case 2:
+    {
+        OctTree* tr = dynamic_cast<OctTree*>(index_);
+        if(tr->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading OctTree");
+        }
+        break;
+    }
+#endif
+    case 3:
+    {
+	std::cerr << "Map uses LazyGrid\n";
+        LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
+        if(gr->loadFromJFF(jffin) < 0)
+        {
+            JFFERR("Error loading LazyGrid");
+        }
+        break;
+    }
+    default:
+        JFFERR("error casting index");
+    }
+
+    NDTCell *ptCell = new NDTCell();
+    index_->setCellType(ptCell);
+    delete ptCell;
+
+
+   // std::cout << "map loaded successfully " << versionBuf << std::endl;
+
+    isFirstLoad_ = false;
+
+    return 0;
+
+}
+
 
 /// returns the current spatial index as a string (debugging function)
 std::string NDTMap::getMyIndexStr() const
@@ -2070,5 +2169,17 @@ int NDTMap::numberOfActiveCells() const
     }
     return ret;
 }
+NDTCell* NDTMap::getCellAtID(int x,int y,int z){
+    NDTCell* cell;
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    lz->getCellAt(x,y,z,cell);
+    return cell;
+}
+
+bool NDTMap::insertCell(NDTCell cell){
+    LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
+    gr->insertCell(*cell.copy());
+}
+
 
 }

@@ -2,20 +2,22 @@
   <name>perception_oru</name>
   <version>1.0.30</version>
   <description>Perception packages from the MRO lab at AASS, Orebro University</description>
-  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer> 
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer> 
   <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-  <maintainer email="daniel.canelhas@oru.se">Daniel Canelhas</maintainer>
   <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+  <maintainer email="martin.magnusson@oru.se">Martin Magnusson</maintainer>
+  <maintainer email="martin.magnusson@oru.se">Malcolm Mielle</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/perception_oru</url>
   <!-- <url type="bugtracker"></url> -->
 
-  <author>Maintained by Todor Stoyanov</author>
+  <author>Todor Stoyanov</author>
   <author>Jari Saarinen</author>
-  <author>Henrik Andreasson and Daniel Canelhas</author>
+  <author>Henrik Andreasson</author>
+  <author>Tomasz Kucner</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -27,8 +29,7 @@
   <run_depend>ndt_mcl</run_depend>
   <run_depend>ndt_fuser</run_depend>
   <run_depend>ndt_feature_reg</run_depend>
-  <run_depend>sdf_tracker</run_depend>
-  <run_depend>ndt_map_builder</run_depend>-
+  <!--run_depend>ndt_map_builder</run_depend-->
   <run_depend>ndt_registration</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_visualisation</run_depend>

@@ -186,7 +186,7 @@ class VelodyneBagReader{
 	    timestamp_of_last_sensor_message = t0;
 
 	    if(!odosync->getTransformationForTime(t0, tf_pose_id_, sensor_pose)){
-		fprintf(stderr,"No Transoformation for time (%lf)!\n",t0.toSec());
+		fprintf(stderr,"No Transformation %s for time (%lf)!\n",tf_pose_id_.c_str(), t0.toSec());
 		return true; //false for eof
 	    }
 	    for (size_t next = 0; next < global_scan->packets.size(); ++next){

@@ -84,7 +84,6 @@ int main(int argc, char **argv){
     double size_z;
     double resolution;
     double resolution_local_factor;
-    double sensor_cutoff;
     double hori_min, hori_max;
     double min_dist, min_rot_in_deg;
     double max_range, min_range;
@@ -117,7 +116,6 @@ int main(int argc, char **argv){
         ("size-z", po::value<double>(&size_z)->default_value(10.), "height of the map")
         ("resolution", po::value<double>(&resolution)->default_value(1.), "resolution of the map")
         ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
-	("sensor_cutoff", po::value<double>(&sensor_cutoff)->default_value(70), "ignore ranges longer than this value")
 	("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
 	("baseline", "run also the baseline registration algorithms")
 	("guess-zpitch", "guess also z and pitch from odometry")
@@ -210,10 +208,10 @@ int main(int argc, char **argv){
 	cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
     }
 
-    base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(sensor_cutoff) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
+    base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 
     lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
-                                       sensor_cutoff, visualize, match2d, use_multires, 
+                                       max_range, visualize, match2d, use_multires, 
                                        fuse_incomplete, itrs, base_name,beHMT,map_dirname,step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
     ros::Time::init();
     srand(time(NULL));
@@ -341,8 +339,9 @@ int main(int argc, char **argv){
 		
 
 
-	while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,sensor_pose,basepose,/*tf_base_link*//*tf_gt_link*/tf_interp_link/*std::string("/state_base_link")*/)){
+        while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,sensor_pose,basepose,/*tf_base_link*//*tf_gt_link*/tf_interp_link/*std::string("/state_base_link")*/)){
 	    //if(cloud.size()==0) continue;
+
 
 	    if(cloud_nofilter.size()==0) continue;
 	    tf::Transform baseodo;
@@ -353,7 +352,8 @@ int main(int argc, char **argv){
 		cloud = cloud_nofilter;
 	    }
 
-	    vreader.getPoseFor(baseodo, tf_base_link/*"/odom_base_link"*/);
+            vreader.getPoseFor(baseodo, tf_base_link);
+            vreader.getPoseFor(basepose, tf_gt_link);
 
 	    //callback(cloud, sensor_pose,T,basepose, base_odo);	
 
@@ -434,6 +434,10 @@ int main(int argc, char **argv){
 	    numclouds++;
 
             // Evaluation 
+            ROS_INFO_STREAM("Tgt : " << transformToEvalString(Tgt));
+            ROS_INFO_STREAM("Tbase : " << transformToEvalString(Tbase));
+            ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
+
             ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
             gt_file << frame_time << " " << transformToEvalString(Tgt);
             odom_file << frame_time << " " << transformToEvalString(Tbase);

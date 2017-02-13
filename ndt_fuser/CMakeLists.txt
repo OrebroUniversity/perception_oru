@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules 
   ndt_registration 
   ndt_map 
+  ndt_generic
   laser_geometry 
   sensor_msgs 
   visualization_msgs 

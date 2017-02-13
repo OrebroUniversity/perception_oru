@@ -9,9 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   ndt_map
   ndt_registration
   ndt_visualisation
+  ndt_rviz
+  ndt_generic
   pcl_ros
   velodyne_msgs
   velodyne_pointcloud
+  tf_conversions
+  eigen_conversions
 )
 
 catkin_package(
@@ -45,3 +49,6 @@ include_directories(
 
 add_executable(fuser3d_offline src/fuser3d_offline.cpp)
 target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(view_ndtmap src/view_ndtmap.cpp)
+target_link_libraries(view_ndtmap ${Boost_LIBRARIES} ${catkin_LIBRARIES})

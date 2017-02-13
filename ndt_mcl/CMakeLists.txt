@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_mcl)
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration ndt_rviz visualization_msgs tf_conversions eigen_conversions cmake_modules)
+find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs tf_conversions eigen_conversions cmake_modules)
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
@@ -41,6 +41,7 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/CParticleFilter.cpp
 	src/ndt_mcl.cpp  
 	src/3d_ndt_mcl.cpp  
+	src/3d_ndt_ukf.cpp
 	src/ParticleFilter3D.cpp
 )
 
@@ -59,6 +60,13 @@ target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catki
 
 add_executable(3d_ndt_mcl_node2 src/3d_ndt_mcl_node2.cpp)
 target_link_libraries(3d_ndt_mcl_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} velodyne_rawdata) # ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
+
+add_executable(3d_ndt_ukf_node2 src/3d_ndt_ukf_node2.cpp)
+target_link_libraries(3d_ndt_ukf_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES} velodyne_rawdata) # ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
+
+add_executable(ukf_test test/ukf_test.cpp)
+target_link_libraries(ukf_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
 
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(

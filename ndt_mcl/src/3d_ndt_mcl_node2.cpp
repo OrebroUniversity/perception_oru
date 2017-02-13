@@ -53,6 +53,7 @@
 #include <ndt_map/ndt_map.h>
 
 #include <ndt_rviz/ndt_rviz.h>
+#include <ndt_mcl/ndt_mcl_rviz.h>
 //#include <ndt_feature/ndt_feature_rviz.h>
 
 inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
@@ -108,6 +109,7 @@ class NDTMCL3DNode {
     ros::Time scan2_t0_;
             
 
+    bool onlyPredict;
     bool use_dual_scan;
 	bool hasSensorPose, hasInitialPose;
 	bool isFirstLoad;
@@ -285,7 +287,7 @@ bool do_pub_ndt_markers_;
             param_nh.getParam("motion_model", ndtmcl->motion_model);
             param_nh.getParam("motion_model_offset", ndtmcl->motion_model_offset);
 	    param_nh.param<double>("resolution_sensor", ndtmcl->resolution_sensor, resolution);
-            
+            param_nh.param<bool>("only_predict", onlyPredict, false);
 
             mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl",10);
 	    
@@ -643,8 +645,12 @@ bool do_pub_ndt_markers_;
         Todo_old=Todo;
 
         //update filter -> + add parameter to subsample ndt map in filter step
-        ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
-        //ndtmcl->predict(Tm);
+        if (onlyPredict) {
+            ndtmcl->predict(Tm);
+        }
+        else {
+            ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
+        }
 
         if (do_visualize) {
             visualize();

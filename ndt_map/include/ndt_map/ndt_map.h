@@ -330,6 +330,39 @@ public:
             size_t &supportSize, double maxVar, DepthCamera<pcl::PointXYZ> &cameraParams, bool estimateParamsDI=false, bool nonMean = false);
 
     /**
+     * Computes a maximum likelihood pointcloud at an arbitray position. In order to compute the which rays should be used, a point cloud together with the origin needs to be provided. (Note that in case you want a rotational difference between the origins is not possible with this function - you simply need to rotate the provided pointcloud.
+     * \param &origin The sensor pose of the input cloud pc.
+     * \param &pc Point cloud used to compute the rays.
+     * \param &virtualOrigin Origin used to compute the maximum likelihood point cloud.
+     * \param &out The generated maximum likelihood point cloud (given in the global frame)
+     * \param &ranges The used ranges (from the pc), along with the ranges computed from the ML estimate.
+     */
+    void computeMaximumLikelihoodPointCloudWithRangePairs(const Eigen::Vector3d &origin, 
+                                                          const pcl::PointCloud<pcl::PointXYZ> &pc,
+                                                          const Eigen::Vector3d &virtualOrigin,
+                                                          pcl::PointCloud<pcl::PointXYZ> &pc_out,
+                                                          std::vector<std::pair<double, double> > &ranges,
+                                                          double max_range) const;
+    
+    void computeConflictingPoints(const Eigen::Vector3d &origin,
+                                  const pcl::PointCloud<pcl::PointXYZ> &pc,
+                                  pcl::PointCloud<pcl::PointXYZ> &pc_out,
+                                  pcl::PointCloud<pcl::PointXYZ> &pc2_out,
+                                  double likelihoodFactor) const;
+
+    void computeMaximumLikelihoodPointRangesForPoseSet(const std::vector<Eigen::Affine3d> &poses, 
+                                                       const pcl::PointCloud<pcl::PointXYZ> &pc,
+                                                       const Eigen::Vector3d &virtualOrigin,
+                                                       Eigen::MatrixXd &predictedRanges, 
+                                                       Eigen::VectorXd &rawRanges) const;
+
+    void computeMaximumLikelihoodRanges(const Eigen::Vector3d &origin,
+                                        const Eigen::VectorXd &rawRanges,
+                                        const std::vector<Eigen::Vector3d> &dirs,
+                                        Eigen::VectorXd &ranges) const;
+
+
+    /**
     * Computes the NDT-cells after a measurement has been added
     * @param cellupdatemode Defines the update mode (default CELL_UPDATE_MODE_SAMPLE_VARIANCE)
     * @param maxnumpoints Defines the forgetting factor (default 100000) the smaller the value the faster the adaptation
@@ -454,6 +487,16 @@ public:
         lz->getCellSize(cx, cy, cz);
         return true;
     }
+    double getSmallestCellSizeInMeters() const
+    {
+        double cx, cy,cz;
+        LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+        if(lz == NULL) return false;
+        lz->getCellSize(cx,cy,cz);
+        
+        return std::min(std::min(cx,cy),cz);
+    }
+
     /**
     * \param guess_size try to guess the size based on point cloud. Otherwise use pre-set map size
     */

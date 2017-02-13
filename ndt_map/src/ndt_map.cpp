@@ -689,7 +689,7 @@ void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
 		//fprintf(stderr,"1:");
     ///Lets first create a local ndmap (this really works only if we have lazy grid as well)
     lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
-    ndlocal.loadPointCloudCentroid(pc,origin, old_centroid, localmapsize, 70.0); ///FIXME:: fixed max length
+    ndlocal.loadPointCloudCentroid(pc,origin, old_centroid, localmapsize, /*70.0*/-1.); // No range limit used here, assume that the point cloud is already filtered.
     
     ///Use Student-T
     //ndlocal.computeNDTCells(CELL_UPDATE_MODE_STUDENT_T);
@@ -1240,6 +1240,293 @@ pcl::PointCloud<pcl::PointXYZ> NDTMap::loadDepthImageFeatures(const cv::Mat& dep
     keypoints = good_keypoints;
     return cloudOut;
 }
+
+
+void NDTMap::computeMaximumLikelihoodPointCloudWithRangePairs(const Eigen::Vector3d &origin, 
+                                                              const pcl::PointCloud<pcl::PointXYZ> &pc,
+                                                              const Eigen::Vector3d &virtualOrigin,
+                                                              pcl::PointCloud<pcl::PointXYZ> &pc_out,
+                                                              std::vector<std::pair<double,double> > &ranges,
+                                                              double max_range = 130.) const
+{
+    pc_out.clear();
+    if(isFirstLoad_ || index_ == NULL)
+    {
+        return;
+    }
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
+
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    pcl::PointXYZ po;
+    po.x = origin(0); po.y = origin(1); po.z = origin(2);
+    NDTCell* ptCell = NULL; 
+
+    // Step through the points, compute the directions and for now do the full line tracing...
+    std::vector< NDTCell*> cells; 
+    bool updatePositive = true;
+
+    while(it!=pc.points.end())
+    {
+        if(std::isnan(it->x) ||std::isnan(it->y) ||std::isnan(it->z))
+        {
+            it++;
+            continue;
+        }
+        
+        Eigen::Vector3d diff;
+        diff << it->x-origin(0), it->y-origin(1), it->z-origin(2);
+        double l = diff.norm();
+        
+        cells.clear();
+
+        // Trace line uses the diff to check that we never go beyond the diff value...
+        // Hacky for now but force the diff to be a bit larger -> 3 meters...
+        diff *= ((l+3.)/l);
+        if(!lz->traceLine(virtualOrigin,*it,diff,1000.0,cells)) {
+            it++;
+            continue;
+        }
+        
+        for(unsigned int i=0; i<cells.size(); i++)
+        {
+            ptCell = cells[i];
+            if(ptCell != NULL)
+            {
+                double l2target = 0;
+                if(ptCell->hasGaussian_)
+                {
+                    Eigen::Vector3d out;
+                    double lik = ptCell->computeMaximumLikelihoodAlongLine(po, *it, out);
+                    //std::cerr << "lik : " << lik << std::endl;
+                    if (lik > 0.) {
+                        ranges.push_back(std::pair<double,double>(l, (out-origin).norm()));
+                        pc_out.push_back(pcl::PointXYZ(out[0], out[1], out[2]));
+                    }
+                }
+            }
+        }
+        it++;
+    }
+}
+
+void NDTMap::computeConflictingPoints(const Eigen::Vector3d &origin,
+                              const pcl::PointCloud<pcl::PointXYZ> &pc,
+                              pcl::PointCloud<pcl::PointXYZ> &pc_out,
+                              pcl::PointCloud<pcl::PointXYZ> &pc2_out,
+                              double likelihoodFactor) const
+{
+    pc_out.clear(); pc2_out.clear();
+    if(isFirstLoad_ || index_ == NULL)
+    {
+        return;
+    }
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
+
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    pcl::PointXYZ po;
+    po.x = origin(0); po.y = origin(1); po.z = origin(2);
+    NDTCell* ptCell = NULL; 
+
+    while(it!=pc.points.end())
+    {
+        if(std::isnan(it->x) ||std::isnan(it->y) ||std::isnan(it->z))
+        {
+            it++;
+            continue;
+        }
+        
+        Eigen::Vector3d diff;
+        diff << it->x-origin(0), it->y-origin(1), it->z-origin(2);
+        double l = diff.norm();
+        
+        // Get the cell
+        ptCell = lz->getClosestNDTCell(*it);
+        if (ptCell == NULL) {
+            pc_out.push_back(*it);
+            it++;
+            continue;
+        }
+        // if (ptCell->getOccupancyRescaled() < 0.8) {
+        //     pc_out.push_back(*it);
+        //     it++;
+        //     continue;
+        // }
+
+        if (!ptCell->hasGaussian_) {
+            pc_out.push_back(*it);
+            it++;
+            continue;
+        }
+
+        double lik = ptCell->getLikelihood(*it);
+        //        std::cerr << "lik : " << lik << " " << std::flush;
+        lik = (lik < 0) ? 0 : lik;
+        Eigen::Vector3d out, pt;
+        pt << it->x, it->y, it->z;
+        double lik_trace = ptCell->computeMaximumLikelihoodAlongLine(po, *it, out);
+        //        std::cerr << " lik : " << lik << " lik_trace : " << lik_trace << " lik/lik_trace : " << lik/lik_trace << std::endl;
+
+        // if (lik / lik_trace < likelihoodFactor) {
+        //     pc_out.push_back(*it);
+        // }
+        //        if (lik < likelihoodFactor) {
+        //        std::cerr << " " << norm << std::flush;
+        double norm = (pt - out).norm();
+        //        if (norm > 0.8)
+        // if (fabs(pt(2) - out(2)) > 0.2)
+        // {
+        //     pc_out.push_back(*it);
+        //     pc2_out.push_back(pcl::PointXYZ(out(0),out(1),out(2)));
+        // }
+        pc_out.push_back(pcl::PointXYZ(out(0),out(1),out(2)));
+        it++;
+    }
+}
+
+
+#if 0
+void 
+NDTMap::computeMaximumLikelihoodPointRangesForPoseSet(const std::vector<Eigen::Affine3d> &poses, 
+                                                       const pcl::PointCloud<pcl::PointXYZ> &pc,
+                                                       const Eigen::Vector3d &virtualOrigin,
+                                                       Eigen::MatrixXd &predictedRanges, 
+                                                      Eigen::VectorXd &rawRanges) const {
+    if(isFirstLoad_ || index_ == NULL)
+    {
+        return;
+    }
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+
+    pcl::PointCloud<pcl::PointXYZ>::const_iterator it = pc.points.begin();
+
+    pcl::PointXYZ po;
+    po.x = origin(0); po.y = origin(1); po.z = origin(2);
+    NDTCell* ptCell = NULL; 
+
+    // Step through the points, compute the directions and for now do the full line tracing...
+    std::vector< NDTCell*> cells; 
+    bool updatePositive = true;
+
+    while(it!=pc.points.end())
+    {
+        if(std::isnan(it->x) ||std::isnan(it->y) ||std::isnan(it->z))
+        {
+            it++;
+            continue;
+        }
+        
+        Eigen::Vector3d diff;
+        diff << it->x-origin(0), it->y-origin(1), it->z-origin(2);
+        double l = diff.norm();
+        
+        cells.clear();
+
+        // Trace line uses the diff to check that we never go beyond the diff value...
+        // Hacky for now but force the diff to be a bit larger -> 3 meters...
+        diff *= ((l+3.)/l);
+        if(!lz->traceLine(virtualOrigin,*it,diff,1000.0,cells)) {
+            it++;
+            continue;
+        }
+        
+        for(unsigned int i=0; i<cells.size(); i++)
+        {
+            ptCell = cells[i];
+            if(ptCell != NULL)
+            {
+                double l2target = 0;
+                if(ptCell->hasGaussian_)
+                {
+                    Eigen::Vector3d out;
+                    double lik = ptCell->computeMaximumLikelihoodAlongLine(po, *it, out);
+                    //std::cerr << "lik : " << lik << std::endl;
+                    if (lik > 0.) {
+                        ranges.push_back(std::pair<double,double>(l, (out-origin).norm()));
+                        pc_out.push_back(pcl::PointXYZ(out[0], out[1], out[2]));
+                    }
+                }
+            }
+        }
+        it++;
+    }
+}
+#endif
+
+void NDTMap::computeMaximumLikelihoodRanges(const Eigen::Vector3d &origin,
+                                            const Eigen::VectorXd &rawRanges,
+                                            const std::vector<Eigen::Vector3d> &dirs,
+                                            Eigen::VectorXd &ranges) const {
+    
+    if(isFirstLoad_ || index_ == NULL)
+    {
+        return;
+    }
+
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    pcl::PointXYZ po;
+    po.x = origin(0); po.y = origin(1); po.z = origin(2);
+    NDTCell* ptCell = NULL; 
+
+    // Step through the points, compute the directions and for now do the full line tracing...
+    std::vector< NDTCell*> cells; 
+    bool updatePositive = true;
+
+    double resolution = this->getSmallestCellSizeInMeters();
+    
+    for (int i = 0; i < dirs.size(); i++)
+    {
+        cells.clear();
+
+        // TODO update traceLine to use the rawRanges as a bias in selecting the cells.
+        // Use the difference to be 2*the resolution.
+        Eigen::Vector3d p1 = origin+(rawRanges[i]-resolution)*dirs[i];
+        Eigen::Vector3d p2 = origin+(rawRanges[i]+resolution)*dirs[i];
+        if(!lz->traceLine(p1, p2, dirs[i]*2*resolution,1000.0,cells)) {
+            continue;
+        }
+        
+        double max_lik = 0.;
+        double range = 0.;
+        for(unsigned int i=0; i<cells.size(); i++)
+        {
+            ptCell = cells[i];
+            if(ptCell != NULL)
+            {
+                if(ptCell->hasGaussian_)
+                {
+                    Eigen::Vector3d out;
+                    double lik = ptCell->computeMaximumLikelihoodAlongLine(p1, p2, out);
+                    
+                    if (lik > max_lik) {
+                        max_lik = lik;
+                        range = (out-origin).norm();
+                    }
+                }
+            }
+        }
+    }    
+}
+
 
 /** Helper function, computes the  NDTCells
 */

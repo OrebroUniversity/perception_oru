@@ -152,7 +152,7 @@ int main(int argc, char **argv){
     visualization_msgs::MarkerArray m_array = ndt_visualisation::getMarkerArrayFromNDTCalibScanPairs(pairs);
     visualization_msgs::MarkerArray m_array2 = ndt_visualisation::getMarkerArrayRelFromNDTCalibScanPair(pairs[0], Ts);
 
-    ros::Publisher marker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("visualization_array", 10);
+    ros::Publisher marker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
     
     // Get a global point cloud for all poses with calibration and data in sensor coords.
     pcl::PointCloud<pcl::PointXYZ> global_cloud;

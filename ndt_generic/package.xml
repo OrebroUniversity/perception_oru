@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>ndt_calibration</name>
+  <name>ndt_generic</name>
   <version>0.0.0</version>
-  <description>The ndt_calibration package</description>
+  <description>The ndt_generic package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/ndt_calibration</url> -->
+  <!-- <url type="website">http://wiki.ros.org/ndt_generic</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -39,50 +39,16 @@
   <!--   <run_depend>message_runtime</run_depend> -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
+  <build_depend>cmake_modules</build_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>ndt_offline</build_depend>
-  <build_depend>ndt_map</build_depend>
-  <build_depend>ndt_registration</build_depend>
-  <build_depend>ndt_visualisation</build_depend>
-  <build_depend>ndt_rviz</build_depend>
-  <build_depend>ndt_mcl</build_depend>
-  <build_depend>ndt_offline</build_depend>
-  <build_depend>ndt_generic</build_depend>
-  <build_depend>pcl_ros</build_depend>
-  <build_depend>pcl_conversions</build_depend>
-  <build_depend>velodyne_msgs</build_depend>
-  <build_depend>velodyne_pointcloud</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>tf_conversions</build_depend>
-  <build_depend>eigen_conversions</build_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>angles</build_depend>
-  <build_depend>libgsl</build_depend>
-  
-  <run_depend>ndt_offline</run_depend>
-  <run_depend>ndt_map</run_depend>
-  <run_depend>ndt_registration</run_depend>
-  <run_depend>ndt_visualisation</run_depend>
-  <run_depend>ndt_rviz</run_depend>
-  <run_depend>ndt_mcl</run_depend>
-  <run_depend>ndt_offline</run_depend>
-  <run_depend>ndt_generic</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>pcl_conversions</run_depend>
-  <run_depend>velodyne_msgs</run_depend>
-  <run_depend>velodyne_pointcloud</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>tf_conversions</run_depend>
-  <run_depend>eigen_conversions</run_depend>
-  <run_depend>roscpp</run_depend>
   <run_depend>angles</run_depend>
-  <run_depend>libgsl</run_depend>
-
 
   <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
+  <!-- <export> -->
+  <!--   <cpp cflags="-I${prefix}/include" /> -->
 
-  </export>
+  <!-- </export> -->
 </package>

@@ -1,31 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ndt_calibration)
+project(ndt_generic)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  ndt_fuser
-  ndt_map
-  ndt_registration
-  ndt_visualisation
-  ndt_rviz
-  ndt_mcl
-  ndt_offline
-  ndt_generic
-  pcl_ros
-  pcl_conversions
-  tf
-  tf_conversions
-  eigen_conversions
-  velodyne_msgs
-  velodyne_pointcloud
-  roscpp
-  angles
-)
+find_package(catkin REQUIRED COMPONENTS cmake_modules angles)
+find_package(Boost REQUIRED COMPONENTS serialization)
+find_package(Eigen REQUIRED)
 
-find_package( PkgConfig REQUIRED)
-pkg_check_modules( gsl REQUIRED gsl )
+## System dependencies are found with CMake's conventions
+# find_package(Boost REQUIRED COMPONENTS system)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -114,9 +99,9 @@ pkg_check_modules( gsl REQUIRED gsl )
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ndt_calibration
+#  LIBRARIES ndt_generic
 #  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS gsl
+#  DEPENDS system_lib
 )
 
 ###########
@@ -125,40 +110,31 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
-set (${PROJECT_NAME}_LIB_SRCS
-	    src/ndt_calib.cpp
-	)
+include_directories(include ${Boost_INCLUDE_DIR} ${Eigen_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${gsl_LIBRARIES})
-
+# add_library(ndt_generic
+#   src/${PROJECT_NAME}/ndt_generic.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(ndt_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(ndt_generic ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(ndt_calibration_node src/ndt_calibration_node.cpp)
+add_executable(eigen_test test/eigen_test.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(ndt_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(ndt_generic_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(ndt_calibration_node
-#   ${catkin_LIBRARIES}
-# )
-
-add_executable(ndt_calib src/ndt_calib_main.cpp)
-target_link_libraries(ndt_calib ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${gsl_LIBRARIES} ${PROJECT_NAME})
-
-add_executable(ndt_calib_test src/ndt_calib_test.cpp)
-target_link_libraries(ndt_calib_test ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${gsl_LIBRARIES} ${PROJECT_NAME})
-
+target_link_libraries(eigen_test
+  ${catkin_LIBRARIES}
+  )
 
 #############
 ## Install ##
@@ -175,7 +151,7 @@ target_link_libraries(ndt_calib_test ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JP
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS ndt_calibration ndt_calibration_node
+# install(TARGETS ndt_generic ndt_generic_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -200,7 +176,7 @@ target_link_libraries(ndt_calib_test ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JP
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ndt_calibration.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ndt_generic.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -1,5 +1,6 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 #include <ndt_offline/VelodyneBagReader.h>
+#include <ndt_generic/eigen_utils.h>
 // PCL specific includes
 #include <pcl/conversions.h>
 #include <pcl/point_cloud.h>
@@ -351,6 +352,9 @@ int main(int argc, char **argv){
 	    } else {
 		cloud = cloud_nofilter;
 	    }
+            
+            if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
+
 
             vreader.getPoseFor(baseodo, tf_base_link);
             vreader.getPoseFor(basepose, tf_gt_link);
@@ -426,6 +430,8 @@ int main(int argc, char **argv){
 	    counter++;
 	    Todo = ndtslammer.update(Tmotion,cloud);
 
+            Eigen::Affine3d diff = Todo.inverse() * Tprev * Tmotion;
+
 	    Tprev = Todo;
 	    Told = Tbase;
 	    
@@ -434,9 +440,14 @@ int main(int argc, char **argv){
 	    numclouds++;
 
             // Evaluation 
-            ROS_INFO_STREAM("Tgt : " << transformToEvalString(Tgt));
-            ROS_INFO_STREAM("Tbase : " << transformToEvalString(Tbase));
-            ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
+            // ROS_INFO_STREAM("Tgt : " << transformToEvalString(Tgt));
+            // ROS_INFO_STREAM("Tbase : " << transformToEvalString(Tbase));
+            // ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
+            ROS_INFO_STREAM("diff : " << ndt_generic::affine3dToStringRPY(diff));
+
+            if (diff.rotation().eulerAngles(0,1,2).norm() > 1.) {
+                ROS_ERROR_STREAM("=========================================");
+            }
 
             ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
             gt_file << frame_time << " " << transformToEvalString(Tgt);

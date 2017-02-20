@@ -1,8 +1,12 @@
 #include <ndt_registration/ndt_matcher_d2d_sc.h>
+#include <ndt_registration/icp_matcher_p2p.h>
 #include <ndt_generic/motion_model_3d.h>
 #include <ndt_generic/io.h>
 #include <ndt_map/pointcloud_utils.h>
 #include <boost/program_options.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/foreach.hpp>
+#include "gnuplot-iostream.h"
 
 using namespace std;
 
@@ -42,6 +46,14 @@ public:
         offset_size = 100;
         incr_dist = 0.01;
         incr_ang = 0.002;
+
+        T_glb_d2d_.setIdentity();
+        T_glb_d2d_sc_.setIdentity();
+        T_glb_icp_.setIdentity();
+        T_glb_filter_.setIdentity();
+        T_glb_icp_filter_.setIdentity();
+        T_glb_gt_.setIdentity();
+        T_glb_odom_.setIdentity();
     }
     
     std::vector<Eigen::Affine3d> generateOffsetSet() {
@@ -58,7 +70,7 @@ public:
         Eigen::VectorXd offset(6);
         for (int j = 0; j < 6; j++) {
             offset.setZero();
-            for (int i = -offset_size; i < offset_size; i++) {
+            for (int i = -offset_size; i <= offset_size; i++) {
                 offset[j] = i*incr[j];
                 ret.push_back(ndt_generic::vectorToAffine3d(offset));
             }
@@ -87,10 +99,15 @@ public:
                 ret.push_back(ndt_generic::vectorToAffine3d(offset));
             }
         }
+
         return ret;
     }
     
-
+    int nbPoses() const {
+        if (Todom.size() < Tgt.size())
+            return Todom.size();
+        return Tgt.size();
+    }
 
     void computeScoreSets(int idx1, int idx2, int dimidx1, int dimidx2) {
         
@@ -126,7 +143,7 @@ public:
         
         std::cout << "T_rel_odom : " << ndt_generic::affine3dToStringRPY(T_rel_odom_) << std::endl;
 
-        // Compute the covariance
+        // Compute the covariance of the motion
         Eigen::MatrixXd Tcov = motion_model.getCovMatrix(T_rel_odom_); 
        
         lslgeneric::NDTMatcherD2DSC matcher_d2d_sc;
@@ -153,16 +170,63 @@ public:
 
         // Compute a "filtered" match - based on the d2d output and odometry weighed by the covariances.
         Eigen::MatrixXd T_d2d_cov(6,6);
-        matcher_d2d.covariance(nd1, nd2, T_d2d_, T_d2d_cov);
+        if (matcher_d2d.covariance(nd1, nd2, T_d2d_, T_d2d_cov)) {
+            std::cout << "T_d2d_cov : " << T_d2d_cov << std::endl;
+            std::cout << "T_d2d_cov condition : " << ndt_generic::getCondition(T_d2d_cov) << std::endl;
+            std::cout << "T_d2d_cov.inverse() : " << T_d2d_cov.inverse() << std::endl;
+            T_filter_ = ndt_generic::getWeightedPose(T_rel_odom_, Tcov, T_d2d_, T_d2d_cov);
+        }
+        else {
+            T_filter_ = T_d2d_;
+        }
 
-        std::cout << "T_d2d_cov : " << T_d2d_cov << std::endl;
+        // Compute matches using ICP along with the cov
+        ICPMatcherP2P matcher_icp;
+        matcher_icp.match(pc1, pc2, T_icp_);
+        pc_icp_final_ = matcher_icp.getFinalPC();
+        Eigen::MatrixXd T_icp_cov(6,6);
+        if (matcher_icp.covariance(pc1, pc2, T_icp_, T_icp_cov)) {
+            std::cout << "T_icp_cov : " << T_icp_cov << std::endl;
+            std::cout << "T_icp_cov condition : " << ndt_generic::getCondition(T_icp_cov) << std::endl;
+            std::cout << "T_icp_cov.inverse() : " << T_icp_cov.inverse() << std::endl;
+            
+            T_icp_filter_ = ndt_generic::getWeightedPose(T_rel_odom_, Tcov, T_icp_, T_icp_cov);
+        }
+        else {
+            // Should not happen
+            T_icp_filter_ = T_icp_;
+        }
 
-        T_filter_ = ndt_generic::getWeightedPose(T_rel_odom_, Tcov, T_d2d_, T_d2d_cov);
 
         // Update the relative transform.
         T_rel_gt_ = Tgt[idx1].inverse() * Tgt[idx2];
+
+        // Store the transformed pcd
+        pc_odom_ = lslgeneric::transformPointCloud(T_rel_odom_, pc2);
+        pc_gt_ = lslgeneric::transformPointCloud(T_rel_gt_, pc2);
+        pc_d2d_ = lslgeneric::transformPointCloud(T_d2d_, pc2);
+        pc_d2d_sc_ = lslgeneric::transformPointCloud(T_d2d_sc_, pc2);
+        pc_icp_ = lslgeneric::transformPointCloud(T_icp_, pc2);
+        pc1_ = pc1;
+
+        // Update the global transf (using odom and gt as well here incase the idx changes)
+        T_glb_d2d_ = T_glb_d2d_ * T_d2d_;
+        T_glb_d2d_sc_ = T_glb_d2d_sc_ * T_d2d_sc_;
+        T_glb_icp_ = T_glb_icp_ * T_icp_;
+        T_glb_filter_ = T_glb_filter_ * T_filter_;
+        T_glb_icp_filter_ = T_glb_icp_filter_ * T_icp_filter_;
+        T_glb_gt_ = T_glb_gt_ * T_rel_gt_;
+        T_glb_odom_ = T_glb_odom_ * T_rel_odom_;
+
+        Ts_glb_d2d_.push_back(T_glb_d2d_);
+        Ts_glb_d2d_sc_.push_back(T_glb_d2d_sc_);
+        Ts_glb_icp_.push_back(T_glb_icp_);
+        Ts_glb_filter_.push_back(T_glb_filter_);
+        Ts_glb_icp_filter_.push_back(T_glb_icp_filter_);
+        Ts_glb_gt_.push_back(T_glb_gt_);
+        Ts_glb_odom_.push_back(T_glb_odom_);
     }
-    
+
     void save(const std::string &filename, int grididx) const {
 
         std::cout << "saving to : " << filename << std::endl;
@@ -211,19 +275,120 @@ public:
         ofs.close();
 
     }
+    
+    void savePCD(const std::string &filename) const {
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".gt.pcd", pc_gt_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".odom.pcd", pc_odom_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".d2d.pcd", pc_d2d_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".d2d_sc.pcd", pc_d2d_sc_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".icp.pcd", pc_icp_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".icp_final.pcd", pc_icp_final_);
+        pcl::io::savePCDFile<pcl::PointXYZ>(filename + ".pc1.pcd", pc1_);
+    }
 
+    
     // Saves in the same frame as with the offset is used (the odometry frame)
-    void savePoseEst(const std::string &filename) const {
-        // ofs << ndt_generic::affine3dToStringRPY(T_rel_odom_.inverse()*T_rel_gt_) << " " 
-        //     << ndt_generic::affine3dToStringRPY(T_rel_odom_.inverse()*T_d2d_) << " "
-        //     << ndt_generic::affine3dToStringRPY(T_rel_odom_.inverse()*T_d2d_sc_) << " "
-        //     << ndt_generic::affine3dToStringRPY(T_rel_odom_.inverse()*T_filter_) << std::endl;
+    void savePoseEstInOdomFrame(const std::string &filename) const {
         ndt_generic::saveAffine3dRPY(filename + std::string(".gt"), T_rel_odom_.inverse()*T_rel_gt_);
         ndt_generic::saveAffine3dRPY(filename + std::string(".d2d"), T_rel_odom_.inverse()*T_d2d_);
         ndt_generic::saveAffine3dRPY(filename + std::string(".d2d_sc"), T_rel_odom_.inverse()*T_d2d_sc_);
+        ndt_generic::saveAffine3dRPY(filename + std::string(".icp"), T_rel_odom_.inverse()*T_icp_);
         ndt_generic::saveAffine3dRPY(filename + std::string(".filter"), T_rel_odom_.inverse()*T_filter_);
         ndt_generic::saveAffine3dRPY(filename + std::string(".odom"), T_rel_odom_.inverse()*T_rel_odom_);
     }
+
+    void saveTsToEvalFiles(const std::string &filename) const {
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".gt"), Ts_glb_gt_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".d2d"), Ts_glb_d2d_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".d2d_sc"), Ts_glb_d2d_sc_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".icp"), Ts_glb_icp_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".filter"), Ts_glb_filter_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".icp_filter"), Ts_glb_icp_);
+        ndt_generic::saveAffineToEvalFile(filename + std::string(".odom"), Ts_glb_odom_);
+    }
+
+    std::vector<std::vector<boost::tuple<double, double, double> > > getScoreSegments(int dimidx1, int dimidx2, bool d2d_sc_score) const {
+        
+        std::vector<std::vector<boost::tuple<double, double, double> > > ret;
+        std::vector<boost::tuple<double, double, double> > segm;
+        for (int i = 0; i < results.size(); i++) {
+            Eigen::VectorXd x = ndt_generic::affine3dToVector(results[i].offset);
+            double score = results[i].score_d2d;
+            if (d2d_sc_score) {
+                score = results[i].score_d2d_sc;
+            }
+            segm.push_back(boost::make_tuple(x[dimidx1], x[dimidx2], score));
+            
+            if (i < results.size()-1) {
+                if (results[i].offset.translation()[dimidx1] !=
+                    results[i+1].offset.translation()[dimidx1]) {
+                    ret.push_back(segm);
+                    segm.resize(0);
+                }
+            }
+            
+	}
+	return ret;
+    }
+
+    std::vector<std::vector<boost::tuple<double, double, double> > > getRelPoseGT(int dimidx1, int dimidx2) const {
+        
+        std::vector<std::vector<boost::tuple<double, double, double> > > ret;
+        std::vector<boost::tuple<double, double, double> > segm;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_rel_gt_);
+        segm.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        ret.push_back(segm);
+        return ret;
+    }
+
+    std::vector<boost::tuple<double, double, double> > getRelPoseD2D(int dimidx1, int dimidx2) const {
+        
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_d2d_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        return ret;
+    }
+
+    std::vector<boost::tuple<double, double, double> > getRelPoseD2D_SC(int dimidx1, int dimidx2) const {
+        
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_d2d_sc_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        return ret;
+    }
+
+    std::vector<boost::tuple<double, double, double> > getRelPoseICP(int dimidx1, int dimidx2) const {
+        
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_icp_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        return ret;
+    }
+
+    std::vector<boost::tuple<double, double, double> > getRelPoseFilter(int dimidx1, int dimidx2) const {
+        
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_filter_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        return ret;
+    }
+
+    std::vector<boost::tuple<double, double, double> > getRelPoseICPFilter(int dimidx1, int dimidx2) const {
+        
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_icp_filter_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
+        return ret;
+    }
+
+    std::vector<std::pair<double, double> > getRelPoseOdom(int dimidx1, int dimidx2) const {
+        // Always 0,0,0,0,0,0....
+        std::vector<std::pair<double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_rel_odom_);
+        ret.push_back(std::pair<double,double>(t[dimidx1],t[dimidx2]));
+        return ret;
+    }
+
 
     
     // Parameters
@@ -248,10 +413,29 @@ private:
 
     Eigen::Affine3d T_d2d_;
     Eigen::Affine3d T_d2d_sc_;
+    Eigen::Affine3d T_icp_;
     Eigen::Affine3d T_filter_;
+    Eigen::Affine3d T_icp_filter_;
     Eigen::Affine3d T_rel_gt_;
     Eigen::Affine3d T_rel_odom_;
 
+    Eigen::Affine3d T_glb_d2d_;
+    Eigen::Affine3d T_glb_d2d_sc_;
+    Eigen::Affine3d T_glb_icp_;
+    Eigen::Affine3d T_glb_filter_;
+    Eigen::Affine3d T_glb_icp_filter_;
+    Eigen::Affine3d T_glb_gt_;
+    Eigen::Affine3d T_glb_odom_;
+
+    std::vector<Eigen::Affine3d> Ts_glb_d2d_;
+    std::vector<Eigen::Affine3d> Ts_glb_d2d_sc_;
+    std::vector<Eigen::Affine3d> Ts_glb_icp_;
+    std::vector<Eigen::Affine3d> Ts_glb_filter_;
+    std::vector<Eigen::Affine3d> Ts_glb_icp_filter_;
+    std::vector<Eigen::Affine3d> Ts_glb_gt_;
+    std::vector<Eigen::Affine3d> Ts_glb_odom_;
+
+    pcl::PointCloud<pcl::PointXYZ> pc_odom_, pc_d2d_, pc_d2d_sc_, pc_icp_, pc_gt_, pc1_, pc_icp_final_;
 };
 
 
@@ -279,7 +463,8 @@ int main(int argc, char** argv)
     std::string out_file;
     // Simply to make it transparant to the fuser node.
     lslgeneric::MotionModel2d::Params motion_params;
-
+    int iter_step;
+    int iters;
 
     desc.add_options()
         ("help", "produce help message")
@@ -309,7 +494,14 @@ int main(int argc, char** argv)
         ("Ct", po::value<double>(&motion_params.Ct)->default_value(1.), "side uncertainty on rotation")
         ("Td", po::value<double>(&motion_params.Td)->default_value(1.), "rotation uncertainty on distance traveled")
         ("Tt", po::value<double>(&motion_params.Tt)->default_value(1.), "rotation uncertainty on rotation")
-
+        ("use_score_d2d_sc", "if the d2d sc score should be used in the objective plot")
+        ("save_eps", "if .eps should be generated")
+        ("save_pcd", "if .pcd point cloud should be generated gt, odom, d2d, d2d_sc...")
+        ("save_global_Ts", "if global transforms on registrations odom, etc. should be generate, for evaluation with ate.py, rpe.py")
+        ("iter_all_poses", "iterate over all available poses")
+        ("iter_step", po::value<int>(&iter_step)->default_value(1), "iter step size")
+        ("iters", po::value<int>(&iters)->default_value(1), "if additional iters should be evaluated (idx1 + iter, idx2 + iter)")
+        ("gnuplot", "if gnuplot should be invoked")
         ;
     
     po::variables_map vm;
@@ -326,9 +518,15 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    bool use_score_d2d_sc = vm.count("use_score_d2d_sc");
+    bool save_eps = vm.count("save_eps");
+    bool save_pcd = vm.count("save_pcd");
+    bool save_global_Ts = vm.count("save_global_Ts");
+    bool iter_all_poses = vm.count("iter_all_poses");
+    bool use_gnuplot = vm.count("gnuplot");
+
     Eigen::Affine3d sensor_pose = ndt_generic::vectorsToAffine3d(transl,euler);
     std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRPY(sensor_pose) << std::endl;
-   
 
     lslgeneric::MotionModel3d::Params motion_params3d(motion_params);
 
@@ -339,11 +537,62 @@ int main(int argc, char** argv)
     se.offset_size = offset_size;
     se.incr_dist = incr_dist;
     se.incr_ang = incr_ang;
-    std::cout << "computing scores" << std::endl;
-    se.computeScoreSets(idx1, idx2, dimidx1, dimidx2);
 
-    std::cout << "saving : " << out_file << std::endl;
-    se.save2D(out_file + ".dat", dimidx1, dimidx2);
-    se.savePoseEst(out_file + ".T");
+    if (iter_all_poses) {
+        iters = se.nbPoses();
+    }
+
+    if (iters > se.nbPoses()) {
+        std::cerr << "[iters too large] # poses : " << se.nbPoses() << std::endl;
+        exit(-1);
+    }
+
+    int i = 0;
+    while (i < iters) {
+        int _idx1 = idx1 + i;
+        int _idx2 = idx2 + i;
+        std::cout << "computing scores" << std::endl;
+        se.computeScoreSets(_idx1, _idx2, dimidx1, dimidx2);
+        
+        std::cout << "saving : " << out_file << std::endl;
+        se.save2D(out_file + ".dat", dimidx1, dimidx2);
+        se.savePoseEstInOdomFrame(out_file + ".T");
+        
+        if (save_pcd) {
+            std::string out_file_pcd = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2);
+            se.savePCD(out_file_pcd);
+        }
+       
+        if (use_gnuplot) {
+            // Show it using gnuplot
+            Gnuplot gp;//(std::fopen("output.gnuplot", "wb"));
+            
+            if (save_eps) {
+                std::string out_file_eps = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2) + "x" + ndt_generic::toString(dimidx1) + "y" + ndt_generic::toString(dimidx2) + "sc" + ndt_generic::toString(use_score_d2d_sc) + ".eps";
+                std::cout << "saving : " << out_file_eps << std::endl;
+                gp << "set terminal postscript eps size 3.5,2.62 enhanced color font 'Helvetica,12' lw 1\n";
+                gp << "set output '" << out_file_eps << "'\n";
+            }
+            gp << "set title \"Objective score values\"\n";
+            gp << "set key top right\n";
+            gp << "set pm3d map\n";
+            
+            gp << "splot '-' with pm3d notitle, '-' with points pt 1 title 'GT', '-' with points pt 2 title 'd2d', '-' with points pt 3 title 'd2d sc', '-' with points pt 4 title 'icp', '-' with points pt 2 title 'filter', '-' with points pt 4 title 'icp filter'\n";
+            gp.send2d( se.getScoreSegments(dimidx1, dimidx2, use_score_d2d_sc));
+            gp.send1d( se.getRelPoseGT(dimidx1, dimidx2));
+            gp.send1d( se.getRelPoseD2D(dimidx1, dimidx2));
+            gp.send1d( se.getRelPoseD2D_SC(dimidx1, dimidx2));
+            gp.send1d( se.getRelPoseICP(dimidx1, dimidx2));
+            gp.send1d( se.getRelPoseFilter(dimidx1, dimidx2));
+            gp.send1d( se.getRelPoseICPFilter(dimidx1, dimidx2));
+        }
+        i += iter_step;
+    }
+
+    if (save_global_Ts) {
+        // Saves all transforms 
+        std::string out_file_Ts = out_file + ".Ts";
+        se.saveTsToEvalFiles(out_file_Ts);
+    }
     std::cout << "done." << std::endl;
 }

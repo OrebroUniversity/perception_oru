@@ -4,12 +4,21 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
+#include <Eigen/SVD>
 #include <angles/angles.h>
 #include <iomanip>
 #include <iostream>
 
 
 namespace ndt_generic {
+
+inline double getCondition(const Eigen::MatrixXd &m) {
+    
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(m);
+    return svd.singularValues()(0) 
+        / svd.singularValues()(svd.singularValues().size()-1);
+}
+
 
 inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
     euler[0] = angles::normalize_angle(euler[0]);
@@ -209,7 +218,7 @@ Eigen::Affine3d vectorsToAffine3d(const Eigen::Vector3d &transl,
                                   const Eigen::Vector3d &rot) {
     Eigen::VectorXd v(6);
     v(0) = transl(0); v(1) = transl(1); v(2) = transl(2);
-    v(3) = rot(1); v(4) = rot(2); v(5) = rot(3);
+    v(3) = rot(0); v(4) = rot(1); v(5) = rot(2);
 
     return vectorToAffine3d(v);
 }

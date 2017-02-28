@@ -133,11 +133,11 @@ public:
         lslgeneric::NDTMap nd1(new lslgeneric::LazyGrid(resolution), true);
         nd1.loadPointCloud(pc1);
         nd1.computeNDTCellsSimple();
-        
+
         lslgeneric::NDTMap nd2(new lslgeneric::LazyGrid(resolution), true);
         nd2.loadPointCloud(pc2);
         nd2.computeNDTCellsSimple();
-        
+
         // Relative odometry
         T_rel_odom_ = Todom[idx1].inverse() * Todom[idx2];
         
@@ -146,28 +146,48 @@ public:
         // Compute the covariance of the motion
         Eigen::MatrixXd Tcov = motion_model.getCovMatrix(T_rel_odom_); 
        
-        lslgeneric::NDTMatcherD2DSC matcher_d2d_sc;
         
+        // Compute matches
+        lslgeneric::NDTMatcherD2D matcher_d2d;
+        lslgeneric::NDTMatcherD2DSC matcher_d2d_sc;
+        T_d2d_ = T_rel_odom_;
+        T_d2d_sc_ = T_rel_odom_;
+
+        matcher_d2d.ITR_MAX = 1000;
+        matcher_d2d.DELTA_SCORE = 0.00001;
+
+        matcher_d2d.match(nd1, nd2, T_d2d_, true);
+        matcher_d2d_sc.match(nd1, nd2, T_d2d_sc_, Tcov);
+      
         std::vector<Eigen::Affine3d> Ts = generateOffset2DSet(dimidx1,dimidx2);
         results.resize(Ts.size());
+
+        T_rel_ = T_rel_odom_;
+        if (use_d2d_in_grid) {
+            T_rel_ = T_d2d_; // Will only work with the d2d not d2d SC since the d2d SC has an impact on the offset used when computing the score. To get SC to work the offset's must be adjusted accordingly.
+        }
+        else if (use_d2d_sc_in_grid) {
+            T_rel_ = T_d2d_sc_;
+        }
         
         for (int i = 0; i < Ts.size(); i++) {
             double score_d2d, score_d2d_sc;
             std::cout << "." << std::flush;
-            matcher_d2d_sc.scoreComparision(nd1, nd2, T_rel_odom_, Tcov, score_d2d, score_d2d_sc, Ts[i], alpha_);
+            if (use_d2d_in_grid) {
+                matcher_d2d_sc.scoreComparision(nd1, nd2, T_d2d_, Tcov, score_d2d, score_d2d_sc, Ts[i], Ts[i], alpha_);
+            }
+            else if (use_d2d_sc_in_grid) {
+                // The provided offset needs to be relative to the proided
+                matcher_d2d_sc.scoreComparision(nd1, nd2, T_d2d_sc_, Tcov, score_d2d, score_d2d_sc, Ts[i], T_rel_odom_.inverse() * T_d2d_sc_ * Ts[i], alpha_);
+            }
+            else {
+                matcher_d2d_sc.scoreComparision(nd1, nd2, T_rel_odom_, Tcov, score_d2d, score_d2d_sc, Ts[i], Ts[i], alpha_);
+            }
             results[i].offset = Ts[i];
             results[i].score_d2d = score_d2d;
             results[i].score_d2d_sc = score_d2d_sc;
         }
         
-        // Compute matches
-        lslgeneric::NDTMatcherD2D matcher_d2d;
-        T_d2d_ = T_rel_odom_;
-        T_d2d_sc_ = T_rel_odom_;
-        matcher_d2d.match(nd1, nd2, T_d2d_, true);
-        matcher_d2d_sc.match(nd1, nd2, T_d2d_sc_, Tcov);
-      
-
         // Compute a "filtered" match - based on the d2d output and odometry weighed by the covariances.
         Eigen::MatrixXd T_d2d_cov(6,6);
         if (matcher_d2d.covariance(nd1, nd2, T_d2d_, T_d2d_cov)) {
@@ -318,10 +338,12 @@ public:
                 score = results[i].score_d2d_sc;
             }
             segm.push_back(boost::make_tuple(x[dimidx1], x[dimidx2], score));
-            
+            std::cout << "." << std::flush;
+
             if (i < results.size()-1) {
                 if (results[i].offset.translation()[dimidx1] !=
                     results[i+1].offset.translation()[dimidx1]) {
+                    std::cout << std::endl;
                     ret.push_back(segm);
                     segm.resize(0);
                 }
@@ -335,7 +357,7 @@ public:
         
         std::vector<std::vector<boost::tuple<double, double, double> > > ret;
         std::vector<boost::tuple<double, double, double> > segm;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_rel_gt_);
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_rel_gt_);
         segm.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
         ret.push_back(segm);
         return ret;
@@ -344,7 +366,7 @@ public:
     std::vector<boost::tuple<double, double, double> > getRelPoseD2D(int dimidx1, int dimidx2) const {
         
         std::vector<boost::tuple<double, double, double> > ret;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_d2d_);
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_d2d_);
         ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
         return ret;
     }
@@ -352,7 +374,7 @@ public:
     std::vector<boost::tuple<double, double, double> > getRelPoseD2D_SC(int dimidx1, int dimidx2) const {
         
         std::vector<boost::tuple<double, double, double> > ret;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_d2d_sc_);
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_d2d_sc_);
         ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
         return ret;
     }
@@ -368,7 +390,7 @@ public:
     std::vector<boost::tuple<double, double, double> > getRelPoseFilter(int dimidx1, int dimidx2) const {
         
         std::vector<boost::tuple<double, double, double> > ret;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_filter_);
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_filter_);
         ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
         return ret;
     }
@@ -376,16 +398,16 @@ public:
     std::vector<boost::tuple<double, double, double> > getRelPoseICPFilter(int dimidx1, int dimidx2) const {
         
         std::vector<boost::tuple<double, double, double> > ret;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_icp_filter_);
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_icp_filter_);
         ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2], 0.));
         return ret;
     }
 
-    std::vector<std::pair<double, double> > getRelPoseOdom(int dimidx1, int dimidx2) const {
+    std::vector<boost::tuple<double, double, double> > getRelPoseOdom(int dimidx1, int dimidx2) const {
         // Always 0,0,0,0,0,0....
-        std::vector<std::pair<double, double> > ret;
-        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_odom_.inverse() * T_rel_odom_);
-        ret.push_back(std::pair<double,double>(t[dimidx1],t[dimidx2]));
+        std::vector<boost::tuple<double, double, double> > ret;
+        Eigen::VectorXd t = ndt_generic::affine3dToVector(T_rel_.inverse() * T_rel_odom_);
+        ret.push_back(boost::tuple<double,double,double>(t[dimidx1],t[dimidx2]));
         return ret;
     }
 
@@ -397,6 +419,9 @@ public:
     int offset_size;
     double incr_dist;
     double incr_ang;
+
+    bool use_d2d_in_grid;
+    bool use_d2d_sc_in_grid;
     
 private:
     std::vector<Eigen::Affine3d> Todom;
@@ -410,6 +435,8 @@ private:
     
     std::vector<NDTD2DSCScore> results;
     double alpha_;
+
+    Eigen::Affine3d T_rel_;
 
     Eigen::Affine3d T_d2d_;
     Eigen::Affine3d T_d2d_sc_;
@@ -502,6 +529,9 @@ int main(int argc, char** argv)
         ("iter_step", po::value<int>(&iter_step)->default_value(1), "iter step size")
         ("iters", po::value<int>(&iters)->default_value(1), "if additional iters should be evaluated (idx1 + iter, idx2 + iter)")
         ("gnuplot", "if gnuplot should be invoked")
+        ("draw_icp", "if icp results should be plotted")
+        ("use_d2d_in_grid", "plot the d2d estimate in (0,0)")
+        ("use_d2d_sc_in_grid", "plot the d2d_sc estimate in (0,0)")
         ;
     
     po::variables_map vm;
@@ -524,6 +554,14 @@ int main(int argc, char** argv)
     bool save_global_Ts = vm.count("save_global_Ts");
     bool iter_all_poses = vm.count("iter_all_poses");
     bool use_gnuplot = vm.count("gnuplot");
+    bool draw_icp = vm.count("skip_icp");
+    bool use_d2d_in_grid = vm.count("use_d2d_in_grid");
+    bool use_d2d_sc_in_grid = vm.count("use_d2d_sc_in_grid");
+
+    if (use_d2d_sc_in_grid) {
+        use_score_d2d_sc = true;
+    }
+
 
     Eigen::Affine3d sensor_pose = ndt_generic::vectorsToAffine3d(transl,euler);
     std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRPY(sensor_pose) << std::endl;
@@ -537,6 +575,8 @@ int main(int argc, char** argv)
     se.offset_size = offset_size;
     se.incr_dist = incr_dist;
     se.incr_ang = incr_ang;
+    se.use_d2d_in_grid = use_d2d_in_grid;
+    se.use_d2d_sc_in_grid = use_d2d_sc_in_grid;
 
     if (iter_all_poses) {
         iters = se.nbPoses();
@@ -568,28 +608,51 @@ int main(int argc, char** argv)
             Gnuplot gp;//(std::fopen("output.gnuplot", "wb"));
             
             if (save_eps) {
-                std::string out_file_eps = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2) + "x" + ndt_generic::toString(dimidx1) + "y" + ndt_generic::toString(dimidx2) + "sc" + ndt_generic::toString(use_score_d2d_sc) + ".eps";
+                std::string out_file_eps = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2) + "x" + ndt_generic::toString(dimidx1) + "y" + ndt_generic::toString(dimidx2) + "sc" + ndt_generic::toString(use_score_d2d_sc) + "res" + ndt_generic::toString(resolution) + "Dd" + ndt_generic::toString(motion_params.Dd) + ".eps";
                 std::cout << "saving : " << out_file_eps << std::endl;
                 gp << "set terminal postscript eps size 3.5,2.62 enhanced color font 'Helvetica,12' lw 1\n";
                 gp << "set output '" << out_file_eps << "'\n";
             }
-            gp << "set title \"Objective score values\"\n";
+            std::string title = "Objective score value ";
+            if (use_score_d2d_sc) {
+                title += "with SC";
+            }
+            else {
+                title += "without SC";
+            }
+            title += " [" + ndt_generic::toString(dimidx1) + "," + ndt_generic::toString(dimidx2) + "]";
+            title += " res: " + ndt_generic::toString(resolution);
+            if (use_score_d2d_sc)  {
+                title += " Dd: " + ndt_generic::toString(motion_params.Dd);
+            }
+            gp << "set title \"" << title << "\"\n";
             gp << "set key top right\n";
             gp << "set pm3d map\n";
             
-            gp << "splot '-' with pm3d notitle, '-' with points pt 1 title 'GT', '-' with points pt 2 title 'd2d', '-' with points pt 3 title 'd2d sc', '-' with points pt 4 title 'icp', '-' with points pt 2 title 'filter', '-' with points pt 4 title 'icp filter'\n";
-            gp.send2d( se.getScoreSegments(dimidx1, dimidx2, use_score_d2d_sc));
-            gp.send1d( se.getRelPoseGT(dimidx1, dimidx2));
-            gp.send1d( se.getRelPoseD2D(dimidx1, dimidx2));
-            gp.send1d( se.getRelPoseD2D_SC(dimidx1, dimidx2));
-            gp.send1d( se.getRelPoseICP(dimidx1, dimidx2));
-            gp.send1d( se.getRelPoseFilter(dimidx1, dimidx2));
-            gp.send1d( se.getRelPoseICPFilter(dimidx1, dimidx2));
+            if (!draw_icp) {
+                gp << "splot '-' with pm3d notitle, '-' with points pt 1 title 'GT',  '-' with points pt 4 title 'odom', '-' with points pt 2 title 'd2d', '-' with points pt 3 title 'd2d sc', '-' with points pt 2 title 'filter'\n";
+                gp.send2d( se.getScoreSegments(dimidx1, dimidx2, use_score_d2d_sc));
+                gp.send1d( se.getRelPoseGT(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseOdom(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseD2D(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseD2D_SC(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseFilter(dimidx1, dimidx2));
+            }
+            else {
+                gp << "splot '-' with pm3d notitle, '-' with points pt 1 title 'GT', '-' with points pt 2 title 'd2d', '-' with points pt 3 title 'd2d sc', '-' with points pt 4 title 'icp', '-' with points pt 2 title 'filter', '-' with points pt 4 title 'icp filter'\n";
+                gp.send2d( se.getScoreSegments(dimidx1, dimidx2, use_score_d2d_sc));
+                gp.send1d( se.getRelPoseGT(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseD2D(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseD2D_SC(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseICP(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseFilter(dimidx1, dimidx2));
+                gp.send1d( se.getRelPoseICPFilter(dimidx1, dimidx2));
+            }
         }
         i += iter_step;
     }
 
-    if (save_global_Ts) {
+    if (save_global_Ts && iters > 1) {
         // Saves all transforms 
         std::string out_file_Ts = out_file + ".Ts";
         se.saveTsToEvalFiles(out_file_Ts);

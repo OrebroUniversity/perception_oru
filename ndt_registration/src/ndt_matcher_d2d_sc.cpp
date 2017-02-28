@@ -384,12 +384,13 @@ void NDTMatcherD2DSC::scoreComparision( NDTMap& targetNDT,
                                         double &score_NDT,
                                         double &score_NDT_SC,
                                         const Eigen::Affine3d &offset,
+                                        const Eigen::Affine3d &odom_offset,
                                         double alpha)
 {
     Eigen::MatrixXd Hessian(6,6), score_gradient(6,1);
     std::vector<NDTCell*> nextNDT = sourceNDT.pseudoTransformNDT(T*offset);
     score_NDT = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,false);
-    Eigen::VectorXd X = ndt_generic::affine3dToVector(offset);
+    Eigen::VectorXd X = ndt_generic::affine3dToVector(odom_offset);
     ndt_generic::normalizeEulerAngles6dVec(X);
     Eigen::MatrixXd Q = Tcov.inverse();
 

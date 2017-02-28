@@ -99,6 +99,7 @@ public:
                            double &score_NDT,
                            double &score_NDT_SC,
                            const Eigen::Affine3d &offset,
+                           const Eigen::Affine3d &odom_offset,
                            double alpha);
     
 

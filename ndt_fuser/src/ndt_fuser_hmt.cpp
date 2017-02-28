@@ -26,7 +26,7 @@ namespace lslgeneric {
 		std::cerr<<"Loading "<<fname<<std::endl;
 		map->loadFromJFF(fname);
 	    } else {
-		map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+              //		map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
 		map->initialize(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),map_size_x,map_size_y,map_size_z);
 	    }
 	}

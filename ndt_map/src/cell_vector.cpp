@@ -109,7 +109,18 @@ typename SpatialIndex::CellVectorItr CellVector::begin()
     return activeCells.begin();
 }
 
+typename SpatialIndex::CellVectorConstItr CellVector::begin() const
+{
+    //cout<<"active cells "<<activeCells.size()<<endl;
+    return activeCells.begin();
+}
+
 typename SpatialIndex::CellVectorItr CellVector::end()
+{
+    return activeCells.end();
+}
+
+typename SpatialIndex::CellVectorConstItr CellVector::end() const
 {
     return activeCells.end();
 }

@@ -90,6 +90,29 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
 	}
     }
 
+void NDTMCL3D::predict(Eigen::Affine3d Tmotion) {
+   Eigen::Vector3d tr = Tmotion.translation();
+    Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
+
+
+    Eigen::Matrix<double, 6,6> motion_model_m(motion_model.data());
+    
+    Eigen::Matrix<double,6,1> incr;
+    incr << fabs(tr[0]),fabs(tr[1]),fabs(tr[2]), fabs(rot[0]), fabs(rot[1]), fabs(rot[2]);
+    Eigen::Matrix<double,6,1> m = motion_model_m*incr; 
+
+    // std::cerr << "incr : " << incr.transpose() << std::endl;
+    // std::cerr << "motion var : " << m.transpose() << std::endl;
+    
+    for (size_t i = 0; i < motion_model_offset.size(); i++) {
+      m[i] += motion_model_offset[i];
+    }
+
+    // std::cerr << "motion var(2) : " << m.transpose() << std::endl;
+    
+    pf.predict(Tmotion, 
+               m[0], m[1], m[2], m[3], m[4], m[5]);
+} 
 
 void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, double subsample_level){
     if(subsample_level < 0 || subsample_level > 1) subsample_level = 1;
@@ -139,7 +162,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     double t_pred = getDoubleTime() - time_start;	
 
     std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
-    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution));
+    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
     //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
     local_map.loadPointCloud(cloud);//,30); //sensor_range);
     local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -170,7 +193,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
     int Nn = 0;
     //		#pragma omp parallel for
-    double t_pseudo = 0;
+    double t_pseudo = getDoubleTime();
 #pragma omp parallel num_threads(4)
     {
 #pragma omp for
@@ -199,7 +222,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 		    if(cell->hasGaussian_){
 			Eigen::Matrix3d covCombined = cell->getCov() + T.rotation()*ndts[n]->getCov() *T.rotation().transpose();
 			Eigen::Matrix3d icov;
-			bool exists;
+ 			bool exists;
 			double det = 0;
 			covCombined.computeInverseAndDetWithCheck(icov,det,exists);
 			if(!exists) continue;
@@ -216,6 +239,8 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
 	    }
 	}///#pragma
+
+    t_pseudo = getDoubleTime() - t_pseudo;
 	for(unsigned int j=0;j<ndts.size();j++){
 	    delete ndts[j];
 	}

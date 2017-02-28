@@ -48,6 +48,7 @@ class LazyGrid : public SpatialIndex
 {
 public:
     LazyGrid(double cellSize);
+    LazyGrid(double cellSizeX_, double cellSizeY_, double cellSizeZ_);
     LazyGrid(LazyGrid *prot);
     LazyGrid(double sizeXmeters, double sizeYmeters, double sizeZmeters,
              double cellSizeX, double cellSizeY, double cellSizeZ,
@@ -61,8 +62,10 @@ public:
     //these two don't make much sense...
     ///iterator through all cells in index, points at the begining
     virtual typename SpatialIndex::CellVectorItr begin();
+    virtual typename SpatialIndex::CellVectorConstItr begin() const;
     ///iterator through all cells in index, points at the end
     virtual typename SpatialIndex::CellVectorItr end();
+    virtual typename SpatialIndex::CellVectorConstItr end() const;
     virtual int size();
 
     ///clone - create an empty object with same type
@@ -77,24 +80,30 @@ public:
 
     virtual void setCenter(const double &cx, const double &cy, const double &cz);
     virtual void setSize(const double &sx, const double &sy, const double &sz);
+    bool insertCell(NDTCell cell);
 
     virtual NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestCells(const pcl::PointXYZ &pt);
 
     virtual inline void getCellAt(int indX, int indY, int indZ, NDTCell* &cell){
-	if(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0){
-	    cell = dataArray[indX][indY][indZ];
-	}else{
-		cell = NULL;
-		
-	}
+	if(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0){ 
+          cell = dataArray[indX][indY][indZ];
+        } else {
+          cell = NULL;
+        }
     }
+  
     virtual inline void getCellAt(const pcl::PointXYZ& pt, NDTCell* &cell){
-	int indX,indY,indZ;
-	this->getIndexForPoint(pt,indX,indY,indZ);
-	this->getCellAt(indX,indY,indZ,cell);
+       int indX,indY,indZ;
+       this->getIndexForPoint(pt,indX,indY,indZ);
+       this->getCellAt(indX,indY,indZ,cell);
     }
+
+
+  ///automatically allocate the cell if needed (checks that the indexes etc. are correct).
+  virtual void getCellAtAllocate(const pcl::PointXYZ& pt, NDTCell* &cell);
+
     //FIXME: these two are now not needed anymore
     virtual inline void getNDTCellAt(int indX, int indY, int indZ, NDTCell* &cell){
 			if(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0){

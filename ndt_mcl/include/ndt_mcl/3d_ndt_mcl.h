@@ -139,6 +139,8 @@ class NDTMCL3D{
 	    pf.initializeNormalRandom(numParticles, x,y,z,roll,pitch, yaw, x_e,y_e,z_e,roll_e,pitch_e,yaw_e);
 	}
 
+    void predict(Eigen::Affine3d Tmotion);
+
 	void updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud);
 
 	void updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, double subsample_level);

@@ -195,8 +195,9 @@ public:
             fprintf(stderr,"Unfortunately This constructor works only with Lazygrid!\n");
             exit(1);
         }
-        lz->initializeAll();
-				guess_size_ = false;
+        //        lz->initializeAll();
+        lz->initialize();
+        guess_size_ = false;
     }
 
 
@@ -349,7 +350,7 @@ public:
     int writeOctTreeJFF(FILE * jffout);
 
     int loadFromJFF(const char* filename);
-
+    int loadFromJFF(FILE * jffin);
     inline SpatialIndex* getMyIndex() const
     {
         return index_;
@@ -387,7 +388,7 @@ public:
     /**
     * Returns a transformed NDT as a vector of NDT cells
     */
-    virtual std::vector<NDTCell*> pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T);
+    virtual std::vector<NDTCell*> pseudoTransformNDT(Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T) const;
 
     /**
      * Returns a transformed NDT as an NDT map with a CellVector data structure
@@ -404,6 +405,7 @@ public:
      * This is useful if you want to use the empty cells or dynamic cells
      */
     virtual std::vector<lslgeneric::NDTCell*> getAllInitializedCells();
+    bool insertCell(NDTCell cell);
 
 
     int numberOfActiveCells();
@@ -476,7 +478,7 @@ public:
                           double weight = 5.0,
                           double threshold = 0.2,
                           Eigen::Vector3d *hit = NULL);
-    
+ NDTCell* getCellAtID(int x,int y,int z);
 protected:
     bool is3D;
     SpatialIndex *index_;

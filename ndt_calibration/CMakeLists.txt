@@ -1,32 +1,30 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ndt_costmap)
+project(ndt_calibration)
 
-set(CMAKE_BUILD_TYPE Release) 
-set(CMAKE_VERBOSE_MAKEFILE)  
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3")  
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  cmake_modules
-  ndt_map 
+  ndt_fuser
+  ndt_map
+  ndt_registration
   ndt_visualisation
+  ndt_rviz
+  ndt_mcl
+  ndt_offline
+  pcl_ros
+  pcl_conversions
+  tf
+  tf_conversions
+  eigen_conversions
+  velodyne_msgs
+  velodyne_pointcloud
+  roscpp
+  angles
 )
 
-## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system)
-#find_package(LibXml2 REQUIRED)
-#include_directories(${LIBXML2_INCLUDE_DIR})
-#ADD_DEFINITIONS(-DLINUX_OS)
-find_package(OpenGL REQUIRED)
-#find_package(GLU REQUIRED)
-#find_package(GLUT REQUIRED)
-#find_package(JPEG REQUIRED)
-#FIND_PACKAGE(MRPT REQUIRED gui;base;opengl)
-#include_directories(${JPEG_INCLUDE_DIR})
-#include_directories(${GLUT_INCLUDE_DIR})
-include_directories(${OPENGL_INCLUDE_DIR})
-
+find_package( PkgConfig REQUIRED)
+pkg_check_modules( gsl REQUIRED gsl )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -42,10 +40,10 @@ include_directories(${OPENGL_INCLUDE_DIR})
 ## * Let MSG_DEP_SET be the set of packages whose message types you use in
 ##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
 ## * In the file package.xml:
+##   * add a build_depend tag for "message_generation"
 ##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependencies might have been
-##     pulled in transitively but can be declared for certainty nonetheless:
-##     * add a build_depend tag for "message_generation"
+##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
+##     but can be declared for certainty nonetheless:
 ##     * add a run_depend tag for "message_runtime"
 ## * In this file (CMakeLists.txt):
 ##   * add "message_generation" and every package in MSG_DEP_SET to
@@ -84,6 +82,26 @@ include_directories(${OPENGL_INCLUDE_DIR})
 #   std_msgs  # Or other packages containing msgs
 # )
 
+################################################
+## Declare ROS dynamic reconfigure parameters ##
+################################################
+
+## To declare and build dynamic reconfigure parameters within this
+## package, follow these steps:
+## * In the file package.xml:
+##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
+## * In this file (CMakeLists.txt):
+##   * add "dynamic_reconfigure" to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     and list every .cfg file to be processed
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+# generate_dynamic_reconfigure_options(
+#   cfg/DynReconf1.cfg
+#   cfg/DynReconf2.cfg
+# )
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -95,9 +113,9 @@ include_directories(${OPENGL_INCLUDE_DIR})
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES ndt_costmap
-  CATKIN_DEPENDS ndt_map ndt_visualisation
-  DEPENDS opencv2 eigen libpcl-all-dev opengl
+  LIBRARIES ndt_calibration
+#  CATKIN_DEPENDS other_catkin_pkg
+  DEPENDS gsl
 )
 
 ###########
@@ -106,52 +124,40 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-include_directories(${GLUT_INCLUDE_DIR})
-include_directories(${OPENGL_INCLUDE_DIR})
-include_directories(
-  include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-)
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
-## Declare a cpp library
-# add_library(ndt_costmap
-#   src/${PROJECT_NAME}/ndt_costmap.cpp
-# )
+set (${PROJECT_NAME}_LIB_SRCS
+	    src/ndt_calib.cpp
+	)
 
-## Declare a cpp executable
-add_executable(ndt_costmap src/ndt_costmap.cc)
-add_executable(2d_occ_map src/2d_occ_map.cpp)
-add_executable(traversability_map_simple src/traversability_map_simple.cpp)
-add_executable(traversability_map_simple_HMT src/traversability_map_simple_HMT.cpp)
-add_executable(level_splitter src/level_splitter.cpp)
+## Declare a C++ library
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${gsl_LIBRARIES})
 
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
-# add_dependencies(ndt_costmap_node ndt_costmap_generate_messages_cpp)
+
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+# add_dependencies(ndt_calibration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Declare a C++ executable
+# add_executable(ndt_calibration_node src/ndt_calibration_node.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+# add_dependencies(ndt_calibration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ndt_costmap
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-  ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES}
-)
+# target_link_libraries(ndt_calibration_node
+#   ${catkin_LIBRARIES}
+# )
 
-target_link_libraries(2d_occ_map
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
+add_executable(ndt_calib src/ndt_calib_main.cpp)
+target_link_libraries(ndt_calib ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${gsl_LIBRARIES} ${PROJECT_NAME})
 
-target_link_libraries(traversability_map_simple
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
+add_executable(ndt_calib_test src/ndt_calib_test.cpp)
+target_link_libraries(ndt_calib_test ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${gsl_LIBRARIES} ${PROJECT_NAME})
 
-target_link_libraries(traversability_map_simple_HMT
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
-
-target_link_libraries(level_splitter
-  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
-)
 
 #############
 ## Install ##
@@ -168,18 +174,18 @@ target_link_libraries(level_splitter
 # )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS ndt_costmap 
+# install(TARGETS ndt_calibration ndt_calibration_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
-   PATTERN ".svn" EXCLUDE
- )
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -193,7 +199,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ndt_costmap.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ndt_calibration.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -31,6 +31,12 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
   <build_depend>visualization_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>velodyne_msgs</build_depend>
+  <build_depend>velodyne_pointcloud</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>ndt_visualisation</run_depend>
@@ -45,6 +51,12 @@
   <run_depend>ndt_registration</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>ndt_rviz</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>velodyne_msgs</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+
 
   <!-- Dependencies needed only for running tests. -->
   <!-- <test_depend>ndt_visualisation</test_depend> -->

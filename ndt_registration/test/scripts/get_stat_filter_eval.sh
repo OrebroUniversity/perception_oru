@@ -8,7 +8,8 @@ png_end='.png'
 txt_end='.txt'
 rot='rot'
 pos='pos'
-rpe='rpe'
+rpe='.rpe'
+ate='.ate'
 for gt in $FILES
 do
   # Remove the ending _gt.txt
@@ -18,13 +19,15 @@ do
     est=$base_name$est_end
     echo $est
 
-    png=$base_name$est_end$png_end
-    txt=$base_name$est_end$txt_end
+    atepng=$base_name$est_end$ate$png_end
+    ateres=$base_name$est_end$ate
+
+    rperes=$base_name$est_end$rpe
 
     # Processing 
-    echo "rosrun ndt_feature_reg evaluate_ate.py $est $gt --plot $png --verbose > $txt"
-          rosrun ndt_feature_reg evaluate_ate.py $est $gt --plot $png --verbose > $txt
-    echo "rosrun ndt_feature_reg evaluate_rpe.py $est $gt --plot $est$pos$png_end --plot_rot $est$rot$png_end --fixed_delta --verbose > $est$rpe$txt_end"
-          rosrun ndt_feature_reg evaluate_rpe.py $est $gt --plot $est$pos$png_end --plot_rot $est$rot$png_end --fixed_delta --verbose > $est$rpe$txt_end
+    echo "rosrun ndt_feature_reg evaluate_ate.py $est $gt --plot $atepng --verbose > $ateres"
+          rosrun ndt_feature_reg evaluate_ate.py $est $gt --plot $atepng --verbose > $ateres
+    echo "rosrun ndt_feature_reg evaluate_rpe.py $est $gt --plot $est$pos$png_end --plot_rot $est$rot$png_end --fixed_delta --verbose > $rperes"
+          rosrun ndt_feature_reg evaluate_rpe.py $est $gt --plot $est$pos$png_end --plot_rot $est$rot$png_end --fixed_delta --verbose > $rperes
 
 done

@@ -153,12 +153,18 @@ public:
         T_d2d_ = T_rel_odom_;
         T_d2d_sc_ = T_rel_odom_;
 
-        matcher_d2d.ITR_MAX = 1000;
-        matcher_d2d.DELTA_SCORE = 0.00001;
+	//matcher_d2d.ITR_MAX = 1000;
+        //matcher_d2d.DELTA_SCORE = 0.00001;
 
-        matcher_d2d.match(nd1, nd2, T_d2d_, true);
-        matcher_d2d_sc.match(nd1, nd2, T_d2d_sc_, Tcov);
-      
+	// Compute the matching time...
+        double t0 = ndt_generic::getDoubleTime();
+	matcher_d2d.match(nd1, nd2, T_d2d_, true);
+	double t1 = ndt_generic::getDoubleTime();
+	matcher_d2d_sc.match(nd1, nd2, T_d2d_sc_, Tcov);
+	double t2 = ndt_generic::getDoubleTime();
+	time_d2d_.push_back(t1 - t0);
+	time_d2d_sc_.push_back(t2 - t1);
+	
         std::vector<Eigen::Affine3d> Ts = generateOffset2DSet(dimidx1,dimidx2);
         results.resize(Ts.size());
 
@@ -327,6 +333,11 @@ public:
         ndt_generic::saveAffineToEvalFile(filename + std::string(".odom"), Ts_glb_odom_);
     }
 
+    void saveComputationTime(const std::string &filename) const {
+        ndt_generic::saveDoubleVecTextFile(time_d2d_, filename + std::string(".d2d"));
+        ndt_generic::saveDoubleVecTextFile(time_d2d_sc_, filename + std::string(".d2d_sc"));
+    }
+  
     std::vector<std::vector<boost::tuple<double, double, double> > > getScoreSegments(int dimidx1, int dimidx2, bool d2d_sc_score) const {
         
         std::vector<std::vector<boost::tuple<double, double, double> > > ret;
@@ -462,6 +473,9 @@ private:
     std::vector<Eigen::Affine3d> Ts_glb_gt_;
     std::vector<Eigen::Affine3d> Ts_glb_odom_;
 
+    std::vector<double> time_d2d_;
+    std::vector<double> time_d2d_sc_;
+
     pcl::PointCloud<pcl::PointXYZ> pc_odom_, pc_d2d_, pc_d2d_sc_, pc_icp_, pc_gt_, pc1_, pc_icp_final_;
 };
 
@@ -587,6 +601,8 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
+    out_file +=  ".res" + ndt_generic::toString(resolution) + "Dd" + ndt_generic::toString(motion_params.Dd) + "Dt" + ndt_generic::toString(motion_params.Dt);
+
     int i = 0;
     while (i < iters) {
         int _idx1 = idx1 + i;
@@ -608,7 +624,7 @@ int main(int argc, char** argv)
             Gnuplot gp;//(std::fopen("output.gnuplot", "wb"));
             
             if (save_eps) {
-                std::string out_file_eps = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2) + "x" + ndt_generic::toString(dimidx1) + "y" + ndt_generic::toString(dimidx2) + "sc" + ndt_generic::toString(use_score_d2d_sc) + "res" + ndt_generic::toString(resolution) + "Dd" + ndt_generic::toString(motion_params.Dd) + ".eps";
+                std::string out_file_eps = out_file + ndt_generic::toString(_idx1) + "_" + ndt_generic::toString(_idx2) + "x" + ndt_generic::toString(dimidx1) + "y" + ndt_generic::toString(dimidx2) + "sc" + ndt_generic::toString(use_score_d2d_sc) + ".eps";
                 std::cout << "saving : " << out_file_eps << std::endl;
                 gp << "set terminal postscript eps size 3.5,2.62 enhanced color font 'Helvetica,12' lw 1\n";
                 gp << "set output '" << out_file_eps << "'\n";
@@ -656,6 +672,8 @@ int main(int argc, char** argv)
         // Saves all transforms 
         std::string out_file_Ts = out_file + ".Ts";
         se.saveTsToEvalFiles(out_file_Ts);
+	se.saveComputationTime(out_file + ".time");
+
     }
     std::cout << "done." << std::endl;
 }

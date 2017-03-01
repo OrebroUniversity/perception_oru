@@ -88,5 +88,44 @@ void saveAffineToEvalFile(const std::string &filename, const std::vector<Eigen::
 }
 
 
+std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
+
+   std::vector<double> vec;
+   std::ifstream ifs;
+   ifs.open(fileName.c_str());
+   if (!ifs.is_open()) {
+     std::cerr << __FILE__ << ":" << __LINE__ << " cannot open file : " << fileName << std::endl;
+   }
+    
+   while (!ifs.eof())
+     {
+       std::string line;
+       getline(ifs, line);
+       
+       double val;
+       if (sscanf(line.c_str(), "%lf",
+		  &val) == 1)
+	 {
+	   vec.push_back(val);
+	 }
+     }
+   return vec;
+ }
+
+ void saveDoubleVecTextFile(const std::vector<double> &vec, const std::string &fileName)
+ {
+   std::stringstream st;
+   st << fileName;
+   std::string file_name = st.str();
+   std::ofstream ofs(file_name.c_str());
+   
+   for (unsigned int i = 0; i < vec.size(); i++)
+     {
+       ofs << vec[i] << std::endl;
+     }  
+   ofs.close();
+ }
+
+
 
 } // namespace

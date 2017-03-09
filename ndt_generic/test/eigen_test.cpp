@@ -83,9 +83,7 @@ int main()
         Eigen::MatrixXd covB(6,6);
         covB.setIdentity();
         
-        
         std::cout << "weighted : " << ndt_generic::affine3dToStringRPY(ndt_generic::getWeightedPose(a, covA, b, covB)) << std::endl;        
-
     }
 
 

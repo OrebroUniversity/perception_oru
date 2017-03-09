@@ -1472,6 +1472,7 @@ void NDTMap::computeMaximumLikelihoodRanges(const Eigen::Vector3d &origin,
                                             const std::vector<Eigen::Vector3d> &dirs,
                                             Eigen::VectorXd &ranges) const {
     
+
     if(isFirstLoad_ || index_ == NULL)
     {
         return;
@@ -1492,24 +1493,32 @@ void NDTMap::computeMaximumLikelihoodRanges(const Eigen::Vector3d &origin,
     bool updatePositive = true;
 
     double resolution = this->getSmallestCellSizeInMeters();
+    ranges.resize(dirs.size());
+    ranges.setZero();
     
-    for (int i = 0; i < dirs.size(); i++)
+    for (unsigned int i = 0; i < dirs.size(); i++)
     {
         cells.clear();
 
         // TODO update traceLine to use the rawRanges as a bias in selecting the cells.
         // Use the difference to be 2*the resolution.
-        Eigen::Vector3d p1 = origin+(rawRanges[i]-resolution)*dirs[i];
-        Eigen::Vector3d p2 = origin+(rawRanges[i]+resolution)*dirs[i];
-        if(!lz->traceLine(p1, p2, dirs[i]*2*resolution,1000.0,cells)) {
+        // Eigen::Vector3d p1 = origin+(rawRanges[i]-resolution)*dirs[i];
+        // Eigen::Vector3d p2 = origin+(rawRanges[i]+resolution)*dirs[i];
+        // if(!lz->traceLine(p1, p2, dirs[i]*2*resolution,1000.0,cells)) {
+        //     continue;
+        // }
+        Eigen::Vector3d p1 = origin;
+        Eigen::Vector3d p2 = origin+dirs[i]*100.;
+        // Eigen::Vector3d p2 = origin+(rawRanges[i]+resolution)*dirs[i];
+        if(!lz->traceLine(p1, p2, dirs[i]*100.,1000.0,cells)) {
             continue;
         }
         
         double max_lik = 0.;
         double range = 0.;
-        for(unsigned int i=0; i<cells.size(); i++)
+        for(unsigned int j=0; j<cells.size(); j++)
         {
-            ptCell = cells[i];
+            ptCell = cells[j];
             if(ptCell != NULL)
             {
                 if(ptCell->hasGaussian_)
@@ -1520,10 +1529,14 @@ void NDTMap::computeMaximumLikelihoodRanges(const Eigen::Vector3d &origin,
                     if (lik > max_lik) {
                         max_lik = lik;
                         range = (out-origin).norm();
+                        ranges[i] = range;
                     }
                 }
             }
         }
+
+        //        std::cout << "ranges[" << i << "] : " << ranges[i] << "   -   " << rawRanges[i] << std::endl;
+
     }    
 }
 

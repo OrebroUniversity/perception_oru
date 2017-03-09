@@ -357,7 +357,7 @@ int main(int argc, char **argv){
 
 
             vreader.getPoseFor(baseodo, tf_base_link);
-            vreader.getPoseFor(basepose, tf_gt_link);
+            //++++++++            vreader.getPoseFor(basepose, tf_gt_link);
 
 	    //callback(cloud, sensor_pose,T,basepose, base_odo);	
 

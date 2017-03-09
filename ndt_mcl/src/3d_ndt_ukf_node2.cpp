@@ -34,6 +34,8 @@
 #include <ndt_map/ndt_map.h>
 
 #include <ndt_rviz/ndt_rviz.h>
+#include <ndt_generic/pcl_utils.h>
+
 
 inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
     if (fabs(euler[0]) > M_PI/2) {
@@ -246,14 +248,21 @@ public:
         //////////////////////////////////////////////////////////
 
         ndtukf = new NDTUKF3D(resolution,ndmap);
-
+        UKF3D::Params ukf_params;
         param_nh.getParam("motion_model", ndtukf->motion_model);
         param_nh.getParam("motion_model_offset", ndtukf->motion_model_offset);
         param_nh.param<double>("resolution_sensor", ndtukf->resolution_sensor, resolution);
-            
-
+        param_nh.param<double>("ukf_range_var", ukf_params.range_var, 1.);
+        param_nh.param<double>("ukf_alpha", ukf_params.alpha, 0.1);
+        param_nh.param<double>("ukf_beta", ukf_params.beta, 2.);
+        param_nh.param<double>("ukf_kappa", ukf_params.kappa, 3.);
+        param_nh.param<double>("ukf_min_pos_var", ukf_params.min_pos_var, 0.01);
+        param_nh.param<double>("ukf_min_rot_var", ukf_params.min_rot_var, 0.01);
+        param_nh.param<double>("ukf_range_filter_max_dist", ukf_params.range_filter_max_dist, 1.);
+        ndtukf->setParamsUKF(ukf_params);
+        
         ukf_pub = nh_.advertise<nav_msgs::Odometry>("ndt_ukf",10);
-	    
+        
         //////////////////////////////////////////////////////////
         /// Prepare the callbacks and message filters
         //////////////////////////////////////////////////////////
@@ -373,20 +382,16 @@ public:
 
     void publish_visualization_fast(const ros::TimerEvent &event) {
 
-        ROS_INFO("sigma points visualization");
         if (do_pub_sigmapoints_markers_) 
         {
             ukf_m.lock();
             std::vector<Eigen::Affine3d> sigmas = ndtukf->getSigmasAsAffine3d();
-            std::cout << "sigmas.size() : " << sigmas.size() << std::endl;
             for (int i = 0; i < sigmas.size(); i++) {
                 markerarray_pub_.publish(ndt_visualisation::getMarkerFrameAffine3d(sigmas[i], "sigmapoints" + ndt_generic::toString(i), 1., 0.1));
                 std::cout << "sigmas[i] : " << ndt_generic::affine3dToStringRPY(sigmas[i]) << std::endl;
             }
             ukf_m.unlock();
         }
-        ROS_INFO("sigma points visualization - cpmlete...");
-
     }
 
     void publish_visualization_slow(const ros::TimerEvent &event) {
@@ -418,7 +423,8 @@ public:
 
         //ndtukf->initializeFilter(initPoseT, 50, 50, 10, 100.0*M_PI/180.0, 100.0*M_PI/180.0 ,100.0*M_PI/180.0);
         // ndtukf->initializeFilter(initPoseT, 0.5, 0.5, 0.5, 2.0*M_PI/180.0, 2.0*M_PI/180.0 ,2.0*M_PI/180.0);
-        ndtukf->initializeFilter(initPoseT, 2, 2, 2, 5.0*M_PI/180.0, 5.0*M_PI/180.0 ,5.0*M_PI/180.0);
+        //        ndtukf->initializeFilter(initPoseT, 2, 2, 2, 5.0*M_PI/180.0, 5.0*M_PI/180.0 ,5.0*M_PI/180.0);
+        ndtukf->initializeFilter(initPoseT, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01);
         isFirstLoad = false;
     }
     
@@ -517,7 +523,7 @@ public:
         }
 
         // We're interessted in getting the pointcloud in the vehicle frame (that is to transform it using the sensor pose offset).
-        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::PointCloud<pcl::PointXYZ> cloud, cloud2;
         
         velodyne_rawdata::VPointCloud pnts,conv_points;
         tf::Transform T_sensorpose;
@@ -556,7 +562,6 @@ public:
         }
 
         // Check size of the cloud
-        ROS_INFO_STREAM("cloud.size() : " << cloud.size());
         if (cloud.size() < cloud_min_size_) {
             ukf_m.unlock();
             return;
@@ -571,11 +576,64 @@ public:
         Tcum = Tcum*Tm;
         Todo_old=Todo;
 
+  
+
         //update filter -> + add parameter to subsample ndt map in filter step
         ndtukf->updateAndPredict/*Eff*/(Tm, cloud/*, subsample_level*/, sensorPoseT);
         //ndtukf->predict(Tm);
-        ROS_ERROR_STREAM("[mean] : " << ndt_generic::affine3dToStringRPY(ndtukf->getMean()));
         
+  #if 0
+        // test the ML point computation
+        // cloud is in vehicle frame...
+        {
+
+
+            std::vector<Eigen::Vector3d> dirs;
+            std::vector<double> r;
+            Eigen::VectorXd raw_ranges;
+            ndt_generic::computeDirectionsAndRangesFromPointCloud(cloud, sensorPoseT.translation(), dirs, r);
+            
+            raw_ranges = Eigen::VectorXd::Map(r.data(), r.size());
+            
+            Eigen::Affine3d tmp = ndtukf->getMean()*sensorPoseT;
+            Eigen::Vector3d origin = tmp.translation();
+            
+            Eigen::VectorXd ranges;
+            ndtukf->map.computeMaximumLikelihoodRanges(origin, raw_ranges, dirs, ranges);
+
+#if 0
+            // move the cloud to the world frame
+            Eigen::Affine3d tmp = ndtukf->getMean()*sensorPoseT;
+            lslgeneric::transformPointCloudInPlace(tmp, cloud);
+
+            Eigen::Vector3d origin = tmp.translation();
+            std::vector<std::pair<double,double> > ranges;
+            ndtukf->map.computeMaximumLikelihoodPointCloudWithRangePairs(origin,
+                                                                         cloud,
+                                                                         origin,
+                                                                         cloud2,
+                                                                         ranges,
+                                                                         130.);
+
+            sensor_msgs::PointCloud2 pcloud;
+            pcl::toROSMsg(cloud2,pcloud);
+            pcloud.header.stamp = t0;
+            pcloud.header.frame_id = "world";
+            pointcloud_pub_.publish(pcloud);
+#endif
+        }
+       
+#else
+        {
+            sensor_msgs::PointCloud2 pcloud;
+            pcl::toROSMsg(cloud,pcloud);
+            pcloud.header.stamp = t0;
+            pcloud.header.frame_id = "interppoints";
+            pointcloud_pub_.publish(pcloud);
+        }
+#endif
+
+       
         //publish pose
         sendROSOdoMessage(ndtukf->getMean(),t0);
         ukf_m.unlock();
@@ -645,7 +703,6 @@ public:
         }
 
         // Check size of the cloud
-        ROS_INFO_STREAM("cloud.size() : " << cloud.size());
         if (cloud.size() < 3000) {
             ukf_m.unlock();
             return;

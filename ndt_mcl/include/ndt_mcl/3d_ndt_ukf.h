@@ -9,69 +9,49 @@
 #include <Eigen/Geometry>
 #include <fstream>
 #include <ndt_generic/eigen_utils.h>
+#include <ndt_generic/pcl_utils.h>
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/ndt_cell.h>
 #include <ndt_map/pointcloud_utils.h>
 #include <tf_conversions/tf_eigen.h>
 
-// Generic point cloud tools
-void computeDirectionsAndRangesFromPointCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Vector3d &origin, std::vector<Eigen::Vector3d> &dirs, Eigen::VectorXd &ranges);
-
-
-
-
-
-
-// Updates T and Tcov with an incremental update incr using covariance incrcov.
-void addAffine3dCovWithIncr(Eigen::Affine3d &T, Eigen::MatrixXd &Tcov,
-                            const Eigen::Affine3d &incr, const Eigen::MatrixXd &incrcov)
-{
-
-    T = T * incr; // The mean - nice and easy.
-    
-    // To update the covariance is more tricky, here we instead take a de-tour using quaternions (note that the covariance matrix utilize euler angles).
-
-    
-    
-    
-    // TODO
-
-    // Need the Jacobians for the increments and for the existing Jacobian
-
-    //       double c = cos( origin.mean[2]);
-    //       double s = sin( origin.mean[2]);
-    //       J_1 << 1, 0, -s * incr.mean[0] - c * incr.mean[1],
-    //            0, 1, c * incr.mean[0] - s * incr.mean[1],
-    //            0, 0, 1;
-	  
-    //       J_2 << c, -s, 0,
-    //            s, c, 0, 
-    //            0, 0, 1;
-    
-    //    this->P_ = J_1 * this->P_ * J_1.transpose() + J_2 * Q * J_2.transpose();
-}
-
-
-
- 
-
+//! Implements a UKF in 3D (using x,y,z and euler angles)
 class UKF3D {
 public:
 
-    UKF3D() : alpha_(0.01), beta_(2.), kappa_(0.), N_(6) {
+    class Params {
+    public:
+        Params() : 
+            alpha(0.01),
+            beta(2.),
+            kappa(0.),
+            range_var(1.),
+            min_pos_var(0.01),
+            min_rot_var(0.01),
+            range_filter_max_dist(1.)
+        {
+        }
+        double alpha;
+        double beta;
+        double kappa;
+        double range_var;
+        double min_pos_var;
+        double min_rot_var;
+        double range_filter_max_dist;
+    };
+
+    UKF3D() : N_(6) {
 
         allocateSigmas();
     }
 
-    void setParams(double alpha, double beta, double kappa) {
-        alpha_ = alpha;
-        beta_ = beta;
-        kappa_ = kappa;
+    void setParams(const UKF3D::Params &params) {
+        params_ = params;
     }
 
     std::string getDebugString() const {
         std::ostringstream stream;
-        stream << "alpha : " << alpha_ << " beta : " << beta_ << " kappa : " << kappa_ << " N : " << N_ << " # sigma points : " << sigmas_.size() << std::endl;
+        stream << "alpha : " << params_.alpha << " beta : " << params_.beta << " kappa : " << params_.kappa << " N : " << N_ << " # sigma points : " << sigmas_.size() << std::endl;
         for (int i = 0; i < sigmas_.size(); i++) {
             stream << "[" << i << "] : " << sigmas_[i].transpose() << std::endl;
         }
@@ -82,24 +62,8 @@ public:
         return 2*N_+1;
     }
 
-    std::vector<double> getMeanWeights() const {
-        std::vector<double> ret;
-        
-        for (int i = 0; i < 2*N_+1; i++) {
-            ret.push_back(getWeightMean(i));
-        }
-        return ret;
-    }
-
-    std::vector<double> getCovWeights() const {
-        std::vector<double> ret;
-        
-        for (int i = 0; i < 2*N_+1; i++) {
-            ret.push_back(getWeightCov(i));
-        }
-        return ret;
-    }
-
+    std::vector<double> getMeanWeights() const;
+    std::vector<double> getCovWeights() const;
 
     Eigen::Affine3d getMean() const{
 
@@ -110,78 +74,12 @@ public:
         return P_;
     }
 
-    Eigen::MatrixXd computePoseCov(const Eigen::VectorXd &mean) const {
-        Eigen::MatrixXd ret(N_,N_);
-        ret.setZero();
-        assert(mean.size() != N_);
 
-        // for (int i = 0; i < 2*N_+1; i++) {
+    Eigen::VectorXd computePoseMean() const;
+    Eigen::MatrixXd computePoseCov(const Eigen::VectorXd &mean) const;
 
-        //     Eigen::VectorXd diff = mean - this->getSigma(i);
-        //     // Normalize the diff angles...
-        //     diff(4) = angles::normalize_angle(diff(4));
-        //     diff(5) = angles::normalize_angle(diff(5));
-        //     diff(6) = angles::normalize_angle(diff(6));
-
-        //     ret += getWeightCov(i) * diff * diff.transpose();
-        // }
-
-        std::vector<Eigen::Affine3d> T_sigmas = this->getSigmasAsAffine3d();
-        Eigen::Affine3d T_mean = ndt_generic::vectorToAffine3d(mean);
-
-        for (int i = 0; i < T_sigmas.size(); i++) {
-            Eigen::Affine3d T_diff = T_sigmas[i]*T_mean.inverse();
-            Eigen::VectorXd diff = ndt_generic::affine3dToVector(T_diff);
-
-            // diff(4) = angles::normalize_angle(diff(4));
-            // diff(5) = angles::normalize_angle(diff(5));
-            // diff(6) = angles::normalize_angle(diff(6));
-
-            ndt_generic::normalizeEulerAngles6dVec(diff);
-
-            std::cout << "diff [" << i << "] : " << diff.transpose() << std::endl;
-
-            ret += getWeightCov(i) * diff * diff.transpose();
-        }
-
-        return ret;
-    }
-
-    Eigen::VectorXd computePoseMean() const {
-        Eigen::VectorXd ret(N_);
-        ret.setZero();
-
-        std::vector<double> weights = getMeanWeights();
-        std::vector<Eigen::Affine3d> T_sigmas = getSigmasAsAffine3d();
-        
-        std::cout << "-------------------------------" << std::endl;
-        std::cout << this->getDebugString() << std::endl;
-    
-
-        Eigen::Affine3d T_mean = ndt_generic::getAffine3dMeanWeightsUsingQuatNaive(T_sigmas, weights);
-        
-
-        ret = ndt_generic::affine3dToVector(T_mean);
-        
-        ndt_generic::normalizeEulerAngles6dVec(ret);
-        return ret;
-    }
-
-    double getWeightMean(int idx) const {
-        const double lambda = this->getLambda();
-        if (idx == 0) {
-            return (lambda / (N_ + lambda)); 
-        }
-        return 1./(2*(N_ + lambda));
-    }
-
-    double getWeightCov(int idx) const {
-        const double lambda = this->getLambda();
-        if (idx == 0) {
-            return lambda/(N_ + lambda) + (1 - alpha_*alpha_ + beta_);
-        }
-        return 1./(2*(N_ + lambda));
-    }
+    double getWeightMean(int idx) const;
+    double getWeightCov(int idx) const;
 
     // Sigma points, stored as x,y,z, roll,pitch, yaw.
     std::vector<Eigen::VectorXd> sigmas_;
@@ -189,11 +87,13 @@ public:
     Eigen::Affine3d T_;
     // Current pose covariance
     Eigen::MatrixXd P_; 
-    double kappa_, alpha_, beta_;
+    // UKF parameters
+    Params params_;
+    // State dim
     int N_;
 
     double getLambda() const {
-        return alpha_*alpha_*(N_ + kappa_) - N_;
+        return params_.alpha*params_.alpha*(N_ + params_.kappa) - N_;
     }
     
     double getXsi() const {
@@ -212,45 +112,15 @@ public:
         }
     }
 
-    std::vector<Eigen::Affine3d> getSigmasAsAffine3d() const {
-        std::vector<Eigen::Affine3d> ret;
-        if (sigmas_.empty()) {
-            return ret;
-        }
-        assert(sigmas_.size() != 2*N+1);
-        
-        for (int i = 0; i < 2*N_+1; i++) {
-            ret.push_back(ndt_generic::vectorToAffine3d(sigmas_[i]));
-        }
+    std::vector<Eigen::Affine3d> getSigmasAsAffine3d() const;
 
-        return ret;
-    }
 
-    void assignSigmas(const Eigen::VectorXd &mean, const Eigen::MatrixXd &cov) {
-
-        // Sigmas is a 6d vector with x,y,z,r,p,y
-        sigmas_[0] = mean;
-        
-        // Compute the cholesky decomposition (chol(cov)' * chol(cov) = cov)
-        Eigen::MatrixXd L( cov.llt().matrixL() );
-
-        int idx = 1;
-        double xsi = getXsi();
-        for (int i = 0; i < N_; i++) {
-            sigmas_[idx] = mean - xsi * L.col(i);
-            idx++;
-            sigmas_[idx] = mean + xsi * L.col(i);
-            idx++;
-        }
-
-        //        this->normalizeEuler();
-
-        P_ = cov; ////
-    }
+    void assignSigmas(const Eigen::VectorXd &mean, const Eigen::MatrixXd &cov);
         
     void initializeFilter(const Eigen::Affine3d &pose,
                           const Eigen::MatrixXd &posecov) {
-        assignSigmas(ndt_generic::affine3dToVector(pose), posecov);
+        T_ = pose;
+        P_ = posecov;
     }
 
     void normalizeEuler() {
@@ -260,103 +130,25 @@ public:
     }
 
 
-    void predict(const Eigen::Affine3d &incr, const Eigen::MatrixXd &incrCov) {
-        
-        // Add the incremental pose to all sigmas.
-        for (int i = 0; i < sigmas_.size(); i++) {
-            Eigen::Affine3d s = ndt_generic::vectorToAffine3d(sigmas_[i]) * incr;
-            sigmas_[i] = ndt_generic::affine3dToVector(s);
-        }
+    void predict(const Eigen::Affine3d &incr, const Eigen::MatrixXd &incrCov);
 
-        // Compute the mean
-        Eigen::VectorXd mean = this->computePoseMean();
-        
-        std::cout << "[mean...] : " << mean.transpose() << std::endl;
-        T_ = ndt_generic::vectorToAffine3d(mean);
+    // Assure that the diagonal vairances is never less than ...
+    void assignMinDiagVariances();
 
-        // Compute and add the covariance - TODO, do this better?
-        P_ = this->computePoseCov(mean);// + incrCov;
-
-        std::cout << "P_ : \n" << P_ << std::endl;
-
-        // Assign the new sigma points
-        assignSigmas(mean, P_);
-    }
-
-    void update(const Eigen::MatrixXd &pred_ranges,
-                const Eigen::VectorXd &raw_ranges) {
-        
-        // Compute the mean of the ray traced measurements
-        Eigen::VectorXd mean(raw_ranges.size());
-        mean.setZero();
-
-        double weight_m0 = this->getWeightMean(0);
-        double weight_m = this->getWeightMean(1);
-
-        for (int i = 0; i < raw_ranges.size(); i++) {
-            mean(i) = weight_m0 * pred_ranges(0,i);
-            for (int j = 1; j < 2*this->N_+1; j++) {
-                mean(i) += weight_m * pred_ranges(j,i);
-            }
-        }
-
-        // Compute the covariance of the ray traced masurements
-        Eigen::MatrixXd Q(raw_ranges.size(), raw_ranges.size());
-        Q.setIdentity();
-        Q *= 0.01;  // Range variance.
-
-        Eigen::MatrixXd S(raw_ranges.size(), raw_ranges.size());
-        S.setZero();
-        
-        // Keep the range differences
-        std::vector<Eigen::VectorXd> diffs;
-
-        double weight_c0 = this->getWeightCov(0);
-        double weight_c = this->getWeightCov(1);
-
-        for (int i = 0; i < 2*this->N_+1; i++)  {
-            Eigen::VectorXd diff = pred_ranges.row(i) - raw_ranges;
-            if (i == 0)
-                S += weight_c0 * diff * diff.transpose();
-            else
-                S += weight_c * diff * diff.transpose();
-            diffs.push_back(diff);
-        }
-        S += Q;
-
-
-        // Correct the pose
-        Eigen::MatrixXd J_t; 
-        J_t.setZero();
-        
-        // Need to have all the states in a vector format.
-        // Current pose, this is already predicted.
-        Eigen::VectorXd pred_s = ndt_generic::affine3dToVector(this->T_);
-
-        // Compute the difference between the predicted state and the sigma points
-        std::vector<Eigen::VectorXd> s_diffs;
-        for (int i = 0; i < 2*N_+1; i++) {
-            s_diffs.push_back(this->sigmas_[i] - pred_s); // This need to be specifically checked to avoid 2*M_PI overflows.
-        }
-        
-        for (int i = 0; i < 2*this->N_+1; i++) {
-            J_t += this->getWeightCov(i)*diffs[i]*(s_diffs[i].transpose());
-        }
-        
-        Eigen::MatrixXd K_t = J_t.transpose() * S.inverse();
     
-        // Update the state
-        Eigen::VectorXd new_state = pred_s + K_t*(raw_ranges - mean);
-        T_ = ndt_generic::vectorToAffine3d(new_state);
-        
-        P_ = P_ - K_t * S * K_t.transpose();
-    }
+    // Filter the predicted and raw readings to assure that the distance between them are less than a threshold.
+    std::vector<int> filterMeasurements(Eigen::MatrixXd &pred_ranges, Eigen::VectorXd &raw_ranges,
+                                        Eigen::MatrixXd &filter_pred_ranges, Eigen::VectorXd &filter_raw_ranges) const;
+    
+    // The update step (fuse the sensor readings and predicted readings)
+    void update(const Eigen::MatrixXd &pred_ranges,
+                const Eigen::VectorXd &raw_ranges);
     
 
 };
 
 /**
- * NDT UKF 3D - Class implementation
+ * NDT UKF 3D - Class implementation, puts the NDT map and UKF together.
  */
 class NDTUKF3D{
 public:
@@ -485,7 +277,10 @@ public:
         return ukf_.getSigmasAsAffine3d();
     }
      
-
+    void setParamsUKF(const UKF3D::Params &params) {
+        ukf_.setParams(params);
+    }
+        
 private:
     bool isInit;
     double getDoubleTime()

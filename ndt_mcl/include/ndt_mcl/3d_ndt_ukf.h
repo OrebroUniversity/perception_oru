@@ -28,7 +28,9 @@ public:
             range_var(1.),
             min_pos_var(0.01),
             min_rot_var(0.01),
-            range_filter_max_dist(1.)
+            range_filter_max_dist(1.),
+            nb_ranges_in_update(100),
+            nb_updates(1000)
         {
         }
         double alpha;
@@ -38,6 +40,8 @@ public:
         double min_pos_var;
         double min_rot_var;
         double range_filter_max_dist;
+        int nb_ranges_in_update;
+        int nb_updates;
     };
 
     UKF3D() : N_(6) {
@@ -144,7 +148,10 @@ public:
     void update(const Eigen::MatrixXd &pred_ranges,
                 const Eigen::VectorXd &raw_ranges);
     
-
+    // Divides the sensory readings / prediction and performs a set of udpate steps.
+    void updateSeq(const Eigen::MatrixXd &pred_ranges,
+                   const Eigen::VectorXd &raw_ranges);
+        
 };
 
 /**
@@ -280,7 +287,17 @@ public:
     void setParamsUKF(const UKF3D::Params &params) {
         ukf_.setParams(params);
     }
-        
+
+    void updateVisualizationClouds(const std::vector<int> &idx, const pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::MatrixXd &filter_pred_ranges, const Eigen::Affine3d &Tsensor);
+
+    const pcl::PointCloud<pcl::PointXYZ>& getFilterRaw() const {
+        return pc_filtered_raw_;
+    }
+
+    const pcl::PointCloud<pcl::PointXYZ>& getFilterPred() const {
+        return pc_filtered_pred_;
+    }
+
 private:
     bool isInit;
     double getDoubleTime()
@@ -292,6 +309,10 @@ private:
 
     // UKF variables
     UKF3D ukf_;
+
+    // Store some point clouds for debugging / visualization
+    pcl::PointCloud<pcl::PointXYZ> pc_filtered_raw_;
+    pcl::PointCloud<pcl::PointXYZ> pc_filtered_pred_;
 };
 
 

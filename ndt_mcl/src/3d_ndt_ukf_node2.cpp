@@ -16,6 +16,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/filters/voxel_grid.h>
 #include <velodyne_pointcloud/rawdata.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <pcl_ros/impl/transforms.hpp>
@@ -99,6 +100,7 @@ private:
     ros::Publisher marker_pub_;
     ros::Publisher markerarray_pub_;
     ros::Publisher pointcloud_pub_;
+    ros::Publisher pointcloud2_pub_;
 
     std::string tf_base_link, tf_sensor_link, tf_gt_link, points_topic, odometry_topic, odometry_frame, scan_topic, scan2_topic;
 
@@ -122,8 +124,10 @@ private:
     
     int skip_nb_rings_;
     int skip_start_;
-
+    double voxel_filter_size_;
     int cloud_min_size_;
+
+    bool draw_ml_lines;
     
 public:
     NDTUKF3DNode(ros::NodeHandle param_nh) : data_(new velodyne_rawdata::RawData()), data2_(new velodyne_rawdata::RawData()) {
@@ -142,6 +146,7 @@ public:
 
             param_nh.param<int>("skip_nb_rings", skip_nb_rings_, 0);
             param_nh.param<int>("skip_start", skip_start_, 0);
+            param_nh.param<double>("voxel_filter_size", voxel_filter_size_, -1.);
             param_nh.param<int>("cloud_min_size", cloud_min_size_, 2000); // minimum amount of points (to avoid some problems with lost packages...).
         }
         // Need to have a separate configuration file for the second scanner...
@@ -259,6 +264,8 @@ public:
         param_nh.param<double>("ukf_min_pos_var", ukf_params.min_pos_var, 0.01);
         param_nh.param<double>("ukf_min_rot_var", ukf_params.min_rot_var, 0.01);
         param_nh.param<double>("ukf_range_filter_max_dist", ukf_params.range_filter_max_dist, 1.);
+        param_nh.param<int>("ukf_nb_ranges_in_update", ukf_params.nb_ranges_in_update, 100);
+
         ndtukf->setParamsUKF(ukf_params);
         
         ukf_pub = nh_.advertise<nav_msgs::Odometry>("ndt_ukf",10);
@@ -314,11 +321,13 @@ public:
         param_nh.param<bool>("do_visualize", do_visualize, true);
         param_nh.param<bool>("do_pub_ndt_markers", do_pub_ndt_markers_, true);
         param_nh.param<bool>("do_pub_sigmapoints_markers", do_pub_sigmapoints_markers_, true);
-
+        param_nh.param<bool>("draw_ml_lines", draw_ml_lines, true);
+        
         marker_pub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 3);
         markerarray_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 10);
 
         pointcloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("interppoints", 15);
+        pointcloud2_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ml_points", 15);
 
         heartbeat_slow_visualization_   = nh_.createTimer(ros::Duration(1.0),&NDTUKF3DNode::publish_visualization_slow,this);
         heartbeat_fast_visualization_   = nh_.createTimer(ros::Duration(0.1),&NDTUKF3DNode::publish_visualization_fast,this);
@@ -548,7 +557,7 @@ public:
                                                   conv_points.points[i].y,
                                                   conv_points.points[i].z));
                 }
-                else if (conv_points.points[i].ring % (skip_nb_rings_+1) == skip_start_) {
+                else if (conv_points.points[i].ring % (skip_nb_rings_+1) == skip_start_ % (skip_nb_rings_+1)) {
                     cloud.push_back(pcl::PointXYZ(conv_points.points[i].x,
                                                   conv_points.points[i].y,
                                                   conv_points.points[i].z));
@@ -559,6 +568,27 @@ public:
             }
             pnts.clear();
             conv_points.clear();
+        }
+        
+        if (voxel_filter_size_ > 0) {
+            // Create the filtering object
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2(new pcl::PointCloud<pcl::PointXYZ>());
+            *cloud2 = cloud;
+            pcl::VoxelGrid<pcl::PointXYZ> sor;
+            sor.setInputCloud (cloud2);
+            sor.setLeafSize (voxel_filter_size_, voxel_filter_size_, voxel_filter_size_);
+            pcl::PointCloud<pcl::PointXYZ> cloud_filtered;
+            sor.filter (cloud);
+            
+            // pcl::PointCloud<PointType>::Ptr laserCloudCornerStack(new pcl::PointCloud<PointType>());
+            // pcl::VoxelGrid<PointType> downSizeFilterCorner;
+            // downSizeFilterCorner.setLeafSize(0.2, 0.2, 0.2);
+
+            // downSizeFilterCorner.setInputCloud(laserCloudCornerStack2);
+            // downSizeFilterCorner.filter(*laserCloudCornerStack);
+        
+
+
         }
 
         // Check size of the cloud
@@ -581,58 +611,27 @@ public:
         //update filter -> + add parameter to subsample ndt map in filter step
         ndtukf->updateAndPredict/*Eff*/(Tm, cloud/*, subsample_level*/, sensorPoseT);
         //ndtukf->predict(Tm);
-        
-  #if 0
-        // test the ML point computation
-        // cloud is in vehicle frame...
-        {
 
-
-            std::vector<Eigen::Vector3d> dirs;
-            std::vector<double> r;
-            Eigen::VectorXd raw_ranges;
-            ndt_generic::computeDirectionsAndRangesFromPointCloud(cloud, sensorPoseT.translation(), dirs, r);
-            
-            raw_ranges = Eigen::VectorXd::Map(r.data(), r.size());
-            
-            Eigen::Affine3d tmp = ndtukf->getMean()*sensorPoseT;
-            Eigen::Vector3d origin = tmp.translation();
-            
-            Eigen::VectorXd ranges;
-            ndtukf->map.computeMaximumLikelihoodRanges(origin, raw_ranges, dirs, ranges);
-
-#if 0
-            // move the cloud to the world frame
-            Eigen::Affine3d tmp = ndtukf->getMean()*sensorPoseT;
-            lslgeneric::transformPointCloudInPlace(tmp, cloud);
-
-            Eigen::Vector3d origin = tmp.translation();
-            std::vector<std::pair<double,double> > ranges;
-            ndtukf->map.computeMaximumLikelihoodPointCloudWithRangePairs(origin,
-                                                                         cloud,
-                                                                         origin,
-                                                                         cloud2,
-                                                                         ranges,
-                                                                         130.);
-
-            sensor_msgs::PointCloud2 pcloud;
-            pcl::toROSMsg(cloud2,pcloud);
-            pcloud.header.stamp = t0;
-            pcloud.header.frame_id = "world";
-            pointcloud_pub_.publish(pcloud);
-#endif
-        }
-       
-#else
         {
             sensor_msgs::PointCloud2 pcloud;
-            pcl::toROSMsg(cloud,pcloud);
+            pcl::toROSMsg(ndtukf->getFilterRaw(), pcloud);
             pcloud.header.stamp = t0;
             pcloud.header.frame_id = "interppoints";
             pointcloud_pub_.publish(pcloud);
         }
-#endif
 
+        {
+            sensor_msgs::PointCloud2 pcloud;
+            pcl::toROSMsg(ndtukf->getFilterPred(),pcloud);
+            pcloud.header.stamp = t0;
+            pcloud.header.frame_id = "interppoints";
+            pointcloud2_pub_.publish(pcloud);
+
+            if (draw_ml_lines) {
+                
+                marker_pub_.publish(ndt_visualisation::getMarkerLineListFromTwoPointClouds(ndtukf->getFilterRaw(), ndtukf->getFilterPred(), 0, "ml_lines", "interppoints", 0.05));
+            }
+        }
        
         //publish pose
         sendROSOdoMessage(ndtukf->getMean(),t0);

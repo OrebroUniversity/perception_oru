@@ -14,6 +14,14 @@ namespace ndt_visualisation {
   // Contains a set of useful functions to generate markers from NDT related classes.
 
   // Some helper functions to convert to the position etc. utilized in the markers.
+inline geometry_msgs::Point toPointFromPCL(const pcl::PointXYZ &p) {
+    geometry_msgs::Point pt;
+    pt.x = p.x;
+    pt.y = p.y;
+    pt.z = p.z;
+    return pt;
+}
+
   inline geometry_msgs::Point toPointFromTF (const tf::Vector3& p)
   {
     geometry_msgs::Point pt;
@@ -379,6 +387,30 @@ visualization_msgs::MarkerArray getMarkerFrameAffine3d(const Eigen::Affine3d &T,
     m.markers.push_back(getMarkerCylinder(T_z, 2, 2, length, radius, ns));
   }
   return m;
+}
+
+visualization_msgs::Marker getMarkerLineListFromTwoPointClouds(const pcl::PointCloud<pcl::PointXYZ> &pc1, const pcl::PointCloud<pcl::PointXYZ> &pc2, int color, const std::string &ns, const std::string &frame_id, double width) {
+
+    visualization_msgs::Marker m;
+    if (pc1.size() != pc2.size()) {
+        assert(false);
+        return m;
+    }
+    assignDefault(m);
+
+    assignColor(m, color);
+    m.ns = ns;
+    m.type = visualization_msgs::Marker::LINE_LIST;
+    m.action = visualization_msgs::Marker::ADD;
+    m.id = 0;
+    m.scale.x = width;
+    m.header.frame_id = frame_id;
+
+    for (int i = 0; i < pc1.size(); i++) {
+        m.points.push_back(toPointFromPCL(pc1[i]));
+        m.points.push_back(toPointFromPCL(pc2[i]));
+    }
+    return m;
 }
 
 

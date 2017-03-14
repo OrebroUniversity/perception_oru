@@ -31,4 +31,10 @@ void computeDirectionsAndRangesFromPointCloud(const pcl::PointCloud<pcl::PointXY
     }
 }
 
+pcl::PointXYZ eigenToPCLPoint(const Eigen::Vector3d &pt) {
+    pcl::PointXYZ p;
+    p.x = pt[0]; p.y = pt[1]; p.z = pt[2];
+    return p;
 }
+
+} // namespace

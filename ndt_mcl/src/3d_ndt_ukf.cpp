@@ -24,7 +24,7 @@ Eigen::MatrixXd UKF3D::computePoseCov(const Eigen::VectorXd &mean) const
         ret.setZero();
         assert(mean.size() != N_);
 
-        for (int i = 0; i < 2*N_+1; i++) {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
 
             Eigen::VectorXd diff = mean - this->getSigma(i);
             
@@ -78,7 +78,7 @@ Eigen::MatrixXd UKF3D::computePoseCov(const Eigen::VectorXd &mean) const
 std::vector<double> UKF3D::getMeanWeights() const {
         std::vector<double> ret;
         
-        for (int i = 0; i < 2*N_+1; i++) {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
             ret.push_back(getWeightMean(i));
         }
         return ret;
@@ -87,7 +87,7 @@ std::vector<double> UKF3D::getMeanWeights() const {
 std::vector<double> UKF3D::getCovWeights() const {
         std::vector<double> ret;
         
-        for (int i = 0; i < 2*N_+1; i++) {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
             ret.push_back(getWeightCov(i));
         }
         return ret;
@@ -118,7 +118,7 @@ std::vector<Eigen::Affine3d> UKF3D::getSigmasAsAffine3d() const {
         }
         assert(sigmas_.size() != 2*N+1);
         
-        for (int i = 0; i < 2*N_+1; i++) {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
             ret.push_back(ndt_generic::vectorToAffine3d(sigmas_[i]));
         }
 
@@ -181,7 +181,7 @@ void UKF3D::update(const Eigen::MatrixXd &pred_ranges,
 
         for (int i = 0; i < raw_ranges.size(); i++) {
             mean(i) = weight_m0 * pred_ranges(0,i);
-            for (int j = 1; j < 2*this->N_+1; j++) {
+            for (int j = 1; j < this->getNbSigmaPoints(); j++) {
                 mean(i) += weight_m * pred_ranges(j,i);
             }
         }
@@ -200,7 +200,7 @@ void UKF3D::update(const Eigen::MatrixXd &pred_ranges,
         double weight_c0 = this->getWeightCov(0);
         double weight_c = this->getWeightCov(1);
 
-        for (int i = 0; i < 2*this->N_+1; i++)  {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++)  {
             Eigen::VectorXd diff = pred_ranges.row(i).transpose() - raw_ranges;
             if (i == 0) {
                 S += weight_c0 * diff * diff.transpose();
@@ -222,11 +222,13 @@ void UKF3D::update(const Eigen::MatrixXd &pred_ranges,
 
         // Compute the difference between the predicted state and the sigma points
         std::vector<Eigen::VectorXd> s_diffs;
-        for (int i = 0; i < 2*N_+1; i++) {
-            s_diffs.push_back(this->sigmas_[i] - pred_s); // This need to be specifically checked to avoid 2*M_PI overflows.
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
+            s_diffs.push_back(this->sigmas_[i] - pred_s);
+            // This need to be specifically checked to avoid 2*M_PI overflows.
+            ndt_generic::normalizeEulerAngles6dVec(s_diffs.back());
         }
 
-        for (int i = 0; i < 2*this->N_+1; i++) {
+        for (int i = 0; i < this->getNbSigmaPoints(); i++) {
             J_t += this->getWeightCov(i)*diffs[i]*(s_diffs[i].transpose());
         }
 
@@ -248,6 +250,27 @@ void UKF3D::update(const Eigen::MatrixXd &pred_ranges,
         std::cout << "P_ new [update] : " << P_ << std::endl;
     }
 
+
+void UKF3D::updateSeq(const Eigen::MatrixXd &pred_ranges,
+                      const Eigen::VectorXd &raw_ranges) {
+    
+    // Split the upate into multiple updates.
+    int i = 0;
+    int counter = 0;
+    while (i < raw_ranges.size() && counter < params_.nb_updates) {
+        
+        int nb_ranges = params_.nb_ranges_in_update;
+        if (i + nb_ranges >= raw_ranges.size()) {
+            nb_ranges = raw_ranges.size() - i - 1;
+        }
+        std::cout << "UPDATE _________ " << i << std::endl;
+        this->update(pred_ranges.block(0,i,getNbSigmaPoints(), nb_ranges),
+                     raw_ranges.segment(i, nb_ranges));
+
+        i += params_.nb_ranges_in_update;
+        counter++;
+    }
+}
 
 
 void UKF3D::assignMinDiagVariances() {
@@ -272,7 +295,7 @@ std::vector<int> UKF3D::filterMeasurements(Eigen::MatrixXd &pred_ranges, Eigen::
         std::vector<int> idx;
         for (int i = 0; i < raw_ranges.size(); i++) {
             bool use = true;
-            for (int j = 0; j < 2*this->N_+1; j++) {
+            for (int j = 0; j < this->getNbSigmaPoints(); j++) {
                 double diff = fabs(pred_ranges(j,i) - raw_ranges(i));
                 if (diff > params_.range_filter_max_dist) {
                     use = false;
@@ -283,7 +306,7 @@ std::vector<int> UKF3D::filterMeasurements(Eigen::MatrixXd &pred_ranges, Eigen::
             }
         }
 
-        filter_pred_ranges.resize(2*N_+1, idx.size());
+        filter_pred_ranges.resize(this->getNbSigmaPoints(), idx.size());
         filter_raw_ranges.resize(idx.size());
         for (int i = 0; i < idx.size(); i++) {
             filter_raw_ranges[i] = raw_ranges[idx[i]];
@@ -318,6 +341,24 @@ void NDTUKF3D::predict(Eigen::Affine3d Tmotion) {
     ukf_.predict(Tmotion, Q);
 } 
 
+// Only to visualize the filtered points, the center sigma point pose will be used.
+void NDTUKF3D::updateVisualizationClouds(const std::vector<int> &idx, const pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::MatrixXd &filter_pred_ranges, const Eigen::Affine3d &Tsensor) {
+    this->pc_filtered_raw_.clear();
+    this->pc_filtered_pred_.clear();
+   
+    std::vector<Eigen::Vector3d> dirs;
+    std::vector<double> r;
+    ndt_generic::computeDirectionsAndRangesFromPointCloud(cloud, Tsensor.translation(), dirs, r);
+ 
+    for (int i = 0; i <idx.size(); i++) {
+        pc_filtered_raw_.push_back(cloud[idx[i]]);
+        // Only have the distance for the pred...
+        Eigen::Vector3d p = Tsensor.translation() + dirs[idx[i]] * filter_pred_ranges(0,i);
+        pc_filtered_pred_.push_back(ndt_generic::eigenToPCLPoint(p));
+    }
+}
+                                         
+
 
 void NDTUKF3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tsensor){
 
@@ -329,11 +370,14 @@ void NDTUKF3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
 
     this->computeMeasurements(cloud, Tsensor, pred_ranges, raw_ranges);
 
-    ukf_.filterMeasurements(pred_ranges, raw_ranges,
-                            filter_pred_ranges, filter_raw_ranges);
+    std::vector<int> filter_idx = ukf_.filterMeasurements(pred_ranges, raw_ranges,
+                                                          filter_pred_ranges, filter_raw_ranges);
+    
+    updateVisualizationClouds(filter_idx, cloud, filter_pred_ranges, Tsensor);
 
     //    ukf_.update(pred_ranges, raw_ranges);
-    ukf_.update(filter_pred_ranges, filter_raw_ranges);
+    //ukf_.update(filter_pred_ranges, filter_raw_ranges);
+    ukf_.updateSeq(filter_pred_ranges, filter_raw_ranges);
 }
 
 

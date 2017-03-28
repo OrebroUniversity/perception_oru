@@ -127,7 +127,7 @@ public:
                      Eigen::MatrixXd &cov
                    );
 
-    //compute the score of a point cloud to an NDT //UNUSED
+    //compute the score of a point cloud to an NDT
     virtual double scoreNDT(std::vector<NDTCell*> &source, NDTMap &target);
 
     virtual double scoreNDT_OM(NDTMap &source, NDTMap &target);

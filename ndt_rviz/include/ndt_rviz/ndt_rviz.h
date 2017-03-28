@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ndt_map/ndt_map.h>
-#include <ndt_mcl/3d_ndt_mcl.h>
 #include <ros/ros.h>
 #include <tf_conversions/tf_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -15,6 +14,14 @@ namespace ndt_visualisation {
   // Contains a set of useful functions to generate markers from NDT related classes.
 
   // Some helper functions to convert to the position etc. utilized in the markers.
+inline geometry_msgs::Point toPointFromPCL(const pcl::PointXYZ &p) {
+    geometry_msgs::Point pt;
+    pt.x = p.x;
+    pt.y = p.y;
+    pt.z = p.z;
+    return pt;
+}
+
   inline geometry_msgs::Point toPointFromTF (const tf::Vector3& p)
   {
     geometry_msgs::Point pt;
@@ -316,28 +323,6 @@ inline visualization_msgs::Marker markerMeanCovariance2d(const Eigen::Vector3d &
   return m;
 }
 
-visualization_msgs::Marker markerParticlesNDTMCL3D(const NDTMCL3D &mcl, int color, const std::string& ns) {
-  visualization_msgs::Marker m;
-  assignDefault(m);
-  m.ns = ns;
-  m.id = 0;
-  m.type = visualization_msgs::Marker::LINE_LIST;
-  m.scale.x = 0.005;
-  m.color.g = m.color.a = 1.0;
-  m.color.r = 0.6; m.color.b = 0.8;
-  if (color >= 0) {
-    assignColor(m, color);
-  }
-  for (unsigned int i = 0; i < mcl.pf.size(); i++) {
-    const Eigen::Affine3d &T = mcl.pf.pcloud[i].T;
-    m.points.push_back(toPointFromEigen(T.translation()));
-    // Length of the line -> 0.3.
-    Eigen::Vector3d p2 = T*Eigen::Vector3d(0.3, 0., 0.);
-    m.points.push_back(toPointFromEigen(p2));
-  }  
-  return m;
-}
-
 
 // Visualization markers.
 void appendMarkerArray(visualization_msgs::MarkerArray &array, const visualization_msgs::MarkerArray &add) {
@@ -359,7 +344,6 @@ visualization_msgs::Marker getMarkerArrowAffine3d(const Eigen::Affine3d &T, int 
   tf::poseEigenToMsg (T, m.pose);
   return m;
 } 
-
 
 visualization_msgs::Marker getMarkerCylinder(const Eigen::Affine3d &T,
                                                   int id, int color,
@@ -403,6 +387,30 @@ visualization_msgs::MarkerArray getMarkerFrameAffine3d(const Eigen::Affine3d &T,
     m.markers.push_back(getMarkerCylinder(T_z, 2, 2, length, radius, ns));
   }
   return m;
+}
+
+visualization_msgs::Marker getMarkerLineListFromTwoPointClouds(const pcl::PointCloud<pcl::PointXYZ> &pc1, const pcl::PointCloud<pcl::PointXYZ> &pc2, int color, const std::string &ns, const std::string &frame_id, double width) {
+
+    visualization_msgs::Marker m;
+    if (pc1.size() != pc2.size()) {
+        assert(false);
+        return m;
+    }
+    assignDefault(m);
+
+    assignColor(m, color);
+    m.ns = ns;
+    m.type = visualization_msgs::Marker::LINE_LIST;
+    m.action = visualization_msgs::Marker::ADD;
+    m.id = 0;
+    m.scale.x = width;
+    m.header.frame_id = frame_id;
+
+    for (int i = 0; i < pc1.size(); i++) {
+        m.points.push_back(toPointFromPCL(pc1[i]));
+        m.points.push_back(toPointFromPCL(pc2[i]));
+    }
+    return m;
 }
 
 

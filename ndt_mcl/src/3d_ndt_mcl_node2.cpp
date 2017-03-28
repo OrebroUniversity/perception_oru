@@ -53,6 +53,7 @@
 #include <ndt_map/ndt_map.h>
 
 #include <ndt_rviz/ndt_rviz.h>
+#include <ndt_mcl/ndt_mcl_rviz.h>
 //#include <ndt_feature/ndt_feature_rviz.h>
 
 inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
@@ -108,6 +109,7 @@ class NDTMCL3DNode {
     ros::Time scan2_t0_;
             
 
+    bool onlyPredict;
     bool use_dual_scan;
 	bool hasSensorPose, hasInitialPose;
 	bool isFirstLoad;
@@ -285,7 +287,7 @@ bool do_pub_ndt_markers_;
             param_nh.getParam("motion_model", ndtmcl->motion_model);
             param_nh.getParam("motion_model_offset", ndtmcl->motion_model_offset);
 	    param_nh.param<double>("resolution_sensor", ndtmcl->resolution_sensor, resolution);
-            
+            param_nh.param<bool>("only_predict", onlyPredict, false);
 
             mcl_pub = nh_.advertise<nav_msgs::Odometry>("ndt_mcl",10);
 	    
@@ -580,7 +582,7 @@ bool do_pub_ndt_markers_;
         }
 
         // We're interessted in getting the pointcloud in the vehicle frame (that is to transform it using the sensor pose offset).
-        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::PointCloud<pcl::PointXYZ> cloud, cloud2;
         
         velodyne_rawdata::VPointCloud pnts,conv_points;
         tf::Transform T_sensorpose;
@@ -631,6 +633,49 @@ bool do_pub_ndt_markers_;
             scan2_cloud_.clear();
         }
 
+
+        // 
+        Tcum = Tcum*Tm;
+        Todo_old=Todo;
+
+        //update filter -> + add parameter to subsample ndt map in filter step
+        if (onlyPredict) {
+            ndtmcl->predict(Tm);
+        }
+        else {
+            ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
+        }
+
+        // Visualization...
+#if 0
+        // test the ML point computation
+        // cloud is in vehicle frame...
+        {
+            // move the cloud to the world frame
+            Eigen::Affine3d tmp = ndtmcl->pf.getMean()*sensorPoseT;
+            lslgeneric::transformPointCloudInPlace(tmp, cloud);
+
+            Eigen::Vector3d origin = (ndtmcl->pf.getMean()*sensorPoseT).translation();
+            std::vector<std::pair<double,double> > ranges;
+            ndtmcl->map.computeMaximumLikelihoodPointCloudWithRangePairs(origin,
+                                                                         cloud,
+                                                                         origin,
+                                                                         cloud2,
+                                                                         ranges,
+                                                                         130.);
+            ROS_INFO_STREAM("origin : " << origin);
+            ROS_INFO_STREAM("cloud2.size() : " << cloud2.size());
+            ROS_INFO_STREAM("ranges.size() : " << ranges.size());
+
+            sensor_msgs::PointCloud2 pcloud;
+            pcl::toROSMsg(cloud2,pcloud);
+            pcloud.header.stamp = t0;
+            pcloud.header.frame_id = "world";
+            pointcloud_pub_.publish(pcloud);
+
+        }
+       
+#else
         {
             sensor_msgs::PointCloud2 pcloud;
             pcl::toROSMsg(cloud,pcloud);
@@ -638,13 +683,9 @@ bool do_pub_ndt_markers_;
             pcloud.header.frame_id = "interppoints";
             pointcloud_pub_.publish(pcloud);
         }
-        // 
-        Tcum = Tcum*Tm;
-        Todo_old=Todo;
+#endif
 
-        //update filter -> + add parameter to subsample ndt map in filter step
-        ndtmcl->updateAndPredictEff(Tm, cloud, subsample_level);
-        //ndtmcl->predict(Tm);
+
 
         if (do_visualize) {
             visualize();

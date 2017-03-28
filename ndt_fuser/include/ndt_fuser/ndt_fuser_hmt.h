@@ -9,7 +9,7 @@
 #include <ndt_registration/ndt_matcher_d2d.h>
 #include <ndt_registration/ndt_matcher_d2d_sc.h>
 #include <ndt_map/pointcloud_utils.h>
-#include <ndt_fuser/motion_model_2d.h>
+#include <ndt_generic/motion_model_2d.h>
 
 #include <Eigen/Eigen>
 #include <pcl/point_cloud.h>

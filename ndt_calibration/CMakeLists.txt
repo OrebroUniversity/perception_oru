@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   ndt_rviz
   ndt_mcl
   ndt_offline
+  ndt_generic
   pcl_ros
   pcl_conversions
   tf

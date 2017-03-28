@@ -222,6 +222,11 @@ Eigen::Affine3d vectorsToAffine3d(const Eigen::Vector3d &transl,
 
     return vectorToAffine3d(v);
 }
+
+ Eigen::Vector3d quaternionToEuler(const Eigen::Quaterniond &q) {
+   Eigen::Matrix3d m = q.matrix();
+   return m.eulerAngles(0, 1, 2);
+ }
     
 Eigen::VectorXd affine3dToVector(const Eigen::Affine3d &T) {
     Eigen::VectorXd ret(6);
@@ -290,8 +295,22 @@ Eigen::Affine3d getWeightedPose(const Eigen::Affine3d &pose1,
     return vectorToAffine3d(out);
 }
 
+ double getYaw(const Eigen::Affine3d &T) {
+   Eigen::Vector3d rot = T.rotation().eulerAngles(0,1,2);
+   normalizeEulerAngles(rot);
+   return rot(2);
+ }
 
+ void updateAffineRotationFromEuler(Eigen::Affine3d &T, Eigen::Vector3d &euler) 
+ {
+  T.linear() = (Eigen::AngleAxisd(euler[0], Eigen::Vector3d::UnitX())*Eigen::AngleAxisd(euler[1], Eigen::Vector3d::UnitY())*Eigen::AngleAxisd(euler[2], Eigen::Vector3d::UnitZ())).toRotationMatrix();
+ }
 
+void updateRollPitch(Eigen::Affine3d &T, Eigen::Vector3d& euler) {
+
+  double yaw = getYaw(T);
+  T.linear() = (Eigen::AngleAxisd(euler[0], Eigen::Vector3d::UnitX())*Eigen::AngleAxisd(euler[1], Eigen::Vector3d::UnitY())*Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+}
 
 
 

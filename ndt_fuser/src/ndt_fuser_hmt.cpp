@@ -79,7 +79,7 @@ namespace lslgeneric {
 		Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
 		Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
 		std::cout << "POSE " << pose.matrix() << std::endl;
-		exit(0);
+// 		exit(0);
 		
 		initialize(pose, cloud, preLoad);
 

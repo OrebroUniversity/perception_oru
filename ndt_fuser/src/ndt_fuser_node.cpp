@@ -275,7 +275,7 @@ public:
 		else if(initPoseFromTF){
 			ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
                  pose_.rotation().eulerAngles(0,1,2)(0));
-// 			fuser->setSensorPose(robot_frame, sensor_frame);
+			fuser->setSensorPose(robot_frame, sensor_frame);
 			fuser->initialize(cloud, world_frame, robot_frame);
 			ROS_INFO("OUT");
 		}

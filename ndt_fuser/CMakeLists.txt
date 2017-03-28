@@ -85,6 +85,12 @@ add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
 
 target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
 
+
+add_executable(init_test src/init_test.cpp)
+add_dependencies(init_test ndt_fuser__generate_messages_cpp)
+
+target_link_libraries(init_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
+
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package
 install(TARGETS ndt_fuser_node ${PROJECT_NAME}

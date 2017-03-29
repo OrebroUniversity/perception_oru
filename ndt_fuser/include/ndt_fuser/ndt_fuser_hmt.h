@@ -11,8 +11,6 @@
 #include <ndt_map/pointcloud_utils.h>
 #include <ndt_fuser/motion_model_2d.h>
 
-#include <tf/transform_listener.h>
-
 #include <Eigen/Eigen>
 #include <pcl/point_cloud.h>
 #include <sys/time.h>
@@ -113,29 +111,6 @@ class NDTFuserHMT{
 	    sensor_pose = spose;
 	}
 	
-	void setSensorPose(const std::string& robot_frame, const std::string& sensor_frame){
-		tf::TransformListener listener;
-		tf::StampedTransform transform;
-		try {
-			listener.waitForTransform(sensor_frame, robot_frame, ros::Time(0), ros::Duration(10.0) );
-			listener.lookupTransform(sensor_frame, robot_frame, ros::Time(0), transform);
-		} catch (tf::TransformException ex) {
-			ROS_ERROR("%s",ex.what());
-		}
-		double x = transform.getOrigin().x();
-		double y = transform.getOrigin().y();
-		double z = transform.getOrigin().z();
-		double roll, pitch, yaw;
-		transform.getBasis().getRPY(roll, pitch, yaw);
-		
-		Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(x,y,z)*
-		Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
-		Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
-		Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
-		
-		setSensorPose(pose_sensor);
-		
-	}
 	
 	void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
 		motionModel2D.setParams(p);

@@ -54,36 +54,6 @@ namespace lslgeneric {
     }
     
     
-	void NDTFuserHMT::initialize(pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad)
-	{
-		std::cout << "Listening between " << world_frame << " and " << robot_frame << std::endl;
-		tf::TransformListener listener;
-		tf::StampedTransform transform;
-		try {
-			std::cout << "wait" << std::endl;
-			listener.waitForTransform(robot_frame, world_frame, ros::Time(0), ros::Duration(1.0) );
-		std::cout << "Lookup" << std::endl;
-			listener.lookupTransform(world_frame, robot_frame, ros::Time(0), transform);
-		} catch (tf::TransformException ex) {
-			ROS_ERROR("%s",ex.what());
-		}
-		std::cout << "DONE " << robot_frame << std::endl;
-		double x = transform.getOrigin().x();
-		double y = transform.getOrigin().y();
-		double z = transform.getOrigin().z();
-		double roll, pitch, yaw;
-		transform.getBasis().getRPY(roll, pitch, yaw);
-		
-		Eigen::Affine3d pose = Eigen::Translation<double,3>(x,y,z)*
-		Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
-		Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
-		Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
-		std::cout << "POSE " << pose.matrix() << std::endl;
-// 		exit(0);
-		
-		initialize(pose, cloud, preLoad);
-
-	}
 
 
     /**

@@ -64,6 +64,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 set (${PROJECT_NAME}_LIB_SRCS
 #	    src/ndt_fuser.cpp
 	    src/ndt_fuser_hmt.cpp
+	    src/ndt_fuser_init.cpp
 	)
 
 #add_executable(test_ndt_fuser src/ndt_fuser_from_depth.cpp)

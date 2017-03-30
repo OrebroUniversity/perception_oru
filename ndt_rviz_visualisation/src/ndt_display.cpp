@@ -48,10 +48,21 @@ namespace lslgeneric{
       visuals_[i]->setColor(color.r,color.g,color.b,alpha);
     }
   }
+  
+  void NDTDisplay::updateHistoryLength()
+{
+	ROS_INFO_STREAM("history received: " << this->history_length_property_->getInt());
+}
+
   void NDTDisplay::processMessage( const ndt_map::NDTMapMsg::ConstPtr& msg ){
     ROS_ERROR("MESSAGE RECIVED");
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
+	
+	if(history_length_property_->getInt() <= 1){
+		visuals_.clear();
+	}
+	
     if( !context_->getFrameManager()->getTransform( msg->header.frame_id,msg->header.stamp,position, orientation)){
       ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
       return;

@@ -39,6 +39,10 @@ namespace lslgeneric{
     void updateHistoryLength();
 
   private:
+	  
+	  /**
+	   * @brief transform a NDTmap msg into a vector of NDTVisual, one per cell. If history is set to one or lower, it only display the last NDTMap. Otherwise, it keeps all cells through time
+	   */
     void processMessage(const ndt_map::NDTMapMsg::ConstPtr& msg);
 
     std::vector<boost::shared_ptr<NDTVisual> > visuals_;

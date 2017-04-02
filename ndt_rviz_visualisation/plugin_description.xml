@@ -15,5 +15,13 @@
     </description>
     <message_type>ndt_map/NDTMapMsg</message_type>
   </class>
+  <class name="ndt_rviz_visualisation/NDTGraph"
+         type="lslgeneric::NDTGraphDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays ndt Graph representing ndt maps.
+    </description>
+    <message_type>ndt_map/NDTGraphMsg</message_type>
+  </class>
 
 </library>

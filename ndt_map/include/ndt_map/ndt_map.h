@@ -138,7 +138,7 @@ public:
      * @param sizex, sizey, sizez: The size of the map in each respective direction
      * NOTE: Implementation only for the laze grid
      **/
-    NDTMap(SpatialIndex *idx, float cenx, float ceny, float cenz, float sizex, float sizey, float sizez)
+    NDTMap(SpatialIndex *idx, float cenx, float ceny, float cenz, float sizex, float sizey, float sizez, bool dealloc = false)
     {
         if(idx == NULL)
         {
@@ -149,7 +149,7 @@ public:
 
         //this is used to prevent memory de-allocation of the *si
         //si was allocated outside the NDT class and should be deallocated outside
-        isFirstLoad_=true;//////////////////////////////////////////////////////////////////////////////false; Henrik - was false, but why?
+        isFirstLoad_=!dealloc;//////////////////////////////////////////////////////////////////////////////false; Henrik - was false, but why?
 
         NDTCell *ptCell = new NDTCell();
         index_->setCellType(ptCell);
@@ -207,8 +207,10 @@ public:
     	*/
     virtual ~NDTMap()
     {
+// 		std::cout << "NDTMAP destructor index : " << index_ << " is !firstLoad" << !isFirstLoad_ << std::endl;
         if(index_ !=NULL && !isFirstLoad_)
         {
+// 			std::cout << "Destory" << std::endl;
           delete index_;
           index_ = NULL;
         }

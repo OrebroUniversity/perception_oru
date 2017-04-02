@@ -9,7 +9,7 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/frame_manager.h>
 
-#include "ndt_visual.hpp"
+#include "ndt_line_visual.hpp"
 #include "ndt_graph_display.hpp"
 
 namespace lslgeneric{
@@ -40,7 +40,7 @@ namespace lslgeneric{
   void NDTGraphDisplay::reset(){
     MFDClass::reset();
     visuals_.clear();
-	all_visuals_.clear();
+// 	all_visuals_.clear();
   }
   
   void NDTGraphDisplay::updateColorAndAlpha(){
@@ -49,11 +49,11 @@ namespace lslgeneric{
     for(size_t i=0;i<visuals_.size();i++){
       visuals_[i]->setColor(color.r,color.g,color.b,alpha);
     }
-    for(size_t i=0;i<all_visuals_.size();i++){
-      for(size_t j=0;j<all_visuals_[i].size();j++){
-		all_visuals_[i][j]->setColor(color.r,color.g,color.b,alpha);
-	  }
-    }
+//     for(size_t i=0;i<all_visuals_.size();i++){
+//       for(size_t j=0;j<all_visuals_[i].size();j++){
+// 		all_visuals_[i][j]->setColor(color.r,color.g,color.b,alpha);
+// 	  }
+//     }
   }
   
 void NDTGraphDisplay::updateHistoryLength()
@@ -63,7 +63,7 @@ void NDTGraphDisplay::updateHistoryLength()
 
   
   void NDTGraphDisplay::processMessage(const ndt_feature::NDTGraphMsg::ConstPtr& msg ){
-    ROS_INFO_STREAM("MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << all_visuals_.size() );
+    ROS_INFO_STREAM("MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
 	
@@ -82,13 +82,29 @@ void NDTGraphDisplay::updateHistoryLength()
 		
 		for(int itr=0;itr<msg->nodes[i].map.map.cells.size();itr++){
 			//for(int itr=0;itr<10;itr++){
-			boost::shared_ptr<NDTVisual> visual;
+			/*boost::shared_ptr<NDTVisual> visual;
 			visual.reset(new NDTVisual(context_->getSceneManager(), scene_node_));
 			if(!(msg->nodes[i].map.map.x_cell_size==msg->nodes[i].map.map.y_cell_size&&msg->nodes[i].map.map.y_cell_size==msg->nodes[i].map.map.z_cell_size)){ 
 				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 				//return false;
 			}
 
+			visual->setCell(msg->nodes[i].map.map.cells[itr],msg->nodes[i].map.map.x_cell_size);
+			visual->setFramePosition(position);
+			visual->setFrameOrientation(orientation);
+			float alpha = alpha_property_->getFloat();
+			Ogre::ColourValue color=color_property_->getOgreColor();
+			visual->setColor(color.r,color.g,color.b,alpha);
+			visuals_.push_back(visual);*/
+			
+			
+			boost::shared_ptr<NDTLineVisual> visual;
+			visual.reset(new NDTLineVisual(context_->getSceneManager(), scene_node_));
+			if(!(msg->nodes[i].map.map.x_cell_size==msg->nodes[i].map.map.y_cell_size&&msg->nodes[i].map.map.y_cell_size==msg->nodes[i].map.map.z_cell_size)){ 
+				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
+				//return false;
+			}
+			
 			visual->setCell(msg->nodes[i].map.map.cells[itr],msg->nodes[i].map.map.x_cell_size);
 			visual->setFramePosition(position);
 			visual->setFrameOrientation(orientation);

@@ -111,9 +111,10 @@ class NDTFuserHMT{
 	    sensor_pose = spose;
 	}
 	
-        void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
-          motionModel2D.setParams(p);
-        }
+	
+	void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
+		motionModel2D.setParams(p);
+	}
 
 	bool wasInit()
 	{
@@ -138,6 +139,11 @@ class NDTFuserHMT{
 	 * Set the initial position and set the first scan to the map
 	 */
 	void initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::PointXYZ> &cloud, bool preLoad=false);
+	
+	/**
+	 * @brief Set the initial position and set the first scan to the map and use tf for fixing the first pose
+	 */
+	void initialize(pcl::PointCloud<pcl::PointXYZ> &cloud, std::string& world_frame, std::string& robot_frame, bool preLoad=false);
 
 	/**
 	 *

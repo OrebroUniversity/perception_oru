@@ -397,14 +397,18 @@ public:
     /**
      * Returns all computed cells from the map
      * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
+	 * New is called in the function and the vector needs to be deleted.
      */
     virtual std::vector<lslgeneric::NDTCell*> getAllCells() const;
+	
+	std::vector< boost::shared_ptr< NDTCell > > getAllCellsShared() const;
 
     /**
      * Returns all cells that have been initialized (including ones that do not contain gaussian at the moment).
      * This is useful if you want to use the empty cells or dynamic cells
      */
-    virtual std::vector<lslgeneric::NDTCell*> getAllInitializedCells();
+    virtual std::vector<lslgeneric::NDTCell*> getAllInitializedCells() const;
+	std::vector< boost::shared_ptr<lslgeneric::NDTCell> > getAllInitializedCellsShared() const;
     bool insertCell(NDTCell cell);
 
 

@@ -100,6 +100,7 @@ public:
         emptydist = 0;
         max_occu_ = 1;
         consistency_score=0;
+		cov_=Eigen::MatrixXd::Identity(3, 3);
 	cost=INT_MAX;
     }
 
@@ -124,6 +125,7 @@ public:
         isEmpty = 0;
         emptylik = 0;
         emptydist = 0;
+		cov_=Eigen::MatrixXd::Identity(3, 3);
         if(!parametersSet_)
         {
             setParameters();

@@ -30,7 +30,7 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
-#include "ndt_fuser/ndt_fuser_init.hpp"
+#include "ndt_fuser_ros_wrappers/ndt_fuser_init.hpp"
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
@@ -166,7 +166,7 @@ public:
 	//The robot frame to initialize the fuser to
     param_nh.param<std::string>("robot_frame",robot_frame,"/base_link");
 	//The sensor frame to initialize the fuser to
-    param_nh.param<std::string>("laser_frame",sensor_frame,"/laser_frame");
+    param_nh.param<std::string>("sensor_frame",sensor_frame,"/laser_frame");
     //the world frame
     param_nh.param<std::string>("world_frame",world_frame,"/world");
     //our frame
@@ -444,7 +444,7 @@ public:
         pcl_cloud.points.push_back(pt);
       }
     }
-    //ROS_INFO("Got laser points");
+    ROS_INFO("Got laser points");
     T.setIdentity();
     this->processFrame(pcl_cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
@@ -455,6 +455,7 @@ public:
   void laserOdomCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in,
                          const nav_msgs::Odometry::ConstPtr& odo_in)
   {
+    ROS_INFO("Got laser odom points");
     Eigen::Quaterniond qd;
     sensor_msgs::PointCloud2 cloud;
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud, pcl_cloud_unfiltered;
@@ -539,11 +540,11 @@ public:
 public:
   // map publishing function
   bool publish_map(){
-#if 0
+// #if 0
     ndt_map::NDTMapMsg map_msg;
-    toMessage(fuser->map, map_msg,fuser_frame);
+    lslgeneric::toMessage(fuser->map, map_msg,world_frame);
     map_publisher_.publish(map_msg);
-#endif    
+// #endif    
 return true;
   }
 

@@ -64,7 +64,10 @@ include_directories(${Boost_INCLUDE_DIRS})
 set (${PROJECT_NAME}_LIB_SRCS
 #	    src/ndt_fuser.cpp
 	    src/ndt_fuser_hmt.cpp
-	    src/ndt_fuser_init.cpp
+	)
+	
+set (${PROJECT_NAME}_LIB_ROS_SRCS
+	    src/ndt_fuser_ros_wrappers_src/ndt_fuser_init.cpp
 	)
 
 #add_executable(test_ndt_fuser src/ndt_fuser_from_depth.cpp)
@@ -78,7 +81,7 @@ set (${PROJECT_NAME}_LIB_SRCS
 #    DEPENDENCIES 
 #    std_msgs
 #)
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS} ${${PROJECT_NAME}_LIB_ROS_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(ndt_fuser_node src/ndt_fuser_node.cpp)

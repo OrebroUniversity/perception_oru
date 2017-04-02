@@ -70,13 +70,13 @@ namespace lslgeneric{
    * @param[out] frame_name name of the coordination frame of the map
    *   
    */
-  inline bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name){
+  inline bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name, bool dealloc = false){
     if(!(msg.x_cell_size==msg.y_cell_size&&msg.y_cell_size==msg.z_cell_size)){ //we assume that voxels are cubes
 	  ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 	  return false;
     }
     idx=new LazyGrid(msg.x_cell_size);
-    map = new NDTMap(idx,msg.x_cen,msg.y_cen,msg.z_cen,msg.x_size,msg.y_size,msg.z_size);
+    map = new NDTMap(idx,msg.x_cen,msg.y_cen,msg.z_cen,msg.x_size,msg.y_size,msg.z_size, dealloc);
     frame_name=msg.header.frame_id;
     int gaussians=0;
     for(int itr=0;itr<msg.cells.size();itr++){
@@ -105,6 +105,77 @@ namespace lslgeneric{
    * 
    */
   inline bool toOccupancyGrid(NDTMap *ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
+    double size_x, size_y, size_z;
+    int size_x_cell_count, size_y_cell_count;
+    double cen_x, cen_y, cen_z;
+    double orig_x, orig_y;
+    ndt_map->getGridSizeInMeters(size_x,size_y,size_z);
+    ndt_map->getCentroid(cen_x,cen_y,cen_z);
+    orig_x=cen_x-size_x/2.0;
+    orig_y=cen_y-size_y/2.0;
+    size_x_cell_count=int(size_x/resolution);
+    size_y_cell_count=int(size_y/resolution);
+    occ_grid.info.width=size_x_cell_count;
+    occ_grid.info.height=size_y_cell_count;
+    occ_grid.info.resolution=resolution;
+    occ_grid.info.map_load_time=ros::Time::now();
+    occ_grid.info.origin.position.x=orig_x;
+    occ_grid.info.origin.position.y=orig_y;
+    occ_grid.header.stamp=ros::Time::now();
+    occ_grid.header.frame_id=frame_id;
+    // for(double py=orig_y+resolution/2.0;py<orig_y+size_x;py+=resolution){
+    //   for(double px=orig_x+resolution/2.0;px<orig_x+size_x;px+=resolution){
+    for(int iy = 0; iy < size_y_cell_count; iy++) {
+      for(int ix = 0; ix < size_x_cell_count; ix++) {
+        double px = orig_x + resolution*ix + resolution*0.5;
+        double py = orig_y + resolution*iy + resolution*0.5;
+
+        pcl::PointXYZ pt(px,py,0);
+        lslgeneric::NDTCell *cell;
+        if(!ndt_map->getCellAtPoint(pt, cell)){
+          occ_grid.data.push_back(-1);
+        }
+        else if(cell == NULL){
+          occ_grid.data.push_back(-1);
+        }
+        else{
+          Eigen::Vector3d vec (pt.x,pt.y,pt.z);
+          vec = vec-cell->getMean();                  
+          double likelihood = vec.dot(cell-> getInverseCov()*vec);
+          char s_likelihood;
+          if(cell->getOccupancy()!=0.0){
+            if(cell->getOccupancy()>0.0){
+            if(std::isnan(likelihood)) s_likelihood = -1;
+            likelihood = exp(-likelihood/2.0) + 0.1;
+            likelihood = (0.5+0.5*likelihood);
+            s_likelihood=char(likelihood*100.0);
+            if(likelihood >1.0) s_likelihood =100;
+            occ_grid.data.push_back(s_likelihood);
+            }
+            else{
+              occ_grid.data.push_back(0);
+            }
+          }
+          else{
+             occ_grid.data.push_back(-1);
+          }
+        }
+      }
+    }    
+    return true;
+  }
+
+/**
+   *
+   * \brief builds ocuupancy grid message
+   * \details Builds 2D occupancy grid map based on 2D NDTMap
+   * @param[in] ndt_map 2D ndt map to conversion
+   * @param[out] occ_grid 2D cost map
+   * @param[in] resolution desired resolution of occupancy map
+   * @param[in] name of cooridnation frame for the map (same as the NDT map has)
+   * 
+   */
+  inline bool toOccupancyGrid(const boost::shared_ptr<lslgeneric::NDTMap>& ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
     double size_x, size_y, size_z;
     int size_x_cell_count, size_y_cell_count;
     double cen_x, cen_y, cen_z;

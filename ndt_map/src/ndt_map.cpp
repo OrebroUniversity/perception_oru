@@ -2125,7 +2125,30 @@ std::vector<lslgeneric::NDTCell*> NDTMap::getAllCells() const
     return ret;
 }
 
-std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells()
+std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllCellsShared() const
+{
+
+    std::vector< boost::shared_ptr< NDTCell > > ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
+    while (it != index_->end())
+    {
+		
+        NDTCell *cell = (*it);
+		if(cell->hasGaussian_)
+		{
+			
+			NDTCell* nd = cell->copy();
+			boost::shared_ptr< NDTCell > smart_pointer(nd);
+// 			NDTCell** ndd = &nd;
+			ret.push_back(smart_pointer);
+		}
+        it++;
+    }
+    std::cout << "Retyurn " << ret.size() << std::endl;
+    return ret;
+}
+
+std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells() const
 {
     std::vector<NDTCell*> ret;
     typename SpatialIndex::CellVectorItr it = index_->begin();
@@ -2133,6 +2156,20 @@ std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells()
     {
 	NDTCell* nd = (*it)->copy();
 	ret.push_back(nd);
+        it++;
+    }
+    return ret;
+}
+
+std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllInitializedCellsShared() const
+{
+    std::vector<boost::shared_ptr<NDTCell> > ret;
+    typename SpatialIndex::CellVectorItr it = index_->begin();
+    while (it != index_->end())
+    {
+		NDTCell* nd = (*it)->copy();
+		boost::shared_ptr< NDTCell > smart_pointer(nd);
+		ret.push_back(smart_pointer);
         it++;
     }
     return ret;

@@ -1,10 +1,11 @@
-#ifndef NDT_DISPLAY_H
-#define NDT_DISPLAY_H
+#ifndef NDT_GRAPH_DISPLAY_H_30032017
+#define NDT_GRAPH_DISPLAY_H_30032017
 
 #include <boost/circular_buffer.hpp>
 
 #include <ndt_map/NDTMapMsg.h>
 #include <rviz/message_filter_display.h>
+#include "ndt_feature/NDTGraphMsg.h"
 
 namespace Ogre
 {
@@ -20,14 +21,14 @@ namespace rviz
 
 namespace lslgeneric{
 
-  class NDTVisual;
+  class NDTLineVisual;
 
-  class NDTDisplay: public rviz::MessageFilterDisplay<ndt_map::NDTMapMsg>{
+  class NDTGraphDisplay: public rviz::MessageFilterDisplay<ndt_feature::NDTGraphMsg>{
     Q_OBJECT
     public:
 
-    NDTDisplay();
-    virtual ~NDTDisplay();
+    NDTGraphDisplay();
+    virtual ~NDTGraphDisplay();
 
   protected:
     virtual void onInitialize();
@@ -39,13 +40,9 @@ namespace lslgeneric{
     void updateHistoryLength();
 
   private:
-	  
-	  /**
-	   * @brief transform a NDTmap msg into a vector of NDTVisual, one per cell. If history is set to one or lower, it only display the last NDTMap. Otherwise, it keeps all cells through time
-	   */
-    void processMessage(const ndt_map::NDTMapMsg::ConstPtr& msg);
+    void processMessage(const ndt_feature::NDTGraphMsg::ConstPtr& msg);
 
-    std::vector<boost::shared_ptr<NDTVisual> > visuals_;
+    std::deque<boost::shared_ptr<NDTLineVisual> > visuals_;
 
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;

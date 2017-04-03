@@ -68,6 +68,7 @@ namespace lslgeneric{
    * @param[out] map Pointer to NDTMap object
    * @param[in] msg message to be converted
    * @param[out] frame_name name of the coordination frame of the map
+   * @param[in] dealloc if set to true, the NDTMap with deallocate the memory of LazyGrid in its destructor. Default set to false.
    *   
    */
   inline bool fromMessage(LazyGrid* &idx, NDTMap* &map, ndt_map::NDTMapMsg msg, std::string &frame_name, bool dealloc = false){

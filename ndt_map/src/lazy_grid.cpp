@@ -168,30 +168,30 @@ LazyGrid::~LazyGrid()
 {
     if(initialized)
     {
-	//fprintf(stderr,"LAZY GRID DESTRUCTION -- ");
-	int cnt = 0;
-	//go through all cells and delete the non-NULL ones
-	for(unsigned int i=0; i<activeCells.size(); ++i)
-	{
-	    if(activeCells[i])
-	    {
-		delete activeCells[i];
-		cnt++;
-	    }
-	}
-	for(int i=0; i<sizeX; i++)
-	{
-	    for(int j=0; j<sizeY; j++)
-	    {
-		delete[] dataArray[i][j];
-	    }
-	    delete[] dataArray[i];
-	}
-	delete[] dataArray;
-	if(protoType!=NULL)
-	{
-	    delete protoType;
-	}
+		fprintf(stderr,"LAZY GRID DESTRUCTION -- ");
+		int cnt = 0;
+		//go through all cells and delete the non-NULL ones
+		for(unsigned int i=0; i<activeCells.size(); ++i)
+		{
+			if(activeCells[i])
+			{
+				delete activeCells[i];
+				cnt++;
+			}
+		}
+		for(int i=0; i<sizeX; i++)
+		{
+			for(int j=0; j<sizeY; j++)
+			{
+				delete[] dataArray[i][j];
+			}
+			delete[] dataArray[i];
+		}
+		delete[] dataArray;
+		if(protoType!=NULL)
+		{
+			delete protoType;
+		}
 	//fprintf(stderr,"Deleted %d cells and array of (%d x %d)!!!\n",cnt, sizeX, sizeY);
     }
 }

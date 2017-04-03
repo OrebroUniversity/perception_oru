@@ -30,6 +30,7 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
+#include "ndt_fuser_ros_wrappers/ndt_fuser_init.hpp"
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
@@ -68,7 +69,7 @@ protected:
   boost::mutex m, message_m;
   lslgeneric::NDTFuserHMT *fuser;
   std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
-    world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
+    world_frame, robot_frame, sensor_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
   bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack, 
        initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
@@ -162,6 +163,10 @@ public:
     param_nh.param("initPoseFromTF",initPoseFromTF,false);
     //the frame to initialize to
     param_nh.param<std::string>("init_pose_frame",init_pose_frame,"/state_base_link");
+	//The robot frame to initialize the fuser to
+    param_nh.param<std::string>("robot_frame",robot_frame,"/base_link");
+	//The sensor frame to initialize the fuser to
+    param_nh.param<std::string>("sensor_frame",sensor_frame,"/laser_frame");
     //the world frame
     param_nh.param<std::string>("world_frame",world_frame,"/world");
     //our frame
@@ -257,17 +262,27 @@ public:
     if (nb_added_clouds_  == 0)
       {
 		ROS_INFO("initializing fuser map. Init pose from GT? %d, TF? %d", initPoseFromGT, initPoseFromTF);
-		if(initPoseFromGT || initPoseFromTF) {
+		if(initPoseFromGT) {
           //check if initial pose was set already 
           if(!initPoseSet) {
 			ROS_WARN("skipping frame, init pose not acquired yet!");
 			m.unlock();
 			return;
           }
-		}
-		ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
+          ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
                  pose_.rotation().eulerAngles(0,1,2)(0));
-		fuser->initialize(pose_,cloud);
+			fuser->initialize(pose_,cloud);
+		}
+		else if(initPoseFromTF){
+			ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
+                 pose_.rotation().eulerAngles(0,1,2)(0));
+			
+			lslgeneric::initSensorPose(*fuser, robot_frame, sensor_frame);
+			lslgeneric::initRobotPose(*fuser, cloud, world_frame, robot_frame);
+// 			fuser->setSensorPose(robot_frame, sensor_frame);
+// 			fuser->initialize(cloud, world_frame, robot_frame);
+			ROS_INFO("OUT");
+		}
 		nb_added_clouds_++;
       } else {
       //sanity check for odometry
@@ -429,7 +444,7 @@ public:
         pcl_cloud.points.push_back(pt);
       }
     }
-    //ROS_INFO("Got laser points");
+    ROS_INFO("Got laser points");
     T.setIdentity();
     this->processFrame(pcl_cloud,T);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
@@ -440,6 +455,7 @@ public:
   void laserOdomCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in,
                          const nav_msgs::Odometry::ConstPtr& odo_in)
   {
+    ROS_INFO("Got laser odom points");
     Eigen::Quaterniond qd;
     sensor_msgs::PointCloud2 cloud;
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud, pcl_cloud_unfiltered;
@@ -524,11 +540,11 @@ public:
 public:
   // map publishing function
   bool publish_map(){
-#if 0
+// #if 0
     ndt_map::NDTMapMsg map_msg;
-    toMessage(fuser->map, map_msg,fuser_frame);
+    lslgeneric::toMessage(fuser->map, map_msg,world_frame);
     map_publisher_.publish(map_msg);
-#endif    
+// #endif    
 return true;
   }
 
@@ -541,7 +557,9 @@ int main(int argc, char **argv)
 
   ros::NodeHandle param("~");
   NDTFuserNode t(param);
-  ros::spin();
+  while(ros::ok()){
+	  ros::spinOnce();
+  }
 
   return 0;
 }

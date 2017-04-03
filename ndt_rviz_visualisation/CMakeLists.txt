@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_rviz_visualisation)
+
+# I can't put the dependincy to ndt_feature here. Super weird to be fixed ATTENTION
+# find_package(catkin REQUIRED COMPONENTS rviz ndt_map ndt_feature)'
 find_package(catkin REQUIRED COMPONENTS rviz ndt_map)
 catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
@@ -19,12 +22,14 @@ add_definitions(-DQT_NO_KEYWORDS)
 qt5_wrap_cpp(MOC_FILES
   src/ndt_display.hpp
   src/ndt_line_display.hpp
+#   src/ndt_graph_display.hpp
 )
 
 ## Here we specify the list of source files, including the output of
 ## the previous command which is stored in ``${MOC_FILES}``.
 set(SOURCE_FILES
   src/ndt_display.cpp
+#   src/ndt_graph_display.cpp
   src/ndt_visual.cpp
   src/ndt_line_display.cpp
   src/ndt_line_visual.cpp

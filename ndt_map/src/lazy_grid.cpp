@@ -168,7 +168,7 @@ LazyGrid::~LazyGrid()
 {
     if(initialized)
     {
-		fprintf(stderr,"LAZY GRID DESTRUCTION -- ");
+// 		fprintf(stderr,"LAZY GRID DESTRUCTION -- ");
 		int cnt = 0;
 		//go through all cells and delete the non-NULL ones
 		for(unsigned int i=0; i<activeCells.size(); ++i)

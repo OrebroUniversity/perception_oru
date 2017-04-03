@@ -1,14 +1,31 @@
-#include "ndt_map/ndt_cell.h"
-#include "ndt_map/lazy_grid.h"
-#include "ndt_map/pointcloud_utils.h"
-#include "ndt_registration/ndt_matcher_d2d_sc.h"
+#include <ndt_map/ndt_cell.h>
+#include <ndt_map/lazy_grid.h>
+#include <ndt_map/pointcloud_utils.h>
+#include <ndt_registration/ndt_matcher_d2d_sc.h>
+#include <ndt_generic/eigen_utils.h>
 
-#include "Eigen/Eigen"
+#include <Eigen/Eigen>
 #include <fstream>
 #include <omp.h>
 #include <sys/time.h>
+
+
 namespace lslgeneric
 {
+
+// inline void convertAffine3dToMatrix61(const Eigen::Affine3d &T, Eigen::Matrix<double,6,1> &v) {
+//     Eigen::Vector3d transl = T.translation();
+//     v(0) = transl(0);
+//     v(1) = transl(1);
+//     v(2) = transl(2);
+
+//     Eigen::Vector3d rot = T.rotation().eulerAngles(0,1,2);
+//     v(3) = rot(0);
+//     v(4) = rot(1);
+//     v(5) = rot(2);
+
+    
+// }
 
 Eigen::MatrixXd computeHessianMahalanobis(const Eigen::MatrixXd &Q) {
   // Compute the Hessian for the mahalanobis distance Q = the inverse of the covariance matrix(!)
@@ -360,7 +377,31 @@ double NDTMatcherD2DSC::lineSearchMTSC(Eigen::Matrix<double,6,1> &increment,
     } // while-loop
 }
 
+void NDTMatcherD2DSC::scoreComparision( NDTMap& targetNDT,
+                                        NDTMap& sourceNDT,
+                                        const Eigen::Affine3d &T,
+                                        const Eigen::MatrixXd& Tcov,
+                                        double &score_NDT,
+                                        double &score_NDT_SC,
+                                        const Eigen::Affine3d &offset,
+                                        const Eigen::Affine3d &odom_offset,
+                                        double alpha)
+{
+    Eigen::MatrixXd Hessian(6,6), score_gradient(6,1);
+    std::vector<NDTCell*> nextNDT = sourceNDT.pseudoTransformNDT(T*offset);
+    score_NDT = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,false);
+    Eigen::VectorXd X = ndt_generic::affine3dToVector(odom_offset);
+    ndt_generic::normalizeEulerAngles6dVec(X);
+    Eigen::MatrixXd Q = Tcov.inverse();
 
+    score_NDT_SC = score_NDT + alpha*computeScoreMahalanobis(X,Q);
+    
+    for(unsigned int i=0; i<nextNDT.size(); i++)
+    {
+        if(nextNDT[i]!=NULL)
+            delete nextNDT[i];
+    }
+}
 
 bool NDTMatcherD2DSC::match( NDTMap& targetNDT,
         NDTMap& sourceNDT,

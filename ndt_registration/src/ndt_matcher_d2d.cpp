@@ -2005,7 +2005,7 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
     TR.setIdentity();
 
     std::vector<NDTCell*> sourceNDTN = sourceNDT.pseudoTransformNDT(T);
-    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(TR); // WHY T? // HENRIK T-> TR.
+    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(T); // WHY T? // HENRIK T-> TR    //    std::vector<NDTCell*> targetNDTN = targetNDT.pseudoTransformNDT(TR); // WHY T? // HENRIK T-> TR.
 
     Eigen::MatrixXd scg(6,1); //column vectors
     int NM = sourceNDTN.size() + targetNDTN.size();
@@ -2107,12 +2107,22 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
     Eigen::MatrixXd JK(6,6);
     JK = sigmaS*Jdpdz.transpose()*Jdpdz;
 
-    //cout<<"J*J'\n"<<JK<<endl;
-    //cout<<"H\n"<<cov<<endl;
+    std::cout<<"J*J'\n"<<JK<<std::endl;
+    std::cout<<"H\n"<<cov<<std::endl;
 
-    cov = cov.inverse()*JK*cov.inverse();
-    //cov = cov.inverse();//*fabsf(scoreNDT(sourceNDTN,targetNDT)*2/3);
-    //cout<<"cov\n"<<cov<<endl;
+    std::cout << "cov 1 : " << cov.inverse()*JK*cov.inverse() << std::endl;
+    //    cov = cov.inverse()*JK*cov.inverse();
+    std::cout << "cov 2 : " << cov.inverse()*fabsf(scoreNDT(sourceNDTN,targetNDT)*2/3) << std::endl;
+    cov = cov.inverse();
+
+    //cov = cov.inverse()*fabsf(scoreNDT(sourceNDTN,targetNDT)*2/3);
+    
+    //    std::cout<<"cov\n"<<cov<<std::endl;
+    //    std::cout << "invcov\n"<<cov.inverse() << std::endl;
+
+    // currently cov is the hessian
+    // cov = sigmaS *Jdpdz * cov.inverse() * Jdpdz.transpose(); 
+    // std::cout << "cov henrik : " << cov << std::endl;
 
     for(unsigned int q=0; q<sourceNDTN.size(); q++)
     {
@@ -2125,7 +2135,9 @@ bool NDTMatcherD2D::covariance( NDTMap& targetNDT,
     }
     targetNDTN.clear();
 
-    return true;
+    if (cov.allFinite())
+        return true;
+    return false;
 }
 bool NDTMatcherD2D::covariance( pcl::PointCloud<pcl::PointXYZ>& target,
         pcl::PointCloud<pcl::PointXYZ>& source,

@@ -5,10 +5,10 @@ set(CMAKE_BUILD_TYPE Release)
 project(ndt_registration)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS ndt_map tf tf_conversions pcl_ros)
+find_package(catkin REQUIRED COMPONENTS ndt_map ndt_generic tf tf_conversions pcl_ros)
 catkin_package(
     DEPENDS eigen libpcl-all-dev 
-    CATKIN_DEPENDS ndt_map tf tf_conversions pcl_ros
+    CATKIN_DEPENDS ndt_map ndt_generic tf tf_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME} 
 )
@@ -52,6 +52,9 @@ target_link_libraries(d2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin
 
 add_executable(p2d_deathmatch test/p2d_deathmatch.cc)
 target_link_libraries(p2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(d2d_sc_score_evaluate test/d2d_sc_score_evaluate.cc)
+target_link_libraries(d2d_sc_score_evaluate ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
 #add_executable(convert_logs test/convert.cc)
 #target_link_libraries(convert_logs ${Boost_LIBRARIES} ${catkin_LIBRARIES})

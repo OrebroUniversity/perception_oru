@@ -91,6 +91,18 @@ public:
 
 
 
+    // compare the difference in scores for different local pose offsets. The assumption is that the T and TCov is expressed in the same frame
+    void scoreComparision( NDTMap& targetNDT,
+                           NDTMap& scoureNDT,
+                           const Eigen::Affine3d& T ,
+                           const Eigen::MatrixXd& Tcov,
+                           double &score_NDT,
+                           double &score_NDT_SC,
+                           const Eigen::Affine3d &offset,
+                           const Eigen::Affine3d &odom_offset,
+                           double alpha);
+    
+
   bool only_xy_motion;
   bool lock_zrp_motion;
 

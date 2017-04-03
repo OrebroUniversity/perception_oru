@@ -415,6 +415,14 @@ inline void getCenter(double &cx,double &cy,double &cz) const
     */
     double computeMaximumLikelihoodAlongLine(const pcl::PointXYZ &p1, const pcl::PointXYZ &p2, Eigen::Vector3d &out);
 
+    double computeMaximumLikelihoodAlongLine(const Eigen::Vector3d &ep1, const Eigen::Vector3d &ep2, Eigen::Vector3d &out) {
+        pcl::PointXYZ p1(ep1(0), ep1(1), ep1(2));
+        pcl::PointXYZ p2(ep2(0), ep2(1), ep2(2));
+        return computeMaximumLikelihoodAlongLine(p1, p2, out);
+    }
+
+
+
 private:
     pcl::PointXYZ center_;
     double xsize_, ysize_, zsize_;

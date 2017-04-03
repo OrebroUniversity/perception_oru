@@ -22,6 +22,7 @@
 
   <!-- Dependencies needed to compile this package. -->
   <!--<build_depend>common_rosdeps</build_depend>-->
+  <build_depend>ndt_generic</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
@@ -30,6 +31,7 @@
 
   <!-- Dependencies needed after this package is compiled. -->
   <!--<run_depend>common_rosdeps</run_depend>-->
+  <run_depend>ndt_generic</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>

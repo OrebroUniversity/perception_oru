@@ -139,6 +139,13 @@ public:
     ///reads map contents from .jff file
     virtual int loadFromJFF(FILE * jffin);
     bool traceLine(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells);
+    
+    bool traceLine(const Eigen::Vector3d &origin, const Eigen::Vector3d &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells) {
+        pcl::PointXYZ ep;
+        ep.x = endpoint(0); ep.y = endpoint(1); ep.z = endpoint(2);
+        return traceLine(origin, ep, diff, maxz, cells);
+    }
+
     bool traceLineWithEndpoint(const Eigen::Vector3d &origin, const pcl::PointXYZ &endpoint, const Eigen::Vector3d &diff, const double& maxz, std::vector<NDTCell*> &cells, Eigen::Vector3d &final_point);
     bool isInside(const pcl::PointXYZ& pt) {
 			int indX,indY,indZ;

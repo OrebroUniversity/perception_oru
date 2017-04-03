@@ -18,6 +18,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   
   <!-- Dependencies needed to compile this package. -->
+  <build_depend>ndt_generic</build_depend>
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>ndt_rviz</build_depend>
   <build_depend>rosbag</build_depend>
@@ -39,6 +40,7 @@
 
 
   <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>ndt_generic</run_depend>
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>tf</run_depend>

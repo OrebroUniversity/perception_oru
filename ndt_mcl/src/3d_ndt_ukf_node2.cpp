@@ -363,7 +363,8 @@ public:
             
         if (!gt_file_.is_open() || !gt2d_file_.is_open() || !est_file_.is_open() || !est2d_file_.is_open())
         {
-            ROS_ERROR_STREAM("Failed to open : " << est_file_ << " | " << est2d_file_ << " | " << gt_file_ << " | " << gt2d_file_); 
+
+            ROS_ERROR_STREAM("Failed to open : " << est_file_.rdbuf() << " | " << est2d_file_.rdbuf() << " | " << gt_file_.rdbuf() << " | " << gt2d_file_.rdbuf()); 
         }
                         
         if (gt_topic != std::string("")) 

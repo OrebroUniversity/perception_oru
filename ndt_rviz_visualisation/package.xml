@@ -44,10 +44,10 @@
   
   <!-- Dependencies for the message generation -->
   <build_depend>ndt_map</build_depend>
-<!--   <build_depend>ndt_feature</build_depend> -->
+  <build_depend>ndt_feature</build_depend>
   <build_depend>message_generation</build_depend>
   <run_depend>ndt_map</run_depend>
-<!--   <run_depend>ndt_feature</run_depend> -->
+  <run_depend>ndt_feature</run_depend>
   <run_depend>message_runtime</run_depend>
 
   <run_depend>rviz</run_depend>

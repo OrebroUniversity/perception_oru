@@ -18,6 +18,7 @@ qt4_wrap_cpp(MOC_FILES
   src/ndt_display.hpp
   src/ndt_line_display.hpp
   src/ndt_graph_display.hpp
+  src/ndt_vector_display.hpp
 )
 
 ## Here we specify the list of source files, including the output of
@@ -28,6 +29,7 @@ set(SOURCE_FILES
   src/ndt_visual.cpp
   src/ndt_line_display.cpp
   src/ndt_line_visual.cpp
+  src/ndt_vector_display.cpp
   ${MOC_FILES}
 )
 

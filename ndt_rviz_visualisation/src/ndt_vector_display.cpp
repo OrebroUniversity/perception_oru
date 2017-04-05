@@ -15,7 +15,7 @@
 namespace perception_oru{
 	namespace ndt_rviz_visualisation {
   
-  NDTVectorMapsDisplay::NDTGraphDisplay(){
+  NDTVectorMapDisplay::NDTVectorMapDisplay(){
     ROS_ERROR("BUILDING OBJECT");
     color_property_ = new rviz::ColorProperty( "Color", QColor( 204, 51, 204 ),
                                                "Color to draw the acceleration arrows.",
@@ -31,20 +31,20 @@ namespace perception_oru{
     history_length_property_->setMin( 1 );
     history_length_property_->setMax( 100000 );
   }
-  void NDTVectorMapsDisplay::onInitialize(){
+  void NDTVectorMapDisplay::onInitialize(){
     MFDClass::onInitialize();
   }
 
-  NDTVectorMapsDisplay::~NDTGraphDisplay(){
+  NDTVectorMapDisplay::~NDTVectorMapDisplay(){
   }
   
-  void NDTVectorMapsDisplay::reset(){
+  void NDTVectorMapDisplay::reset(){
     MFDClass::reset();
     visuals_.clear();
 // 	all_visuals_.clear();
   }
   
-  void NDTVectorMapsDisplay::updateColorAndAlpha(){
+  void NDTVectorMapDisplay::updateColorAndAlpha(){
     float alpha=alpha_property_->getFloat();
     Ogre::ColourValue color=color_property_->getOgreColor();
     for(size_t i=0;i<visuals_.size();i++){
@@ -57,13 +57,13 @@ namespace perception_oru{
 //     }
   }
   
-void NDTVectorMapsDisplay::updateHistoryLength()
+void NDTVectorMapDisplay::updateHistoryLength()
 {
 	ROS_INFO_STREAM("history received: " << this->history_length_property_->getInt());
 }
 
   
-  void NDTVectorMapsDisplay::processMessage(const ndt_feature::NDTVectorMapMsg::ConstPtr& msg ){
+  void NDTVectorMapDisplay::processMessage(const ndt_map::NDTVectorMapMsg::ConstPtr& msg ){
     ROS_INFO_STREAM("MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
@@ -72,19 +72,19 @@ void NDTVectorMapsDisplay::updateHistoryLength()
     
     for(int i = 0 ; i < msg->maps.size() ; ++i){
 
-		position.x = msg->transformations[i].position.x;
-		position.y = msg->transformations[i].position.y;
-		position.z = msg->transformations[i].position.z;
+		position.x = msg->transformations[i].translation.x;
+		position.y = msg->transformations[i].translation.y;
+		position.z = msg->transformations[i].translation.z;
 		
-		orientation.x = msg->transformations[i].orientation.x;
-		orientation.y = msg->transformations[i].orientation.y;
-		orientation.z = msg->transformations[i].orientation.z;
-		orientation.w = msg->transformations[i].orientation.w;
+		orientation.x = msg->transformations[i].rotation.x;
+		orientation.y = msg->transformations[i].rotation.y;
+		orientation.z = msg->transformations[i].rotation.z;
+		orientation.w = msg->transformations[i].rotation.w;
 		
-		for(int itr=0;itr<msg->nodes[i].map.map.cells.size();itr++){
+		for(int itr=0;itr<msg->maps[i].cells.size(); itr++){
 	
-			boost::shared_ptr<NDTLineVisual> visual;
-			visual.reset(new NDTLineVisual(context_->getSceneManager(), scene_node_));
+			boost::shared_ptr<lslgeneric::NDTLineVisual> visual;
+			visual.reset(new lslgeneric::NDTLineVisual(context_->getSceneManager(), scene_node_));
 			if(!(msg->maps[i].x_cell_size == msg->maps[i].y_cell_size && msg->maps[i].y_cell_size == msg->maps[i].z_cell_size)){ 
 				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 				//return false;
@@ -107,5 +107,5 @@ void NDTVectorMapsDisplay::updateHistoryLength()
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(lslgeneric::NDTVectorMapDisplay,rviz::Display)
+PLUGINLIB_EXPORT_CLASS(perception_oru::ndt_rviz_visualisation::NDTVectorMapDisplay,rviz::Display)
 

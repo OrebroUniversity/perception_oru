@@ -127,12 +127,16 @@ class VelodyneBagReader{
 	    //odosync = NULL;
 	}
 
+	/**
+	 * Reads the next measurment.
+	 * @param cloud The generated point cloud
+	 * @param sensor_pose [out] The pose of the sensor origin. (Utilizes the tf_pose_id and sensor_link from the constructor).
+	 **/
 	bool readNextMeasurement(pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose){
 	    if(I == view->end()){
 		fprintf(stderr,"End of measurement file Reached!!\n");
 		return false;
 	    }
-	    //fprintf(stderr,"HEHRE\n");
 	    //if(odosync == NULL) return true;
 	    rosbag::MessageInstance const m = *I;
 	    velodyne_msgs::VelodyneScan::ConstPtr scan = m.instantiate<velodyne_msgs::VelodyneScan>();
@@ -151,10 +155,11 @@ class VelodyneBagReader{
 
 			    if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
 				pcl_ros::transformPointCloud(pnts,conv_points,T);
-				for(size_t i = 0;i<pnts.size();i++){  // TODO - shouldn't this be conv_points that are stored (and not pnts?)
+				for(size_t i = 0;i<pnts.size();i++){ 
 				    PointT p;
 
-				    p.x = pnts.points[i].x; p.y=pnts.points[i].y; p.z=pnts.points[i].z;//p.intensity = pnts.points[i].intensity;
+				    //				    p.x = pnts.points[i].x; p.y=pnts.points[i].y; p.z=pnts.points[i].z;//p.intensity = pnts.points[i].intensity;
+				    p.x = conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
 				    cloud.push_back(p);
 
 				}

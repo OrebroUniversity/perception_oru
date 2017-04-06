@@ -205,6 +205,11 @@ int main(int argc, char **argv){
     bool use_gt_as_interp_link = vm.count("use_gt_as_interp_link");
     bool save_clouds = vm.count("save_clouds");
     
+    std::string tf_interp_link = tf_base_link;
+    if (use_gt_as_interp_link) {
+      tf_interp_link = tf_gt_link;
+    }
+
     if(filter_fov) {
 	cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
     }
@@ -223,7 +228,7 @@ int main(int argc, char **argv){
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
     sensor_link.child_frame_id_ = velodyne_frame_id;
-    sensor_link.frame_id_ = tf_base_link; //"/odom_base_link";
+    sensor_link.frame_id_ = tf_interp_link;//tf_base_link; //"/odom_base_link";
     tf::Quaternion quat; 
 
     quat.setRPY(euler[0], euler[1], euler[2]);
@@ -259,8 +264,8 @@ int main(int argc, char **argv){
       quat.setRPY(0, 0, -1.57);
     }
 
-    tf::Transform T = tf::Transform(quat,trans);
-    sensor_link.setData(T);
+    tf::Transform tf_sensor_pose = tf::Transform(quat,trans);
+    sensor_link.setData(tf_sensor_pose);
 
     std::vector<std::string> scanfiles;
     //list directory in dir_name
@@ -315,11 +320,6 @@ int main(int argc, char **argv){
     }
 
 
-    std::string tf_interp_link = tf_base_link;
-    if (use_gt_as_interp_link) {
-      tf_interp_link = tf_gt_link;
-    }
-
     for(int i=0; i<scanfiles.size(); i++) {
 	std::string bagfilename = scanfiles[i];
 	fprintf(stderr,"Opening %s\n",bagfilename.c_str());
@@ -342,9 +342,6 @@ int main(int argc, char **argv){
 
 
         while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,sensor_pose,basepose,/*tf_base_link*//*tf_gt_link*/tf_interp_link/*std::string("/state_base_link")*/)){
-	    //if(cloud.size()==0) continue;
-
-
 	    if(cloud_nofilter.size()==0) continue;
 	    tf::Transform baseodo;
 
@@ -358,7 +355,7 @@ int main(int argc, char **argv){
 
 
             vreader.getPoseFor(baseodo, tf_base_link);
-            //++++++++            vreader.getPoseFor(basepose, tf_gt_link);
+            vreader.getPoseFor(basepose, tf_gt_link);
 
 	    //callback(cloud, sensor_pose,T,basepose, base_odo);	
 
@@ -366,12 +363,12 @@ int main(int argc, char **argv){
 	    Eigen::Affine3d Ttot,Ts,Tbase,Tgt;
 #if ROS_VERSION_MINIMUM(1,9,0)
 	    tf::transformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-	    tf::transformTFToEigen (T, Ts); ///<sensor offset
+	    tf::transformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
 	    tf::transformTFToEigen (basepose, Tgt); ///<Ground truth
 	    tf::transformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
 #else	
 	    tf::TransformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-	    tf::TransformTFToEigen (T, Ts); ///<sensor offset
+	    tf::TransformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
 	    tf::TransformTFToEigen (basepose, Tgt); ///<Ground truth
 	    tf::TransformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
 #endif	

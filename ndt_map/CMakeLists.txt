@@ -1,17 +1,21 @@
-# Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
-# Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
 #set(CMAKE_BUILD_TYPE RelWithDebug) 
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_map)
-# Load catkin and all dependencies required for this package
 
-find_package(cmake_modules REQUIRED )
+find_package(PCL 1.3 REQUIRED COMPONENTS common)
 find_package(Eigen3 REQUIRED )
-find_package(catkin REQUIRED COMPONENTS cv_bridge roscpp pcl_ros pcl_conversions 
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  roscpp
+  pcl_ros
+  pcl_conversions 
   std_msgs
   nav_msgs
-   message_generation  )
+  message_generation
+  cmake_modules
+)
 
 add_message_files(
   FILES
@@ -24,8 +28,8 @@ generate_messages(
 )
 
 catkin_package(
-    DEPENDS eigen opencv2 libpcl-all-dev
-    CATKIN_DEPENDS cv_bridge message_runtime roscpp pcl_ros pcl_conversions 
+    DEPENDS Eigen3 PCL OpenCV
+    CATKIN_DEPENDS cv_bridge message_runtime roscpp pcl_ros pcl_conversions std_msgs nav_msgs
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )
@@ -39,7 +43,7 @@ set (${PROJECT_NAME}_LIB_SRCS
 	src/ndt_histogram.cpp
 #	src/oc_tree.cpp
 #	src/adaptive_oc_tree.cpp
-    )
+)
 add_executable(histTest test/test_ndt_histogram.cc)
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 #add_executable(jffSaveTest test/jffLazyGridTest_saving.cc)
@@ -49,24 +53,15 @@ add_executable(test_map_topic_1 test/test_map_topic_1.cpp)
 add_executable(ndt_builder test/ndtMapBuilder.cc)
 add_executable(test_occ_map_topic test/test_occ_map_topic.cpp)
 
-find_package(OpenCV REQUIRED)
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(include ${EIGEN3_INCLUDE_DIRS})
-include_directories(include ${PCL_INCLUDE_DIRS})
+include_directories(include
+  ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS})
+
 add_definitions(${EIGEN3_DEFINITIONS})
-link_directories(${catkin_LIBRARY_DIRS})
 
-#uncomment if you have defined messages
 
-#uncomment if you have defined services
-#add_service_files(
-#  FILES
-  # TODO: List your msg files here
-#)
 
-#make a node that listens to point clouds and makes ndts
-
-#target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 target_link_libraries(histTest ${PROJECT_NAME} ${catkin_LIBRARIES})
 #target_link_libraries(jffSaveTest ${catkin_LIBRARIES})
 #target_link_libraries(jffLoadTest ${catkin_LIBRARIES})

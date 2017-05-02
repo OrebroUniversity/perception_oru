@@ -60,18 +60,24 @@ namespace perception_oru{
 void NDTVectorMapDisplay::updateHistoryLength()
 {
 	ROS_INFO_STREAM("history received: " << this->history_length_property_->getInt());
+	 
 }
 
   
   void NDTVectorMapDisplay::processMessage(const ndt_map::NDTVectorMapMsg::ConstPtr& msg ){
-    ROS_INFO_STREAM("MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
+    ROS_INFO_STREAM(" vector MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
+	
+	std::cout << "MSG detail. nb of maps: " <<msg->maps.size() << std::endl;
+	
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
 	
 	visuals_.clear();
     
     for(int i = 0 ; i < msg->maps.size() ; ++i){
-
+		
+		std::cout << "For map " << i << " there is " << msg->maps[i].cells.size() << " cells " << std::endl;
+		
 		position.x = msg->transformations[i].translation.x;
 		position.y = msg->transformations[i].translation.y;
 		position.z = msg->transformations[i].translation.z;
@@ -90,7 +96,7 @@ void NDTVectorMapDisplay::updateHistoryLength()
 				//return false;
 			}
 			
-			visual->setCell(msg->maps[i].cells[itr],msg->maps[i].x_cell_size);
+			visual->setCell(msg->maps[i].cells[itr], msg->maps[i].x_cell_size);
 			visual->setFramePosition(position);
 			visual->setFrameOrientation(orientation);
 			float alpha = alpha_property_->getFloat();

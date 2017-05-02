@@ -63,13 +63,18 @@ void NDTGraphDisplay::updateHistoryLength()
 
   
   void NDTGraphDisplay::processMessage(const ndt_feature::NDTGraphMsg::ConstPtr& msg ){
-    ROS_INFO_STREAM("MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
+    ROS_INFO_STREAM("graph MESSAGE RECIVED with history: " << this->history_length_property_->getInt() << " and deque size " << visuals_.size() );
+	
+	std::cout << "MSG detail. nb of maps: " <<msg->nodes.size() << std::endl;
+	
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
 	
 	visuals_.clear();
     
     for(int i = 0 ; i < msg->nodes.size() ; ++i){
+		
+		std::cout << "For map " << i << " there is " << msg->nodes[i].map.map.cells.size() << " cells " << std::endl;
 
 		position.x = msg->nodes[i].T.position.x;
 		position.y = msg->nodes[i].T.position.y;
@@ -81,22 +86,6 @@ void NDTGraphDisplay::updateHistoryLength()
 		orientation.w = msg->nodes[i].T.orientation.w;
 		
 		for(int itr=0;itr<msg->nodes[i].map.map.cells.size();itr++){
-			//for(int itr=0;itr<10;itr++){
-			/*boost::shared_ptr<NDTVisual> visual;
-			visual.reset(new NDTVisual(context_->getSceneManager(), scene_node_));
-			if(!(msg->nodes[i].map.map.x_cell_size==msg->nodes[i].map.map.y_cell_size&&msg->nodes[i].map.map.y_cell_size==msg->nodes[i].map.map.z_cell_size)){ 
-				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
-				//return false;
-			}
-
-			visual->setCell(msg->nodes[i].map.map.cells[itr],msg->nodes[i].map.map.x_cell_size);
-			visual->setFramePosition(position);
-			visual->setFrameOrientation(orientation);
-			float alpha = alpha_property_->getFloat();
-			Ogre::ColourValue color=color_property_->getOgreColor();
-			visual->setColor(color.r,color.g,color.b,alpha);
-			visuals_.push_back(visual);*/
-			
 			
 			boost::shared_ptr<NDTLineVisual> visual;
 			visual.reset(new NDTLineVisual(context_->getSceneManager(), scene_node_));

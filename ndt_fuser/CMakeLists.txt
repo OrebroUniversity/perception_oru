@@ -90,6 +90,12 @@ add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
 target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
 
 
+add_executable(ndt_fuser_logger_node src/ndt_fuser_logger_node.cpp)
+add_dependencies(ndt_fuser_logger_node ndt_fuser__generate_messages_cpp)
+
+target_link_libraries(ndt_fuser_logger_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
+
+
 add_executable(init_test src/init_test.cpp)
 add_dependencies(init_test ndt_fuser__generate_messages_cpp)
 

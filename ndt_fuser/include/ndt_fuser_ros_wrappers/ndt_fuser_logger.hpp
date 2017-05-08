@@ -18,14 +18,14 @@ namespace perception_oru {
 		* camera postion. It also log the position and orientation of each pose along with a time stamp a file
 		* \author Malcolm
 		*/
-		class NDTFuserHMTLogger : lslgeneric::NDTFuserHMT{
+		class NDTFuserHMTLogger : public lslgeneric::NDTFuserHMT{
 			
 		protected:
 			std::string _file_out_logger;
 			
 		public:
 			NDTFuserHMTLogger(const std::string& file_out_logger,double map_resolution, double map_size_x_, double map_size_y_, double map_size_z_, double sensor_range_ = 3, bool visualize_ = false, bool be2D_ = false, bool doMultires_ = false, bool fuseIncomplete_ = false, int max_itr = 30, std::__cxx11::string prefix_ = "", bool beHMT_ = true, std::__cxx11::string hmt_map_dir_ = "map", bool _step_control = true, bool doSoftConstraints_ = false, int nb_neighbours = 2, double resolutionLocalFactor = 1.) : 
-				NDTFuserHMT(map_resolution, map_size_x_, map_size_y_, map_size_z_, sensor_range_, visualize_, visualize_, be2D_, doMultires_, fuseIncomplete_, max_itr, prefix_, beHMT_, hmt_map_dir_, _step_control, doSoftConstraints_, nb_neighbours, resolutionLocalFactor), _file_out_logger(file_out_logger) {};
+				NDTFuserHMT(map_resolution, map_size_x_, map_size_y_, map_size_z_, sensor_range_, visualize_, be2D_, doMultires_, fuseIncomplete_, max_itr, prefix_, beHMT_, hmt_map_dir_, _step_control, doSoftConstraints_, nb_neighbours, resolutionLocalFactor), _file_out_logger(file_out_logger) {};
 				
 			
 			/**
@@ -42,17 +42,21 @@ namespace perception_oru {
 			}
 			
 			void logT(const Eigen::Affine3d& T_out){
-				
+				std::cout <<"Log in " << _file_out_logger << std::endl;
 				Eigen::Affine2d T2d = eigenAffine3dTo2d(T_out);
 				
 				Eigen::Rotation2Dd R(0);
 				Eigen::Vector2d t(T2d.translation());
 				R.fromRotationMatrix(T2d.linear());
 				
-				std::ofstream myfile;
-				myfile.open (_file_out_logger);
-				myfile << t(0) << " " << t(1) << " " << R << " " << ros::Time::now() << "\n";
-				myfile.close();
+				std::ofstream out(_file_out_logger.c_str(), std::ios::in | std::ios::out | std::ios::ate);
+// 				out.open (_file_out_logger.c_str());
+				
+				std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << std::endl;
+				out << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << "\n";
+				out.close();
+				
+// 				exit(0);
 				
 			}
 			
@@ -78,3 +82,5 @@ namespace perception_oru {
 		};
 	}
 }
+
+#endif

@@ -244,11 +244,13 @@ int main(int argc, char **argv){
 									   
 				
 	//Same as for logger test
-	resolution = 0.1;
-	match2d = 0; //false
+	match2d = 1; //false
 	beHMT = 0; //false
 	resolution_local_factor = 1.;
 	use_odometry = true;
+	use_multires = 0;
+	resolution = 0.2;
+	sensor_cutoff = 20;
 	
 	std::cout << resolution << " " << size_xy << " " << size_xy << " " << size_z << " " << 
                                        sensor_cutoff << " " << visualize << " match2d " << match2d << " " << use_multires << " " << 
@@ -395,37 +397,25 @@ int main(int argc, char **argv){
 		Eigen::Affine3d added_motion;
 
 		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
-// 			ros::spinOnce();
-			//if(cloud.size()==0) continue;
-
 			std::cout << "Reading and counter " << counter << std::endl;
-		
+
+			ros::spinOnce();
+			sensor_msgs::PointCloud2 mesg;
+// 							mesg.header.frame_id = "/velodyne";
+// 							mesg.header.stamp = ros::Time::now();
+			
+			pcl::toROSMsg (cloud, mesg);
+			
+			std::cout << "FRAME " << mesg.header.frame_id << std::endl;
+			
+// 			mesg = vreader.last_pointcloud;
+// 							
+			mesg.header.frame_id = "/velodyne";
+			mesg.header.stamp = ros::Time::now();
+			laserpub.publish<sensor_msgs::PointCloud2>(mesg);
 			
 			
-
-	// 	    if(filter_fov) {
-	// 		filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
-	// 	    } else {
-	// 		cloud = cloud_nofilter;
-	// 	    }
-
-	// 	    vreader.getPoseFor(baseodo, tf_base_link/*"/odom_base_link"*/);
-
-			//callback(cloud, sensor_pose,T,basepose, base_odo);	
-
-// 			Eigen::Affine3d Todo;
-// 			Eigen::Affine3d Ttot,Ts,Tbase,Tgt;
-// 	#if ROS_VERSION_MINIMUM(1,9,0)
-// 			tf::transformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-// 			tf::transformTFToEigen (T, Ts); ///<sensor offset
-// 			tf::transformTFToEigen (basepose, Tgt); ///<Ground truth
-// 			tf::transformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
-// 	#else	
-// 			tf::TransformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-// 			tf::TransformTFToEigen (T, Ts); ///<sensor offset
-// 			tf::TransformTFToEigen (basepose, Tgt); ///<Ground truth
-// 			tf::TransformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
-// 	#endif	
+			
 			if(counter == 0){
 				counter ++;
 				cloud.clear();	
@@ -437,13 +427,20 @@ int main(int argc, char **argv){
 				
 				added_motion.setIdentity();
 				
-				ndtslammer.setSensorPose(vreader.getLastPose());
+				Eigen::Affine3d sens = vreader.getSensorPose();
+				sens(2,3) = -0.505
+;				ndtslammer.setSensorPose(sens);
+				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
 				
 				ndtslammer.initialize(vreader.getLastPose(), cloud);
+				std::cout << std::endl <<"Robot pose " << vreader.getLastPose().matrix() << std::endl;
 
 // 				ndtslammer.initialize(Tgt,cloud,preload);
 				std::cout << "initializing done" << std::endl;
+// 				exit(0);
+				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << " with cloud " << cloud.size() << std::endl;
+				ndtslammer.print();
 // 				exit(0);
 				//Told = Tgt;//for gt
 
@@ -467,8 +464,8 @@ int main(int argc, char **argv){
 					Tmotion = vreader.getMotion();
 					added_motion = added_motion * Tmotion;
 					
-					std::cout << std::endl << std::endl << "Tmotion " << Tmotion.matrix() << std::endl << std::endl;
-					std::cout <<  std::endl << std::endl << "Added motion " << added_motion.matrix() << std::endl << std::endl;
+// 					std::cout << std::endl << std::endl << "Tmotion " << Tmotion.matrix() << std::endl << std::endl;
+// 					std::cout <<  std::endl << std::endl << "Added motion " << added_motion.matrix() << std::endl << std::endl;
 					Eigen::Vector3d added_motion_euler = added_motion.rotation().eulerAngles(0,1,2);
 						
 					if(added_motion.translation().norm() > min_dist && fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
@@ -488,28 +485,35 @@ int main(int argc, char **argv){
 						}
 						
 						std::cout << "pub" << std::endl;
-						while(ros::ok()){
+// 						while(ros::ok()){
 							
 							//Tested and working !
 							
 // 							std::cout << "pub" << std::endl;
 							ros::spinOnce();
 							sensor_msgs::PointCloud2 mesg;
-							mesg.header.frame_id = "/world";
-							mesg.header.stamp = ros::Time::now();
+// 							mesg.header.frame_id = "/velodyne";
+// 							mesg.header.stamp = ros::Time::now();
+							
 							pcl::toROSMsg (cloud, mesg);
+							
+							std::cout << "FRAME " << mesg.header.frame_id << std::endl;
+// 							exit(0);
+							mesg = vreader.last_pointcloud;
+// 							
+							mesg.header.frame_id = "/velodyne";
 							mesg.header.stamp = ros::Time::now();
 							laserpub.publish<sensor_msgs::PointCloud2>(mesg);
 							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastLaserScan();
 							sensor_msgs::LaserScan mes_laser_tmp = *mesg_laser;
-							mes_laser_tmp.header.stamp = ros::Time::now();
+// 							mes_laser_tmp.header.stamp = ros::Time::now();
 							laserpub_real.publish<sensor_msgs::LaserScan>(mes_laser_tmp);
-						}
-						exit(0);
+// 						}
+// 						exit(0);
 						
 					}
 					else{
-						std::cout << "NO UPDATE :(" << std::endl;
+// 						std::cout << "NO UPDATE :(" << std::endl;
 					}
 					counter++;
 				}
@@ -517,17 +521,17 @@ int main(int argc, char **argv){
 					saveCloud(counter-1, cloud);
 				}
 				
-				if(counter == 15){
-					std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-					if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-						ndtslammer.map->writeToJFF("map.jff");
-						std::cout << "Done." << std::endl;
-					}
-					else {
-						std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
-					}
-					exit(0);
-				}
+// 				if(counter == 15){
+// 					std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
+// 					if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+// 						ndtslammer.map->writeToJFF("map.jff");
+// 						std::cout << "Done." << std::endl;
+// 					}
+// 					else {
+// 						std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+// 					}
+// 					exit(0);
+// 				}
 				
 				cloud.clear();	
 				numclouds++;

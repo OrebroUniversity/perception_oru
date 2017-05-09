@@ -179,7 +179,7 @@ void PoseInterpolationNavMsgsOdo::readUntilTime(ros::Time t){
 	fprintf(stderr,"END:");
     }
     if(last_read_tf>t){
-	fprintf(stderr,"No need to read!\n");
+// 	fprintf(stderr,"No need to read!\n");
 	return; ///No need to read new ones
     }
 
@@ -226,7 +226,7 @@ void PoseInterpolationNavMsgsOdo::readUntilTime(ros::Time t){
 		/////////////////////////////////////////////////////////////////////////////////////////////
     }
    
-    fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
+//     fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
     //bag.close();
 
 }
@@ -260,6 +260,9 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 }
 
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
+	
+// 	std::cout << "Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
+	
 	tf::StampedTransform transform;
 	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
 	
@@ -297,6 +300,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 */
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, Eigen::Affine3d &T){
 
+// 	std::cout << "Transfo toward base" << std::endl;
 	tf::StampedTransform transform;
 	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, t1, frame_id, fixed_frame_id, transform);
 	TransformTFToEigen (transform, T);
@@ -315,6 +319,8 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::st
 * Returns the sensor pose for time t
 */
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
+	
+// 	std::cout << " here Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
 	
 	tf::StampedTransform transform;
 // 	fprintf(stderr,"DT: %lf ", (t0 - t0+ros::Duration(1.0)).toSec());

@@ -43,6 +43,7 @@ namespace perception_oru{
 			
 			
 		public:
+			sensor_msgs::PointCloud2 last_pointcloud;
 			/**
 			* Constructor
 			* @param calibration_file path and name to your velodyne calibration file
@@ -99,7 +100,7 @@ namespace perception_oru{
 			*/
 			bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud){
 
-				std::cout << "Start read mmo" << std::endl;
+// 				std::cout << "Start read mmo" << std::endl;
 				assert(this->I != this->view->end());
 				
 				tf::Transform T;
@@ -111,10 +112,39 @@ namespace perception_oru{
 				this->timestamp_of_last_sensor_message = t0;
 				
 				ros::Time t1=this->global_scan->header.stamp + this->sensor_time_offset_;
-				sensor_msgs::PointCloud2 cloud_msg;
-				convertLaser(this->global_scan, cloud_msg);
-// 				pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
-				pcl::fromROSMsg (cloud_msg, cloud);
+				
+// 				laser_geometry::LaserProjection projector;
+// 				projector.projectLaser(*(this->global_scan), last_pointcloud);
+// 				
+// 				
+// 				pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered;
+// 				pcl::fromROSMsg (last_pointcloud, pcl_cloud_unfiltered);
+// 
+// 				pcl::PointXYZ pt;
+// 				//add some variance on z
+// 				for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
+// 					pt = pcl_cloud_unfiltered.points[i];
+// 					if(sqrt(pt.x*pt.x+pt.y*pt.y) > 0.1) {
+// 						pt.z += (0.2/4)*((double)rand())/(double)INT_MAX;
+// 						cloud.points.push_back(pt);
+// 					}
+// 				}
+				
+				
+// 				sensor_msgs::PointCloud2 cloud_msg;
+				convertLaser(this->global_scan, last_pointcloud);
+				pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered;
+				pcl::fromROSMsg (last_pointcloud, pcl_cloud_unfiltered);
+				
+				//add some variance on z <- NEEDED BUT WHY
+				pcl::PointXYZ pt;
+				for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
+					pt = pcl_cloud_unfiltered.points[i];
+					if(sqrt(pt.x*pt.x+pt.y*pt.y) > 0.1) {
+						pt.z += (0.2/4)*((double)rand())/(double)INT_MAX;
+						cloud.points.push_back(pt);
+					}
+				}
 
 				return true;
 			}

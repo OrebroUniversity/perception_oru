@@ -214,6 +214,7 @@ public:
     lslgeneric::NDTMatcherD2D matcher;
     // Enough to transform one map.
     Eigen::Affine3d Tsecond = getPredictedRelativeEstSensorPose(Ts);
+    
     std::vector<lslgeneric::NDTCell*> m2 = second.ndtmap->pseudoTransformNDT(Tsecond);
     double score = matcher.scoreNDT(m2, *first.ndtmap);
     for (size_t i = 0; i < m2.size(); i++) {
@@ -313,7 +314,7 @@ public:
         }
     };
 
-    NDTCalibOptimize(NDTCalibScanPairs &pairs, int scoreType, ObjectiveType objectiveType, PoseInterpolationNavMsgsOdo &poseInterp) : _pairs(pairs), _scoreType(scoreType), _objectiveType(objectiveType), _poseInterp(poseInterp) { }
+ NDTCalibOptimize(NDTCalibScanPairs &pairs, int scoreType, ObjectiveType objectiveType, PoseInterpolationNavMsgsOdo &poseInterp, const std::string &poseFrameId) : _pairs(pairs), _scoreType(scoreType), _objectiveType(objectiveType), _poseInterp(poseInterp), _poseFrameId(poseFrameId) { }
   
     // Main function to call. Provide the initial sensor pose and time offset. These will be updated with the calibrated results.
   bool calibrate(Eigen::Affine3d &initT, double &sensorTimeOffset);
@@ -347,13 +348,14 @@ private:
   ObjectiveType _objectiveType;
 
    Eigen::VectorXd _initParameters; // Contains all initial parameters, always length 7.
+   std::string _poseFrameId;
 };
 
 
 
 
 // Specialied load function to load data generated from the offline fuser.
-void loadNDTCalibScanPairs(const std::string &gt_file, const std::string &est_sensorpose_file, const std::string &base_name_pcd, NDTCalibScanPairs &scans, double max_translation, double min_rotation) {
+void loadNDTCalibScanPairs(const std::string &gt_file, const std::string &est_sensorpose_file, const std::string &base_name_pcd, NDTCalibScanPairs &scans, double max_translation, double min_rotation, int index_offset = 0) {
   scans.resize(0);
 
   // Load the data...
@@ -391,8 +393,8 @@ void loadNDTCalibScanPairs(const std::string &gt_file, const std::string &est_se
 
     scans.push_back(pair);
     
-    ndt_generic::loadCloud(base_name_pcd, j+1, scans.back().first.cloud);  // cloud1.pcd -> first line in the eval files...
-    ndt_generic::loadCloud(base_name_pcd, i+1, scans.back().second.cloud);
+    ndt_generic::loadCloud(base_name_pcd, j+index_offset, scans.back().first.cloud);  // cloud1.pcd -> first line in the eval files...
+    ndt_generic::loadCloud(base_name_pcd, i+index_offset, scans.back().second.cloud);
 
     j = i; // reset
   }

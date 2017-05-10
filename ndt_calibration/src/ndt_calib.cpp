@@ -18,7 +18,7 @@ scoreICP(const NDTCalibScanPairs &pairs, const Eigen::Affine3d &Ts) {
 
 double 
 scoreEstSensorPose(const NDTCalibScanPairs &pairs, const Eigen::Affine3d &Ts){
-    double e=0;
+  double e=0;
     for(unsigned int i=0; i<pairs.size(); ++i){
 	e += pairs[i].first.scoreEstSensorPose(Ts);
 	e += pairs[i].second.scoreEstSensorPose(Ts);
@@ -32,7 +32,6 @@ scoreEstSensorPoseRel(const NDTCalibScanPairs &pairs, const Eigen::Affine3d &Ts)
     for(unsigned int i=0; i<pairs.size(); ++i){
 	e += pairs[i].scoreEstSensorPoseRel(Ts);
     }
-    //  std::cout << " e : " << e << std::endl;
     return e;
 }
 
@@ -163,7 +162,9 @@ double NDTCalibOptimize::getScore(const Eigen::VectorXd &x) {
 
 void NDTCalibOptimize::interpPose(double time, Eigen::Affine3d &T) {
     ros::Time t(time);
-    _poseInterp.getTransformationForTime(t, std::string("/EKF"), T); 
+    if (!_poseInterp.getTransformationForTime(t, _poseFrameId, T)) {
+      std::cout << "[FAIL] : couldn't find transformation for time " << time << " at frame : " << _poseFrameId << std::endl;
+    }
 }
 
 void NDTCalibOptimize::interpPairPoses(double sensorTimeOffset) {

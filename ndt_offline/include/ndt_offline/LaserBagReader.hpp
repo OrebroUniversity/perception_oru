@@ -145,6 +145,21 @@ namespace perception_oru{
 						cloud.points.push_back(pt);
 					}
 				}
+				
+				cloud.height = last_pointcloud.height;
+				cloud.width = last_pointcloud.width;
+				
+// 				if (cloud.points.size() == 0) {
+// 					ROS_ERROR("BAD LASER SCAN(!) - should never happen - check your driver / bag file");
+// 				}
+// 				if(cloud.points.size () != cloud.width * cloud.height){
+// 					std::cout << "Weird cloud sizes. I don't know what's going on:" << cloud.points.size () << " != " << cloud.width << " * " << cloud.height << " laser " << last_pointcloud.height << " " << last_pointcloud.width << std::endl;
+// 					exit(0);
+// 				}
+// 				else{
+// 					ROS_ERROR("GOOD UNFILTERED SCAN");
+// 					std::cout<< "GOOD UNFILTERED SCAN" << std::endl;
+// 				}
 
 				return true;
 			}

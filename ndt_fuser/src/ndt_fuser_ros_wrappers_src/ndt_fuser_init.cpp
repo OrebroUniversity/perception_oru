@@ -20,6 +20,11 @@ void perception_oru::ndt_fuser::initSensorPose(lslgeneric::NDTFuserHMT& fuser, c
 	Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
 	Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
 	Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
+	
+	std::cout << "POSE SENSOR " << pose_sensor.matrix() << std::endl;
+// 	exit(0);
+	
+	
 	fuser.setSensorPose(pose_sensor);
 
 }
@@ -44,8 +49,9 @@ void perception_oru::ndt_fuser::initRobotPose(lslgeneric::NDTFuserHMT& fuser, pc
 	Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
 	Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
 	Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
-	std::cout << "POSE " << pose.matrix() << std::endl;
+	std::cout << "POSE ROBOT " << pose.matrix() << std::endl;
 
+// 	exit(0);
 	fuser.initialize(pose, cloud, preLoad);
 }
 
@@ -63,12 +69,17 @@ void perception_oru::ndt_fuser::initSensorPose2D(lslgeneric::NDTFuserHMT& fuser,
 	double z = 0;
 	double roll, pitch, yaw;
 	transform.getBasis().getRPY(roll, pitch, yaw);
+	
 
 	Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(x,y,z)*
 	Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
 	Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
 	Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
 	fuser.setSensorPose(pose_sensor);
+	
+	
+	std::cout << "POSE SENSOR 2d " << pose_sensor.matrix() << std::endl;
+// 	exit(0);
 
 }
 
@@ -92,7 +103,8 @@ void perception_oru::ndt_fuser::initRobotPose2D(lslgeneric::NDTFuserHMT& fuser, 
 	Eigen::AngleAxis<double>(roll,Eigen::Vector3d::UnitX()) *
 	Eigen::AngleAxis<double>(pitch,Eigen::Vector3d::UnitY()) *
 	Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
-	std::cout << "POSE " << pose.matrix() << std::endl;
+	std::cout << "POSE ROBOT 2d " << pose.matrix() << std::endl;
+	exit(0);
 
 	fuser.initialize(pose, cloud, preLoad);
 }

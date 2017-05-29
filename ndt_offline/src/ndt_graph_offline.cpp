@@ -22,6 +22,9 @@
 #include <ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
 
 
+#include "ndt_feature/ndt_feature_graph.h"
+
+
 #include "ndt_offline/LaserBagReader.hpp"
 
 #include <boost/program_options.hpp>
@@ -281,22 +284,62 @@ int main(int argc, char **argv){
 									   
 									   
 
+	semrob_generic::MotionModel2d::Params motion_params_graph;
+	motion_params_graph.Cd = 0.005;
+	motion_params_graph.Ct = 0.01;
+	motion_params_graph.Dd = 0.001;
+	motion_params_graph.Dt = 0.01;
+	motion_params_graph.Td = 0.001;
+	motion_params_graph.Tt = 0.005;
+		
 // 	exit(0);
+	ndt_feature::NDTFeatureGraph::Params graph_params;
+	graph_params.newNodeTranslDist = 10.;
+	graph_params.storePtsInNodes = true;
+	graph_params.storePtsInNodesIncr = 2;
+	graph_params.popNodes = false;
 	
-    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
-                                       sensor_cutoff, visualize, match2d, use_multires, 
-                                       fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
+	ndt_feature::NDTFeatureFuserHMT::Params fuser_params;
+	fuser_params.useNDT = true;
+	fuser_params.useFeat = false;
+	fuser_params.useOdom = false;
+	fuser_params.neighbours = 2;
+	fuser_params.stepcontrol = true;
+	fuser_params.ITR_MAX = 30;
+	fuser_params.DELTA_SCORE = 0.000001;
+	fuser_params.globalTransf = false;
+	fuser_params.loadCentroid = false;
+	fuser_params.forceOdomAsEst = false;
+	fuser_params.visualizeLocalCloud = false;
+	fuser_params.fusion2d = false;
+	fuser_params.allMatchesValid = true;
+	fuser_params.discardCells = false;
+	fuser_params.optimizeOnlyYaw = false;
+	fuser_params.computeCov = true;
+	fuser_params.resolution = resolution;
+	fuser_params.map_size_x = size_xy;
+	fuser_params.map_size_y = size_xy;
+	fuser_params.map_size_z = size_z;
+	fuser_params.sensor_range = sensor_cutoff;
+	fuser_params.prefix = map_dirname;
+	fuser_params.beHMT = beHMT;
+	fuser_params.hmt_map_dir = map_dirname;
+	ndt_feature::NDTFeatureGraph ndtgraph(graph_params, fuser_params);
+	
+//     lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
+//                                        sensor_cutoff, visualize, match2d, use_multires, 
+//                                        fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
 //     ros::Time::init();
 // 	if(!ros::isInitialized()){
 // 		ros::Time::init();
 // 	}
 	
-	ndtslammer.print();
+// 	ndtslammer.print();
 // 	exit(0);
 		srand(time(NULL));
     bool noOdometry = false;
 	
-    ndtslammer.disableRegistration = disable_reg;
+//     ndtslammer.disableRegistration = disable_reg;
 
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
@@ -424,6 +467,17 @@ int main(int argc, char **argv){
 
 		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
 			std::cout << "Reading and counter " << counter << std::endl;
+			
+			if (cloud.points.size() == 0) {
+				ROS_ERROR("BAD LASER SCAN(!) - should never happen - check your driver / bag file");
+			}
+			if(cloud.points.size () != cloud.width * cloud.height){
+				std::cout << "Weird cloud sizes. I don't know what's going on" << std::endl;
+			}
+			else{
+				ROS_ERROR("GOOD UNFILTERED SCAN");
+				std::cout<< "GOOD UNFILTERED SCAN" << std::endl;
+			}
 
 			ros::spinOnce();
 			sensor_msgs::PointCloud2 mesg;
@@ -454,19 +508,20 @@ int main(int argc, char **argv){
 				added_motion.setIdentity();
 				
 				Eigen::Affine3d sens = vreader.getSensorPose();
-				sens(2,3) = -0.505
-;				ndtslammer.setSensorPose(sens);
+				sens(2,3) = -0.505;				
+				ndtgraph.setSensorPose(sens);
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
-				ndtslammer.setMotionParams(motion_params);
+				ndtgraph.setMotionParams(motion_params_graph);
 				
-				ndtslammer.initialize(vreader.getLastPose(), cloud);
+				InterestPointVec pts;
+				ndtgraph.initialize(vreader.getLastPose(), cloud, pts);
 				std::cout << std::endl <<"Robot pose " << vreader.getLastPose().matrix() << std::endl;
 
 // 				ndtslammer.initialize(Tgt,cloud,preload);
 				std::cout << "initializing done" << std::endl;
 // 				exit(0);
-				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << " with cloud " << cloud.size() << std::endl;
-				ndtslammer.print();
+				std::cout << "Saving map of cell : " << ndtgraph.map->getAllCells().size() << " with cloud " << cloud.size() << std::endl;
+// 				ndtslammer.print();
 // 				exit(0);
 				//Told = Tgt;//for gt
 
@@ -496,14 +551,16 @@ int main(int argc, char **argv){
 						
 					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
 // 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud);
+						
+						InterestPointVec pts;
+						Eigen::Affine3d Todo = ndtgraph.update(added_motion, cloud, pts);
 						
 						added_motion.setIdentity();
 						
 						std::cout << std::endl << "Updated " << cloud.size() << " motion " << Tmotion.matrix() << " counter " << counter << std::endl;
-						std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-						if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-							ndtslammer.map->writeToJFF("map.jff");
+						std::cout << "Saving map of cell : " << ndtgraph.map->getAllCells().size() << std::endl;
+						if (ndtgraph.wasInit() && ndtgraph.map != NULL) {
+							ndtgraph.map->writeToJFF("map.jff");
 							std::cout << "Done." << std::endl;
 						}
 						else {
@@ -577,15 +634,15 @@ int main(int argc, char **argv){
 		sensorpose_est_file.close();
 
 		if (save_map) {
-			std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-			if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-				ndtslammer.map->writeToJFF("map.jff");
+			std::cout << "Saving map of cell : " << ndtgraph.map->getAllCells().size() << std::endl;
+			if (ndtgraph.wasInit() && ndtgraph.map != NULL) {
+				ndtgraph.map->writeToJFF("mapOFFLINE.jff");
 				std::cout << "Done." << std::endl;
 				
 				while(ros::ok()){
 					ros::spinOnce();
 					ndt_map::NDTMapMsg mapmsg;
-					lslgeneric::toMessage(ndtslammer.map, mapmsg, "velodyne");
+					lslgeneric::toMessage(ndtgraph.map, mapmsg, "velodyne");
 					ndt_map_pubb.publish<ndt_map::NDTMapMsg>(mapmsg);
 				}
 				

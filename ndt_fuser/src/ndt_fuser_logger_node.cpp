@@ -61,7 +61,7 @@ protected:
   // Components for publishing
   tf::TransformBroadcaster tf_;
   tf::TransformListener tf_listener_;
-  ros::Publisher output_pub_;
+  ros::Publisher output_pub_, laserpub;
   Eigen::Affine3d pose_, T, sensor_pose_;
 
   unsigned int nb_added_clouds_;
@@ -99,6 +99,9 @@ public:
   // Constructor
   NDTFuserNode(ros::NodeHandle param_nh) : nb_added_clouds_(0)
   {
+	  
+	laserpub = param_nh.advertise<sensor_msgs::PointCloud2>("laser_read_logger", 10);
+	  
     ///if we want to build map reading scans directly from bagfile
     param_nh.param<std::string>("bagfile_name",bag_name,"data.bag");
 
@@ -274,6 +277,8 @@ public:
           ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
                  pose_.rotation().eulerAngles(0,1,2)(0));
 			fuser->initialize(pose_,cloud);
+			std::cout << "Saving map of cell : " << fuser->map->getAllCells().size() << std::endl;
+// 	  		exit(0);
 		}
 		else if(initPoseFromTF){
 			ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
@@ -284,6 +289,10 @@ public:
 // 			fuser->setSensorPose(robot_frame, sensor_frame);
 // 			fuser->initialize(cloud, world_frame, robot_frame);
 			ROS_INFO("OUT");
+			std::cout << "Saving map of cell : " << fuser->map->getAllCells().size() << " with cloud " << cloud.size() << std::endl;
+			
+			fuser->print();
+// 	  		exit(0);
 		}
 		nb_added_clouds_++;
       } else {
@@ -305,6 +314,10 @@ public:
       }
       nb_added_clouds_++;
       pose_ = fuser->update(Tmotion,cloud);
+	  
+	  
+	  
+	  
     }
     m.unlock();
     tf::Transform transform;
@@ -501,6 +514,14 @@ public:
         pcl_cloud.points.push_back(pt);
       }
     }
+    
+	sensor_msgs::PointCloud2 mesg;
+	mesg.header.stamp = ros::Time::now();
+	pcl::toROSMsg (pcl_cloud, mesg);
+	mesg.header.frame_id = "/velodyne";
+	mesg.header.stamp = ros::Time::now();
+	laserpub.publish<sensor_msgs::PointCloud2>(mesg);
+	
     //ROS_INFO("Got laser and odometry!");
     this->processFrame(pcl_cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////

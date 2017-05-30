@@ -261,7 +261,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
 	
-// 	std::cout << "Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
+	std::cout << "Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
 	
 	tf::StampedTransform transform;
 	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
@@ -274,7 +274,10 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 	if(!transformer.canTransform 	(frame_id, t0, frame_id, t1, fixed_frame_id, &schaiba)){
 		fprintf(stderr,"FAIL\n");
 		return false;
-	} 
+	}
+	else{
+		std::cout << "Return true" << std::endl;
+	}
 
 	//transformer.lookupTransform(frame_id,t0, frame_id, t1, fixedframe, transform);
 	transformer.lookupTransform(frame_id, t0, frame_id, t1, fixed_frame_id, transform);
@@ -320,7 +323,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::st
 */
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
 	
-// 	std::cout << " here Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
+	std::cout << " here Transfo 1.toward 2.base: " << frame_id << " " <<  fixed_frame_id << std::endl;
 	
 	tf::StampedTransform transform;
 // 	fprintf(stderr,"DT: %lf ", (t0 - t0+ros::Duration(1.0)).toSec());
@@ -332,6 +335,9 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::st
 		std::cout << "Not found " << std::endl;
 		exit(0);
 		return false;
+	}
+	else{
+		std::cout<< "Is ok " << std::endl;
 	}
 // 	printf("found\n");
 	transformer.lookupTransform(fixed_frame_id,frame_id,t0, transform);

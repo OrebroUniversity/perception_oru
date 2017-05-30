@@ -41,6 +41,9 @@ namespace perception_oru{
 // 			ros::Time timestamp_of_last_sensor_message;
 // 			ros::Duration sensor_time_offset_;
 			
+			double _laser_variance;
+			double _min_laser_range;
+			
 			
 		public:
 			sensor_msgs::PointCloud2 last_pointcloud;
@@ -66,8 +69,13 @@ namespace perception_oru{
 				tf::StampedTransform *sensor_link=NULL,
 				double velodyne_max_range=130.0, 
 				double velodyne_min_range=2.0,
-				double sensor_time_offset=0.0) : BagReaderInterface<PointT>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, velodyne_max_range, velodyne_min_range, sensor_time_offset){}
+				double sensor_time_offset=0.0,
+				double lvariance = 0.02,
+				double min_laser_range = 0.5
+  						) : BagReaderInterface<PointT>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, velodyne_max_range, velodyne_min_range, sensor_time_offset), _laser_variance(lvariance), _min_laser_range(min_laser_range){}
 			
+			void setLaserVariance(double var){_laser_variance = var;}
+			double getLaserVariance(){return _laser_variance;}
 			
 			void convertLaser(const sensor_msgs::LaserScan::ConstPtr laser, sensor_msgs::PointCloud2& cloud){
 				laser_geometry::LaserProjection projector;
@@ -136,12 +144,14 @@ namespace perception_oru{
 				pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered;
 				pcl::fromROSMsg (last_pointcloud, pcl_cloud_unfiltered);
 				
+				assert(_laser_variance == 0.02);
+				
 				//add some variance on z <- NEEDED BUT WHY
 				pcl::PointXYZ pt;
 				for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
 					pt = pcl_cloud_unfiltered.points[i];
-					if(sqrt(pt.x*pt.x+pt.y*pt.y) > 0.1) {
-						pt.z += (0.2/4)*((double)rand())/(double)INT_MAX;
+					if(sqrt(pt.x*pt.x+pt.y*pt.y) > _min_laser_range) {
+						pt.z += (_laser_variance/4)*((double)rand())/(double)INT_MAX;
 						cloud.points.push_back(pt);
 					}
 				}

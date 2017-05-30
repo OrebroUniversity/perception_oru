@@ -127,7 +127,10 @@ namespace perception_oru{
 				//Update motion
 				//Get BaseLink Pose
 				tf::Transform pose_bl;
-				getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl);
+				if(!getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl)){
+					std::cout << "Not transform found between " << this->tf_base_link_ << " and " << this->fixed_frame_id_ << std::endl;
+					throw std::runtime_error("Not transform found");
+				}
 // 				tf::transformTFToEigen (pose_bl, _baselink_pose);
 				transformtoAffine2d(pose_bl, _baselink_pose);
 
@@ -137,7 +140,10 @@ namespace perception_oru{
 				
 				//Get sensor Pose
 				tf::Transform pose_sensor;
-				getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor);
+				if(!getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor)){
+					std::cout << "Not transform found between " << this->tf_sensor_link_ << " and " << this->tf_base_link_ << std::endl;
+					throw std::runtime_error("Not transform found");
+				}
 				
 				double x = pose_sensor.getOrigin().x();
 				double y = pose_sensor.getOrigin().y();
@@ -154,9 +160,18 @@ namespace perception_oru{
 // 				exit(0);
 				std::cout << "GOT " << m.getTopic() << " at " << this->global_scan->header.stamp << std::endl;
 
+
 				std::cout << "end initi" << std::endl;
 // 				exit(0);
 				
+			}
+			
+			void print(){
+				std::cout <<
+				"velodyne topic: " << velodynetopic_ << "\n" <<
+				"tf_base_link: " << tf_base_link_ <<"\n" <<
+				"tf sensor link: " << tf_sensor_link_<<"\n" <<
+				"fixed frame: " << fixed_frame_id_<< std::endl;
 			}
 			
 			Eigen::Affine3d& getMotion(){return motion_;}

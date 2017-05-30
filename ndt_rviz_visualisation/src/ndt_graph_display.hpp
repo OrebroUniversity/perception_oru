@@ -22,6 +22,11 @@ namespace rviz
 namespace lslgeneric{
 
   class NDTLineVisual;
+  
+}
+
+namespace perception_oru{
+	namespace ndt_rviz_visualisation{
 
   class NDTGraphDisplay: public rviz::MessageFilterDisplay<ndt_feature::NDTGraphMsg>{
     Q_OBJECT
@@ -42,12 +47,13 @@ namespace lslgeneric{
   private:
     void processMessage(const ndt_feature::NDTGraphMsg::ConstPtr& msg);
 
-    std::deque<boost::shared_ptr<NDTLineVisual> > visuals_;
+    std::deque<boost::shared_ptr<lslgeneric::NDTLineVisual> > visuals_;
 
     rviz::ColorProperty* color_property_;
     rviz::FloatProperty* alpha_property_;
     rviz::IntProperty* history_length_property_;
   };
+}
 }
 
 #endif 

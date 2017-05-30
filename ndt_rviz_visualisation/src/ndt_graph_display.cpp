@@ -12,7 +12,8 @@
 #include "ndt_line_visual.hpp"
 #include "ndt_graph_display.hpp"
 
-namespace lslgeneric{
+namespace perception_oru{
+	namespace ndt_rviz_visualisation{
   
   NDTGraphDisplay::NDTGraphDisplay(){
     ROS_ERROR("BUILDING OBJECT");
@@ -87,8 +88,8 @@ void NDTGraphDisplay::updateHistoryLength()
 		
 		for(int itr=0;itr<msg->nodes[i].map.map.cells.size();itr++){
 			
-			boost::shared_ptr<NDTLineVisual> visual;
-			visual.reset(new NDTLineVisual(context_->getSceneManager(), scene_node_));
+			boost::shared_ptr<lslgeneric::NDTLineVisual> visual;
+			visual.reset(new lslgeneric::NDTLineVisual(context_->getSceneManager(), scene_node_));
 			if(!(msg->nodes[i].map.map.x_cell_size==msg->nodes[i].map.map.y_cell_size&&msg->nodes[i].map.map.y_cell_size==msg->nodes[i].map.map.z_cell_size)){ 
 				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
 				//return false;
@@ -108,7 +109,7 @@ void NDTGraphDisplay::updateHistoryLength()
     
   }
 }
-
+}
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(lslgeneric::NDTGraphDisplay,rviz::Display)
+PLUGINLIB_EXPORT_CLASS(perception_oru::ndt_rviz_visualisation::NDTGraphDisplay,rviz::Display)
 

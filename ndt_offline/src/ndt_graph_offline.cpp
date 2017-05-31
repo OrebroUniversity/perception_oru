@@ -318,7 +318,7 @@ int main(int argc, char **argv){
 	fuser_params.fusion2d = false;
 	fuser_params.allMatchesValid = true;
 	fuser_params.discardCells = false;
-	fuser_params.optimizeOnlyYaw = false;
+// 	fuser_params.optimizeOnlyYaw = false;
 	fuser_params.computeCov = true;
 	fuser_params.resolution = resolution;
 	fuser_params.map_size_x = size_xy;

@@ -67,3 +67,6 @@ target_link_libraries(ndt_offline_laser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} $
 
 add_executable(ndt_graph_offline src/ndt_graph_offline.cpp)
 target_link_libraries(ndt_graph_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})
+
+add_executable(ndt_graph_logger_offline src/ndt_graph_logger_offline.cpp)
+target_link_libraries(ndt_graph_logger_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})

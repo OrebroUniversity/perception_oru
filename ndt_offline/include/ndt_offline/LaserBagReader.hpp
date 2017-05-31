@@ -156,20 +156,23 @@ namespace perception_oru{
 					}
 				}
 				
-				cloud.height = last_pointcloud.height;
-				cloud.width = last_pointcloud.width;
+// 				//Should be this but here is an error a certain point cloud laser_scan_with_ransac :
+// 				cloud.height = last_pointcloud.height;
+// 				cloud.width = last_pointcloud.width;
+				cloud.height = 1;
+				cloud.width = cloud.points.size();
 				
-// 				if (cloud.points.size() == 0) {
-// 					ROS_ERROR("BAD LASER SCAN(!) - should never happen - check your driver / bag file");
-// 				}
-// 				if(cloud.points.size () != cloud.width * cloud.height){
-// 					std::cout << "Weird cloud sizes. I don't know what's going on:" << cloud.points.size () << " != " << cloud.width << " * " << cloud.height << " laser " << last_pointcloud.height << " " << last_pointcloud.width << std::endl;
-// 					exit(0);
-// 				}
-// 				else{
-// 					ROS_ERROR("GOOD UNFILTERED SCAN");
-// 					std::cout<< "GOOD UNFILTERED SCAN" << std::endl;
-// 				}
+				if (cloud.points.size() == 0) {
+					ROS_ERROR("BAD LASER SCAN(!) - should never happen - check your driver / bag file");
+				}
+				if(cloud.points.size () != cloud.width * cloud.height){
+					std::cout << "Weird cloud sizes. I don't know what's going on:" << cloud.points.size() << " != " << cloud.width << " * " << cloud.height << " laser " << last_pointcloud.height << " " << last_pointcloud.width << std::endl;
+					exit(0);
+				}
+				else{
+					ROS_ERROR("GOOD UNFILTERED SCAN");
+					std::cout<< "GOOD UNFILTERED SCAN" << std::endl;
+				}
 
 				return true;
 			}

@@ -2,8 +2,8 @@
 Changelog for package ndt_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * testing tutorials on core packages. 
 * Contributors: Henrik Andreasson, Malcolm Mielle, Todor Stoyanov, Tomasz Kucner, tsv
 

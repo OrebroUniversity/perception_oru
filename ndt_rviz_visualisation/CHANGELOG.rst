@@ -2,8 +2,8 @@
 Changelog for package ndt_rviz_visualisation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * Added ndt map line based visualization plugin.
 * added ndt_map dependencies in rviz_visu
 * Switch to Qt5 to avoid Qt moc chocking on BOOST_JOIN

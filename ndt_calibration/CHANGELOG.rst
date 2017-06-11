@@ -2,8 +2,8 @@
 Changelog for package ndt_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * added ndt_calibration
 * added dependency on libgsl in ndt_calibration
 * Added new calibration package.

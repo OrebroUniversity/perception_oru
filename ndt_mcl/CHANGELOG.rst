@@ -2,8 +2,8 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * testing tutorials on core packages. should be fixed now. 
 * Main update is the 3d-mcl-nod 3d to handle interpolation of laser scan (based on egomotion), this however required some new dependencies on the raw velodyne data...
 * added ndt_rviz dep to ndt_mcl

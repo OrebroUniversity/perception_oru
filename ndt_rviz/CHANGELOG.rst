@@ -2,8 +2,8 @@
 Changelog for package ndt_rviz
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 
 * Updated rviz function locations.
 * Added ndt map line based visualization plugin.

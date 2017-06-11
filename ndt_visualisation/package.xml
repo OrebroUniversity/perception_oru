@@ -1,6 +1,6 @@
 <package>
   <name>ndt_visualisation</name>
-  <version>1.0.30</version>
+  <version>1.0.31</version>
   <description>Contains classes for creating an ndt visualization window. Initial implementation on top of mrpt.</description>
   
   <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>

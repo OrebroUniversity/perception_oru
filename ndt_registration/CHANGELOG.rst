@@ -2,8 +2,8 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * Merged with indigo-develop branch.
 * Fixed some scripts for generating plotting files. Added computation time logging.
 * Added evaluation scrips.

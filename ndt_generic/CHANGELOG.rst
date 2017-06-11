@@ -2,8 +2,8 @@
 Changelog for package ndt_generic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 
 * changes to work on kinetic
 * mixture of new features available, contact maintainer for details

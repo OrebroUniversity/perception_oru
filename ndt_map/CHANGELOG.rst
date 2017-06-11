@@ -2,8 +2,8 @@
 Changelog for package ndt_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * change old opencv header
 * init cov matrix to remove valgrind complain about unintialised variable
 * allow for choosing dealloc on a constructor +

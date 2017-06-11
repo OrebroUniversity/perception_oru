@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ndt_generic</name>
-  <version>1.0.30</version>
+  <version>1.0.31</version>
   <description>The ndt_generic package</description>
 
   <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>

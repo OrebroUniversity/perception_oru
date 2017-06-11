@@ -1,6 +1,6 @@
 <package>
   <name>ndt_fuser</name>
-  <version>1.0.30</version>
+  <version>1.0.31</version>
   <description>ndt_fuser</description>
 
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>

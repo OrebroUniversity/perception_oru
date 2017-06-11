@@ -2,8 +2,8 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.31 (2017-06-11)
+-------------------
 * testing tutorials on core packages. should be fixed now. 
 * getting transform from tf tree in NDT_fuser_HMT
 * Added generic deps.

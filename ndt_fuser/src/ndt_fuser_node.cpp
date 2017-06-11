@@ -1,10 +1,15 @@
 //#include <ndt_fuser.h>
 #include <ndt_fuser/ndt_fuser_hmt.h>
+#include <ndt_map/ndt_conversions.h>
+#include <ndt_map/NDTMapMsg.h>
+#include <ndt_map/ndt_conversions.h>
+#include "ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
+
+
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 
-#include <ndt_map/ndt_conversions.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include "pcl/point_cloud.h"
 #include "sensor_msgs/PointCloud2.h"
@@ -28,9 +33,6 @@
 #include <std_srvs/Empty.h>
 
 #include <boost/foreach.hpp>
-#include <ndt_map/NDTMapMsg.h>
-#include <ndt_map/ndt_conversions.h>
-#include "ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
@@ -143,7 +145,7 @@ public:
 
     ///visualize in a local window
     param_nh.param("visualize",visualize,true);
-    ///only mathc with 3dof
+    ///only match with 3dof
     param_nh.param("match2D",match2D,false);
     ///use HMT grid or simple grid.
     param_nh.param("beHMT",beHMT,false);
@@ -260,49 +262,53 @@ public:
 	    
     m.lock();
     if (nb_added_clouds_  == 0)
-      {
-		ROS_INFO("initializing fuser map. Init pose from GT? %d, TF? %d", initPoseFromGT, initPoseFromTF);
-		if(initPoseFromGT) {
-          //check if initial pose was set already 
-          if(!initPoseSet) {
-			ROS_WARN("skipping frame, init pose not acquired yet!");
-			m.unlock();
-			return;
-          }
-          ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
-                 pose_.rotation().eulerAngles(0,1,2)(0));
-			fuser->initialize(pose_,cloud);
-		}
-		else if(initPoseFromTF){
-			ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
-                 pose_.rotation().eulerAngles(0,1,2)(0));
-			
-			perception_oru::ndt_fuser::initSensorPose(*fuser, robot_frame, sensor_frame);
-			perception_oru::ndt_fuser::initRobotPose(*fuser, cloud, world_frame, robot_frame);
-// 			fuser->setSensorPose(robot_frame, sensor_frame);
-// 			fuser->initialize(cloud, world_frame, robot_frame);
-			ROS_INFO("OUT");
-		}
-		nb_added_clouds_++;
-      } else {
-      //sanity check for odometry
-      if((Tmotion.translation().norm() <0.01 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.01) && useOdometry) {
-        std::cerr<<"No motion, skipping Frame\n";
-	m.unlock();
-	return;
-      }
-      if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
-        std::cerr<<"Ignoring Odometry (max transl)!\n";
-        std::cerr<<Tmotion.translation().transpose()<<std::endl;
-        Tmotion.setIdentity();
-      }
-      if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
-        std::cerr<<"Ignoring Odometry (max rot)!\n";
-        std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
-        Tmotion.setIdentity();
-      }
-      nb_added_clouds_++;
-      pose_ = fuser->update(Tmotion,cloud);
+    {
+	ROS_INFO("initializing fuser map. Init pose from GT? %d, TF? %d", initPoseFromGT, initPoseFromTF);
+	if(initPoseFromGT) {
+	    //check if initial pose was set already 
+	    if(!initPoseSet) {
+		ROS_WARN("skipping frame, init pose not acquired yet!");
+		m.unlock();
+		return;
+	    }
+	    ROS_INFO("Init pose is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
+		    pose_.rotation().eulerAngles(0,1,2)(0));
+	    fuser->initialize(pose_,cloud);
+	}
+	else if(initPoseFromTF){
+	    ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
+		    pose_.rotation().eulerAngles(0,1,2)(0));
+
+	    perception_oru::ndt_fuser::initSensorPose(*fuser, robot_frame, sensor_frame);
+	    perception_oru::ndt_fuser::initRobotPose(*fuser, cloud, world_frame, robot_frame);
+	    // 			fuser->setSensorPose(robot_frame, sensor_frame);
+	    // 			fuser->initialize(cloud, world_frame, robot_frame);
+	    ROS_INFO("OUT");
+	} else {
+	    ROS_INFO("Init pose from launch file is (%lf,%lf,%lf)", pose_.translation()(0), pose_.translation()(1), 
+		    pose_.rotation().eulerAngles(0,1,2)(0));
+	    fuser->initialize(pose_,cloud);
+	}
+	nb_added_clouds_++;
+    } else {
+	//sanity check for odometry
+	if((Tmotion.translation().norm() <0.01 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.01) && useOdometry) {
+	    std::cerr<<"No motion, skipping Frame\n";
+	    m.unlock();
+	    return;
+	}
+	if(Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
+	    std::cerr<<"Ignoring Odometry (max transl)!\n";
+	    std::cerr<<Tmotion.translation().transpose()<<std::endl;
+	    Tmotion.setIdentity();
+	}
+	if(Tmotion.rotation().eulerAngles(0,1,2)(2) > MAX_ROTATION_DELTA) {
+	    std::cerr<<"Ignoring Odometry (max rot)!\n";
+	    std::cerr<<Tmotion.rotation().eulerAngles(0,1,2).transpose()<<std::endl;
+	    Tmotion.setIdentity();
+	}
+	nb_added_clouds_++;
+	pose_ = fuser->update(Tmotion,cloud);
     }
     m.unlock();
     tf::Transform transform;
@@ -540,11 +546,11 @@ public:
 public:
   // map publishing function
   bool publish_map(){
-// #if 0
+ #if 0
     ndt_map::NDTMapMsg map_msg;
     lslgeneric::toMessage(fuser->map, map_msg,world_frame);
     map_publisher_.publish(map_msg);
-// #endif    
+ #endif    
 return true;
   }
 

@@ -2,6 +2,12 @@
 Changelog for package perception_oru
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* added ndt_calibration, ndt_generic. major changes to code.
+* removed sdf package. it will migrate to a new repo. updted maintainers in metapackage
+* Contributors: Malcolm Mielle, Todor Stoyanov
+
 1.0.30 (2015-10-09)
 -------------------
 

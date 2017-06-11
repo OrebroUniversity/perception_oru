@@ -2,6 +2,11 @@
 Changelog for package ndt_costmap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* integration with 2D traversability map from SPENCER project
+* Contributors: Tomasz Kucner
+
 1.0.30 (2015-10-09)
 -------------------
 * added opengl explicit reference

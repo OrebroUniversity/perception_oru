@@ -2,6 +2,14 @@
 Changelog for package ndt_mcl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* testing tutorials on core packages. should be fixed now. 
+* Main update is the 3d-mcl-nod 3d to handle interpolation of laser scan (based on egomotion), this however required some new dependencies on the raw velodyne data...
+* added ndt_rviz dep to ndt_mcl
+* Varios fixed, 3D mcl mean orentation fix, motion model update.
+* Contributors: Henrik Andreasson, Malcolm Mielle, Todor Stoyanov
+
 1.0.30 (2015-10-09)
 -------------------
 * added opengl explicit reference

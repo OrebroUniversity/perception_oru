@@ -2,25 +2,21 @@
   <name>ndt_visualisation</name>
   <version>1.0.30</version>
   <description>Contains classes for creating an ndt visualization window. Initial implementation on top of mrpt.</description>
-<maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
-<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-  <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+  
+  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/ndt_visualization</url>
-  <!-- <url type="bugtracker"></url> -->
 
-  <author>Todor Stoyanov</author>
-  <author>Jari Saarinen</author>
   <author>Henrik Andreasson</author>
+  <author>Todor Stoyanov</author>
 
   <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
-  <!--<build_depend>common_rosdeps</build_depend>-->
   <build_depend>cmake_modules</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
@@ -32,16 +28,13 @@
   <build_depend>libxi-dev</build_depend>
 	
   <!-- Dependencies needed after this package is compiled. -->
-  <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>pcl_ros</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>glut</run_depend>
   <run_depend>opengl</run_depend>
   <run_depend>message_runtime</run_depend>
-
   <!--run_depend>freeglut3-dev</run_depend-->
-  
 
 <!-- export>
     <cpp lflags="-L${prefix}/lib -lndt_visualisation " cflags="-I${prefix}/include"/>

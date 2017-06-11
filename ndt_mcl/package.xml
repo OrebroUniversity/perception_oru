@@ -2,19 +2,16 @@
   <name>ndt_mcl</name>
   <version>1.0.30</version>
   <description>ndt_mcl</description>
-  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
-  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+
   <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
+  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+  <author>Jari Saarinen</author>
   
   <license>BSD</license>
   
   <url type="website">http://ros.org/wiki/ndt_mcl</url>
-  <!-- <url type="bugtracker"></url> -->
-  
-  <author>Jari Saarinen</author>
-  
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
   
   <!-- Dependencies needed to compile this package. -->
@@ -58,20 +55,6 @@
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>tf_conversions</run_depend>
   <run_depend>eigen_conversions</run_depend>
-
-
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>ndt_visualisation</test_depend> -->
-  <!-- <test_depend>rosbag</test_depend> -->
-  <!-- <test_depend>tf</test_depend> -->
-  <!-- <test_depend>nav_msgs</test_depend> -->
-  <!-- <test_depend>sensor_msgs</test_depend> -->
-  <!-- <test_depend>geometry_msgs</test_depend> -->
-  <!-- <test_depend>message_filters</test_depend> -->
-  <!-- <test_depend>pcl</test_depend> -->
-  <!-- <test_depend>ndt_map</test_depend> -->
-  <!-- <test_depend>ndt_registration</test_depend> -->
-  <!-- <test_depend>visualization_msgs</test_depend> -->
 
 <export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>

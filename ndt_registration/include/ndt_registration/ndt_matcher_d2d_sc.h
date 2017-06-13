@@ -51,7 +51,6 @@ public:
       only_xy_motion = false;
       lock_zrp_motion = false;
     }
-
     NDTMatcherD2DSC(bool _isIrregularGrid,
                     bool useDefaultGridResolutions, std::vector<double> _resolutions) : NDTMatcherD2D(_isIrregularGrid,useDefaultGridResolutions,_resolutions)
     {

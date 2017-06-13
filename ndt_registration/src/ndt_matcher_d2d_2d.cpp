@@ -175,12 +175,12 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
 //        double score_here = derivativesNDT(nextNDT,targetNDT,score_gradient,Hessian,true);
         double score_here = derivativesNDT_2d(nextNDT,targetNDT,score_gradient_2d,H,true);
 	scg = score_gradient_2d;
-	std::cout<<"itr "<<itr_ctr<<" score "<<score_here<<std::endl;
+  //temporarily commented std::cout<<"itr "<<itr_ctr<<" score "<<score_here<<std::endl;
 	if(score_here < score_best) 
 	{
 	    Tbest = T;
 	    score_best = score_here;
-	    std::cout<<"best score "<<score_best<<" at "<<itr_ctr<<std::endl;
+    //temporarily commented  std::cout<<"best score "<<score_best<<" at "<<itr_ctr<<std::endl;
 	}
 
         if (score_gradient_2d.norm()<= 10e-2*DELTA_SCORE)
@@ -220,8 +220,8 @@ bool NDTMatcherD2D_2D::match( NDTMap& targetNDT,
             H = evecs*Lam*(evecs.transpose());
             //std::cerr<<"regularizing\n";
         }
-        std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
-        std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
+     //tillfälligt bortkommenterad   std::cout<<"Hh(:,:,"<<itr_ctr+1<<")  =  ["<< H<<"];\n"<<std::endl;				  //
+    //tillfälligt bortkommenterad    std::cout<<"gradh (:,"<<itr_ctr+1<<")= ["<<scg.transpose()<<"];"<<std::endl;         //
 
         pose_increment_v = -H.ldlt().solve(scg);
         double dginit = pose_increment_v.dot(scg);

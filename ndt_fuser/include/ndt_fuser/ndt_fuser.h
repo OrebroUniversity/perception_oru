@@ -1,4 +1,4 @@
-#ifndef NDT_FUSER_HH
+ #ifndef NDT_FUSER_HH
 #define NDT_FUSER_HH
 #ifndef NO_NDT_VIZ
 #include <ndt_visualisation/ndt_viz.h>

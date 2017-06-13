@@ -428,7 +428,7 @@ inline void getCenter(double &cx,double &cy,double &cz) const
 private:
     pcl::PointXYZ center_;
     double xsize_, ysize_, zsize_;
-    Eigen::Matrix3d cov_;		/// Contains the covatiance of the normal distribution
+    Eigen::Matrix3d cov_;		/// Contains the covariance of the normal distribution
     Eigen::Matrix3d icov_;  /// Precomputed inverse covariance (updated every time the cell is updated)
     Eigen::Matrix3d evecs_; /// Eigen vectors
     Eigen::Vector3d mean_;  /// Mean of the normal distribution

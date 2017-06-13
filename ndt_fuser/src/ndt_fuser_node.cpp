@@ -378,7 +378,6 @@ public:
       last_tf_frame_ = transf;
     }
     this->processFrame(cloud,Tm);
-    /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
   }
 	
@@ -392,18 +391,18 @@ public:
     Eigen::Quaterniond qd;
     Eigen::Affine3d Tm;
     pcl::PointCloud<pcl::PointXYZ> cloud;
-	    
+
     message_m.lock();
     qd.x() = odo_in->pose.pose.orientation.x;
     qd.y() = odo_in->pose.pose.orientation.y;
     qd.z() = odo_in->pose.pose.orientation.z;
     qd.w() = odo_in->pose.pose.orientation.w;
-	    
+
     this_odom = Eigen::Translation3d (odo_in->pose.pose.position.x,
                                       odo_in->pose.pose.position.y,odo_in->pose.pose.position.z) * qd;
     if (nb_added_clouds_  == 0)
       {
-		Tm.setIdentity();
+    Tm.setIdentity();
       } else {
       Tm = last_odom.inverse()*this_odom;
       std::cout<<"delta from last update: "<<Tm.translation().transpose()<<" "<<Tm.rotation().eulerAngles(0,1,2)[2] << std::endl;
@@ -416,12 +415,12 @@ public:
 
     pcl::fromROSMsg (*msg_in, cloud);
     message_m.unlock();
-	    
+
     this->processFrame(cloud,Tm);
     /////////////////////////MAP PUBLISHIGN///////////////////////////
     publish_map();
     ROS_INFO("got points2OdomCallback() - done.");
-        
+
   };
 	
   // Callback

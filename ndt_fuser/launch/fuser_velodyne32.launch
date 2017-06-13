@@ -12,7 +12,7 @@
 	<param name="resolution" value="0.4" />
 	<param name="sensor_range" value="30." />
 	
-	<!-- Specific sensor offset parameters for the example file -->
+        <!-- Specific sensor offset parameters for the example file -->
 	<param name="sensor_pose_x" value="0.3" />
 	<param name="sensor_pose_z" value="1.3" />
 	<param name="sensor_pose_t" value="-1.62" />

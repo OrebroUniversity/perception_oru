@@ -112,9 +112,9 @@ class NDTFuserHMT{
 	}
 	
 	
-	void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
-		motionModel2D.setParams(p);
-	}
+  void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
+    motionModel2D.setParams(p);
+  }
 
 	bool wasInit()
 	{

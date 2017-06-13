@@ -30,4 +30,8 @@
 	<param name="gt_topic" value="/vmc_navserver/state" />
 	<param name="visualize" value="true" />
     </node>
+
+<arg name="path" default="$(find ndt_fuser)/data/" />
+<arg name="file_1" default="2012-09-04-12-03-30_1.bag" />
+<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -q $(arg path)$(arg file_1)"/>
 </launch>

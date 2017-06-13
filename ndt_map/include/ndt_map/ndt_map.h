@@ -268,7 +268,7 @@ public:
      * @param maxz threshold for the maximum z-coordinate value for the measurement point_cloud
      * @param sensor_noise The expected standard deviation of the sensor noise
      */
-    virtual void addPointCloudMeanUpdate(const Eigen::Vector3d &origin, 
+    virtual void    addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
 	    const pcl::PointCloud<pcl::PointXYZ> &pc, 
 	    const Eigen::Vector3d &localmapsize,
 	    unsigned int maxnumpoints = 1e9, float occupancy_limit=255 ,double maxz = 100.0, double sensor_noise = 0.25);

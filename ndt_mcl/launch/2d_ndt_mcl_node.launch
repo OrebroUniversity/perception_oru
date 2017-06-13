@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 	
 	<!--node pkg="rosbag" type="play" name="play" args="-d 2 $(find ndt_mcl)/data/localization.bag"/-->

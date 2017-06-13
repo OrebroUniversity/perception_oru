@@ -2,6 +2,19 @@
 Changelog for package ndt_fuser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.31 (2017-06-11)
+-------------------
+* testing tutorials on core packages. should be fixed now. 
+* getting transform from tf tree in NDT_fuser_HMT
+* Added generic deps.
+* Started to move generic functions, such as io, conversions to a ndt_generic pkg.
+* Initialize all fix, updated offline fuser with more params.
+* Added soft constraint based registration.
+* swtiched to eigen3 + remove dep in ndt_fuser
+* added mpr_launch file
+* Minor tweaks for 2d regi.
+* Contributors: Henrik Andreasson, Malcolm Mielle, Todor Stoyanov
+
 1.0.30 (2015-10-09)
 -------------------
 * added opengl explicit reference

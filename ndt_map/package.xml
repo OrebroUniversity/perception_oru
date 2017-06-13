@@ -1,17 +1,17 @@
 <package>
   <name>ndt_map</name>
-  <version>1.0.30</version>
+  <version>1.0.31</version>
   <description>Contains the definitions of the 3D Normal Distributions Transform data structures, 
      used for mapping, registration, etc.</description>
-  <maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
+  
   <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
   <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+  <maintainer email="martin.magnusson@oru.se">Martin Magnusson</maintainer>
   <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/ndt_map</url>
-  <!-- <url type="bugtracker"></url> -->
 
   <author>Todor Stoyanov</author>
   <author>Jari Saarinen</author>

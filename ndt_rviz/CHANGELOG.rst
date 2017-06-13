@@ -1,55 +1,49 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package ndt_feature_reg
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package ndt_rviz
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.0.31 (2017-06-11)
 -------------------
 
+* Updated rviz function locations.
+* Added ndt map line based visualization plugin.
+* Contributors: Henrik Andreasson, Chittaranjan Swaminathan
+
 1.0.30 (2015-10-09)
 -------------------
-* added opengl explicit reference
-* Contributors: Todor Stoyanov
 
 1.0.29 (2015-10-08)
 -------------------
-*non-free features from opencv are used, you may need to build from source in ubuntu
-* Contributors: Henrik Andreasson, Todor Stoyanov
 
-1.0.28 (2014-12-05)
--------------------
-* added opengl and image_transport as deps
-* Contributors: Todor Stoyanov
+1.0.28 (2014-12-05 15:35)
+-------------------------
 
-1.0.27 (2014-12-05)
--------------------
-* fixes to package.xml files
-* Contributors: Todor Stoyanov
+1.0.27 (2014-12-05 11:05)
+-------------------------
 
 1.0.26 (2014-12-03)
 -------------------
 
 1.0.25 (2014-12-01)
 -------------------
-* fixes for imported packages
-* Contributors: Todor Stoyanov
 
-1.0.24 (2014-11-25)
--------------------
-
-1.0.23 (2014-11-25)
--------------------
-
-1.0.20 (2014-11-21)
--------------------
-* refactoring complete, everything compiles
-* Added and updated the old ndt feature registraion based code.
-* Contributors: Henrik Andreasson, Todor Stoyanov
-
-1.0.19 (2014-04-09 17:41)
+1.0.24 (2014-11-25 22:31)
 -------------------------
 
-1.0.18 (2014-04-09 16:55)
+1.0.23 (2014-11-25 18:48)
 -------------------------
+
+1.0.22 (2014-11-21 13:17)
+-------------------------
+
+1.0.21 (2014-11-21 13:08)
+-------------------------
+
+1.0.20 (2014-11-21 12:10)
+-------------------------
+
+1.0.18 (2014-04-09)
+-------------------
 
 1.0.17 (2014-01-09 16:32)
 -------------------------
@@ -63,9 +57,6 @@ Changelog for package ndt_feature_reg
 1.0.14 (2014-01-09 11:55)
 -------------------------
 
-1.0.13 (2014-01-09 11:36)
--------------------------
-
 1.0.12 (2013-12-03 16:58)
 -------------------------
 
@@ -76,9 +67,6 @@ Changelog for package ndt_feature_reg
 -------------------------
 
 1.0.9 (2013-12-02 10:58)
-------------------------
-
-1.0.8 (2013-12-02 10:12)
 ------------------------
 
 1.0.7 (2013-11-28)

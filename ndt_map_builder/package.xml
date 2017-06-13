@@ -1,25 +1,19 @@
 <package>
   <name>ndt_map_builder</name>
-  <version>1.0.30</version>
+  <version>1.0.31</version>
   <description>ndt_map_builder</description>
-<maintainer email="jari.p.saarinen@gmail.com">Jari Saarinen</maintainer>
-<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-  <maintainer email="tomasz.kucner@oru.se">Tomasz Kucner</maintainer>
+
+  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+  <maintainer email="daniel.adolfsson@oru.se">Daniel Adolfsson</maintainer>
+  
+  <author>Todor Stoyanov</author>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/ndt_map_builder</url>
-  <!-- <url type="bugtracker"></url> -->
 
-  <author>Todor Stoyanov</author>
-
-  <!-- Dependencies which this package needs to build itself. -->
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!-- Dependencies needed to compile this package. -->
-  <!--<build_depend>common_rosdeps</build_depend>-->
-  
   <build_depend>cmake_modules</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>pcl_ros</build_depend>
@@ -27,21 +21,11 @@
   <build_depend>ndt_map</build_depend>
   <build_depend>ndt_registration</build_depend>
 
-  <!-- Dependencies needed after this package is compiled. -->
-  <!--<run_depend>common_rosdeps</run_depend>-->
   <run_depend>libpcl-all</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
-
-  <!-- Dependencies needed only for running tests. -->
-  <!-- <test_depend>common_rosdeps</test_depend> -->
-  <!-- <test_depend>pcl</test_depend> -->
-  <!-- <test_depend>pcl_ros</test_depend> -->
-  <!-- <test_depend>pointcloud_vrml</test_depend> -->
-  <!-- <test_depend>ndt_map</test_depend> -->
-  <!-- <test_depend>ndt_registration</test_depend> -->
 
 <!--export>
     <cpp cflags="-I${prefix}/include"/>

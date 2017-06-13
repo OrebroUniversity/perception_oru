@@ -2,6 +2,20 @@
 Changelog for package ndt_registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.31 (2017-06-11)
+-------------------
+* Merged with indigo-develop branch.
+* Fixed some scripts for generating plotting files. Added computation time logging.
+* Added evaluation scrips.
+* Added iostream for gnuplot.
+* Added ways to plot score values from different origins.
+* More eval functionalities. Reversed to use the inv hessian as the cov.
+* Added score comparision on registraion w - w/o soft contraints.
+* Added generic deps.
+* some doc in registration and a todo
+* Added soft constraint based registration.
+* Contributors: Henrik Andreasson, Malcolm Mielle, Todor Stoyanov
+
 1.0.30 (2015-10-09)
 -------------------
 

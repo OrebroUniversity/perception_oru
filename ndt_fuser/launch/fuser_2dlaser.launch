@@ -6,12 +6,12 @@
 	
 	<param name="size_x_meters" value="30" />
 	<param name="size_y_meters" value="30" />
-	<param name="size_z_meters" value="0.8" />
+	<param name="size_z_meters" value="0.6" />
 	<param name="resolution" value="0.2" />
-	<param name="laser_variance_z" value="0.02" />
+	<param name="laser_variance_z" value="0.05" />
 	
 	<param name="sensor_range" value="20." />
-	<param name="min_laser_range" value="0.5" />
+	<param name="min_laser_range" value="0.8" />
 	
 	<!-- Specific sensor offset parameters for the example file -->
 	<param name="sensor_pose_x" value="0.695" />
@@ -28,6 +28,7 @@
 	<param name="beHMT" value="false" />
 	<param name="useOdometry" value="true" />
 	<param name="odometry_topic" value="/vmc_navserver/odom" />
+	<param name="do_soft_constraints" value="true" />
 	<param name="visualize" value="true" />
 	<param name="plotGTTrack" value="true" />
 	<param name="initPoseFromGT" value="true" />

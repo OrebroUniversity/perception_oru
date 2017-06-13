@@ -2,6 +2,22 @@
 Changelog for package ndt_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.31 (2017-06-11)
+-------------------
+* change old opencv header
+* init cov matrix to remove valgrind complain about unintialised variable
+* allow for choosing dealloc on a constructor +
+  smart pointer from occupancy grid
+* shared pointer in ndt_map for more efficient memory management
+* Cleaned up the code. Fixed the UKF.
+* integration with 2D traversability map from SPENCER project
+* Added corresponding const iterators to allow more usage of const references.
+* Initialize all fix, updated offline fuser with more params.
+* Added (some) rosdoc documentation to ndt_histogram.h
+* NDTH bin counts are now parameters of constructors
+* Change openCV header to modern c++ version
+* Contributors: Henrik Andreasson, Malcolm Mielle, Martin Magnusson, Tomasz Kucner, Chittaranjan Swaminathan 
+
 1.0.30 (2015-10-09)
 -------------------
 

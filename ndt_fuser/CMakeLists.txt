@@ -2,6 +2,7 @@
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
+#set(CMAKE_BUILD_TYPE Debug) 
 project(ndt_fuser)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS 

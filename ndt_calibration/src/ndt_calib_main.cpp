@@ -35,6 +35,7 @@ int main(int argc, char **argv){
     std::string est_sensorpose_file;
     std::string base_name_pcd;
     std::string bag_file;
+    std::string pose_frame;
     std::string world_frame;
     Eigen::Vector3d transl;
     Eigen::Vector3d euler;
@@ -43,6 +44,7 @@ int main(int argc, char **argv){
     double min_rotation;
     double sensor_time_offset;
     double resolution;
+    int index_offset;
     po::options_description desc("Allowed options");
     desc.add_options()
 	("help", "produce help message")
@@ -51,7 +53,8 @@ int main(int argc, char **argv){
 	("est_sensorpose_file", po::value<std::string>(&est_sensorpose_file)->default_value(std::string("")), "estimated sensor poses in world frame")
 	("bag_file", po::value<std::string>(&bag_file), "bag file containing the poses to use for performing sensor time offset calibration")
 	("base_name_pcd", po::value<string>(&base_name_pcd)->default_value(std::string("")), "prefix for the .pcd files")
-	("world_frame", po::value<string>(&world_frame)->default_value("/World"), "default world frame used")
+      ("pose_frame", po::value<string>(&pose_frame)->default_value("/state_base_link"), "frame containing the vehicle pose") // EKF
+        ("world_frame", po::value<string>(&world_frame)->default_value("/world"), "default world frame used")  // World
 	("x", po::value<double>(&transl[0])->default_value(0.), "translation vector x")
 	("y", po::value<double>(&transl[1])->default_value(0.), "translation vector y")
 	("z", po::value<double>(&transl[2])->default_value(0.), "translation vector z")
@@ -59,7 +62,7 @@ int main(int argc, char **argv){
 	("ey", po::value<double>(&euler[1])->default_value(0.), "euler angle vector y")
 	("ez", po::value<double>(&euler[2])->default_value(0.), "euler angle vector z")
 	("no_calib", "no calibration is performed")
-	("score_type", po::value<int>(&score_type)->default_value(2), "score type used in the optimization, 0 - ICP, 1 - sensorpose difference, 2 - relative sensorpose difference, 3 - NDT")
+	("score_type", po::value<int>(&score_type)->default_value(3), "score type used in the optimization, 0 - ICP, 1 - sensorpose difference, 2 - relative sensorpose difference, 3 - NDT")
 	("objective_type", po::value<int>(&objective_type)->default_value(0), "objective type used in the optimization, 0 - full 6D, 1 - only time offset")
 
 	("max_translation", po::value<double>(&max_translation)->default_value(3.), "max allowed translation between two scan pair")
@@ -73,6 +76,7 @@ int main(int argc, char **argv){
         ("cez", "calibrate yaw")
         ("ct", "calibrate time offset")
 	("resolution", po::value<double>(&resolution)->default_value(2.), "NDT map resolution")
+      ("index_offset", po::value<int>(&index_offset)->default_value(0), "if there is an index offset bettwen the cloudXXX.pcd and the rows in the pose files")
         ;
 
 
@@ -105,7 +109,7 @@ int main(int argc, char **argv){
     
     
     NDTCalibScanPairs pairs;
-    loadNDTCalibScanPairs(gt_file, est_sensorpose_file, base_name_pcd, pairs, max_translation, min_rotation);
+    loadNDTCalibScanPairs(gt_file, est_sensorpose_file, base_name_pcd, pairs, max_translation, min_rotation, index_offset);
     cout << "Ts : " << affine3dToString(Ts) << std::endl;
 
     if (pairs.empty()) {
@@ -125,7 +129,7 @@ int main(int argc, char **argv){
 
     NDTCalibOptimize::ObjectiveType objective(cx, cy, cz, cex, cey, cez, ct);
 
-    NDTCalibOptimize opt(pairs, score_type, objective, pose_interp);
+    NDTCalibOptimize opt(pairs, score_type, objective, pose_interp, pose_frame);
     std::cout << "Optimize time : " << objective.optimizeTime() << std::endl;
     
     opt.interpPairPoses(sensor_time_offset);

@@ -19,6 +19,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
+  <build_depend>cmake_modules</build_depend>
+
   <build_depend>ndt_generic</build_depend>
   <build_depend>ndt_map</build_depend>
   <build_depend>pcl_ros</build_depend>

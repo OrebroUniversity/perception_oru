@@ -3,7 +3,16 @@ project(ndt_generic)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules angles)
 find_package(Boost REQUIRED COMPONENTS serialization)
-find_package(Eigen3 REQUIRED)
+
+find_package(Eigen3)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+else()
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 catkin_package(
   INCLUDE_DIRS include
@@ -26,3 +35,11 @@ add_executable(eigen_test test/eigen_test.cpp)
 target_link_libraries(eigen_test
   ${catkin_LIBRARIES}
 )
+
+#############
+## Install ##
+#############
+
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+       )

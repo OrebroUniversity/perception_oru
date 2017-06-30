@@ -1,0 +1,1 @@
+rosrun ndt_offline fuser3d_offline --base-name offline --dir-name ../bag --velodyne_packets_topic /velodyne_packets --save_map true --velodyne_frame_id /velodyne --use-odometry true --velodyne_config_file ../bag/velo32.yaml

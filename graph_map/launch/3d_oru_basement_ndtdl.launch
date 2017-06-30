@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<launch>
+
+<node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans">
+<param name="calibration" value="$(find ndt_fuser)/launch/velo32.yaml" />
+</node>
+
+<node pkg="graph_map" type="graph_map_fuser_node" name="graph_node" output="screen">
+
+      <param name="renderGTmap" value="false" />
+      <param name="gt_topic" value="/vmc_navserver/state" />
+      <param name="initPoseFromGT" value="true" />
+
+      <param name="map_type" value="ndt_dl_map" />
+      <param name="registration_type" value="ndt_dl_reg" />
+
+      <param name="use_submap" value="true" />
+      <param name="interchange_radius" value="1" />
+      <param name="compound_radius" value="2" />
+
+      <param name="enable_registration" value="true" />
+      <param name="enable_mapping" value="true" />
+      <param name="registration_2D" value="true" />
+      <param name="check_consistency" value="true" />
+
+      <param name="matchLaser" value="false" />
+      <!--<param name="laser_topic" value="/laserscan" />-->
+      <param name="points_topic" value="/velodyne_points" />
+
+      <param name="useOdometry" value="true" />
+      <param name="odometry_topic" value="/vmc_navserver/odom" />
+
+      <param name="max_translation_norm" value="0.4" />
+      <param name="max_rotation_norm" value="0.78539816339" />
+
+      <param name="size_x_meters" value="60" />
+      <param name="size_y_meters" value="60" />
+      <param name="size_z_meters" value="6" />
+
+      <param name="resolution" value="0.6" />
+      <!--<param name="laser_variance_z" value="0.02" /> -->
+      <param name="sensor_range" value="15." />
+      <param name="min_laser_range" value="0.6" />
+
+      <!-- Specific sensor offset parameters for the example file -->
+      <param name="sensor_pose_x" value="0.3" />
+      <param name="sensor_pose_y" value="0" />
+      <param name="sensor_pose_t" value="-1.62" />
+
+      <param name="pose_init_x" value="10.73" />
+      <param name="pose_init_y" value="2.185" />
+      <param name="pose_init_t" value="0.02" />
+
+      <param name="map_directory" value="$(find ndt_fuser)/maps/" />
+
+
+      <param name="visualize" value="true" />
+      <param name="plotGTTrack" value="true" />
+
+  </node>
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find graph_map)/launch/3d.rviz" />
+
+<arg name="path" default="$(find graph_map)/data/" />
+<arg name="file_1" default="3d_laser_short.bag" />
+<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -q $(arg path)$(arg file_1)"/>
+
+<node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="0.3 0 0 0 0 -0.72429 0.6895 state_base_link velodyne" />
+
+</launch>
+

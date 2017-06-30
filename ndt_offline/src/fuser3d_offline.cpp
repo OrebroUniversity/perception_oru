@@ -28,7 +28,7 @@ inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
     euler[0] += M_PI;
     euler[1] += M_PI;
     euler[2] += M_PI;
-    
+
     euler[0] = angles::normalize_angle(euler[0]);
     euler[1] = angles::normalize_angle(euler[1]);
     euler[2] = angles::normalize_angle(euler[2]);
@@ -40,16 +40,16 @@ template<class T> std::string toString (const T& x)
      std::ostringstream o;
 
      if (!(o << x))
-	  throw std::runtime_error ("::toString()");
+    throw std::runtime_error ("::toString()");
 
      return o.str ();
 }
 
 void filter_fov_fun(pcl::PointCloud<pcl::PointXYZ> &cloud, pcl::PointCloud<pcl::PointXYZ> &cloud_nofilter, double hori_min, double hori_max) {
     for(int i=0; i<cloud_nofilter.points.size(); ++i) {
-	double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
-	if(ang < hori_min || ang > hori_max) continue;
-	cloud.points.push_back(cloud_nofilter.points[i]);
+  double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
+  if(ang < hori_min || ang > hori_max) continue;
+  cloud.points.push_back(cloud_nofilter.points[i]);
     }
     cloud.width = cloud.points.size();
     cloud.height = 1;
@@ -61,7 +61,7 @@ std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,
   std::ostringstream stream;
   stream << std::setprecision(std::numeric_limits<double>::digits10);
   Eigen::Quaternion<double> tmp(T.rotation());
-  stream << T.translation().transpose() << " " << tmp.x() << " " << tmp.y() << " " << tmp.z() << " " << tmp.w() << std::endl; 
+  stream << T.translation().transpose() << " " << tmp.x() << " " << tmp.y() << " " << tmp.z() << " " << tmp.w() << std::endl;
   return stream.str();
 }
 
@@ -103,30 +103,30 @@ int main(int argc, char **argv){
 
     po::options_description desc("Allowed options");
     desc.add_options()
-	("help", "produce help message")
-	("visualize", "visualize the output")
-	("use-odometry", "use initial guess from odometry")
-	("match2d", "use 2d-matcher")
-	("no-step-control", "use step control in the optimization (default=false)")
-	("nosubmaps", "run the standard fuser")
-	("pre-load", "loads maps from the map directory if available")
-	("base-name", po::value<string>(&base_name), "prefix for all generated files")
-	("dir-name", po::value<string>(&dirname), "where to look for SCANs")
-	("map-dir-name", po::value<string>(&map_dirname), "where to save the pieces of the map (default it ./map)")
-	("size-xy", po::value<double>(&size_xy)->default_value(50.), "size of the central map xy")
+  ("help", "produce help message")
+  ("visualize", "visualize the output")
+  ("use-odometry", "use initial guess from odometry")
+  ("match2d", "use 2d-matcher")
+  ("no-step-control", "use step control in the optimization (default=false)")
+  ("nosubmaps", "run the standard fuser")
+  ("pre-load", "loads maps from the map directory if available")
+  ("base-name", po::value<string>(&base_name), "prefix for all generated files")
+  ("dir-name", po::value<string>(&dirname), "where to look for SCANs")
+  ("map-dir-name", po::value<string>(&map_dirname), "where to save the pieces of the map (default it ./map)")
+  ("size-xy", po::value<double>(&size_xy)->default_value(50.), "size of the central map xy")
         ("size-z", po::value<double>(&size_z)->default_value(10.), "height of the map")
         ("resolution", po::value<double>(&resolution)->default_value(1.), "resolution of the map")
         ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
-	("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
-	("baseline", "run also the baseline registration algorithms")
-	("guess-zpitch", "guess also z and pitch from odometry")
-	("use-multires", "run the multi-resolution guess")
-	("fuse-incomplete", "fuse in registration estimate even if iterations ran out. may be useful in combination with low itr numbers")
-	("filter-fov", "cutoff part of the field of view")
-	("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
-	("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
+  ("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
+  ("baseline", "run also the baseline registration algorithms")
+  ("guess-zpitch", "guess also z and pitch from odometry")
+  ("use-multires", "run the multi-resolution guess")
+  ("fuse-incomplete", "fuse in registration estimate even if iterations ran out. may be useful in combination with low itr numbers")
+  ("filter-fov", "cutoff part of the field of view")
+  ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
+  ("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
         ("COOP", "if parameters from the COOP data set should be used (sensorpose)")
-        ("VCE", "if sensorpose parameters from VCE should be used") 
+        ("VCE", "if sensorpose parameters from VCE should be used")
         ("VCEnov16", "if sensorpose parameters from VCE 16 nov data collection should be used")
         ("dustcart", "if the sensorpose parameters from dustcart should be used")
         ("do-soft-constraints", "if soft constraints from odometry should be used")
@@ -154,14 +154,14 @@ int main(int argc, char **argv){
       ("use_gt_as_interp_link", "use gt when performing point interplation while unwrapping the velodyne scans")
       ("save_clouds", "save all clouds that are added to the map")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
-       	("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
-	("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
-	("z", po::value<double>(&transl[2])->default_value(0.), "sensor pose - translation vector z")
-	("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
-	("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
-	("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
-	("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
-	;
+        ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
+  ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
+  ("z", po::value<double>(&transl[2])->default_value(0.), "sensor pose - translation vector z")
+  ("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
+  ("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
+  ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
+  ("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
+  ;
 
 
     po::variables_map vm;
@@ -170,18 +170,18 @@ int main(int argc, char **argv){
 
     if (!vm.count("base-name") || !vm.count("dir-name"))
     {
-	cout << "Missing base or dir names.\n";
-	cout << desc << "\n";
-	return 1;
+  cout << "Missing base or dir names.\n";
+  cout << desc << "\n";
+  return 1;
     }
     if (vm.count("help"))
     {
-	cout << desc << "\n";
-	return 1;
+  cout << desc << "\n";
+  return 1;
     }
     if (!vm.count("map-dir-name"))
     {
-	map_dirname="map";
+  map_dirname="map";
     }
     bool use_odometry = vm.count("use-odometry");
     bool match2d = vm.count("match2d");
@@ -204,32 +204,32 @@ int main(int argc, char **argv){
     bool disable_reg = vm.count("disable_reg");
     bool use_gt_as_interp_link = vm.count("use_gt_as_interp_link");
     bool save_clouds = vm.count("save_clouds");
-    
+
     std::string tf_interp_link = tf_base_link;
     if (use_gt_as_interp_link) {
       tf_interp_link = tf_gt_link;
     }
 
     if(filter_fov) {
-	cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
+  cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
     }
 
     base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 
-    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
-                                       max_range, visualize, match2d, use_multires, 
+    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z,
+                                       max_range, visualize, match2d, use_multires,
                                        fuse_incomplete, itrs, base_name,beHMT,map_dirname,step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
     ros::Time::init();
     srand(time(NULL));
     bool noOdometry = false;
-	
+
     ndtslammer.disableRegistration = disable_reg;
 
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
     sensor_link.child_frame_id_ = velodyne_frame_id;
     sensor_link.frame_id_ = tf_interp_link;//tf_base_link; //"/odom_base_link";
-    tf::Quaternion quat; 
+    tf::Quaternion quat;
 
     quat.setRPY(euler[0], euler[1], euler[2]);
     tf::Vector3 trans(transl[0], transl[1], transl[2]);
@@ -246,11 +246,11 @@ int main(int argc, char **argv){
       quat.setRPY(0, 0.18, 0);
     }
     if (VCEnov16) {
-	sensor_time_offset = -0.04886; //-0.0921114;
-	trans[0] = 3.34925;
+  sensor_time_offset = -0.04886; //-0.0921114;
+  trans[0] = 3.34925;
         trans[1] = 0.00668733;
-	trans[2] = 1.17057819451374;
-	quat.setRPY(0.0003905, 0.0331966, 0.0105067);
+  trans[2] = 1.17057819451374;
+  quat.setRPY(0.0003905, 0.0331966, 0.0105067);
 
       // trans[0] = 3.0;//3.0;
       // trans[1] = 0.;
@@ -272,17 +272,17 @@ int main(int argc, char **argv){
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir (dirname.c_str())) != NULL) {
-	while ((ent = readdir (dir)) != NULL) {
-	    if(ent->d_name[0] == '.') continue;
-	    char tmpcname[400];
-	    snprintf(tmpcname,399,"%s/%s",dirname.c_str(),ent->d_name);
-	    std::string tmpfname = tmpcname;
-	    scanfiles.push_back(tmpfname);
-	}
-	closedir (dir);
+  while ((ent = readdir (dir)) != NULL) {
+      if(ent->d_name[0] == '.') continue;
+      char tmpcname[400];
+      snprintf(tmpcname,399,"%s/%s",dirname.c_str(),ent->d_name);
+      std::string tmpfname = tmpcname;
+      scanfiles.push_back(tmpfname);
+  }
+  closedir (dir);
     } else {
        std::cerr<<"Could not parse dir name\n";
-       return -1;	
+       return -1;
     }
     sort(scanfiles.begin(),scanfiles.end());
     {
@@ -297,11 +297,11 @@ int main(int argc, char **argv){
 
     std::ofstream gt_file, odom_file, est_file, sensorpose_est_file;
     std::string filename;
-    { 
+    {
       filename = base_name + std::string("_gt.txt");
       gt_file.open(filename.c_str());
     }
-    { 
+    {
       filename = base_name + std::string("_est.txt");
       est_file.open(filename.c_str());
     }
@@ -309,150 +309,142 @@ int main(int argc, char **argv){
       filename = base_name + std::string("_sensorpose_est.txt");
       sensorpose_est_file.open(filename.c_str());
     }
-    { 
+    {
       filename = base_name + std::string("_odom.txt");
       odom_file.open(filename.c_str());
     }
     if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
     {
-//      ROS_ERROR_STREAM("Failed to open : " << gt_file << " || " << est_file << " || " << odom_file); 
-      ROS_ERROR_STREAM("Failed to open : "); 
+//      ROS_ERROR_STREAM("Failed to open : " << gt_file << " || " << est_file << " || " << odom_file);
+      ROS_ERROR_STREAM("Failed to open : ");
     }
 
 
     for(int i=0; i<scanfiles.size(); i++) {
-	std::string bagfilename = scanfiles[i];
-	fprintf(stderr,"Opening %s\n",bagfilename.c_str());
-	VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file, 
-						 bagfilename,
-						 velodyne_packets_topic,  //"/velodyne_packets"
-						 velodyne_frame_id, 
-						 tf_world_frame,
-						 tf_topic,
-						 ros::Duration(3600),
+  std::string bagfilename = scanfiles[i];
+  fprintf(stderr,"Opening %s\n",bagfilename.c_str());
+  VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file,
+             bagfilename,
+             velodyne_packets_topic,  //"/velodyne_packets"
+             velodyne_frame_id,
+             tf_world_frame,
+             tf_topic,
+             ros::Duration(3600),
                                                  &sensor_link, max_range, min_range,
-						 sensor_time_offset);  
+             sensor_time_offset);
 
-	pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;	
-	tf::Transform sensor_pose;
-	bool cameraset = false;
-	int numclouds = 0;
-	tf::Transform basepose;
-		
+  pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
+  tf::Transform sensor_pose;
+  bool cameraset = false;
+  int numclouds = 0;
+  tf::Transform basepose;
+
 
 
         while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,sensor_pose,basepose,/*tf_base_link*//*tf_gt_link*/tf_interp_link/*std::string("/state_base_link")*/)){
-	    if(cloud_nofilter.size()==0) continue;
-	    tf::Transform baseodo;
+      if(cloud_nofilter.size()==0) continue;
+      tf::Transform baseodo;
+      cout<<"loop"<<endl;
 
-	    if(filter_fov) {
-		filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
-	    } else {
-		cloud = cloud_nofilter;
-	    }
-            
+
+    cloud = cloud_nofilter;
+
+      if(  counter%5==0){
+        for(int i=0;i<cloud_nofilter.size();i++){
+        cout<<"counter="<<counter<<":"<<cloud_nofilter[i].x<<","<<cloud[i].y<<","<<cloud_nofilter[i].z<<endl;
+       }
+      }
             if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
 
             vreader.getPoseFor(baseodo, tf_base_link);
             vreader.getPoseFor(basepose, tf_gt_link);
 
-	    //callback(cloud, sensor_pose,T,basepose, base_odo);	
+      //callback(cloud, sensor_pose,T,basepose, base_odo);
 
-	    Eigen::Affine3d Todo;
-	    Eigen::Affine3d Ttot,Ts,Tbase,Tgt;
+      Eigen::Affine3d Todo;
+      Eigen::Affine3d Ttot,Ts,Tbase,Tgt;
 #if ROS_VERSION_MINIMUM(1,9,0)
-	    tf::transformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-	    tf::transformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
-	    tf::transformTFToEigen (basepose, Tgt); ///<Ground truth
-	    tf::transformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
-#else	
-	    tf::TransformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose 
-	    tf::TransformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
-	    tf::TransformTFToEigen (basepose, Tgt); ///<Ground truth
-	    tf::TransformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
-#endif	
-	    if(counter == 0){
-		counter ++;
-		cloud.clear();	
-		cloud_nofilter.clear();	
-		continue;
-	    }
-	    if(counter == 1){
+      tf::transformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose
+      tf::transformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
+      tf::transformTFToEigen (basepose, Tgt); ///<Ground truth
+      tf::transformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
+#else
+      tf::TransformTFToEigen (sensor_pose, Ttot); ///< This is the velodyne pose
+      tf::TransformTFToEigen (tf_sensor_pose, Ts); ///<sensor offset
+      tf::TransformTFToEigen (basepose, Tgt); ///<Ground truth
+      tf::TransformTFToEigen (baseodo, Tbase); ///<Odometry in vehicle frame
+#endif
+      if(counter == 0){
+    counter ++;
+    cloud.clear();
+    cloud_nofilter.clear();
+    continue;
+      }
+      if(counter == 1){
                 // Make the initialization of the pose to be at the sensory level...
                 // Tgt.translation()[2] = 4.;//trans[2];
-		Todo=Tgt;
-		Tsold = Ttot;
-		Tprev = Tgt;
+    Todo=Tgt;
+    Tsold = Ttot;
+    Tprev = Tgt;
 
-		Eigen::Affine3d Tmotion;
-		Tmotion.setIdentity();
+    Eigen::Affine3d Tmotion;
+    Tmotion.setIdentity();
 
-		ndtslammer.setSensorPose(Ts);
+    ndtslammer.setSensorPose(Ts);
                 ndtslammer.setMotionParams(motion_params);
-                
+
                 std::cout << "initializing ..." << std::endl;
-		ndtslammer.initialize(Tgt,cloud,preload);
+    ndtslammer.initialize(Tgt,cloud,preload);
                 std::cout << "initializing done" << std::endl;
-		Told = Tbase; 
-		//Told = Tgt;//for gt
+    Told = Tbase;
+    //Told = Tgt;//for gt
 
                 if (save_clouds) {
-		    saveCloud(counter-1, cloud);
+        saveCloud(counter-1, cloud);
                 }
 
-		counter ++;
-		cloud.clear();	
-		cloud_nofilter.clear();	
-		continue;
-	    }
+    counter ++;
+    cloud.clear();
+    cloud_nofilter.clear();
+    continue;
+      }
 
 
-	    Eigen::Affine3d Tmotion = Told.inverse()*Tbase;
-	    Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
-	    normalizeEulerAngles(Tmotion_euler);
-	    if(!use_odometry) {
-		Tmotion.setIdentity();
-	    } else {
+      Eigen::Affine3d Tmotion = Told.inverse()*Tbase;
+      Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
+      normalizeEulerAngles(Tmotion_euler);
+      if(!use_odometry) {
+    Tmotion.setIdentity();
+      } else {
 
-  		if(Tmotion.translation().norm()<min_dist && fabs(Tmotion_euler[2])<(min_rot_in_deg*M_PI/180.0)) {
-		    cloud.clear();	
-		    cloud_nofilter.clear();	
-		    continue;
-		}
-	    }
-            if (save_clouds) {
-		saveCloud(counter-1, cloud);
-            }
+      if(Tmotion.translation().norm()<min_dist && fabs(Tmotion_euler[2])<(min_rot_in_deg*M_PI/180.0)) {
+        cloud.clear();
+        cloud_nofilter.clear();
+        continue;
+    }
+      }
 
-	    counter++;
-	    Todo = ndtslammer.update(Tmotion,cloud);
+      counter++;
+     //cloud_nofilter Todo = ndtslammer.update(Tmotion,cloud);
 
             Eigen::Affine3d diff = Todo.inverse() * Tprev * Tmotion;
 
-	    Tprev = Todo;
-	    Told = Tbase;
-	    
-	    cloud.clear();	
-	    cloud_nofilter.clear();	
-	    numclouds++;
+      Tprev = Todo;
+      Told = Tbase;
 
-            // Evaluation 
-            // ROS_INFO_STREAM("Tgt : " << transformToEvalString(Tgt));
-            // ROS_INFO_STREAM("Tbase : " << transformToEvalString(Tbase));
-            // ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
-            ROS_INFO_STREAM("diff : " << ndt_generic::affine3dToStringRPY(diff));
+      cloud.clear();
+      cloud_nofilter.clear();
+      numclouds++;
+
+
 
             if (diff.rotation().eulerAngles(0,1,2).norm() > 1.) {
                 ROS_ERROR_STREAM("=========================================");
             }
 
-            ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
-            gt_file << frame_time << " " << transformToEvalString(Tgt);
-            odom_file << frame_time << " " << transformToEvalString(Tbase);
-            est_file << frame_time << " " << transformToEvalString(Todo);
-            sensorpose_est_file << frame_time << " " << transformToEvalString(Todo * Ts); 
-	}
+
+  }
     }
 
     gt_file.close();
@@ -460,16 +452,7 @@ int main(int argc, char **argv){
     est_file.close();
     sensorpose_est_file.close();
 
-    if (save_map) {
-      std::cout << "Saving map" << std::endl;
-      if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-        ndtslammer.map->writeToJFF("map.jff");
-        std::cout << "Done." << std::endl;
-      }
-      else {
-        std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
-      }
-    }
+
 
     if (alive) {
       while (1) {

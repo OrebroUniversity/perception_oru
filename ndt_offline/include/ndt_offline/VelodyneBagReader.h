@@ -97,6 +97,14 @@ class VelodyneBagReader{
 		double sensor_time_offset=0.0) 
       
 	{
+  	  // The view_direction / view_width is important to have set. The min/max range is overwritten in the setupOffline
+	  double view_direction = 0;
+	  double view_width = 2*M_PI;
+	  dataParser.setParameters(velodyne_min_range,
+                                  velodyne_max_range,
+                                  view_direction,
+                                  view_width);
+	  
 	    dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range); 
 	    sensor_time_offset_ = ros::Duration(sensor_time_offset);
 	    fprintf(stderr,"Opening '%s'\n",bagfilename.c_str());

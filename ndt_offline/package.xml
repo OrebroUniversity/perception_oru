@@ -21,7 +21,10 @@
   <build_depend>velodyne_pointcloud</build_depend>
   <build_depend>tf_conversions</build_depend>
   <build_depend>eigen_conversions</build_depend>
-  
+  <build_depend>graph_map</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>genmsg</build_depend>
+
   <run_depend>ndt_fuser</run_depend>
   <run_depend>ndt_map</run_depend>
   <run_depend>ndt_registration</run_depend>
@@ -32,7 +35,9 @@
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>tf_conversions</run_depend>
   <run_depend>eigen_conversions</run_depend>
-  
+  <run_depend>graph_map</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>genmsg</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

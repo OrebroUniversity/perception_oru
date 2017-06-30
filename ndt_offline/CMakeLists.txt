@@ -4,6 +4,7 @@ project(ndt_offline)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   ndt_fuser
   ndt_map
@@ -16,11 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
   tf_conversions
   eigen_conversions
+  graph_map
+  tf
+  genmsg
 )
-
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS ndt_fuser ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud
+  CATKIN_DEPENDS ndt_fuser ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud graph_map tf tf_conversions genmsg
   DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
 )
 
@@ -48,7 +51,10 @@ include_directories(
 )
 
 add_executable(fuser3d_offline src/fuser3d_offline.cpp)
-target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
+
+add_executable(graph_fuser3d_offline src/graph_fuser3d_offline.cpp)
+target_link_libraries(graph_fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
 
 add_executable(view_ndtmap src/view_ndtmap.cpp)
 target_link_libraries(view_ndtmap ${Boost_LIBRARIES} ${catkin_LIBRARIES})

@@ -30,7 +30,7 @@ find_package(Eigen REQUIRED COMPONENTS)
 
 
 catkin_package(
-    DEPENDS Eigen libpcl-all-dev
+    DEPENDS Eigen libpcl-all-dev gnuplot
     CATKIN_DEPENDS ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}

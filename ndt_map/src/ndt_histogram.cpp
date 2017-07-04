@@ -6,7 +6,9 @@ namespace lslgeneric{
 
   NDTHistogram::NDTHistogram (int linear_classes,
                               int flat_classes,
-                              int spherical_classes ){
+                              int spherical_classes,
+	    		      double _D1,
+			      double _D2) {
     N_LINE_BINS = linear_classes;
     N_FLAT_BINS = flat_classes;
     N_SPHERE_BINS = spherical_classes;
@@ -22,8 +24,8 @@ namespace lslgeneric{
         dist_histogramBinsSphere[i] = std::vector<int>(N_SPHERE_BINS,0);
       }
 
-    D1 = 5;
-    D2 = 10;
+    D1 = _D1;
+    D2 = _D2;
 
     averageDirections = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >(N_FLAT_BINS,Eigen::Vector3d(0,0,0));
     computeDirections();
@@ -50,8 +52,8 @@ namespace lslgeneric{
         dist_histogramBinsSphere[i] = other.dist_histogramBinsSphere[i];
       }
 
-    D1 = 5;
-    D2 = 10;
+    D1 = other.D1;
+    D2 = other.D2;
 
     averageDirections = other.averageDirections;
     directions = other.directions;
@@ -67,7 +69,9 @@ namespace lslgeneric{
   NDTHistogram::NDTHistogram (NDTMap &map,
                               int linear_classes,
                               int flat_classes,
-                              int spherical_classes ){
+                              int spherical_classes,
+	    		      double _D1,
+			      double _D2) {
 
     N_LINE_BINS = linear_classes;
     N_FLAT_BINS = flat_classes;
@@ -83,8 +87,8 @@ namespace lslgeneric{
       dist_histogramBinsSphere[i] = std::vector<int>(N_SPHERE_BINS,0);
     }
 
-    D1 = 5;
-    D2 = 10;
+    D1 = _D1;
+    D2 = _D2;
 
     averageDirections = std::vector<Eigen::Vector3d,Eigen::aligned_allocator<Eigen::Vector3d> >(N_FLAT_BINS,Eigen::Vector3d(0,0,0));
     //populate directions

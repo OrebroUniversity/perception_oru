@@ -2,7 +2,7 @@
 #define LIDAR_UTILITIES_H
 
 #include <laser_geometry/laser_geometry.h>
-#include "gnuplot-iostream.h"
+//#include "gnuplot-iostream.h"
 #include "pcl/io/pcd_io.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/LaserScan.h"
@@ -27,7 +27,7 @@ public:
 private:
   void plot(const sensor_msgs::LaserScan &scan, const scanRepresentation plot_type, const string PlotOptsX, const string PlotOptsY, double alpha);
   void derivative(pair_vector_double &data_in, pair_vector_double &derivative);
-  Gnuplot gp;
+ // Gnuplot gp;
 
 
 };

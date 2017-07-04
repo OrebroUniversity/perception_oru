@@ -29,18 +29,7 @@ void ScanPlot::expSmoothO1(pair_vector_double &data,double alpha){
     data[i].second=data[i].second*alpha+data[i-1].second*(1-alpha);
   }
 
-}/*
-void ScanPlot::multiPlot(const sensor_msgs::LaserScan &scan,const scanRepresentation plot_type){
-
-if(plot_type==RangeAngle){
-  scanToPairVector(scan,plot_type,data_set);
-  gp<<"st multiplot layout 2,2 columnsfirst margins 0.1,0.9,0.1,0.9 spacing 0.1"<<endl;
-  plotScanRangeAngle(scan,PlotOptsX,PlotOptsY);
-  plotScanXY(scan,PlotOptsX,PlotOptsY);
-  gp<<"unset multiplot"<<endl;
-  break;
 }
-}*/
 
 void ScanPlot::plot(const sensor_msgs::LaserScan &scan,const scanRepresentation plot_type,const string PlotOptsX,const string PlotOptsY,double alpha){
   pair_vector_double data_set,der;
@@ -50,11 +39,11 @@ void ScanPlot::plot(const sensor_msgs::LaserScan &scan,const scanRepresentation 
     derivative(data_set,der);
     data_set=der;
   }
-  //derivative(data_set,der);
+
   cout<<"derivative size:="<<der.size()<<", data size="<<data_set.size()<<endl;
-  gp <<"unset autoscale"<<endl;
-  gp << "set xrange "<<PlotOptsX<<"\nset yrange "<<PlotOptsY<<"\n"<<endl;;
-  gp << "plot" << gp.file1d(data_set) << "with points title 'range angle'"<<endl;
+ // gp <<"unset autoscale"<<endl;
+ // gp << "set xrange "<<PlotOptsX<<"\nset yrange "<<PlotOptsY<<"\n"<<endl;;
+ // gp << "plot" << gp.file1d(data_set) << "with points title 'range angle'"<<endl;
 
   /*
     gp<<"set multiplot layout 2,2 columnsfirst margins 0.1,0.9,0.1,0.9 spacing 0.1"<<endl;

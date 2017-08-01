@@ -33,8 +33,8 @@
       <param name="max_translation_norm" value="0.4" />
       <param name="max_rotation_norm" value="0.78539816339" />
 
-      <param name="size_x_meters" value="60" />
-      <param name="size_y_meters" value="60" />
+      <param name="size_x_meters" value="120" />
+      <param name="size_y_meters" value="120" />
       <param name="size_z_meters" value="6" />
 
       <param name="resolution" value="0.6" />
@@ -55,7 +55,7 @@
 
 
       <param name="visualize" value="true" />
-      <param name="plotGTTrack" value="true" />
+
 
       <param name="use_keyframe" value="true" />
       <param name="min_keyframe_dist" value="0.5" />

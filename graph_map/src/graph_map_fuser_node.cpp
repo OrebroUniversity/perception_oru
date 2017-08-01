@@ -74,7 +74,7 @@ protected:
   std::string points_topic, laser_topic, map_dir, map_type_name,reg_type_name, odometry_topic,
   world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
-  bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack,
+  bool visualize, match2D, matchLaser, beHMT, useOdometry,
   initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
 
   double pose_init_x,pose_init_y,pose_init_z,
@@ -175,8 +175,8 @@ public:
 
 
 
-    ///if we want to compare to a ground truth topic
-    param_nh.param("plotGTTrack",plotGTTrack,false);
+    ///if we want to create map based on GT pose
+    param_nh.param("renderGTmap",renderGTmap,false);
     param_nh.param<std::string>("gt_topic",gt_topic,"groundtruth");
     ///if we want to get the initial pose of the vehicle relative to a different frame
     param_nh.param("initPoseFromGT",initPoseFromGT,false);
@@ -231,7 +231,7 @@ public:
     if(!matchLaser) {
       points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,2);
       if(useOdometry) {
-        if(initPoseFromGT){
+        if(renderGTmap){
           gt_fuser_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,gt_topic,10);
           sync_GTodom_ = new message_filters::Synchronizer< PointsGTOdomSync >(PointsGTOdomSync(SYNC_FRAMES), *points2_sub_, *gt_fuser_sub_);
           sync_GTodom_->registerCallback(boost::bind(&GraphMapFuserNode::GTLaserPointsOdomCallback, this, _1, _2));
@@ -255,7 +255,7 @@ public:
         ((void)0); //Do nothing, seriously consider using a laser only callback (no odometry sync)
       }
     }
-    if(plotGTTrack) {
+    if(initPoseFromGT) {
       gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&GraphMapFuserNode::gt_callback, this);
     }
     cout<<"init done"<<endl;
@@ -419,6 +419,7 @@ public:
   void GTLaserPointsOdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg_in,
                                  const nav_msgs::Odometry::ConstPtr& odo_in)
   {
+    cout<<"GT 3d laser mapping"<<endl;
     Eigen::Affine3d Tmotion;
     if(frame_nr_==0){
       Tmotion=Eigen::Affine3d::Identity();
@@ -433,7 +434,7 @@ public:
   // Callback
   void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
   {
-    //  cout<<"GT odom callback"<<endl;
+      cout<<"GT odom callback"<<endl;
     Eigen::Affine3d gt_pose;
     tf::poseMsgToEigen(msg_in->pose.pose,gt_pose);
 

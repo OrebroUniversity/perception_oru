@@ -221,10 +221,10 @@ private:
     void serialize(Archive & ar, const unsigned int version)//In order to clal this you need to register it to boost using "ar.template register_type<LazyGrid>();"
     {
       ar & boost::serialization::base_object<SpatialIndex>(*this);
-      // ar & protoType;
+      ar & protoType;
       ar & sizeX & sizeY & sizeZ;
-      //ar & dataVek_;
-      //ar & activeCells;
+
+      ar & activeCells;
       ar & centerIsSet & sizeIsSet   & initialized; //Serialize all primitive types
       ar & sizeXmeters & sizeYmeters & sizeZmeters;
       ar & cellSizeX   & cellSizeY   & cellSizeZ;

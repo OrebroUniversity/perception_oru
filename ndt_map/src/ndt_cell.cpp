@@ -7,10 +7,43 @@ namespace lslgeneric
 
 
 bool NDTCell::parametersSet_ = false;
-double NDTCell::EVAL_ROUGH_THR;
-double NDTCell::EVEC_INCLINED_THR;
-double NDTCell::EVAL_FACTOR;
+double NDTCell::EVAL_ROUGH_THR=0;
+double NDTCell::EVEC_INCLINED_THR=0;
+double NDTCell::EVAL_FACTOR=0;
+void NDTCell::InitializeVariables(){
+  hasGaussian_=false;
+  cost=INT_MAX;
+  isEmpty=0;
+  consistency_score=0;
+  center_.x = center_.y = center_.z =0;
+  xsize_    = ysize_    = zsize_    =0;
+  cov_   =  Eigen::MatrixXd::Identity(3, 3);
+  icov_  =  Eigen::MatrixXd::Identity(3, 3);
+  evecs_ =  Eigen::MatrixXd::Identity(3, 3);
+  mean_  =  Eigen::Vector3d(0,0,0);
+  evals_ =  Eigen::Vector3d(0,0,0);
+  cl_=UNKNOWN;
 
+  if(!parametersSet_)
+    setParameters();
+
+  d1_= d2_  =0;
+  N         =0; 	///Number of points used for Normal distribution estimation so far
+  emptyval  =0;			///The number of times a cell was observed empty (using ray casting)
+  emptylik  =0;
+  emptydist =0;
+  R=G=B     =0; 			///RGB values [0..1] - Special implementations for PointXYZRGB & PointXYZI
+  occ       =0;   			///Occupancy value stored as "Log odds" (if you wish)
+  max_occu_ =0;
+  TEventData edata;
+}
+std::string NDTCell::ToString(){
+  std::stringstream ss;
+  ss <<"\n<<NDTCell: ParametersSet_="<<parametersSet_<<"\nHasGaussian_="<<hasGaussian_<< "\nCost="<<cost<<"\nIsEmpty="<<(bool)isEmpty<<"\nConsistency_score="<<consistency_score;
+  ss<<"\nCenter_.x="<<center_.x<<", center_.y="<<center_.y<<", center_.z="<<center_.z<<"\nXsize_="<<xsize_<<", ysize_="<<ysize_<<", zsize_="<<zsize_<<std::endl;
+  ss<<"mean_=\n"<<mean_<<"\ncov_="<<cov_<<">>"<<std::endl;
+  return ss.str();
+}
 void NDTCell::setParameters(double _EVAL_ROUGH_THR   ,
                                     double _EVEC_INCLINED_THR,
                                     double _EVAL_FACTOR

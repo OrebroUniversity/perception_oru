@@ -62,6 +62,7 @@ set (${PROJECT_NAME}_LIB_SRCS
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_graph test/test_graph.cpp )
+add_executable(test_serialization test/test_serialization.cpp )
 add_executable(graph_map_fuser_node src/graph_map_fuser_node.cpp )
 
 
@@ -69,6 +70,7 @@ add_executable(graph_map_fuser_node src/graph_map_fuser_node.cpp )
 ##
 #
 target_link_libraries(test_graph ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
+target_link_libraries(test_serialization ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(graph_map_fuser_node ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 
 #  ${Eigen_LIBRARIES}

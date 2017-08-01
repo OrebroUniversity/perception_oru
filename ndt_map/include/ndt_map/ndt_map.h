@@ -550,6 +550,10 @@ private:
   {
     ar.template register_type<LazyGrid>();
     ar & index_;
+    ar & guess_size_;
+    ar & map_sizex & map_sizey & map_sizez;
+    ar & centerx & centery & centerz;
+    ar & guess_size_;
   }
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

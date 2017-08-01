@@ -77,5 +77,8 @@ void GraphParam::GetParametersFromRos(){
   nh.param("use_submap",use_submap_,false);
   nh.param("interchange_radius",interchange_radius_,100.0);
   nh.param("compound_radius",compound_radius_,100.0);
+  nh.param("use_keyframe",use_keyframe_,true);
+  nh.param("min_keyframe_dist",min_keyframe_dist_,0.5);
+  nh.param("min_keyframe_rot_deg",min_keyframe_rot_deg_,15.0);
 }
 }

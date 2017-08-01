@@ -181,8 +181,8 @@ public:
     ///if we want to get the initial pose of the vehicle relative to a different frame
     param_nh.param("initPoseFromGT",initPoseFromGT,false);
     //plot the map from the GT track if available
-    param_nh.param("renderGTmap", renderGTmap,false);
-    renderGTmap &= plotGTTrack; //can't render if we don't have it
+
+
     //get it from TF?
     param_nh.param("initPoseFromTF",initPoseFromTF,false);
     //the frame to initialize to
@@ -219,6 +219,9 @@ public:
       initPoseSet=true;
 
       fuser_=new GraphMapFuser(map_type_name,reg_type_name,pose_,sensorPose_);
+      cout<<"set fuser viz="<<visualize<<endl;
+      fuser_->Visualize(visualize);
+
     }
 
 
@@ -228,8 +231,7 @@ public:
     if(!matchLaser) {
       points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,2);
       if(useOdometry) {
-        if(renderGTmap){
-          cout<<"render GT true"<<endl;
+        if(initPoseFromGT){
           gt_fuser_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,gt_topic,10);
           sync_GTodom_ = new message_filters::Synchronizer< PointsGTOdomSync >(PointsGTOdomSync(SYNC_FRAMES), *points2_sub_, *gt_fuser_sub_);
           sync_GTodom_->registerCallback(boost::bind(&GraphMapFuserNode::GTLaserPointsOdomCallback, this, _1, _2));
@@ -261,7 +263,6 @@ public:
 
   void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud,
                     Eigen::Affine3d Tmotion) {
-    cout<<"process frame"<<endl;
     if(!initPoseSet)
       return;
 
@@ -283,12 +284,12 @@ public:
       (void)ResetInvalidMotion(Tmotion);
       pose_=pose_*Tmotion; //currently being changed to increment pose inside fuser
       cout<<"frame="<<frame_nr_<<"movement="<<(fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()<<endl;
-      if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
+    //  if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
+
         cout<<"perform update"<<endl;
         fuser_->ProcessFrame(cloud,pose_,Tmotion);
-      }
-      else
-        cout<<"hold update"<<endl;
+
+
 
       tf::Transform Transform;
       tf::transformEigenToTF(pose_,Transform);
@@ -440,6 +441,7 @@ public:
       pose_ = gt_pose;
       ROS_INFO("Set initial pose from GT track");
       fuser_=new GraphMapFuser(map_type_name,reg_type_name,pose_,sensorPose_);
+      fuser_->Visualize(visualize);
       initPoseSet = true;
     }
   }

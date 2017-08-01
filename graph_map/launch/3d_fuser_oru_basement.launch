@@ -57,6 +57,10 @@
       <param name="visualize" value="true" />
       <param name="plotGTTrack" value="true" />
 
+      <param name="use_keyframe" value="true" />
+      <param name="min_keyframe_dist" value="0.5" />
+      <param name="min_keyframe_rot_deg" value="15.0" />
+
   </node>
 
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find graph_map)/launch/3d.rviz" />

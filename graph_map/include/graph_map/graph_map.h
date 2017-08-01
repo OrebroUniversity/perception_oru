@@ -63,6 +63,9 @@ public:
   bool use_submap_;
   double interchange_radius_;
   double compound_radius_;
+  bool use_keyframe_=true;
+  double min_keyframe_dist_=0.5;
+  double min_keyframe_rot_deg_=15;
 protected:
   GraphParam();
 private:

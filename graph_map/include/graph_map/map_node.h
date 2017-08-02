@@ -9,8 +9,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/base_object.hpp>
-
-
+#include "boost/serialization/shared_ptr.hpp"
+#include "ndt_generic/serialization.h"
 
 namespace libgraphMap{
 /*!
@@ -25,10 +25,17 @@ public:
   virtual Affine3d GetPose() const;
   virtual bool WithinRadius(const Affine3d &pose, const double &radius);
   virtual unsigned int GetId()const{return id_;}
-protected:
   Node();
+protected:
   unsigned int id_;
   Eigen::Affine3d pose_;
+private:
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version){
+    ar & id_;
+    ar & pose_;
+  }
 };
 /*!
 * ... Class to represent a map node ...
@@ -40,17 +47,21 @@ public:
   virtual bool Initialized(){return initialized_;}
   virtual MapTypePtr GetMap(){return map_;}
   virtual string ToString();
+  MapNode();
 protected:
-  MapTypePtr map_;
   MapNode(const Eigen::Affine3d &pose,const MapParamPtr &mapparam);
+  MapTypePtr map_;
   bool initialized_=false;
 private:
   friend class GraphFactory;
-  /*-----Boost serialization------*/
   friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int version);
-  /*-----End of Boost serialization------*/
+  void serialize(Archive & ar, const unsigned int version){
+    ar & boost::serialization::base_object<Node>(*this);
+    ar & map_;
+    ar & initialized_;
+  }
+
 
 };
 

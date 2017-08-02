@@ -1,4 +1,6 @@
 #include "ndt/ndt_map_type.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::NDTMapType)
 namespace libgraphMap{
 using namespace std;
 

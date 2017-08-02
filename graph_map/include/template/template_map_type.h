@@ -17,6 +17,7 @@ class TemplateMapType:public MapType{
 public:
   //Mandatory
   ~TemplateMapType();
+  TemplateMapType(){}
   TemplateMapType(MapParamPtr paramptr);
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);//Mandatory, base method implemented as pure virtual
   //Optional
@@ -28,7 +29,7 @@ private:
   friend class boost::serialization::access;
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version){
-    //ar & map_ ...
+    ar & boost::serialization::base_object<MapType>(*this);
   }
   /*-----End of Boost serialization------*/
 };
@@ -43,16 +44,14 @@ protected:
 private:
   friend class GraphFactory;
   /*-----Boost serialization------*/
-  friend class boost::serialization::access;
+/*  friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int version);
-  /*-----End of Boost serialization------*/
+  void serialize(Archive & ar, const unsigned int version){
+    ar & boost::serialization::base_object<MapParam>(*this);
+  }*/
 
 };
 
-
-
 }
-
 
 #endif // TEMPLATE_MAP_TYPE_H

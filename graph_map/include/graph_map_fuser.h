@@ -15,6 +15,10 @@
 #include "ndt_generic/motion_model_2d.h"
 #include "ndt_generic/eigen_utils.h"
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include "boost/serialization/shared_ptr.hpp"
+
 
 namespace libgraphMap{
 using namespace std;
@@ -26,6 +30,7 @@ public:
   GraphMapFuser(){}
   GraphMapFuser(string maptype, string registratorType, const Eigen::Affine3d &init_pose, const Affine3d &sensorPose);//Ros friendly constructor to read parameters from ros-par-server
   GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, GraphParamPtr graph_param, const Eigen::Affine3d &init_pose, const Eigen::Affine3d &sensorPose);
+  virtual void SaveGraphMap(const std::string &filename);
   virtual void SetMotionParameters(const MotionModel2d &motion_param){motion_model_2d_=motion_param;}
   virtual void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
   virtual bool ErrorStatus(string status="");
@@ -40,7 +45,7 @@ protected:
   string maptype_,registratorType_;
   Eigen::Affine3d initPose_,sensorPose_,pose_last_fuse_;
   MapParamPtr mapParam_;
-  GraphMapNavigatorPtr Graph_nav_;
+  GraphMapNavigatorPtr graph_map_;
   GraphParamPtr graph_param_;
   RegParamPtr regParam_;
   RegTypePtr registrator_;

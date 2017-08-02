@@ -4,6 +4,7 @@ using namespace std;
 namespace libgraphMap{
 
 GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const GraphParamPtr graphparam){
+  factors_.clear();
   prevNode_=NULL;
   currentNode_=GraphFactory::CreateMapNode(nodepose,mapparam);//The first node to be added
   nodes_.push_back(currentNode_);
@@ -19,6 +20,17 @@ GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const Gr
   //interchange_radius_=min_size/2-mapparam_->max_range_;//
 
 }
+GraphMap::GraphMap(){
+  currentNode_=NULL;
+  prevNode_=NULL;
+  nodes_.clear();//Vector of all nodes in graph
+  factors_.clear();
+  mapparam_=NULL;//
+  bool use_submap_=false;
+  double interchange_radius_=15;;
+  double compound_radius_=15;
+}
+
 MapNodePtr GraphMap::GetCurrentNode(){
   return currentNode_;
 }
@@ -36,12 +48,13 @@ void GraphMap::AddMapNode(const MapParamPtr &mapparam, const Affine3d &diff, con
   currentNode_=newNode;
 }
 string GraphMap::ToString(){
-  string s="Graph map: \n";
+  std::stringstream ss;
+  ss<<"Graph size="<<nodes_.size()<<endl;;
   for(int i=0;i<nodes_.size();i++){
     NodePtr ptr=nodes_[i];
-    s=s+ptr->ToString()+"\n";
+    ss<<ptr->ToString()<<endl;
   }
-  return s;
+  return ss.str();
 }
 Affine3d GraphMap::GetNodePose(int nodeNr){
   if(nodeNr<GraphSize())

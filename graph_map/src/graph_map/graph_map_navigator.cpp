@@ -1,4 +1,6 @@
 #include "graph_map/graph_map_navigator.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::GraphMapNavigator)
 namespace libgraphMap{
 GraphMapNavigator::GraphMapNavigator(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam): GraphMap(nodepose, mapparam ,graphparam){}
 
@@ -57,5 +59,11 @@ bool GraphMapNavigator::AutomaticMapInterchange(Affine3d &Tnow, const Matrix6d &
   }
   return created_map_node || changed_map_node;
 }
+string GraphMapNavigator::ToString(){
+  std::stringstream ss;
+  ss <<"GraphMapNavigator:\n"<<GraphMap::ToString();
+  return ss.str();
+}
+
 
 }

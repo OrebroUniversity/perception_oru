@@ -118,6 +118,7 @@ typedef boost::shared_ptr<GraphMap> GraphMapPtr;
 class GraphMapNavigator;
 typedef boost::shared_ptr<GraphMapNavigator> GraphMapNavigatorPtr;
 
+
 class GraphParam;
 typedef boost::shared_ptr<GraphParam> GraphParamPtr;
 

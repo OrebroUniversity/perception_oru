@@ -5,7 +5,12 @@ bool factor::Connects(NodePtr node){
     return true;
   }
 }
-
+factor::factor(){
+  diff_=Eigen::Affine3d::Identity();
+  prev_=NULL;
+  next_=NULL;
+  covar_=unit_covar;
+}
 
 
 

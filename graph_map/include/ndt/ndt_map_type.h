@@ -25,11 +25,13 @@ public:
   //Advanced
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);
   NDTMapType(MapParamPtr paramptr);
-  NDTMap *map_;
+  NDTMapType(){}
+  NDTMap *map_=NULL;
 
 protected:
-  double resolution_,resolution_local_factor=1.;
-  double sensor_range_;
+  double resolution_=0.4;
+  double resolution_local_factor=1.;
+  double sensor_range_=30;
 
   friend class GraphFactory;
   void InitializeMap(const Eigen::Affine3d &Td,pcl::PointCloud<pcl::PointXYZ> &cloud);
@@ -38,7 +40,8 @@ protected:
   friend class boost::serialization::access;
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version){
-    //ar & map_ ...
+    ar & boost::serialization::base_object<MapType>(*this);
+    ar & map_;
   }
   /*-----End of Boost serialization------*/
 

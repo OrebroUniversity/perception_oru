@@ -35,6 +35,9 @@
 #include <ndt_map/NDTMapMsg.h>
 #include "gnuplot-iostream.h"
 #include "lidarUtils/lidar_utilities.h"
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
 #define MAX_TRANSLATION_DELTA 2.0
@@ -67,6 +70,8 @@ protected:
   tf::TransformListener tf_listener_;
   ros::Publisher output_pub_;
   Eigen::Affine3d pose_, T, sensorPose_;
+  const std::string filename="MAP.map";
+
   unsigned int frame_nr_;
   double varz;
 
@@ -81,6 +86,8 @@ protected:
   pose_init_r,pose_init_p,pose_init_t;
   double sensor_pose_x,sensor_pose_y,sensor_pose_z,
   sensor_pose_r,sensor_pose_p,sensor_pose_t;
+
+
   laser_geometry::LaserProjection projector_;
   ScanPlot plotter_;
   message_filters::Synchronizer< LaserOdomSync > *sync_lo_;
@@ -263,6 +270,7 @@ public:
 
   void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud,
                     Eigen::Affine3d Tmotion) {
+
     if(!initPoseSet)
       return;
 
@@ -271,13 +279,12 @@ public:
       time_last_itr=ros::Time::now();
     else{
       time_now=ros::Time::now();
-      //  cout<<"iteration time= "<<time_now-time_last_itr<<endl;
+
       time_last_itr=time_now;
 
 
       cout<<"frame nr="<<frame_nr_<<endl;
       if((Tmotion.translation().norm() <0.005 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.005) && useOdometry) {    //sanity check for odometry
-        //cout<<"norm:" <<Tmotion.translation().norm()<<endl;
         std::cerr<<"No motion, skipping Frame\n";
         return;
       }
@@ -289,6 +296,8 @@ public:
         cout<<"perform update"<<endl;
         fuser_->ProcessFrame(cloud,pose_,Tmotion);
 
+       if(frame_nr_==130)
+         fuser_->SaveGraphMap(filename);
 
 
       tf::Transform Transform;
@@ -399,7 +408,7 @@ public:
                            const nav_msgs::Odometry::ConstPtr& odo_in)
   {
     ros::Time tstart=ros::Time::now();
-    // cout<<"Point odom callback"<<endl;
+
     Eigen::Affine3d Tm;
     pcl::PointCloud<pcl::PointXYZ> cloud;
     tf::poseMsgToEigen(odo_in->pose.pose,this_odom);
@@ -410,7 +419,6 @@ public:
       Tm = last_odom.inverse()*this_odom;
     }
     last_odom = this_odom;
-    cout<<"odometry=\n"<<Tm.translation().norm()<<endl;
     pcl::fromROSMsg (*msg_in, cloud);
     this->processFrame(cloud,Tm);
     ros::Time tend=ros::Time::now();
@@ -419,12 +427,10 @@ public:
   void GTLaserPointsOdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg_in,
                                  const nav_msgs::Odometry::ConstPtr& odo_in)
   {
-    cout<<"GT 3d laser mapping"<<endl;
     Eigen::Affine3d Tmotion;
     if(frame_nr_==0){
       Tmotion=Eigen::Affine3d::Identity();
     }
-    //cout<<"GT point callback"<<endl;
     Eigen::Affine3d GT_pose;
     pcl::PointCloud<pcl::PointXYZ> cloud;
     tf::poseMsgToEigen(odo_in->pose.pose,pose_);
@@ -434,7 +440,6 @@ public:
   // Callback
   void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
   {
-      cout<<"GT odom callback"<<endl;
     Eigen::Affine3d gt_pose;
     tf::poseMsgToEigen(msg_in->pose.pose,gt_pose);
 

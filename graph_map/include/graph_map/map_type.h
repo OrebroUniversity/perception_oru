@@ -11,13 +11,12 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/base_object.hpp>
+#include "boost/serialization/serialization.hpp"
 #include <stdio.h>
 #include "ros/ros.h"
 
-
 using namespace std;
 namespace libgraphMap{
-
 
 /*!
  * ... Abstract class to present parameters for "mapType". this class contain generic parameters forr all map types.  ...
@@ -38,11 +37,17 @@ public:
 protected:
   MapParam();
   string mapName_;
-  /*-----Boost serialization------*/
   friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int version){}
-  /*-----End of Boost serialization------*/
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & sizex_;
+    ar & sizey_;
+    ar & sizez_;
+    ar & max_range_;
+    ar & min_range_;
+    ar & enable_mapping_;
+  }
 };
 
 
@@ -64,6 +69,7 @@ public:
   virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud)=0;
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius=5);
   virtual string GetMapName()const{return mapName_;}
+  MapType();
 protected:
   MapType(MapParamPtr param);
   //double radius_;
@@ -76,7 +82,6 @@ protected:
   bool enable_mapping_=true;
   string mapName_;
 
-
   /*-----Boost serialization------*/
   friend class boost::serialization::access;
   template<class Archive>
@@ -84,14 +89,10 @@ protected:
     ar & sizex_ & sizey_ & sizez_;
     ar & max_range_ & max_range_;
     ar & initialized_;
+    ar & enable_mapping_;
     ar & mapName_;
   }
-  /*-----End of Boost serialization------*/
 };
-
-
-
-
 
 }
 #endif // MAPTYPE_H

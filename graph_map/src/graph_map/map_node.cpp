@@ -1,7 +1,7 @@
 #include "graph_map/map_node.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::MapNode)
 namespace libgraphMap{
-
-
 Node::Node(){
   static unsigned int num_nodes=0;
   id_=num_nodes;
@@ -32,15 +32,13 @@ MapNode::MapNode(const Eigen::Affine3d &pose,const MapParamPtr &mapparam){
   pose_=pose;
   map_=GraphFactory::CreateMapType(mapparam);
 }
+MapNode::MapNode(){
+  map_=NULL;
+}
 
 void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud){
   map_->update(Tnow,cloud);
   initialized_=true;
-}
-
-template<class Archive>
-void MapNode::serialize(Archive & ar, const unsigned int version){
-  //ar &map_ & mapPose_ not sure how to do this
 }
 string MapNode::ToString(){
   stringstream ss;

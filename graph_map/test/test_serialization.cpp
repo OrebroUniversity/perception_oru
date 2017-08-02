@@ -1,4 +1,3 @@
-#include "stdio.h"
 #include "iostream"
 #include <pcl/point_cloud.h>
 #include "pcl/io/pcd_io.h"
@@ -6,23 +5,32 @@
 #include "Eigen/Geometry"
 #include "ndt_map/lazy_grid.h"
 #include "ndt_map/ndt_map.h"
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
+
 #include "ndt_generic/serialization.h"
 #include "boost/serialization/set.hpp"
 #include "boost/serialization/vector.hpp"
+#include "boost/serialization/shared_ptr.hpp"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 #include <stdlib.h>
 #include <time.h>
-#define BOOST_SERIALIZATION_DYN_LINK 1
+#include "graphfactory.h"
+#include "graph_map/graph_map.h"
+#include "graph_map/graph_map_navigator.h"
+
+//#define BOOST_SERIALIZATION_DYN_LINK 1
 using namespace std;
 using namespace Eigen;
 using namespace lslgeneric;
+using namespace libgraphMap;
+using namespace boost::archive;
 string filename="ndtmap_Serialization.dat";
 
 
-class testNDTMap{
+class testNDTMapSerialization{
 public:
-  testNDTMap(){
+  testNDTMapSerialization(){
     NDTMap *map;
     cout<<"TEST NDT MAP "<<endl;
     CreateNdtMap(&map);
@@ -64,7 +72,7 @@ private:
     cout<<(*map)->ToString()<<endl;
     std::vector<lslgeneric::NDTCell*> cells=(*map)->getAllCells();
 
-   //   cout<< (*map)->ToString()<<endl;;
+    //   cout<< (*map)->ToString()<<endl;;
   }
   void LoadNdtMap(NDTMap ** map){
     std::ifstream ifs(filename);
@@ -172,12 +180,45 @@ void TestCellVector(){
 
   cout<<"passed test"<<endl;
 }
+class testGraphMapSerialization{
+public:
+  testGraphMapSerialization(){
+    Eigen::Affine3d pose=Eigen::Affine3d::Identity();
+    MapParamPtr mappar=GraphFactory::CreateMapParam("ndt_map");
+    mappar->GetParametersFromRos();
+    GraphParamPtr graphpar=GraphFactory::CreateGraphParam();
+    graphpar->GetParametersFromRos();
+    graphMap=GraphFactory::CreateGraphNavigator(pose,mappar,graphpar);
+    Eigen::Affine3d diff=Eigen::Affine3d::Identity();
+    diff.translation()<<1,2,3;
+    graphMap->AddMapNode(mappar,diff,unit_covar);
+    saveGraphMap();
+    cout<<"saved:"<<graphMap->ToString();
+    LoadGraphMap();
+    cout<<"loaded"<<graphMap2->ToString();
+  }
+
+  void LoadGraphMap(){
+    std::ifstream ifs(filename);
+    boost::archive::text_iarchive ia(ifs);
+    ia >> graphMap2;
+  }
+
+  void saveGraphMap(){
+    std::ofstream ofs( filename );
+    boost::archive::text_oarchive ar(ofs);
+    ar << (graphMap);
+    ofs.close();
+  }
+private:
+   GraphMapPtr graphMap,graphMap2;
+};
+
 void SaveEmptyCellVector(){
   CellVector3d *vek2;//=new CellVector3d(sizex,sizey,sizez);
 
   std::ofstream ofs( filename );
   boost::archive::text_oarchive ar(ofs);
-
   ar << vek2;// Save the data
 
   ofs.close();
@@ -244,6 +285,12 @@ void LoadLazyGrid(){
 
 
  */
+class test{
+public:
+  test(){}
+  int v;
+};
+
 int main(int argc, char **argv){
   ros::init(argc, argv, "testGraphLib");
   ros::NodeHandle n;
@@ -254,9 +301,12 @@ int main(int argc, char **argv){
   if(c=='n'||c=='N')
     exit(0);
   else
-    testNDTMap test;
+    testGraphMapSerialization test;
 
+  /*
+ *
 
+ * */
   //TestNdtCell();
   //testNDTMap testndtmap;
 

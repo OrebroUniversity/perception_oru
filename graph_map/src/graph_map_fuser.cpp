@@ -12,7 +12,7 @@ GraphMapFuser::GraphMapFuser(string maptype, string registratorType, const Eigen
   cout<<"started reading map par from ros"<<endl;
   mapParam_->GetParametersFromRos();
   cout<<"time to create graph inside fuser"<<endl;
-  Graph_nav_ =GraphFactory::CreateGraphNavigator(init_pose,mapParam_,graph_param_);
+  graph_map_ =GraphFactory::CreateGraphNavigator(init_pose,mapParam_,graph_param_);
   registrator_=GraphFactory::CreateRegistrationType(sensorPose,regParam_);
   sensorPose_=sensorPose;
   use_keyframe_=graph_param_->use_keyframe_;
@@ -25,7 +25,7 @@ GraphMapFuser::GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, Grap
   mapParam_=mapParam;
   regParam_=regParam;
   graph_param_=graph_param;
-  Graph_nav_ =GraphFactory::CreateGraphNavigator(init_pose,mapParam_,graph_param_);
+  graph_map_ =GraphFactory::CreateGraphNavigator(init_pose,mapParam_,graph_param_);
   registrator_=GraphFactory::CreateRegistrationType(sensorPose,regParam_);
   sensorPose_=sensorPose;
   nr_frames_=0;
@@ -35,6 +35,17 @@ GraphMapFuser::GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, Grap
   initialized_=true;
   pose_last_fuse_=init_pose;
 }
+void GraphMapFuser::SaveGraphMap(const std::string &filename){
+  cout<<"saving:\n"<<graph_map_->ToString()<<endl;
+  std::ofstream ofs( "test_file.dat" );
+   boost::archive::text_oarchive ar(ofs);
+   int s=5;
+   ar <<graph_map_;
+
+
+   ofs.close();
+}
+
 //!
 //! \brief GraphMapFuser::KeyFrameBasedFuse
 //! \param Tnow pose of base specified in the GLOBAL world frame
@@ -75,7 +86,7 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::A
     return;
   }
   fuse_this_frame=KeyFrameBasedFuse(Tnow);//fuse frame based on distance traveled
-  Eigen::Affine3d T_world_to_local_map=Graph_nav_->GetCurrentNodePose().inverse(); //transformation from node to world frame
+  Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
   Tnow=T_world_to_local_map*Tnow;//change frame to local map
 
 if(fuse_this_frame)
@@ -87,10 +98,10 @@ if(fuse_this_frame)
   ros::Time t2=ros::Time::now();
   cout<<"transformation took t="<<t2-t1<<endl;
   if(fuse_this_frame||map_node_changed){
-    registration_succesfull = registrator_->Register(Graph_nav_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
+    registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
   }
 
-  if(Graph_nav_->AutomaticMapInterchange(Tnow,motion_cov,T_world_to_local_map,map_node_changed,map_node_created) && map_node_changed)
+  if(graph_map_->AutomaticMapInterchange(Tnow,motion_cov,T_world_to_local_map,map_node_changed,map_node_created) && map_node_changed)
   {
     //double score;
     //Affine3d Tdiff=Graph_nav_->GetPreviousNodePose().inverse()*Graph_nav_->GetCurrentNodePose();
@@ -107,7 +118,7 @@ if(fuse_this_frame)
   }
   if(fuse_this_frame||map_node_changed){
     lslgeneric::transformPointCloudInPlace(Tnow, cloud);// The cloud should now be centered around the robot pose in the map frame
-    Graph_nav_->GetCurrentNode()->updateMap(Tnow*sensorPose_,cloud);//Update map, provided transform is the pose of the sensor in the world which is where the scan was taken from
+    graph_map_->GetCurrentNode()->updateMap(Tnow*sensorPose_,cloud);//Update map, provided transform is the pose of the sensor in the world which is where the scan was taken from
   }
 
   Tnow=T_world_to_local_map.inverse()*Tnow;//remap Tnow to global map frame
@@ -117,9 +128,9 @@ if(fuse_this_frame)
   nr_frames_++;
   if(visualize_){
     cout<<"visualize"<<endl;
-    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(Graph_nav_->GetCurrentNode()->GetMap());
+    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
     GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,T_world_to_local_map.inverse());
-    GraphPlot::PlotPoseGraph(Graph_nav_);
+    GraphPlot::PlotPoseGraph(graph_map_);
   }
   else
     cout<<"no visualization"<<endl;
@@ -139,7 +150,7 @@ void GraphMapFuser::plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud){
 }
 
 bool GraphMapFuser::ErrorStatus(string status){
-  if(Graph_nav_!=NULL && registrator_!=NULL){
+  if(graph_map_!=NULL && registrator_!=NULL){
     return false;
   }
   else{

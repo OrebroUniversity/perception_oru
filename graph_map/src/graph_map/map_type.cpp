@@ -24,7 +24,16 @@ string MapParam::ToString(){
   return ss.str();
 }
 
-
+MapType::MapType(){
+  sizex_= 0;
+  sizey_= 0;
+  sizez_= 0;
+  max_range_=0;
+  min_range_=0;
+  initialized_=false;
+  enable_mapping_=true;
+  mapName_="";
+}
 
 MapType::MapType(MapParamPtr param){
   initialized_=false;
@@ -34,6 +43,7 @@ MapType::MapType(MapParamPtr param){
   sizez_= param->sizez_;
   max_range_=param->max_range_;
   min_range_=param->min_range_;
+  mapName_="";
 }
 
 bool MapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){

@@ -1,4 +1,6 @@
 #include "template/template_map_type.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::TemplateMapType)
 namespace libgraphMap{
 using namespace std;
 
@@ -47,10 +49,6 @@ void TemplateMapParam::GetParametersFromRos(){
   nh.param<std::string>("Super_important_map_parameter",SuperImportantMapParameter,"parhaps not so important...");
 }
 
-template<class Archive>
-void TemplateMapParam::serialize(Archive & ar, const unsigned int version){
-  ar & boost::serialization::base_object<MapParam>(*this);
-  //ar & cenx_& ceny_ &cenz_;
-}
+
 
 }

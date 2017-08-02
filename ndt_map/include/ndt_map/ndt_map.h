@@ -51,6 +51,8 @@
 #include "iostream"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/base_object.hpp"
+#include "boost/shared_ptr.hpp"
+#include "boost/serialization/vector.hpp"
 
 namespace lslgeneric
 {
@@ -108,6 +110,11 @@ public:
   {
     index_ = NULL;
     guess_size_ = true;
+    map_sizex = map_sizey =map_sizez =-1.0;
+    centerx=centery=centerz=0.0;
+    is3D = true;
+    guess_size_ = true;
+    isFirstLoad_ = true;
   }
   /** default constructor. The SpatialIndex sent as a paramter
      *	is used as a factory every time that loadPointCloud is called.
@@ -120,9 +127,8 @@ public:
     //this is used to prevent memory de-allocation of the *si
     //si was allocated outside the NDT class and should be deallocated outside
     isFirstLoad_ = !dealloc;
-    map_sizex = -1.0;
-    map_sizey = -1.0;
-    map_sizez = -1.0;
+    map_sizex = map_sizey =map_sizez =-1.0;
+    centerx=centery=centerz=0.0;
     is3D = true;
     guess_size_ = true;
   }
@@ -548,9 +554,10 @@ private:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version)//In order to clal this you need to register it to boost using "ar.template register_type<LazyGrid>();"
   {
+    ar & is3D;
     ar.template register_type<LazyGrid>();
     ar & index_;
-    ar & guess_size_;
+    ar & isFirstLoad_;
     ar & map_sizex & map_sizey & map_sizez;
     ar & centerx & centery & centerz;
     ar & guess_size_;

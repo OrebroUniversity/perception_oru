@@ -39,7 +39,7 @@ void NDTCell::InitializeVariables(){
 }
 std::string NDTCell::ToString(){
   std::stringstream ss;
-  ss <<"\n<<NDTCell: ParametersSet_="<<parametersSet_<<"\nHasGaussian_="<<hasGaussian_<< "\nCost="<<cost<<"\nIsEmpty="<<(bool)isEmpty<<"\nConsistency_score="<<consistency_score;
+  ss <<"\n<<NDTCell: type= "<<cl_<<"ParametersSet_="<<parametersSet_<<"\nHasGaussian_="<<hasGaussian_<< "\nCost="<<cost<<"\nIsEmpty="<<(bool)isEmpty<<"\nConsistency_score="<<consistency_score;
   ss<<"\nCenter_.x="<<center_.x<<", center_.y="<<center_.y<<", center_.z="<<center_.z<<"\nXsize_="<<xsize_<<", ysize_="<<ysize_<<", zsize_="<<zsize_<<std::endl;
   ss<<"mean_=\n"<<mean_<<"\ncov_="<<cov_<<">>"<<std::endl;
   return ss.str();

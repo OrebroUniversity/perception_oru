@@ -44,7 +44,9 @@
 #include "boost/serialization/list.hpp"
 #include <boost/serialization/vector.hpp>
 #include "stdio.h"
-#include "boost/serialization/split_member.hpp"
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
 namespace lslgeneric
 {
 class CellVector3d {
@@ -216,21 +218,59 @@ protected:
     virtual bool checkCellforNDT(int indX, int indY, int indZ, bool checkForGaussian=true);
 private:
     LazyGrid(){InitializeDefaultValues();}
+
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)//In order to clal this you need to register it to boost using "ar.template register_type<LazyGrid>();"
-    {
+    void save(Archive& ar,  const unsigned int version) const {
       ar & boost::serialization::base_object<SpatialIndex>(*this);
       ar & protoType;
       ar & sizeX & sizeY & sizeZ;
-
+      for(int i=0; i<sizeX; i++){
+        for(int j=0; j<sizeY; j++){
+          for(int k=0; k<sizeZ; k++){
+               ar & dataArray[i][j][k];
+          }
+        }
+      }
       ar & activeCells;
       ar & centerIsSet & sizeIsSet   & initialized; //Serialize all primitive types
       ar & sizeXmeters & sizeYmeters & sizeZmeters;
       ar & cellSizeX   & cellSizeY   & cellSizeZ;
       ar & centerX     & centerY     & centerZ;
-
     }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version) {
+      ar & boost::serialization::base_object<SpatialIndex>(*this);
+      ar & protoType;
+      ar & sizeX & sizeY & sizeZ;
+
+     dataArray = new NDTCell***[sizeX];
+      for(int i=0; i<sizeX; i++)
+      {
+          dataArray[i] = new NDTCell**[sizeY];
+          for(int j=0; j<sizeY; j++)
+          {
+              dataArray[i][j] = new NDTCell*[sizeZ];
+              //set all cells to NULL
+              memset(dataArray[i][j],0,sizeZ*sizeof(NDTCell*));
+          }
+      }
+      for(int i=0; i<sizeX; i++){
+        for(int j=0; j<sizeY; j++){
+          for(int k=0; k<sizeZ; k++){
+             ar & dataArray[i][j][k];
+          }
+        }
+      }
+      ar & activeCells;
+      ar & centerIsSet & sizeIsSet   & initialized; //Serialize all primitive types
+      ar & sizeXmeters & sizeYmeters & sizeZmeters;
+      ar & cellSizeX   & cellSizeY   & cellSizeZ;
+      ar & centerX     & centerY     & centerZ;
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

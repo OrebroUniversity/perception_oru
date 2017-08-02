@@ -490,6 +490,10 @@ private:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version)//In order to clal this you need to register it to boost using "ar.template register_type<LazyGrid>();"
   {
+    ar & hasGaussian_;
+    ar & cost; 	/// ndt_wavefront planner
+    ar & isEmpty;	///<based on the most recent observation, is the cell seen empty (1), occupied (-1) or not at all (0)
+    ar & consistency_score;
     ar & center_;
     ar & xsize_ & ysize_ & zsize_;
     ar & cov_;
@@ -509,7 +513,7 @@ private:
     ar & R & G & B;
     ar & occ & max_occu_;
     ar & edata;
-    //ar & cl_;
+    ar & cl_;
   }
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

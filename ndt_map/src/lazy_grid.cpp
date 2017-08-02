@@ -877,6 +877,7 @@ std::string LazyGrid::ToString(){
   ss <<"<<LazyGrid:initialized="<<initialized<<", active cells="<<activeCells.size()<<"\nCenterIsSet="<<centerIsSet<< "\nSizeIsSet="<<sizeIsSet<<"\nsizeXmeters="<<sizeXmeters<<", sizeYmeters="<<sizeYmeters<<", sizeZmeters="<<sizeZmeters<<"\ncellSizeX="<<cellSizeX<<", cellSizeY="<<cellSizeY<<", cellSizeZ="<<cellSizeZ<<std::endl;
   ss<<"centerX="<<centerX<<", centerY="<<centerY<<", centerZ="<<centerZ<<"\nsizeX="<<sizeX<<", sizeY="<<sizeY<<", sizeZ="<<sizeZ<<std::endl;
   ss<<"prototype="<<protoType->ToString()<<"lazygrid>>"<<std::endl;
+  ss<<"datastring=\n"<<GetDataString()<<std::endl;
   return ss.str();
 }
 } //end namespace

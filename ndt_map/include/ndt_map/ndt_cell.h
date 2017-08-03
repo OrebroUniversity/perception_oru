@@ -81,31 +81,37 @@ public:
   double consistency_score;
   enum CellClass {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
   std::vector<pcl::PointXYZ,Eigen::aligned_allocator<pcl::PointXYZ> > points_; ///The points falling into the cell - cleared after update
-
-  NDTCell()
-  {
-    hasGaussian_ = false;
-    if(!parametersSet_)
-    {
-      setParameters();
-    }
-    N = 0;
-    R = 0;
-    G = 0;
-    B = 0;
-    occ = 0;
-    emptyval = 0;
+  void InitializeVariables(){
+    cl_=UNKNOWN;
+    hasGaussian_=false;
+    R=G=B     =0;
+    N         =0;
+    occ       =0;   			///Occupancy value stored as "Log odds" (if you wish)
+    emptyval  =0;			///The number of times a cell was observed empty (using ray casting)
+    cost=INT_MAX;
     isEmpty=0;
-    emptylik = 0;
-    emptydist = 0;
-    max_occu_ = 1;
+    emptylik  =0;
+    emptydist =0;
+    max_occu_ =1;
     consistency_score=0;
-    cov_=Eigen::MatrixXd::Identity(3, 3);
+    center_.x = center_.y = center_.z =0;
+    xsize_    = ysize_    = zsize_    =0;
+    cov_   =  Eigen::MatrixXd::Identity(3, 3);
     icov_  =  Eigen::MatrixXd::Identity(3, 3);
     evecs_ =  Eigen::MatrixXd::Identity(3, 3);
     mean_  =  Eigen::Vector3d(0,0,0);
     evals_ =  Eigen::Vector3d(0,0,0);
-    cost=INT_MAX;
+    d1_= d2_  =0;
+    if(!parametersSet_)
+      setParameters();
+
+    ///Number of points used for Normal distribution estimation so far
+    ///RGB values [0..1] - Special implementations for PointXYZRGB & PointXYZ
+
+  }
+  NDTCell()
+  {
+   InitializeVariables();
   }
 
   virtual ~NDTCell()
@@ -115,37 +121,17 @@ public:
 
   NDTCell(pcl::PointXYZ &center, double &xsize, double &ysize, double &zsize)
   {
+    InitializeVariables();
     center_ = center;
     xsize_ = xsize;
     ysize_ = ysize;
     zsize_ = zsize;
-    hasGaussian_ = false;
-    N = 0;
-    R = 0;
-    G = 0;
-    B = 0;
-    occ = 0;
-    emptyval = 0;
-    isEmpty = 0;
-    emptylik = 0;
-    emptydist = 0;
-    max_occu_=1;
-    cov_=Eigen::MatrixXd::Identity(3, 3);
-    icov_  =  Eigen::MatrixXd::Identity(3, 3);
-    evecs_ =  Eigen::MatrixXd::Identity(3, 3);
-    mean_  =  Eigen::Vector3d(0,0,0);
-    evals_ =  Eigen::Vector3d(0,0,0);
-    if(!parametersSet_)
-    {
-      setParameters();
-    }
-    consistency_score=0;
-    cost=INT_MAX;
+
   }
 
   NDTCell(const NDTCell& other)
   {
-
+    InitializeVariables();
     this->center_ = other.center_;
     this->xsize_ = other.xsize_;
     this->ysize_ = other.ysize_;
@@ -168,7 +154,6 @@ public:
     this->icov_=other.getInverseCov();
     this->evals_=other.getEvals();
     this->evecs_=other.getEvecs();
-
     this->cost=other.cost;
   }
 
@@ -442,7 +427,7 @@ public:
     return computeMaximumLikelihoodAlongLine(p1, p2, out);
   }
 
-  void InitializeVariables();
+
   std::string ToString();
 private:
   pcl::PointXYZ center_;
@@ -522,6 +507,5 @@ public:
 };
 };
 
-//#include<ndt_map/impl/ndt_cell.hpp>
 
 #endif

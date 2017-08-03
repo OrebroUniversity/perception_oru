@@ -23,7 +23,7 @@
 #include <boost/circular_buffer.hpp>
 #include <laser_geometry/laser_geometry.h>
 #include <nav_msgs/Odometry.h>
-#include <geometry_msgs/PoseStamped.h>
+
 
 #include <visualization_msgs/MarkerArray.h>
 #include <message_filters/subscriber.h>
@@ -41,6 +41,9 @@
 #include "boost/serialization/serialization.hpp"
 #include <boost/program_options.hpp>
 #include "visualization/graph_plot.h"
+#include "ros/publisher.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "geometry_msgs/PoseStamped.h"
 namespace po = boost::program_options;
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
  * \author Daniel adolfsson based on code from Todor Stoyanov
@@ -55,21 +58,17 @@ protected:
 
 public:
   // Constructor
-  OpenGraphMap(ros::NodeHandle param_nh,const string &file_name)
+  OpenGraphMap(ros::NodeHandle *param_nh,const string &file_name)
   {
+    param_nh_=param_nh;
     LoadGraphMap(file_name);
     NDTMapPtr ptr=boost::dynamic_pointer_cast<NDTMapType>( graph_map_->GetCurrentNode()->GetMap());
     NDTMap * map=ptr->GetMap();
     cout<<"ndt map size="<<map->getAllCells().size()<<endl;
-    for(int i=0;i<20;i++){
-      if(!param_nh.ok())
-        exit(0);
-    cout<<"plot"<<endl;
-    GraphPlot::PlotPoseGraph(graph_map_);
-    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
-    GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
-    sleep(1);
-    }
+    robot_pose_pub_= param_nh_->advertise<geometry_msgs::PoseStamped>("/robot_pose",1);
+    sub=param_nh_->subscribe("/initialpose",1,&OpenGraphMap::pose_callback,this);
+    cout<<"advertised poses"<<endl;
+    processFrame();
   }
   void LoadGraphMap(string file_name){
     std::ifstream ifs(file_name);
@@ -77,17 +76,51 @@ public:
     ia & graph_map_;
     cout<<graph_map_->ToString();
   }
+  void processFrame(){
+    static Eigen::Affine3d WorldToCurrentMap=Eigen::Affine3d::Identity();
+    m.lock();
+    if(got_pose_target){
+      cout<<"Time to se if we have a new closest node"<<endl;
+      graph_map_->SwitchToClosestMapNode(pose_target,unit_covar,WorldToCurrentMap,10000);
+      got_pose_target=false;
+    }
+    m.unlock();
+    visualize();
+  }
+  void visualize(){
+    cout<<"plot"<<endl;
+    GraphPlot::PlotPoseGraph(graph_map_);
+    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+    GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
+  }
+  void pose_callback (const geometry_msgs::PoseWithCovarianceStamped& target_pose){
+    ROS_INFO("inside callback");
+    geometry_msgs::PoseStamped msg_pose;
+    msg_pose.pose.orientation=target_pose.pose.pose.orientation;
+    msg_pose.pose.position=target_pose.pose.pose.position;
+    msg_pose.header.stamp=ros::Time::now();
+    msg_pose.header.frame_id="/world";
+    robot_pose_pub_.publish(msg_pose);
+    cout<<"published pose"<<endl;
+    m.lock();
+    tf::poseMsgToEigen(target_pose.pose.pose,pose_target);
+    got_pose_target=true;
+    m.unlock();
+  }
 
 private:
   GraphMapNavigatorPtr graph_map_;
-
+  ros::NodeHandle *param_nh_;
   ros::Subscriber gt_sub;
+  ros::Subscriber sub;
   // Components for publishing
-  ros::Publisher output_pub_;
+  ros::Publisher  robot_pose_pub_;
   Eigen::Affine3d pose_;
   boost::mutex m, message_m;
   std::string gt_topic, bag_name;
   ros::Publisher map_publisher_;
+  bool got_pose_target=false;
+  Eigen::Affine3d pose_target;
 
 
 };
@@ -111,13 +144,16 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "show_map");
   ros::NodeHandle param("~");
   cout<<"Attempt to open map: "<<file_name<<endl<<"Continue? y/n"<<endl;
-  char c=getchar();
+  /*char c=getchar();
   if(c!='y'&&c!='Y')
     exit(0);
-
-  OpenGraphMap t(param, file_name);
-  while(param.ok()){
-    ros::spinOnce();
+*/
+  ros::Rate loop_rate(1);
+  OpenGraphMap t(&param, file_name);
+  while (param.ok()) {
+    t.processFrame();
+    ros::spinOnce ();
+    loop_rate.sleep ();
   }
 
   return 0;

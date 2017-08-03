@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(graph_map)
 set (CMAKE_CXX_STANDARD 11)
-set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_BUILD_TYPE release)
 
 if("$ENV{ROS_DISTRO}" STREQUAL "indigo")
 add_definitions(-std=c++11)

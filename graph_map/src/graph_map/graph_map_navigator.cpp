@@ -25,10 +25,11 @@ bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow, const Matrix6d &c
         cout<<"wrong type of previously created node"<<endl;
     }
   }
-  if(node_found){//if any node at all was found, switch to the closest and update Tnow & T_world_to_local_map (transformation to current node)
+  if(node_found ){//if any node at all was found, switch to the closest and update Tnow & T_world_to_local_map (transformation to current node)
     prevNode_=currentNode_;
     currentNode_=closest_map_node; //switch to that node
-    AddFactor(prevNode_,currentNode_,prevNode_->GetPose().inverse()*currentNode_->GetPose(),cov);
+    //cout<<"multiple factor disabled"<<endl;
+    //AddFactor(prevNode_,currentNode_,prevNode_->GetPose().inverse()*currentNode_->GetPose(),cov);
   }
   return node_found;
 }

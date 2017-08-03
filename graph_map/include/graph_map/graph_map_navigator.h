@@ -21,6 +21,14 @@ class GraphMapNavigator:public GraphMap{
 public:
   GraphMapNavigator(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam);
   GraphMapNavigator(){}
+  //!
+  //! \brief SwitchToClosestMapNode Attempts to find the closest Mapnode within desired radius
+  //! \param Tnow is the position which to which the closest node will be found
+  //! \param cov not used
+  //! \param T_world_to_local_map not used
+  //! \param radius the maximum distance to search within, -1.0 allows nodes at any distance
+  //! \return
+  //!
   bool SwitchToClosestMapNode(Affine3d &Tnow, const Matrix6d &cov, Affine3d & T_world_to_local_map,const double radius);
   bool AutomaticMapInterchange(Affine3d &Tnow, const Matrix6d &cov, Affine3d & T_world_to_local_map,bool &changed_map_node,bool &created_map_node);
   string ToString();

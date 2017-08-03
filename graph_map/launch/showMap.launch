@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+ <!-- ros_args.launch -->
+<arg name="filename" default=""/>
+<node pkg="graph_map" type="show_map" name="show_map" args="--file-name $(find graph_map)/maps/$(arg filename)" output="screen">
+</node>
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find graph_map)/launch/showMap.rviz" />
+</launch>
+
+

@@ -38,6 +38,9 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <time.h>
+#include <fstream>
+#include <cstdio>
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
 #define MAX_TRANSLATION_DELTA 2.0
@@ -70,12 +73,12 @@ protected:
   tf::TransformListener tf_listener_;
   ros::Publisher output_pub_;
   Eigen::Affine3d pose_, T, sensorPose_;
-  const std::string filename="MAP.map";
+  std::string map_name="graph_map";
 
   unsigned int frame_nr_;
   double varz;
 
-  boost::mutex m, message_m;
+
   std::string points_topic, laser_topic, map_dir, map_type_name,reg_type_name, odometry_topic,
   world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
@@ -106,6 +109,7 @@ protected:
   bool use_tf_listener_;
   Eigen::Affine3d last_tf_frame_;
   lslgeneric::MotionModel2d::Params motion_params;
+  boost::mutex m;
 public:
   // Constructor
   GraphMapFuserNode(ros::NodeHandle param_nh) : frame_nr_(0)
@@ -139,7 +143,7 @@ public:
     ///if using the HMT fuser, NDT maps are saved in this directory.
     ///a word of warning: if you run multiple times with the same directory,
     ///the old maps are loaded automatically
-    param_nh.param<std::string>("map_directory",map_dir,"map");
+    param_nh.param<std::string>("map_directory",map_dir,"/map/");
     param_nh.param<std::string>("map_type",map_type_name,"default_map");
 
 
@@ -265,6 +269,7 @@ public:
     if(initPoseFromGT) {
       gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&GraphMapFuserNode::gt_callback, this);
     }
+    save_map_ = param_nh.advertiseService("save_map", &GraphMapFuserNode::save_map_callback, this);
     cout<<"init done"<<endl;
   }
 
@@ -291,15 +296,12 @@ public:
       (void)ResetInvalidMotion(Tmotion);
       pose_=pose_*Tmotion; //currently being changed to increment pose inside fuser
       cout<<"frame="<<frame_nr_<<"movement="<<(fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()<<endl;
-    //  if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
+      //  if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
 
-        cout<<"perform update"<<endl;
-        fuser_->ProcessFrame(cloud,pose_,Tmotion);
-
-       if(frame_nr_==130)
-         fuser_->SaveGraphMap(filename);
-
-
+      cout<<"perform update"<<endl;
+      m.lock();
+      fuser_->ProcessFrame(cloud,pose_,Tmotion);
+      m.unlock();
       tf::Transform Transform;
       tf::transformEigenToTF(pose_,Transform);
       tf_.sendTransform(tf::StampedTransform(Transform, ros::Time::now(), world_frame, fuser_frame));
@@ -325,6 +327,34 @@ public:
       return true;
     }
     else return false;
+  }
+  bool save_map_callback(std_srvs::Empty::Request  &req,
+                         std_srvs::Empty::Response &res ) {
+    char path[1000];
+    string time=currentDateTime();
+
+    if(fuser_!=NULL){
+      snprintf(path,999,"%s/%s_.MAP",map_dir.c_str(),time.c_str());
+      m.lock();
+      fuser_->SaveGraphMap(path);
+      m.unlock();
+      ROS_INFO("Current map was saved to path= %s", path);
+      return true;
+    }
+    else
+      ROS_INFO("No data to save");
+    return false;
+  }
+  const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "d%Y_%m_%d_time%H_%M_%S", &tstruct);
+
+    return buf;
   }
   inline bool getAffine3dTransformFromTF(const ros::Time &time, Eigen::Affine3d& ret) {
     tf::StampedTransform transform;

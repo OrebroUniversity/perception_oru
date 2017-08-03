@@ -145,6 +145,7 @@ public:
 
   NDTCell(const NDTCell& other)
   {
+
     this->center_ = other.center_;
     this->xsize_ = other.xsize_;
     this->ysize_ = other.ysize_;

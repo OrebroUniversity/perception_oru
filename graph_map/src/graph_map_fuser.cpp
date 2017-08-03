@@ -37,13 +37,11 @@ GraphMapFuser::GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, Grap
 }
 void GraphMapFuser::SaveGraphMap(const std::string &filename){
   cout<<"saving:\n"<<graph_map_->ToString()<<endl;
-  std::ofstream ofs( "test_file.dat" );
-   boost::archive::text_oarchive ar(ofs);
-   int s=5;
-   ar <<graph_map_;
-
-
-   ofs.close();
+  cout<<"to file:"<<filename<<endl;
+  std::ofstream ofs(filename);
+  boost::archive::text_oarchive ar(ofs);
+  ar << graph_map_;
+  ofs.close();
 }
 
 //!

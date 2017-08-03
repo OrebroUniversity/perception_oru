@@ -110,6 +110,11 @@ int main(int argc, char **argv)
   }
   ros::init(argc, argv, "show_map");
   ros::NodeHandle param("~");
+  cout<<"Attempt to open map: "<<file_name<<endl<<"Continue? y/n"<<endl;
+  char c=getchar();
+  if(c!='y'&&c!='Y')
+    exit(0);
+
   OpenGraphMap t(param, file_name);
   while(param.ok()){
     ros::spinOnce();

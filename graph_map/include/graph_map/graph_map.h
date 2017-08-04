@@ -47,13 +47,13 @@ public:
   GraphMap();
 protected:
   GraphMap(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam);
-  MapNodePtr currentNode_,prevNode_;//The current node
+  MapNodePtr currentNode_=NULL,prevNode_=NULL;//The current node
   std::vector<NodePtr> nodes_;//Vector of all nodes in graph
   std::vector<FactorPtr> factors_;
-  MapParamPtr mapparam_;//
-  bool use_submap_;
-  double interchange_radius_;
-  double compound_radius_;
+  MapParamPtr mapparam_=NULL;//
+  bool use_submap_=false;
+  double interchange_radius_=0;
+  double compound_radius_=0;
 private:
   friend class GraphFactory;
   friend class boost::serialization::access;
@@ -76,9 +76,9 @@ private:
 class GraphParam{
 public:
   void GetParametersFromRos();
-  bool use_submap_;
-  double interchange_radius_;
-  double compound_radius_;
+  bool use_submap_=false;
+  double interchange_radius_=0;
+  double compound_radius_=0;
   bool use_keyframe_=true;
   double min_keyframe_dist_=0.5;
   double min_keyframe_rot_deg_=15;

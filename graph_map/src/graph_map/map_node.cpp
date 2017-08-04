@@ -6,6 +6,7 @@ Node::Node(){
   static unsigned int num_nodes=0;
   id_=num_nodes;
   num_nodes++;
+  pose_=Eigen::Affine3d::Identity();
 }
 
 Affine3d Node::GetPose() const{

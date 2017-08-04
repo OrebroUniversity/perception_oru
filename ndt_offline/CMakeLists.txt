@@ -4,6 +4,7 @@ project(ndt_offline)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+set(CMAKE_BUILD_TYPE debug)
 add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   ndt_fuser

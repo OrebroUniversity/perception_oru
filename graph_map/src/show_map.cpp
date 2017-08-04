@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   if(c!='y'&&c!='Y')
     exit(0);
 */
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(10);
   OpenGraphMap t(&param, file_name);
   while (param.ok()) {
     t.processFrame();

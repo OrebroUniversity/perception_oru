@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <sstream>	
 #include <sys/time.h>
-
+#include <time.h>
 namespace ndt_generic
 {
 
@@ -87,6 +87,21 @@ double getDoubleTime()
     struct timeval time;
     gettimeofday(&time,NULL);
     return time.tv_sec + time.tv_usec * 1e-6;
+}
+//!
+//! \brief currentDateTimeString return the current time formated as a file-name compatible string
+//! \return not used
+//!
+const std::string currentDateTimeString() {
+  time_t     now = time(0);
+  struct tm  tstruct;
+  char       buf[80];
+  tstruct = *localtime(&now);
+  // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+  // for more information about date/time format
+  strftime(buf, sizeof(buf), "d%Y_%m_%d_time%H_%M_%S", &tstruct);
+
+  return buf;
 }
 
 

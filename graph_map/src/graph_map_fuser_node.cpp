@@ -5,6 +5,7 @@
 #include <rosbag/view.h>
 
 #include <ndt_map/ndt_conversions.h>
+#include "ndt_generic/utils.h"
 #include <pcl_conversions/pcl_conversions.h>
 #include "pcl/point_cloud.h"
 #include <Eigen/Eigen>
@@ -331,7 +332,7 @@ public:
   bool save_map_callback(std_srvs::Empty::Request  &req,
                          std_srvs::Empty::Response &res ) {
     char path[1000];
-    string time=currentDateTime();
+    string time=ndt_generic::currentDateTimeString();
 
     if(fuser_!=NULL){
       snprintf(path,999,"%s/%s_.MAP",map_dir.c_str(),time.c_str());
@@ -345,17 +346,7 @@ public:
       ROS_INFO("No data to save");
     return false;
   }
-  const std::string currentDateTime() {
-    time_t     now = time(0);
-    struct tm  tstruct;
-    char       buf[80];
-    tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
-    strftime(buf, sizeof(buf), "d%Y_%m_%d_time%H_%M_%S", &tstruct);
 
-    return buf;
-  }
   inline bool getAffine3dTransformFromTF(const ros::Time &time, Eigen::Affine3d& ret) {
     tf::StampedTransform transform;
     tf_listener_.waitForTransform("/world", tf_pose_frame_, time,ros::Duration(1.0));

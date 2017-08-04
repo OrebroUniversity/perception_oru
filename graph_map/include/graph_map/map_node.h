@@ -50,7 +50,7 @@ public:
   MapNode();
 protected:
   MapNode(const Eigen::Affine3d &pose,const MapParamPtr &mapparam);
-  MapTypePtr map_;
+  MapTypePtr map_=NULL;
   bool initialized_=false;
 private:
   friend class GraphFactory;

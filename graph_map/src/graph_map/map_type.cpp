@@ -2,27 +2,6 @@
 namespace libgraphMap{
 
 
-MapParam::~MapParam(){}
-
-MapParam::MapParam(){}
-void MapParam::GetParametersFromRos(){
-  ros::NodeHandle nh("~");//base class parameters
-  nh.param("sensor_range",max_range_,30.);
-  nh.param("min_laser_range",min_range_,0.5);
-  nh.param("size_x_meters",sizex_,20.);
-  nh.param("size_y_meters",sizey_,20.);
-  nh.param("size_z_meters",sizez_,20.);
-  nh.param("enable_mapping",enable_mapping_,true);
-  cout<<"read mapType parameters from ros"<<endl;
-  cout<<ToString()<<endl;
-}
-string MapParam::ToString(){
-  stringstream ss;
-  ss<<"Base map parameters:"<<endl;
-  ss<<"Range(max/min)=("<<max_range_<<"/"<<min_range_<<endl;
-  ss<<"size(x,y,z)=("<<sizex_<<","<<sizey_<<","<<sizez_<<")";
-  return ss.str();
-}
 
 MapType::MapType(){
   sizex_= 0;
@@ -51,4 +30,27 @@ bool MapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,co
   return false;
 }
 
+MapParam::~MapParam(){
+
+}
+
+
+void MapParam::GetParametersFromRos(){
+  ros::NodeHandle nh("~");//base class parameters
+  nh.param("sensor_range",max_range_,30.);
+  nh.param("min_laser_range",min_range_,0.5);
+  nh.param("size_x_meters",sizex_,20.);
+  nh.param("size_y_meters",sizey_,20.);
+  nh.param("size_z_meters",sizez_,20.);
+  nh.param("enable_mapping",enable_mapping_,true);
+  cout<<"read mapType parameters from ros"<<endl;
+  cout<<ToString()<<endl;
+}
+string MapParam::ToString(){
+  stringstream ss;
+  ss<<"Base map parameters:"<<endl;
+  ss<<"Range(max/min)=("<<max_range_<<"/"<<min_range_<<endl;
+  ss<<"size(x,y,z)=("<<sizex_<<","<<sizey_<<","<<sizez_<<")";
+  return ss.str();
+}
 }

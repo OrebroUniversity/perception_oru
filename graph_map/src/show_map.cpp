@@ -67,8 +67,6 @@ public:
     cout<<"ndt map size="<<map->getAllCells().size()<<endl;
     robot_pose_pub_= param_nh_->advertise<geometry_msgs::PoseStamped>("/robot_pose",1);
     sub=param_nh_->subscribe("/initialpose",1,&OpenGraphMap::pose_callback,this);
-    cout<<"advertised poses"<<endl;
-    processFrame();
   }
   void LoadGraphMap(string file_name){
     std::ifstream ifs(file_name);
@@ -80,12 +78,12 @@ public:
     static Eigen::Affine3d WorldToCurrentMap=Eigen::Affine3d::Identity();
     m.lock();
     if(got_pose_target){
-      cout<<"Time to se if we have a new closest node"<<endl;
       graph_map_->SwitchToClosestMapNode(pose_target,unit_covar,WorldToCurrentMap,10000);
       got_pose_target=false;
+      visualize();
     }
     m.unlock();
-    visualize();
+
   }
   void visualize(){
     cout<<"plot"<<endl;
@@ -94,14 +92,12 @@ public:
     GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
   }
   void pose_callback (const geometry_msgs::PoseWithCovarianceStamped& target_pose){
-    ROS_INFO("inside callback");
     geometry_msgs::PoseStamped msg_pose;
     msg_pose.pose.orientation=target_pose.pose.pose.orientation;
     msg_pose.pose.position=target_pose.pose.pose.position;
     msg_pose.header.stamp=ros::Time::now();
     msg_pose.header.frame_id="/world";
     robot_pose_pub_.publish(msg_pose);
-    cout<<"published pose"<<endl;
     m.lock();
     tf::poseMsgToEigen(target_pose.pose.pose,pose_target);
     got_pose_target=true;
@@ -143,13 +139,16 @@ int main(int argc, char **argv)
   }
   ros::init(argc, argv, "show_map");
   ros::NodeHandle param("~");
-  cout<<"Attempt to open map: "<<file_name<<endl<<"Continue? y/n"<<endl;
+  cout<<"Attempt to open map: "<<file_name<<endl;
   /*char c=getchar();
   if(c!='y'&&c!='Y')
     exit(0);
 */
   ros::Rate loop_rate(10);
   OpenGraphMap t(&param, file_name);
+  t.visualize();
+  sleep(1.0);
+  t.visualize();
   while (param.ok()) {
     t.processFrame();
     ros::spinOnce ();

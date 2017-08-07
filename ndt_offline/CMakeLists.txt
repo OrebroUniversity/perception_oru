@@ -12,19 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   velodyne_msgs
   velodyne_pointcloud
-  ndt_feature
-  flirtlib_ros
 )
-
-## TODO : find a way to remove this by linking it where it should be in ndt_feature
-include_directories(/usr/local/include/flirtlib)
-set(NDT_FEATURE_LIBS -L/usr/local/lib/flirtlib -lfeature -lgeometry 
-#-lgui 
--lsensors -lsensorstream -lutils_flirt -lutils)
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS ndt_fuser ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud ndt_feature 
+  CATKIN_DEPENDS ndt_fuser ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud
   DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
 )
 
@@ -63,10 +55,5 @@ add_executable(fuser3d_offline src/fuser3d_offline.cpp)
 target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})
 
 add_executable(ndt_offline_laser src/ndt_offline_laser.cpp)
-target_link_libraries(ndt_offline_laser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})
+target_link_libraries(ndt_offline_laser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
 
-add_executable(ndt_graph_offline src/ndt_graph_offline.cpp)
-target_link_libraries(ndt_graph_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})
-
-add_executable(ndt_graph_logger_offline src/ndt_graph_logger_offline.cpp)
-target_link_libraries(ndt_graph_logger_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${NDT_FEATURE_LIBS})

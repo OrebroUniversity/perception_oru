@@ -66,6 +66,10 @@ set (${PROJECT_NAME}_LIB_SRCS
 #	    src/ndt_fuser.cpp
 	    src/ndt_fuser_hmt.cpp
 	)
+	
+set (${PROJECT_NAME}_LIB_ROS_SRCS
+	    src/ndt_fuser_ros_wrappers_src/ndt_fuser_init.cpp
+	)
 
 #add_executable(test_ndt_fuser src/ndt_fuser_from_depth.cpp)
 #target_link_libraries(test_ndt_fuser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${MRPT_LIBS})
@@ -78,13 +82,25 @@ set (${PROJECT_NAME}_LIB_SRCS
 #    DEPENDENCIES 
 #    std_msgs
 #)
-add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS} ${${PROJECT_NAME}_LIB_ROS_SRCS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(ndt_fuser_node src/ndt_fuser_node.cpp)
 add_dependencies(ndt_fuser_node ndt_fuser__generate_messages_cpp)
 
 target_link_libraries(ndt_fuser_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
+
+
+add_executable(ndt_fuser_logger_node src/ndt_fuser_logger_node.cpp)
+add_dependencies(ndt_fuser_logger_node ndt_fuser__generate_messages_cpp)
+
+target_link_libraries(ndt_fuser_logger_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
+
+
+add_executable(init_test src/init_test.cpp)
+add_dependencies(init_test ndt_fuser__generate_messages_cpp)
+
+target_link_libraries(init_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} )
 
 # catkin_package parameters: http://ros.org/doc/groovy/api/catkin/html/dev_guide/generated_cmake_api.html#catkin-package
 # TODO: fill in what other packages will need to use this package

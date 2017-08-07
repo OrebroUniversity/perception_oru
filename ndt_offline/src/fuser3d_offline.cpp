@@ -209,7 +209,13 @@ int main(int argc, char **argv){
 	cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
     }
 
-    base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
+
+//    base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(sensor_cutoff) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
+	
+//	std::cout << resolution << " " << size_xy << " " << size_xy << " " << size_z << " " << 
+//                                       sensor_cutoff << " " << visualize << " " << match2d << " " << use_multires << " " << 
+//                                       fuse_incomplete << " " << itrs << " " << base_name  << " " <<  beHMT  << " " <<  map_dirname << " " << step_control << " " << do_soft_constraints << " " << nb_neighbours << " " << resolution_local_factor << std::endl;
+
 
     lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
                                        max_range, visualize, match2d, use_multires, 
@@ -342,7 +348,6 @@ int main(int argc, char **argv){
 
         while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,sensor_pose,basepose,/*tf_base_link*//*tf_gt_link*/tf_interp_link/*std::string("/state_base_link")*/)){
 	    //if(cloud.size()==0) continue;
-
 
 	    if(cloud_nofilter.size()==0) continue;
 	    tf::Transform baseodo;

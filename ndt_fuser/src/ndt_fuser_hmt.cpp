@@ -52,6 +52,9 @@ namespace lslgeneric {
 #endif
         }
     }
+    
+    
+
 
     /**
      *
@@ -59,6 +62,7 @@ namespace lslgeneric {
      */
     Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud)
     {
+		std::cout << "UPDATE" << std::endl;
 	if(!isInit){
 	    fprintf(stderr,"NDT-FuserHMT: Call Initialize first!!\n");
 	    return Tnow;
@@ -94,6 +98,7 @@ namespace lslgeneric {
 	t1 = getDoubleTime();
 	Eigen::Affine3d Tinit = Tnow * Tmotion;
 	if(disableRegistration) {
+		std::cout << "DISREG" << std::endl;
 	    Tnow = Tinit;
 	    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
 	    Eigen::Affine3d spose = Tnow*sensor_pose;
@@ -118,6 +123,7 @@ namespace lslgeneric {
 	}
 
 	if(doMultires) {
+		std::cout << "MULTI" << std::endl;
 	    //create two ndt maps with resolution = 3*resolution (or 5?)
 	    lslgeneric::NDTMap ndlocalLow(new lslgeneric::LazyGrid(3*resolution));
 	    ndlocalLow.guessSize(0,0,0,sensor_range,sensor_range,map_size_z);
@@ -161,8 +167,10 @@ namespace lslgeneric {
 	}
 
 	if(be2D) {
+		std::cout << "BE 2d" << std::endl;
 	    t2 = getDoubleTime();
 	    if(matcher2D.match( *map, ndlocal,Tinit,true) || fuseIncomplete){
+			std::cout << "Match" << std::endl;
 		t3 = getDoubleTime();
 		Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 		if((diff.translation().norm() > max_translation_norm || 
@@ -170,6 +178,7 @@ namespace lslgeneric {
 		    fprintf(stderr,"****  NDTFuserHMT -- ALMOST DEFINATELY A REGISTRATION FAILURE *****\n");
 		    Tnow = Tnow * Tmotion;
 		}else{
+			std::cout << "Good" << std::endl;
 		    Tnow = Tinit;
 		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
@@ -215,7 +224,7 @@ namespace lslgeneric {
 	}
 	else
 	{
-
+		std::cout << "MATCHING" << std::endl;
 	    t2 = getDoubleTime();
             bool match_ret = false;
             if (doSoftConstraints) {
@@ -254,6 +263,7 @@ namespace lslgeneric {
               match_ret = matcher.match( *map, ndlocal,Tinit,true);
             }
 	    if(match_ret || fuseIncomplete){
+			std::cout << "RET OU INCOMPLETE " << match_ret << " " << fuseIncomplete << std::endl;
 		t3 = getDoubleTime();
 		Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 

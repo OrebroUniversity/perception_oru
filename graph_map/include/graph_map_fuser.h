@@ -37,6 +37,7 @@ public:
   virtual Affine3d GetPoseLastFuse() const{return pose_last_fuse_;}
   unsigned int FramesProcessed() const{return nr_frames_;}
   virtual void Visualize(bool enableVisualOutput){visualize_=enableVisualOutput;}
+  void plotMap();
 protected:
   //virtual void GetParameters();//Get fuser specific parameters, map specific parameters are preferably read inside a class derived from map_paramers
   bool KeyFrameBasedFuse(const Affine3d &Tnow );

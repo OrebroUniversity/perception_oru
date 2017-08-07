@@ -124,15 +124,14 @@ if(fuse_this_frame)
      pose_last_fuse_=Tnow;
 
   nr_frames_++;
-  if(visualize_){
-    cout<<"visualize"<<endl;
-    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
-    GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,T_world_to_local_map.inverse());
-    GraphPlot::PlotPoseGraph(graph_map_);
-  }
-  else
-    cout<<"no visualization"<<endl;
+
 }
+void GraphMapFuser::plotMap(){
+    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+    GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
+    GraphPlot::PlotPoseGraph(graph_map_);
+}
+
 void GraphMapFuser::plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud){
   lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(0.4));
   // for(int i=0;i<cloud.size();i+=500){

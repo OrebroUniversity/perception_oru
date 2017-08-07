@@ -42,7 +42,7 @@ using namespace lslgeneric;
 
 
 std::string dirname="";
-std::string map_dirname="";
+std::string output_dir_name="";
 std::string base_name="";
 std::string dataset="";
 std::ofstream gt_file, odom_file, est_file, sensorpose_est_file; //output files
@@ -70,7 +70,7 @@ bool registration2d=true;
 
 
 bool alive=false;
-bool save_map=true;;
+bool save_map=true;
 bool use_gt_as_interp_link=false;
 bool save_clouds=false;
 
@@ -196,19 +196,19 @@ bool CreateOutputFiles(){
 
   std::string filename;
   {
-    filename = base_name + std::string("_gt.txt");
+    filename =output_dir_name +"/"+ base_name + std::string("_gt.txt");
     gt_file.open(filename.c_str());
   }
   {
-    filename = base_name + std::string("_est.txt");
+    filename =output_dir_name +"/"+ base_name + std::string("_est.txt");
     est_file.open(filename.c_str());
   }
   {
-    filename = base_name + std::string("_sensorpose_est.txt");
+    filename = output_dir_name +"/"+ base_name + std::string("_sensorpose_est.txt");
     sensorpose_est_file.open(filename.c_str());
   }
   {
-    filename = base_name + std::string("_odom.txt");
+    filename = output_dir_name +"/"+ base_name + std::string("_odom.txt");
     odom_file.open(filename.c_str());
   }
   if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
@@ -265,7 +265,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("base-name", po::value<string>(&base_name), "prefix for all generated files")
       ("data-set", po::value<string>(&dataset)->default_value(std::string("default")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
-      ("map-dir-name", po::value<string>(&map_dirname)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
+      ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("size-xy", po::value<double>(&size_xy)->default_value(150.), "size of the central map xy")
       ("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
       ("use-multires", "run the multi-resolution guess")
@@ -430,7 +430,7 @@ int main(int argc, char **argv){
   cout<<"done reading params"<<endl;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
-  cout<<"Will save map do directory: "<<map_dirname<<endl;
+  cout<<"Will save map do directory: "<<output_dir_name<<endl;
 
 
   std::string tf_interp_link = base_link_id;
@@ -487,7 +487,6 @@ int main(int argc, char **argv){
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
 
-
     //cout<<sensor_pose.getOrigin()<<endl;
     while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,tf_scan_source,tf_gt_base,tf_interp_link)){
       if(!n_->ok())
@@ -506,7 +505,6 @@ int main(int argc, char **argv){
       tf::Transform tf_odom_base;
       vreader.getPoseFor(tf_odom_base, base_link_id);
       vreader.getPoseFor(tf_gt_base, gt_base_link_id);
-
       Eigen::Affine3d Todom_base,Tgt_base;
       tf::transformTFToEigen(tf_gt_base,Tgt_base);
       tf::transformTFToEigen(tf_odom_base,Todom_base);
@@ -539,7 +537,6 @@ int main(int argc, char **argv){
         continue;
       }
 
-
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
       Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
       ndt_generic::normalizeEulerAngles(Tmotion_euler);
@@ -562,9 +559,11 @@ int main(int argc, char **argv){
 
       if(visualize){
         br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
-        cloud.header.frame_id="/velodyne";
-        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-        cloud_pub->publish(cloud);
+        if(counter%5==0){
+          cloud.header.frame_id="/velodyne";
+          pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+          cloud_pub->publish(cloud);
+        }
         gt_pose_msg.header.stamp=ros::Time::now();
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
         gt_pub->publish(gt_pose_msg);
@@ -573,6 +572,9 @@ int main(int argc, char **argv){
         fuser_pub->publish(fuser_pose_msg);
       }
       fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+      if(visualize && counter%5==0){
+        fuser_->plotMap();
+      }
       double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
 
       Tgt_base_prev = Tgt_base;
@@ -586,13 +588,11 @@ int main(int argc, char **argv){
       //ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
       //ROS_INFO_STREAM("diff : " << ndt_generic::affine3dToStringRPY(diff));
 
-
-
       ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
-      //gt_file << frame_time << " " << transformToEvalString(Tgt_base);
-      //odom_file << frame_time << " " << transformToEvalString(Todom_base);
-      //est_file << frame_time << " " << transformToEvalString(fuser_pose);
-      //sensorpose_est_file << frame_time << " " << transformToEvalString(fuser_pose * sensor_offset);
+      gt_file << frame_time << " " << transformToEvalString(Tgt_base);
+      odom_file << frame_time << " " << transformToEvalString(Todom_base);
+      est_file << frame_time << " " << transformToEvalString(fuser_pose);
+      sensorpose_est_file << frame_time << " " << transformToEvalString(fuser_pose * sensor_offset);
     }
   }
 
@@ -604,7 +604,7 @@ int main(int argc, char **argv){
   cout<<"time to save map"<<endl;
   if(save_map && fuser_!=NULL && fuser_->FramesProcessed()>0){
     char path[1000];
-    snprintf(path,999,"%s/%s.map",map_dirname.c_str(),base_name.c_str());
+    snprintf(path,999,"%s/%s.map",output_dir_name.c_str(),base_name.c_str());
     fuser_->SaveGraphMap(path);
     exit(0);
   }

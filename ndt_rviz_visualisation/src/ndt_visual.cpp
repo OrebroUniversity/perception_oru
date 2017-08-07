@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 #include <ros/ros.h>
 #include <rviz/ogre_helpers/shape.h>
-#include "ndt_visual.hpp"
+#include "ndt_rviz_visualisation/ndt_visual.hpp"
 
 namespace lslgeneric{
   NDTVisual::NDTVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ){

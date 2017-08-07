@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/line.h>
-#include "ndt_line_visual.hpp"
+#include "ndt_rviz_visualisation/ndt_line_visual.hpp"
 
 namespace lslgeneric{
   NDTLineVisual::NDTLineVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ){

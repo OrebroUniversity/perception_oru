@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_rviz_visualisation)
 
-# I can't put the dependincy to ndt_feature here. Super weird to be fixed ATTENTION
-find_package(catkin REQUIRED COMPONENTS rviz ndt_map ndt_feature)
+find_package(catkin REQUIRED COMPONENTS rviz ndt_map)
 # find_package(catkin REQUIRED COMPONENTS rviz ndt_map)
 catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
@@ -11,25 +10,26 @@ link_directories(${catkin_LIBRARY_DIRS})
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
 
+include_directories(include)
+
 add_definitions(-DQT_NO_KEYWORDS)
 
 
 qt4_wrap_cpp(MOC_FILES
-  src/ndt_display.hpp
-  src/ndt_line_display.hpp
-  src/ndt_graph_display.hpp
-  src/ndt_vector_display.hpp
+  include/ndt_rviz_visualisation/ndt_display.hpp
+  include/ndt_rviz_visualisation/ndt_line_display.hpp
+#  src/ndt_graph_display.hpp
+#  src/ndt_vector_display.hpp
 )
 
 ## Here we specify the list of source files, including the output of
 ## the previous command which is stored in ``${MOC_FILES}``.
 set(SOURCE_FILES
   src/ndt_display.cpp
-  src/ndt_graph_display.cpp
   src/ndt_visual.cpp
   src/ndt_line_display.cpp
   src/ndt_line_visual.cpp
-  src/ndt_vector_display.cpp
+#  src/ndt_vector_display.cpp
   ${MOC_FILES}
 )
 
@@ -52,6 +52,13 @@ add_library(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${catkin_LIBRARIES})
 ## END_TUTORIAL
 
+
+catkin_package(
+    DEPENDS  
+    CATKIN_DEPENDS rviz ndt_map
+    INCLUDE_DIRS include 
+    LIBRARIES ${PROJECT_NAME}
+)
 
 ## Install rules
 

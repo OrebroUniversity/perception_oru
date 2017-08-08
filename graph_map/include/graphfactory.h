@@ -5,7 +5,6 @@
 #include <boost/algorithm/string.hpp>
 #include "Eigen/Dense"
 #include "boost/shared_ptr.hpp"
-
 using namespace  std;
 namespace libgraphMap{
 

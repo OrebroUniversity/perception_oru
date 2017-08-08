@@ -19,7 +19,7 @@
 class ParticleFilter3D{
     public:
 	std::vector<PoseParticle> pcloud;	      ///< Particle distribution
-	ownRandom myrand;                 			///< The random number class		
+  ownRandom myrand;                 			///< The random number class
 
 	ParticleFilter3D(){}
 

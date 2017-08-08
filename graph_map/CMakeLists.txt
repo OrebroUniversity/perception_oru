@@ -13,6 +13,7 @@ find_package(catkin REQUIRED
     cmake_modules
     ndt_registration
     ndt_map
+    ndt_mcl
     laser_geometry
     eigen_conversions
     pcl_ros

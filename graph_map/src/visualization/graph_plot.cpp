@@ -9,22 +9,30 @@ ros::Publisher* GraphPlot::graphPosePublisher_=NULL;
 ros::Publisher* GraphPlot::graphInfoPublisher_=NULL;
 ros::Publisher* GraphPlot::globalMapPublisher_=NULL;
 ros::Publisher* GraphPlot::global2MapPublisher_=NULL;
+ros::Publisher* GraphPlot::particlaCloudPublisher_=NULL;
+void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset){
+
+
+  //cloud.header.frame_id="/world";
+  //pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+}
 
 void GraphPlot::Initialize(){
   cout<<"graph_plot: initialize"<<endl;
   nh_=new ros::NodeHandle("");
   graphPosePublisher_=    new ros::Publisher();
-  localMapPublisher_= new ros::Publisher();
-  globalMapPublisher_=new ros::Publisher();
-  global2MapPublisher_=new ros::Publisher();
-  graphInfoPublisher_=new  ros::Publisher();
+  localMapPublisher_=     new ros::Publisher();
+  globalMapPublisher_=    new ros::Publisher();
+  global2MapPublisher_=   new ros::Publisher();
+  graphInfoPublisher_=    new  ros::Publisher();
+  particlaCloudPublisher_=new ros::Publisher();
 
   *localMapPublisher_=  nh_->advertise<visualization_msgs::MarkerArray>(NDT_LOCAL_MAP_TOPIC,10);
   *globalMapPublisher_= nh_->advertise<visualization_msgs::MarkerArray>(NDT_GLOBAL_MAP_TOPIC,10);
   *global2MapPublisher_= nh_->advertise<visualization_msgs::MarkerArray>(NDT_GLOBAL2_MAP_TOPIC,10);
   *graphPosePublisher_=nh_->advertise<geometry_msgs::PoseArray>(GRAPH_POSE_TOPIC,10);
   *graphInfoPublisher_=nh_->advertise<visualization_msgs::MarkerArray>(GRAPH_INFO_TOPIC,10);
-
+  //*particlaCloudPublisher_=nh_->advertise<pcl::PointCloud<pcl::PointXYZ>>(PARTICLES_TOPIC,10);
   initialized_=true;
 }
 void GraphPlot::PlotPoseGraph(GraphMapPtr graph){

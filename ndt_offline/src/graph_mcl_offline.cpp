@@ -608,6 +608,16 @@ int main(int argc, char **argv){
     fuser_->SaveGraphMap(path);
     exit(0);
   }
+  /* if (save_map) {
+    std::cout << "Saving map" << std::endl;
+    if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+      ndtslammer.map->writeToJFF("map.jff");
+      std::cout << "Done." << std::endl;
+    }
+    else {
+      std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+    }
+  }*/
 
   if (alive) {
     while (1) {
@@ -617,5 +627,10 @@ int main(int argc, char **argv){
 
   usleep(1000*1000);
   std::cout << "Done." << std::endl;
-
+  // fclose(gtf);
+  // fclose(fuserf);
+  // fclose(frame2);
+  // fclose(fgicp);
+  // char c;
+  // std::cin >> c;
 }

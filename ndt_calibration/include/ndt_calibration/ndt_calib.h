@@ -16,7 +16,6 @@
 #include <ndt_generic/eigen_utils.h>
 #include <ndt_generic/io.h>
 #include <ndt_generic/utils.h>
-
 template<class T> std::string toString (const T& x)
 {
     std::ostringstream o;

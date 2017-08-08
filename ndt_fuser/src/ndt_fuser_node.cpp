@@ -39,6 +39,7 @@
 #define MAX_TRANSLATION_DELTA 2.0
 #define MAX_ROTATION_DELTA 0.5
 #endif
+#define NO_NDT_VIZ
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
  * \author Todor Stoyanov
  * 

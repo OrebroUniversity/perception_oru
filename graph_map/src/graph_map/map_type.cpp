@@ -29,6 +29,15 @@ bool MapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,co
   cout<<"Compunding map not possible in base class"<<endl;
   return false;
 }
+std::string MapType::ToString(){
+  stringstream ss;
+  ss<<"MapType\nInitialized: "<<std::boolalpha<<initialized_<<endl;
+  ss<<"Map Name: "<<mapName_<<endl;
+  ss<<"Mapping enabled: "<<std::boolalpha<<enable_mapping_<<endl;
+  ss<<"Size(x,y,z): ("<< sizex_<<","<<sizey_<<","<<sizez_<<")"<<endl;
+  ss<<"Sensor range(min/max): ("<<min_range_<<","<<max_range_<<")"<<endl;
+  return ss.str();
+}
 
 MapParam::~MapParam(){
 

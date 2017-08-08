@@ -43,7 +43,8 @@ void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXY
 }
 string MapNode::ToString(){
   stringstream ss;
-  ss<<"map node, translation= "<<pose_.translation();
+  ss<<"MapNode:\ninitialized: "<<initialized_<<"\nid:"<<id_<<"\nPosition(x,y,z):"<<pose_.translation().transpose()<<endl;;
+  ss<<map_->ToString();
   return ss.str();
 }
 

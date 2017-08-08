@@ -53,19 +53,17 @@ bool GraphMapFuser::KeyFrameBasedFuse(const Affine3d &Tnow ){
   if(nr_frames_==0)
     return true;
   else{
-  Affine3d diff=pose_last_fuse_.inverse()*Tnow;
-  Eigen::Vector3d Tmotion_euler = diff.rotation().eulerAngles(0,1,2);
-
-  ndt_generic::normalizeEulerAngles(Tmotion_euler);
-  cout<<"translation diff="<<diff.translation().norm()<<",rotation diff="<<Tmotion_euler.norm()<<endl;
-  if(use_keyframe_ ){
-    if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0))
-      return true;
+    Affine3d diff=pose_last_fuse_.inverse()*Tnow;
+    Eigen::Vector3d Tmotion_euler = diff.rotation().eulerAngles(0,1,2);
+    ndt_generic::normalizeEulerAngles(Tmotion_euler);
+    if(use_keyframe_ ){
+      if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0))
+        return true;
+      else
+        return false;
+    }
     else
-      return false;
-  }
-  else
-    return true;
+      return true;
   }
 }
 
@@ -87,8 +85,8 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::A
   Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
   Tnow=T_world_to_local_map*Tnow;//change frame to local map
 
-if(fuse_this_frame)
-  cout<<"time to fuse a new frame="<<nr_frames_<<endl;
+  if(fuse_this_frame)
+    cout<<"time to fuse a new frame="<<nr_frames_<<endl;
 
   Matrix6d motion_cov=motion_model_2d_.getCovMatrix6(Tmotion, 1., 1., 1.);
   ros::Time t1=ros::Time::now();
@@ -121,15 +119,15 @@ if(fuse_this_frame)
 
   Tnow=T_world_to_local_map.inverse()*Tnow;//remap Tnow to global map frame
   if(fuse_this_frame||map_node_changed)
-     pose_last_fuse_=Tnow;
+    pose_last_fuse_=Tnow;
 
   nr_frames_++;
 
 }
 void GraphMapFuser::plotMap(){
-    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
-    GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
-    GraphPlot::PlotPoseGraph(graph_map_);
+  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+  GraphPlot::SendGlobalMapToRviz(curr_node->GetMap(),1,graph_map_->GetCurrentNodePose());
+  GraphPlot::PlotPoseGraph(graph_map_);
 }
 
 void GraphMapFuser::plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud){
@@ -155,7 +153,17 @@ bool GraphMapFuser::ErrorStatus(string status){
     return true;
   }
 }
-void GetCovarianceFromMotion(Matrix6d &cov,const Affine3d &Tm){
-
+//void GetCovarianceFromMotion(Matrix6d &cov,const Affine3d &Tm){
+//}
+std::string GraphMapFuser::ToString(){
+  std::stringstream ss;
+  ss<<"fuser:"<<endl<<"initialized:"<<initialized_<<endl;
+  ss<<"visualize:"<<visualize_<<endl;
+  ss<<"Key frame based update:"<<use_keyframe_<<endl;
+  if(use_keyframe_)
+    ss<<"minimum keyframe distance(meter/deg):("<<min_keyframe_dist_<<","<<min_keyframe_rot_deg_<<")"<<endl;
+  ss<<registrator_->ToString();
+  ss<<graph_map_->ToString();
+  return ss.str();
 }
 }

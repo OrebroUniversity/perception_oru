@@ -90,6 +90,14 @@ bool NDTD2DRegType::RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eig
   cout<<"diff after reg-rot=\n="<<Tdiff.linear()<<endl;
   return match_succesfull;
 }
+std::string NDTD2DRegType::ToString(){
+  std::stringstream ss;
+  ss<<registrationType::ToString();
+  ss<<"NDT d2d registration type:"<<endl;
+  ss<<"resolution :"<< resolution_<<endl;
+  ss<<"resolutionLocalFactor :"<< resolutionLocalFactor_<<endl;
+  return ss.str();
+}
 
 /* ----------- Parameters ------------*/
 NDTD2DRegParam::~NDTD2DRegParam(){}

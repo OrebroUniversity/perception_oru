@@ -13,6 +13,8 @@
 #include "visualization/graph_plot.h"
 #include <ndt_map/pointcloud_utils.h>
 //#include <ndt_fuser/motion_model_2d.h>
+#include "stdio.h"
+#include "sstream"
 #define ndt_map_type_name "ndt_map"
 namespace libgraphMap{
 using namespace lslgeneric;
@@ -24,13 +26,14 @@ public:
   virtual NDTMap* GetMap() { return map_;}
   //Advanced
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);
+  string ToString();
   NDTMapType(MapParamPtr paramptr);
   NDTMapType(){}
   NDTMap *map_=NULL;
 
 protected:
   double resolution_=0.4;
-  double resolution_local_factor=1.;
+  double resolution_local_factor_=1.;
   double sensor_range_=30;
 
   friend class GraphFactory;
@@ -42,6 +45,9 @@ protected:
   void serialize(Archive & ar, const unsigned int version){
     ar & boost::serialization::base_object<MapType>(*this);
     ar & map_;
+    ar & resolution_local_factor_;
+    ar & sensor_range_;
+
   }
   /*-----End of Boost serialization------*/
 

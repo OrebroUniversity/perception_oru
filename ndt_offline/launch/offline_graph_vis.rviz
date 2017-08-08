@@ -35,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -132,18 +132,13 @@ Visualization Manager:
           Value: true
         velodyne:
           Value: false
-        world:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          state_base_link:
-            velodyne:
-              {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -167,7 +162,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        current: true
+        {}
       Queue Size: 2000
       Value: true
     - Class: rviz/MarkerArray
@@ -175,7 +170,7 @@ Visualization Manager:
       Marker Topic: /graphInfo
       Name: MarkerArray
       Namespaces:
-        graphInfo: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -202,16 +197,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 22.2003613
+      Distance: 61.5633507
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.39411831
-        Y: 9.33551693
-        Z: -9.29898643
+        X: 1.02112913
+        Y: 6.13075066
+        Z: -9.45962334
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Name: Current View

@@ -45,19 +45,10 @@ std::string dirname="";
 std::string output_dir_name="";
 std::string base_name="";
 std::string dataset="";
-std::ofstream gt_file, odom_file, est_file, sensorpose_est_file; //output files
 //map parameters
-double size_xy=0;
-double size_z=0;
-double resolution=0;
-double resolution_local_factor=0;
-double hori_min=0, hori_max=0;
-double min_dist=0, min_rot_in_deg=0;
-double max_range=0, min_range=0;
 int itrs=0;
 int nb_neighbours=0;
 int nb_scan_msgs=0;
-
 bool use_odometry=true;
 bool visualize=true;
 bool use_multires=false;
@@ -67,13 +58,9 @@ bool step_control=false;
 bool check_consistency=true;
 bool registration2d=true;
 
-
-
 bool alive=false;
 bool save_map=true;
-bool use_gt_as_interp_link=false;
-bool save_clouds=false;
-
+bool gt_mapping=false;
 bool disable_reg=false, do_soft_constraints=false;
 lslgeneric::MotionModel2d::Params motion_params;
 std::string base_link_id="", gt_base_link_id="", tf_world_frame="";
@@ -89,7 +76,10 @@ RegParamPtr regParPtr=NULL;
 MapParamPtr mapParPtr=NULL;
 GraphParamPtr graphParPtr=NULL;
 double sensor_time_offset=0;
-
+double size_xy=0;
+double size_z=0;
+double resolution_local_factor=0;
+double max_range=0, min_range=0;
 double maxRotationNorm_=0;
 double compound_radius_=0;
 double interchange_radius_=0;
@@ -98,24 +88,15 @@ double rotationRegistrationDelta_=0;
 double sensorRange_=30;
 double translationRegistrationDelta_=0;
 double mapSizeZ_=0;
-
-
+double resolution=0;
+double hori_min=0, hori_max=0;
+double min_dist=0, min_rot_in_deg=0;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
-/*
-inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
-  if (fabs(euler[0]) > M_PI/2) {
-    euler[0] += M_PI;
-    euler[1] += M_PI;
-    euler[2] += M_PI;
 
-    euler[0] = angles::normalize_angle(euler[0]);
-    euler[1] = angles::normalize_angle(euler[1]);
-    euler[2] = angles::normalize_angle(euler[2]);
-  }
-}
-*/
+
+
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -174,56 +155,60 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   return found_sensor_pose;
 }
 
-void saveCloud(int counter, const pcl::PointCloud<pcl::PointXYZ> &cloud) {
-  std::string pcd_file = std::string("cloud") + toString(counter) + std::string(".pcd");
-  std::cout << "saving : " << pcd_file << std::endl;
-  pcl::io::savePCDFileASCII (pcd_file, cloud);
-}
-//!
-//! \brief ReadAllParameters by advertise all program options and read then from command line
-//! \param desc is augmented with all options
-//! \param argc
-//! \param argv
-//! \return true if an error
-//!
-//!
+class CreateEvalFiles{
+public:
+  CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name){
+    output_dir_name_=output_dir_name;
+    base_name_=base_name;
+    CreateOutputFiles();
+  }
 
-//!
-//! \brief CreateOutputFiles opens filestream to where the result is stored
-//! \return true if creation was succesfull otherwise return false
-//!
-bool CreateOutputFiles(){
+  bool CreateOutputFiles(){
 
-  std::string filename;
-  {
-    filename =output_dir_name +"/"+ base_name + std::string("_gt.txt");
-    gt_file.open(filename.c_str());
+    std::string filename;
+    {
+      filename =output_dir_name_ +"/"+ base_name_ + std::string("_gt.txt");
+      gt_file.open(filename.c_str());
+    }
+    {
+      filename =output_dir_name_ +"/"+ base_name_ + std::string("_est.txt");
+      est_file.open(filename.c_str());
+    }
+    {
+      filename = output_dir_name_ +"/"+ base_name_ + std::string("_sensorpose_est.txt");
+      sensorpose_est_file.open(filename.c_str());
+    }
+    {
+      filename = output_dir_name_ +"/"+ base_name_ + std::string("_odom.txt");
+      odom_file.open(filename.c_str());
+    }
+    if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
+    {
+      return false;
+      ROS_ERROR_STREAM("Failed to open : ");
+    }
+    else
+      return true;
   }
-  {
-    filename =output_dir_name +"/"+ base_name + std::string("_est.txt");
-    est_file.open(filename.c_str());
+  void Write(const ros::Time frame_time ,const Eigen::Affine3d &Tgtbase,const Eigen::Affine3d &Todombase,const Eigen::Affine3d &Tfuserpose,const Eigen::Affine3d &sensoroffset){
+    gt_file << frame_time << " " << transformToEvalString(Tgtbase);
+    odom_file << frame_time << " " << transformToEvalString(Todombase);
+    est_file << frame_time << " " << transformToEvalString(Tfuserpose);
+    sensorpose_est_file << frame_time << " " << transformToEvalString(Tfuserpose * sensor_offset);
   }
-  {
-    filename = output_dir_name +"/"+ base_name + std::string("_sensorpose_est.txt");
-    sensorpose_est_file.open(filename.c_str());
+
+  void Close(){
+    gt_file.close();
+    odom_file.close();
+    est_file.close();
+    sensorpose_est_file.close();
   }
-  {
-    filename = output_dir_name +"/"+ base_name + std::string("_odom.txt");
-    odom_file.open(filename.c_str());
-  }
-  if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
-  {
-    return false;
-    ROS_ERROR_STREAM("Failed to open : ");
-  }
-  else
-    return true;
-}
-//!
-//! \brief LocateRosBagFilePaths
-//! \param scanfiles Get the path of all rosbags in folder recursively
-//! \return true if the function is succesfull, return false if no bag was found or an error occured
-//!
+
+private:
+  std::string output_dir_name_,base_name_;
+  std::ofstream gt_file, odom_file, est_file, sensorpose_est_file; //output files
+};
+
 bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::string> &scanfiles){
   DIR *dir;
   struct dirent *ent;
@@ -251,6 +236,7 @@ bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::strin
   return true;
 }
 bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
+
   Eigen::Vector3d transl;
   Eigen::Vector3d euler;
   // First of all, make sure to advertise all program options
@@ -294,8 +280,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("save-map", "saves the graph map at the end of execution")
       ("nb_scan_msgs", po::value<int>(&nb_scan_msgs)->default_value(1), "number of scan messages that should be loaded at once from the bag")
-      ("use_gt_as_interp_link", "use gt when performing point interplation while unwrapping the velodyne scans")
-      ("save_clouds", "save all clouds that are added to the map")
+      ("gt-mapping", "disable registration and use ground truth as input to mapping")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
@@ -313,7 +298,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("maxTranslationNorm",po::value<double>(&maxTranslationNorm_)->default_value(0.4),"maxTranslationNorm")
       ("rotationRegistrationDelta",po::value<double>(&rotationRegistrationDelta_)->default_value(M_PI/6),"rotationRegistrationDelta")
       ("translationRegistrationDelta",po::value<double>(&translationRegistrationDelta_)->default_value(1.5),"sensorRange")
-      ("resolution", po::value<double>(&resolution)->default_value(0.6), "resolution of the map")
+      ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("use-submap", "Adopt the sub-mapping technique which represent the global map as a set of local submaps")
       ("compound-radius", po::value<double>(&compound_radius_)->default_value(10.0), "Requires sub-mapping enabled, When creating new sub-lamps, information from previous map is transfered to the new map. The following radius is used to select the map objects to transfer")
@@ -342,15 +327,16 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   use_multires = vm.count("use-multires");
   filter_fov = vm.count("filter-fov");
   step_control = (vm.count("no-step-control") == 0);
-  bool use_gt_as_interp_link = vm.count("use_gt_as_interp_link");
-  bool save_clouds = vm.count("save_clouds");
+  gt_mapping= vm.count("gt-mapping");
+  if(gt_mapping)
+    base_link_id=gt_base_link_id;
   check_consistency=vm.count("check-consistency");
   alive = vm.count("alive");
   save_map = vm.count("save-map");
   registration2d=vm.count("registration2d");
   do_soft_constraints=vm.count("do-soft-constraints");
   regParPtr->do_soft_constraints_ = vm.count("do-soft-constraints");
-  regParPtr->enableRegistration_ = !vm.count("disable-registration");
+  regParPtr->enableRegistration_ = !vm.count("disable-registration") && !gt_mapping;
   regParPtr->registration2d_=registration2d;
   regParPtr->maxRotationNorm_=maxRotationNorm_;
   regParPtr->maxTranslationNorm_=maxTranslationNorm_;
@@ -395,6 +381,23 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
 
 }
+void initializeRosPublishers(){
+  gt_pub=new ros::Publisher();
+  fuser_pub=new ros::Publisher();
+  cloud_pub=new ros::Publisher();
+  *gt_pub    =n_->advertise<nav_msgs::Odometry>("/GT", 50);
+  *fuser_pub =n_->advertise<nav_msgs::Odometry>("/fuser", 50);
+  *cloud_pub = n_->advertise<pcl::PointCloud<pcl::PointXYZ>>("/points2", 1);
+}
+void printParameters(){
+  cout<<"Output directory: "<<output_dir_name<<endl;
+  if(filter_fov)
+    cout << "Filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
+  else
+    cout<<"No FOV filter."<<endl;
+
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////7
 /////////////////////////////////////////////////////////////////////////////////7
@@ -415,35 +418,21 @@ int main(int argc, char **argv){
   GraphMapFuser *fuser_;
   cout<<"read params"<<endl;
   bool succesfull=ReadAllParameters(desc,argc,&argv);
-  if(!succesfull){
-    cout<<"Problem reading parameters"<<endl;
+  if(!succesfull)
     exit(0);
-  }
-
-  gt_pub=new ros::Publisher();
-  fuser_pub=new ros::Publisher();
-  cloud_pub=new ros::Publisher();
-  *gt_pub    =n_->advertise<nav_msgs::Odometry>("/GT", 50);
-  *fuser_pub =n_->advertise<nav_msgs::Odometry>("/fuser", 50);
-  *cloud_pub = n_->advertise<pcl::PointCloud<pcl::PointXYZ>>("/points2", 1);
+  CreateEvalFiles eval_files(output_dir_name,base_name);
+  printParameters();
+  initializeRosPublishers();
   tf::TransformBroadcaster br;
-  cout<<"done reading params"<<endl;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
-  cout<<"Will save map do directory: "<<output_dir_name<<endl;
-
 
   std::string tf_interp_link = base_link_id;
-  if (use_gt_as_interp_link) {
-    tf_interp_link = gt_base_link_id;
-  }
+  if(gt_mapping)
+      tf_interp_link = gt_base_link_id;
 
-  if(filter_fov) {
-    cout << "filtering FOV of sensor to min/max "<<hori_min<<" "<<hori_max<<endl;
-  }
 
   base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
-
 
   ros::Time::init();
   srand(time(NULL));
@@ -461,9 +450,9 @@ int main(int argc, char **argv){
     cout<<"couldnt locate ros bags"<<endl;
     exit(0);
   }
-  Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
+
   int counter = 0;
-  if(!CreateOutputFiles()){
+  if(!eval_files.CreateOutputFiles()){
     cout<<"couldnt create output files"<<endl;
     exit(0);
   }
@@ -486,8 +475,8 @@ int main(int argc, char **argv){
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
+    Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
 
-    //cout<<sensor_pose.getOrigin()<<endl;
     while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,tf_scan_source,tf_gt_base,tf_interp_link)){
       if(!n_->ok())
         exit(0);
@@ -509,10 +498,6 @@ int main(int argc, char **argv){
       tf::transformTFToEigen(tf_gt_base,Tgt_base);
       tf::transformTFToEigen(tf_odom_base,Todom_base);
 
-      /*cout<<"velodyne pose=\n"<<Ttot.translation()<<endl;
-      cout<<"sensor offset=\n"<<Ts.translation()<<endl;
-      cout<<"GT translation=\n"<<Tgt.translation()<<endl;
-      cout<<"odom translation=\n"<<Tbase.translation()<<endl;*/
       if(counter == 0){
         counter ++;
         cloud.clear();
@@ -520,17 +505,12 @@ int main(int argc, char **argv){
         continue;
       }
       if(counter == 1){
-        // Make the initialization of the pose to be at the sensory level...
-        // Tgt.translation()[2] = 4.;//trans[2];
         fuser_pose=Tgt_base;
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
         fuser_=new GraphMapFuser(regParPtr,mapParPtr,graphParPtr,Tgt_base,sensor_offset);
+        cout<<fuser_->ToString()<<endl;
         fuser_->Visualize(visualize);
-
-        if (save_clouds)
-          saveCloud(counter-1, cloud);
-
         counter ++;
         cloud.clear();
         cloud_nofilter.clear();
@@ -550,11 +530,8 @@ int main(int argc, char **argv){
           continue;
         }
       }
-      if (save_clouds) {
-        saveCloud(counter-1, cloud);
-      }
-
       counter++;
+
       fuser_pose=fuser_pose*Tmotion;
 
       if(visualize){
@@ -567,41 +544,31 @@ int main(int argc, char **argv){
         gt_pose_msg.header.stamp=ros::Time::now();
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
         gt_pub->publish(gt_pose_msg);
-        fuser_pose_msg.header.stamp=ros::Time::now();
-        tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-        fuser_pub->publish(fuser_pose_msg);
+        if(!gt_mapping){
+          fuser_pose_msg.header.stamp=ros::Time::now();
+          tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+          fuser_pub->publish(fuser_pose_msg);
+        }
       }
-      fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+
+       fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+
       if(visualize && counter%5==0){
         fuser_->plotMap();
       }
       double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-
+      cout<<"norm between estimated and actual pose="<<diff<<endl;
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;
       cloud.clear();
       cloud_nofilter.clear();
 
-      // Evaluation
-      //ROS_INFO_STREAM("Tgt : " << transformToEvalString(Tgt));
-      //ROS_INFO_STREAM("Tbase : " << transformToEvalString(Tbase));
-      //ROS_INFO_STREAM("Todo : " << transformToEvalString(Todo));
-      //ROS_INFO_STREAM("diff : " << ndt_generic::affine3dToStringRPY(diff));
+      eval_files.Write( vreader.getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
 
-      ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
-      gt_file << frame_time << " " << transformToEvalString(Tgt_base);
-      odom_file << frame_time << " " << transformToEvalString(Todom_base);
-      est_file << frame_time << " " << transformToEvalString(fuser_pose);
-      sensorpose_est_file << frame_time << " " << transformToEvalString(fuser_pose * sensor_offset);
     }
   }
+  eval_files.Close();
 
-  gt_file.close();
-  odom_file.close();
-  est_file.close();
-  sensorpose_est_file.close();
-
-  cout<<"time to save map"<<endl;
   if(save_map && fuser_!=NULL && fuser_->FramesProcessed()>0){
     char path[1000];
     snprintf(path,999,"%s/%s.map",output_dir_name.c_str(),base_name.c_str());
@@ -614,8 +581,6 @@ int main(int argc, char **argv){
       usleep(1000);
     }
   }
-
   usleep(1000*1000);
   std::cout << "Done." << std::endl;
-
 }

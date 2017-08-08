@@ -3,9 +3,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_BUILD_TYPE Release) 
 project(ndt_mcl)
+
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros tf_conversions eigen_conversions cmake_modules velodyne_pointcloud velodyne_msgs)
+
+# find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros tf_conversions eigen_conversions cmake_modules velodyne_pointcloud velodyne_msgs)
 find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions cmake_modules)
+
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen

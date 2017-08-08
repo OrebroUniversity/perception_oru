@@ -33,6 +33,7 @@ class PoseInterpolationNavMsgsOdo{
 																
 																transformer( true, dur)
 		{
+
 			bag.open(bagfilename, rosbag::bagmode::Read);
 			topics.push_back(tftopic);
 			fixedframe = _fixedframe;
@@ -41,6 +42,8 @@ class PoseInterpolationNavMsgsOdo{
 			I = viewer->begin();
 			first_read_tf = ros::Time(0);
 			last_read_tf = ros::Time(0);
+			std::cout << "FixedFrame " << fixedframe << " sensor " << sensor_link << " tf topic " << tftopic << std::endl; 
+			exit(0);
 		}
 		
 		
@@ -59,11 +62,14 @@ class PoseInterpolationNavMsgsOdo{
 																tf::StampedTransform *sensor_link=NULL):																
 																transformer( true, dur)
 		{
+			
 			topics.push_back(tftopic);
 			fixedframe = _fixedframe;
 			sensor_link_ = sensor_link;
 			viewer = view;
 			I = viewer->begin();
+			std::cout << "FixedFrame " << fixedframe << " sensor " << sensor_link << " tf topic " << tftopic << std::endl; 
+// 			exit(0);
 		}
 		
 		~PoseInterpolationNavMsgsOdo(){
@@ -89,11 +95,13 @@ class PoseInterpolationNavMsgsOdo{
 		* @param &T Output as Eigen::Affine3d 
 		*/
 		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,Eigen::Affine3d &T);
+		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, Eigen::Affine3d &T);
 		
 		/**
 		* Returns the global pose for the t0
 		*/		
 		bool getTransformationForTime(ros::Time t0, std::string frame_id,tf::Transform &T);
+		bool getTransformationForTime(ros::Time t0, std::string frame_id, std::string fixed_frame_id, tf::Transform &T);
 		/**
 		* Returns the interpolated tf transformation for a Time t1
 		* @param t0 The time that acts as a reference for computing differential motion
@@ -102,6 +110,7 @@ class PoseInterpolationNavMsgsOdo{
 		* @param &T Output as tf::Transform 
 		*/
 		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,tf::Transform &T);
+		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, tf::Transform &T);
 
 		bool getTransformationForTime(ros::Time t0, std::string frame_id,Eigen::Affine3d &T);
 		
@@ -138,15 +147,15 @@ void PoseInterpolationNavMsgsOdo::readBagFile(tf::StampedTransform *sensor_link)
 			if (transform != NULL){
 				if(m.getTopic() == topics[0]){
 					for (int i = 0; i < transform->transforms.size(); i++){
-							//std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
-							//std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
+							std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
+							std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
 							tf::StampedTransform stf;
 							transformStampedMsgToTF(transform->transforms[i], stf);
 							transformer.setTransform(stf);
 					}
 					if(sensor_link != NULL){
 							sensor_link->stamp_ = transform->transforms[0].header.stamp;
-							//fprintf(stderr,"Setting sensor link %s -> %s\n", sensor_link->frame_id_.c_str(), sensor_link->child_frame_id_.c_str());
+							fprintf(stderr,"Setting sensor link %s -> %s\n", sensor_link->frame_id_.c_str(), sensor_link->child_frame_id_.c_str());
 							transformer.setTransform(*sensor_link);
 						}else{
 							//fprintf(stderr,"NULL\n");
@@ -161,6 +170,7 @@ void PoseInterpolationNavMsgsOdo::readBagFile(tf::StampedTransform *sensor_link)
 		std::cout << " [first, last] entry : [" << first_read_tf << ", " << last_read_tf << "]" << std::endl;
 		fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
 		bag.close();
+		exit(0);
 		
 }
 
@@ -169,45 +179,54 @@ void PoseInterpolationNavMsgsOdo::readUntilTime(ros::Time t){
 	fprintf(stderr,"END:");
     }
     if(last_read_tf>t){
-	//fprintf(stderr,"No need to read!\n");
+// 	fprintf(stderr,"No need to read!\n");
 	return; ///No need to read new ones
     }
 
     while(last_read_tf <= t && I != viewer->end()){
-	rosbag::MessageInstance const m = *I;
-	//fprintf(stderr,"READING\n");
-	//////////////////////////////////////////////////////////////////////////////////
-	tf::tfMessage::ConstPtr transform = m.instantiate<tf::tfMessage>();
-	if (transform != NULL){
-	    if(m.getTopic() == topics[0]){
+		rosbag::MessageInstance const m = *I;
+// 		fprintf(stderr,"READING\n");
+		//////////////////////////////////////////////////////////////////////////////////
+		tf::tfMessage::ConstPtr transform = m.instantiate<tf::tfMessage>();
+		if (transform != NULL){
+			if(m.getTopic() == topics[0]){
 
-		if(transform->transforms.size()<=0) continue;
+				if(transform->transforms.size()<=0) continue;
 
-		for (int i = 0; i < transform->transforms.size(); i++){
-		    //std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
-		    //std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
-		    tf::StampedTransform stf;
-		    transformStampedMsgToTF(transform->transforms[i], stf);
-		    transformer.setTransform(stf);
-		}
+				for (int i = 0; i < transform->transforms.size(); i++){
+// 					std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
+// 					std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
+					tf::StampedTransform stf;
+					transformStampedMsgToTF(transform->transforms[i], stf);
+					double x = stf.getOrigin().x();
+					double y = stf.getOrigin().y();
+					double z = stf.getOrigin().z();
+					double roll, pitch, yaw;
+					stf.getBasis().getRPY(roll, pitch, yaw);
+// 					std::cout << " adding between " << transform->transforms[i].header.frame_id <<  "and " << transform->transforms[i].child_frame_id << " at time " << stf.stamp_ << " we have " << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
+					transformer.setTransform(stf);
+				}
 
-		last_read_tf = transform->transforms[0].header.stamp;
-		if (first_read_tf == ros::Time(0))
-		  first_read_tf = last_read_tf;
+				last_read_tf = transform->transforms[0].header.stamp;
+				if (first_read_tf == ros::Time(0))
+				first_read_tf = last_read_tf;
 
-		if(sensor_link_ != NULL){
-		    sensor_link_->stamp_ = transform->transforms[0].header.stamp;
-		    //fprintf(stderr,"Setting sensor link %s -> %s\n", sensor_link->frame_id_.c_str(), sensor_link->child_frame_id_.c_str());
-		    transformer.setTransform(*sensor_link_);
+				if(sensor_link_ != NULL){
+					sensor_link_->stamp_ = transform->transforms[0].header.stamp;
+// 					fprintf(stderr,"Setting sensor link %s -> %s\n", sensor_link_->frame_id_.c_str(), sensor_link_->child_frame_id_.c_str());
+					transformer.setTransform(*sensor_link_);
+				}else{
+// 					fprintf(stderr,"NULL\n");
+				}
+			}
 		}else{
-		    //fprintf(stderr,"NULL\n");
+// 			std::cout << "NULL transfo" << std::endl;
 		}
-	    }
-	}
-	I++;
-	/////////////////////////////////////////////////////////////////////////////////////////////
+		I++;
+		/////////////////////////////////////////////////////////////////////////////////////////////
     }
-    //fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
+   
+//     fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
     //bag.close();
 
 }
@@ -237,6 +256,13 @@ void PoseInterpolationNavMsgsOdo::TransformTFToEigen(const tf::Transform &t, Eig
 * Returns the interpolated Affine transformation for a Time t
 */
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,tf::Transform &T){
+	getTransformationForTime(t0, t1, frame_id, fixedframe, T);
+}
+
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
+	
+	std::cout << "Transfo toward base" << frame_id << " " <<  fixed_frame_id << std::endl;
+	
 	tf::StampedTransform transform;
 	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
 	
@@ -245,13 +271,16 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 	
 	std::string schaiba;
 	
-	if(!transformer.canTransform 	(frame_id, t0, frame_id, t1, fixedframe, &schaiba)){
+	if(!transformer.canTransform 	(frame_id, t0, frame_id, t1, fixed_frame_id, &schaiba)){
 		fprintf(stderr,"FAIL\n");
 		return false;
-	} 
+	}
+	else{
+		std::cout << "Return true" << std::endl;
+	}
 
 	//transformer.lookupTransform(frame_id,t0, frame_id, t1, fixedframe, transform);
-	transformer.lookupTransform(frame_id,t0, frame_id, t1, fixedframe, transform);
+	transformer.lookupTransform(frame_id, t0, frame_id, t1, fixed_frame_id, transform);
 	T = transform;
 	
 	/* Eigen::Affine3d Ta; */
@@ -265,10 +294,18 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 /**
 * Returns the interpolated Affine transformation for a Time t
 */
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,Eigen::Affine3d &T){
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, Eigen::Affine3d &T){
+	getTransformationForTime(t0, t1, frame_id, fixedframe, T);
+}
 
+/**
+* Returns the interpolated Affine transformation for a Time t
+*/
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id, std::string fixed_frame_id, Eigen::Affine3d &T){
+
+// 	std::cout << "Transfo toward base" << std::endl;
 	tf::StampedTransform transform;
-	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, t1, frame_id, transform);
+	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, t1, frame_id, fixed_frame_id, transform);
 	TransformTFToEigen (transform, T);
 	return ret_val;
 }
@@ -278,22 +315,48 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 * Returns the sensor pose for time t
 */
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id,tf::Transform &T){
+	getTransformationForTime(t0, frame_id, fixedframe, T);
+}
+
+/**
+* Returns the sensor pose for time t
+*/
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id, std::string fixed_frame_id, tf::Transform &T){
+	
+	std::cout << " here Transfo 1.toward 2.base: " << frame_id << " " <<  fixed_frame_id << std::endl;
+	
 	tf::StampedTransform transform;
-	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
+// 	fprintf(stderr,"DT: %lf ", (t0 - t0+ros::Duration(1.0)).toSec());
+// 	fprintf(stderr,"from to: %lf, %lf \n",t0.toSec(), (t0+ros::Duration(1.0)).toSec());
 	std::string schaiba;
 	readUntilTime(t0+ros::Duration(1.0));
-//	printf("looking up tf from %s to %s\n",frame_id.c_str(),fixedframe.c_str());
-	if(!transformer.canTransform 	(fixedframe,frame_id,t0, &schaiba)){
+// 	printf("looking up tf from %s to %s\n",frame_id.c_str(),fixedframe.c_str());
+	if(!transformer.canTransform(fixed_frame_id , frame_id, t0, &schaiba)){
+		std::cout << "Not found " << std::endl;
+		exit(0);
 		return false;
 	}
-//	printf("found\n");
-	transformer.lookupTransform(fixedframe,frame_id,t0, transform);
+	else{
+		std::cout<< "Is ok " << std::endl;
+	}
+// 	printf("found\n");
+	transformer.lookupTransform(fixed_frame_id,frame_id,t0, transform);
 	T = transform;
+	
+	double x = transform.getOrigin().x();
+	double y = transform.getOrigin().y();
+	double z = transform.getOrigin().z();
+	double roll, pitch, yaw;
+	transform.getBasis().getRPY(roll, pitch, yaw);
+// 	std::cout << " between " << fixed_frame_id <<  " and " << frame_id << " at time " << t0 << " we have " << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << " error " << schaiba << std::endl;
+	
+// 	exit(0);
 	
 	return true;
 }
 
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id,Eigen::Affine3d &T){
+
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id, Eigen::Affine3d &T){
 	tf::StampedTransform transform;
 	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, frame_id, transform);
 	TransformTFToEigen (transform, T);

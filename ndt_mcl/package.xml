@@ -34,6 +34,7 @@
   <build_depend>velodyne_pointcloud</build_depend>
   <build_depend>tf_conversions</build_depend>
   <build_depend>eigen_conversions</build_depend>
+  <build_depend>ndt_rviz</build_depend>
 
 
   <!-- Dependencies needed after this package is compiled. -->
@@ -55,6 +56,7 @@
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>tf_conversions</run_depend>
   <run_depend>eigen_conversions</run_depend>
+  <run_depend>ndt_rviz</run_depend>
 
 <export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>

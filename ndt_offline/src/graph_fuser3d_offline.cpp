@@ -28,18 +28,12 @@
 #include "ros/publisher.h"
 #include "tf/transform_broadcaster.h"
 #include "ndt_generic/eigen_utils.h"
-
+#include "ndt_generic/io.h"
 
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
 using namespace lslgeneric;
-
-/*!
- * \brief Parameters for the offline fuser node
- */
-
-
 
 std::string dirname="";
 std::string output_dir_name="";
@@ -155,59 +149,7 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   return found_sensor_pose;
 }
 
-class CreateEvalFiles{
-public:
-  CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name){
-    output_dir_name_=output_dir_name;
-    base_name_=base_name;
-    CreateOutputFiles();
-  }
 
-  bool CreateOutputFiles(){
-
-    std::string filename;
-    {
-      filename =output_dir_name_ +"/"+ base_name_ + std::string("_gt.txt");
-      gt_file.open(filename.c_str());
-    }
-    {
-      filename =output_dir_name_ +"/"+ base_name_ + std::string("_est.txt");
-      est_file.open(filename.c_str());
-    }
-    {
-      filename = output_dir_name_ +"/"+ base_name_ + std::string("_sensorpose_est.txt");
-      sensorpose_est_file.open(filename.c_str());
-    }
-    {
-      filename = output_dir_name_ +"/"+ base_name_ + std::string("_odom.txt");
-      odom_file.open(filename.c_str());
-    }
-    if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
-    {
-      return false;
-      ROS_ERROR_STREAM("Failed to open : ");
-    }
-    else
-      return true;
-  }
-  void Write(const ros::Time frame_time ,const Eigen::Affine3d &Tgtbase,const Eigen::Affine3d &Todombase,const Eigen::Affine3d &Tfuserpose,const Eigen::Affine3d &sensoroffset){
-    gt_file << frame_time << " " << transformToEvalString(Tgtbase);
-    odom_file << frame_time << " " << transformToEvalString(Todombase);
-    est_file << frame_time << " " << transformToEvalString(Tfuserpose);
-    sensorpose_est_file << frame_time << " " << transformToEvalString(Tfuserpose * sensor_offset);
-  }
-
-  void Close(){
-    gt_file.close();
-    odom_file.close();
-    est_file.close();
-    sensorpose_est_file.close();
-  }
-
-private:
-  std::string output_dir_name_,base_name_;
-  std::ofstream gt_file, odom_file, est_file, sensorpose_est_file; //output files
-};
 
 bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::string> &scanfiles){
   DIR *dir;
@@ -252,9 +194,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("data-set", po::value<string>(&dataset)->default_value(std::string("default")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
-      ("size-xy", po::value<double>(&size_xy)->default_value(150.), "size of the central map xy")
+      ("size-xy", po::value<double>(&size_xy)->default_value(60.), "size of the central map xy")
       ("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
-      ("use-multires", "run the multi-resolution guess")
       ("fuse-incomplete", "fuse in registration estimate even if iterations ran out. may be useful in combination with low itr numbers")
       ("filter-fov", "cutoff part of the field of view")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
@@ -304,7 +245,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("compound-radius", po::value<double>(&compound_radius_)->default_value(10.0), "Requires sub-mapping enabled, When creating new sub-lamps, information from previous map is transfered to the new map. The following radius is used to select the map objects to transfer")
       ("interchange-radius", po::value<double>(&interchange_radius_)->default_value(10.0), "This radius is used to trigger creation or selection of which submap to use");
 
-  cout<<"working 0"<<endl;
+
   //Boolean parameres are read through notifiers
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
@@ -312,9 +253,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   cout<<"sensor pose"<<endl;
   if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
     exit(0);
-
-
-
 
   mapParPtr= GraphFactory::CreateMapParam(map_type_name); //map_type_name
   regParPtr=GraphFactory::CreateRegParam(registration_type_name);
@@ -324,7 +262,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   use_odometry = vm.count("use-odometry");
   visualize = vm.count("visualize");
-  use_multires = vm.count("use-multires");
   filter_fov = vm.count("filter-fov");
   step_control = (vm.count("no-step-control") == 0);
   gt_mapping= vm.count("gt-mapping");
@@ -420,7 +357,7 @@ int main(int argc, char **argv){
   bool succesfull=ReadAllParameters(desc,argc,&argv);
   if(!succesfull)
     exit(0);
-  CreateEvalFiles eval_files(output_dir_name,base_name);
+  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name);
   printParameters();
   initializeRosPublishers();
   tf::TransformBroadcaster br;

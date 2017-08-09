@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
     ndt_registration
     ndt_map
     ndt_mcl
+    ndt_localization
     laser_geometry
     eigen_conversions
     pcl_ros

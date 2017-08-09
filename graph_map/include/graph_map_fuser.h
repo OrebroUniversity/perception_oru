@@ -30,17 +30,16 @@ public:
   GraphMapFuser(){}
   GraphMapFuser(string maptype, string registratorType, const Eigen::Affine3d &init_pose, const Affine3d &sensorPose);//Ros friendly constructor to read parameters from ros-par-server
   GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, GraphParamPtr graph_param, const Eigen::Affine3d &init_pose, const Eigen::Affine3d &sensorPose);
+  Affine3d GetPoseLastFuse() const{return pose_last_fuse_;}
   void SaveGraphMap(const std::string &filename);
   void SetMotionParameters(const MotionModel2d &motion_param){motion_model_2d_=motion_param;}
   void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
   bool ErrorStatus(string status="");
-  Affine3d GetPoseLastFuse() const{return pose_last_fuse_;}
   unsigned int FramesProcessed() const{return nr_frames_;}
   void Visualize(bool enableVisualOutput){visualize_=enableVisualOutput;}
   std::string ToString();
   void plotMap();
 protected:
-  //virtual void GetParameters();//Get fuser specific parameters, map specific parameters are preferably read inside a class derived from map_paramers
   bool KeyFrameBasedFuse(const Affine3d &Tnow );
   void plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud);
   ros::NodeHandle n_;

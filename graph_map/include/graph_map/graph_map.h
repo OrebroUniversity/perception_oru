@@ -72,7 +72,6 @@ private:
 };
 
 
-
 class GraphParam{
 public:
   void GetParametersFromRos();

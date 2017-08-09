@@ -65,6 +65,11 @@ string GraphMapNavigator::ToString(){
   ss <<"GraphMapNavigator:\n"<<GraphMap::ToString();
   return ss.str();
 }
+void LoadGraphMap(const std::string &file_name,  GraphMapNavigatorPtr ptr){
 
+std::ifstream ifs(file_name);
+boost::archive::text_iarchive ia(ifs);
+ia & ptr;
+}
 
 }

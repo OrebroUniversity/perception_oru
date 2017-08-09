@@ -35,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -54,7 +54,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 200
       Reference Frame: <Fixed Frame>
       Value: true
     - Angle Tolerance: 0.100000001
@@ -132,13 +132,18 @@ Visualization Manager:
           Value: true
         velodyne:
           Value: false
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        world:
+          state_base_link:
+            velodyne:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -162,7 +167,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        {}
+        current: true
       Queue Size: 2000
       Value: true
     - Class: rviz/MarkerArray
@@ -170,7 +175,7 @@ Visualization Manager:
       Marker Topic: /graphInfo
       Name: MarkerArray
       Namespaces:
-        {}
+        graphInfo: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -197,24 +202,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 61.5633507
+      Distance: 28.9573288
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.02112913
-        Y: 6.13075066
-        Z: -9.45962334
+        X: 3.23165298
+        Y: 8.51305008
+        Z: -10.8438768
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.14979684
+      Pitch: 0.959797025
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.12801552
+      Yaw: 5.93301916
     Saved: ~
 Window Geometry:
   Displays:

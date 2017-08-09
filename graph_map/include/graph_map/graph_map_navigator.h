@@ -42,6 +42,8 @@ private:
   }
 
 };
+void LoadGraphMap(const string &file_name,  GraphMapNavigatorPtr ptr);
+
 
 
 }

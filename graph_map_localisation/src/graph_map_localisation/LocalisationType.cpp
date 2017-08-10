@@ -1,0 +1,10 @@
+/*
+namespace  GraphMapLocalisation {
+
+LocalisationType::LocalisationType()
+{
+
+}
+
+}
+*/

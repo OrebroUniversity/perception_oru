@@ -18,6 +18,7 @@ find_package(catkin REQUIRED
     laser_geometry
     eigen_conversions
     pcl_ros
+    graph_map
     roscpp
     rospy
     sensor_msgs
@@ -83,7 +84,7 @@ target_link_libraries(graph_map_fuser_node ${PROJECT_NAME} ${catkin_LIBRARIES}  
 #)
 
 #
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE)
+    install(DIRECTORY include/${PROJECT_NAME}/
+      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+      FILES_MATCHING PATTERN "*.h"
+      PATTERN ".svn" EXCLUDE)

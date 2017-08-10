@@ -18,7 +18,6 @@ find_package(catkin REQUIRED
     laser_geometry
     eigen_conversions
     pcl_ros
-    graph_map
     roscpp
     rospy
     sensor_msgs

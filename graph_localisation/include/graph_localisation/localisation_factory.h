@@ -1,10 +1,15 @@
 #ifndef LOCALISATIONFACTORY_H
 #define LOCALISATIONFACTORY_H
-#include <stdio.h>
+#include "stdio.h"
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include "Eigen/Dense"
 #include "boost/shared_ptr.hpp"
+#include "string.h"
+#include "iostream"
+
+
+
 using namespace  std;
 namespace GraphMapLocalisation{
 
@@ -26,11 +31,11 @@ typedef boost::shared_ptr<TemplateLocalisationParam> TemplateLocalisationParamPt
 
 
 
-class NDTMCLType;
-typedef boost::shared_ptr<NDTMCLType> NDTMCLTypePtr;
+class MCLNDTType;
+typedef boost::shared_ptr<MCLNDTType> MCLNDTTypePtr;
 
-class NDTMCLParam;
-typedef boost::shared_ptr<NDTMCLParam> NDTMCLParamPtr;
+class MCLNDTParam;
+typedef boost::shared_ptr<MCLNDTParam> MCLNDTParamPtr;
 
 
 class LocalisationType;
@@ -39,5 +44,14 @@ typedef boost::shared_ptr<LocalisationType> LocalisationTypePtr;
 class LocalisationParam;
 typedef boost::shared_ptr<LocalisationParam> LocalisationParamPtr;
 
+class LocalisationFactory{
+public:
+  static LocalisationParamPtr      CreateLocalisationParam(string localisationType);
+  static LocalisationTypePtr       CreateLocalisationType(LocalisationParamPtr param);
+
+
+private:
+  LocalisationFactory(){}
+};
 }
 #endif // LOCALISATIONFACTORY_H

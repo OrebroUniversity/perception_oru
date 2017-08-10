@@ -1,5 +1,4 @@
 
-#include "graph_map_fuser.h"
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -34,8 +33,7 @@
 
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
-//#include "gnuplot-iostream.h"
-#include "lidarUtils/lidar_utilities.h"
+
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -43,6 +41,8 @@
 #include <fstream>
 #include <cstdio>
 
+
+using namespace std;
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "test_localisation");

@@ -20,7 +20,7 @@
  */
 class NDTMCL3D{
     public:
-	lslgeneric::NDTMap map; 		///<This is my map 
+  lslgeneric::NDTMap map; 		///<This is my map
 	ParticleFilter3D pf; 						///<This is the particle filter
 	double resolution;
 	double resolution_sensor;
@@ -34,9 +34,9 @@ class NDTMCL3D{
         /**
 	 * Constructor
 	 */
-	NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
-          map(new lslgeneric::LazyGrid(map_resolution)), SIR_varP_threshold(0.006), SIR_max_iters_wo_resampling(25)
-	{
+  NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
+          SIR_varP_threshold(0.006), SIR_max_iters_wo_resampling(25)
+  {
             isInit = false;
 	    forceSIR = false;
 	    resolution=map_resolution;
@@ -62,21 +62,10 @@ class NDTMCL3D{
 	    }else{
 		fprintf(stderr,"GridSize(%lf,%lf,%lf)\n",wx,wy,wz);
 	    }
+    map=nd_map;
 
-	    map.initialize(cx,cy,cz,wx,wy,wz);
 
-	    std::vector<lslgeneric::NDTCell*> ndts;
-	    ndts = nd_map.getAllCells();
-	    fprintf(stderr,"NDT MAP with %d components",(int)ndts.size());
-	    for(unsigned int i=0;i<ndts.size();i++){
-		Eigen::Vector3d m = ndts[i]->getMean();	
-		if(m[2]>zfilter){
-		    Eigen::Matrix3d cov = ndts[i]->getCov();
-		    unsigned int nump = ndts[i]->getN();
-		    //fprintf(stderr,"-%d-",nump);
-		    map.addDistributionToCell(cov, m,nump);
-		}
-	    }
+
 
             motion_model.push_back(0.05);
             motion_model.push_back(0.05);
@@ -126,7 +115,7 @@ class NDTMCL3D{
             motion_model_offset.push_back(0.001);
             motion_model_offset.push_back(0.001);
             motion_model_offset.push_back(0.001);
-	}
+  }
 
 	/**
 	 * Intialize filter to some pose and with some number of particles 

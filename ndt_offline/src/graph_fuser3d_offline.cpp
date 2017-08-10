@@ -123,8 +123,9 @@ std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,
 bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen::Vector3d &euler,tf::Transform &tf_sensor){
 
   tf::Quaternion quat;
+
   bool found_sensor_pose=false;
-  if(dataset.compare("oru-basement")){
+  if(dataset.compare("oru-basement")==0){
     transl[0]=0.3;
     transl[1]=0;
     transl[2]=0;
@@ -133,10 +134,19 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
     euler[2]=-1.62;
     found_sensor_pose=true;
   }
-  else if(dataset.compare("default")){
+  else if(dataset.compare("default")==0){
     transl[0]=0.3;
     transl[1]=0;
     transl[2]=0;
+    euler[0]=0;
+    euler[1]=0;
+    euler[2]=-1.62;
+    found_sensor_pose=true;
+  }
+  else if(dataset.compare("arla-2012")==0){
+    transl[0]=1.18;
+    transl[1]=-0.3;
+    transl[2]=2.0;
     euler[0]=0;
     euler[1]=0;
     euler[2]=-1.62;
@@ -181,6 +191,9 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   Eigen::Vector3d transl;
   Eigen::Vector3d euler;
+  double min_keyframe_dist=0.5;
+  double min_keyframe_dist_rot_deg=15;
+  bool use_keyframe=true;
   // First of all, make sure to advertise all program options
   desc.add_options()
       ("help", "produce help message")
@@ -221,6 +234,9 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("save-map", "saves the graph map at the end of execution")
       ("nb_scan_msgs", po::value<int>(&nb_scan_msgs)->default_value(1), "number of scan messages that should be loaded at once from the bag")
+      ("disable-keyframe-update", "use every scan to update map rather than update map upon distance traveled")
+      ("keyframe-min-distance", po::value<double>(&min_keyframe_dist)->default_value(0.5), "minimum range used from scanner")
+      ("keyframe-min-rot-deg", po::value<double>(&min_keyframe_dist_rot_deg)->default_value(15), "minimum range used from scanner")
       ("gt-mapping", "disable registration and use ground truth as input to mapping")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
@@ -265,6 +281,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   filter_fov = vm.count("filter-fov");
   step_control = (vm.count("no-step-control") == 0);
   gt_mapping= vm.count("gt-mapping");
+  use_keyframe=!vm.count("disable-keyframe-update");
   if(gt_mapping)
     base_link_id=gt_base_link_id;
   check_consistency=vm.count("check-consistency");
@@ -287,7 +304,9 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   mapParPtr->min_range_=min_range;
   graphParPtr->compound_radius_=compound_radius_;
   graphParPtr->interchange_radius_=interchange_radius_;
-
+  graphParPtr->use_keyframe_=use_keyframe;
+  graphParPtr->min_keyframe_dist_=min_keyframe_dist;
+  graphParPtr->min_keyframe_rot_deg_=min_keyframe_dist_rot_deg;
   mapParPtr->enable_mapping_=!vm.count("disable-mapping");
   mapParPtr->sizey_=size_xy;
   mapParPtr->sizex_=size_xy;
@@ -366,10 +385,10 @@ int main(int argc, char **argv){
 
   std::string tf_interp_link = base_link_id;
   if(gt_mapping)
-      tf_interp_link = gt_base_link_id;
+    tf_interp_link = gt_base_link_id;
 
-
-  base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
+  base_name += gt_mapping? "_gt_":"_d2Dfuser_";
+  base_name += std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 
   ros::Time::init();
   srand(time(NULL));
@@ -446,7 +465,9 @@ int main(int argc, char **argv){
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
         fuser_=new GraphMapFuser(regParPtr,mapParPtr,graphParPtr,Tgt_base,sensor_offset);
+        cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
         cout<<fuser_->ToString()<<endl;
+        cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
         fuser_->Visualize(visualize);
         counter ++;
         cloud.clear();
@@ -488,7 +509,7 @@ int main(int argc, char **argv){
         }
       }
 
-       fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+      fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
 
       if(visualize && counter%5==0){
         fuser_->plotMap();

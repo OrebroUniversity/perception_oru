@@ -13,6 +13,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>ndt_fuser</build_depend>
   <build_depend>ndt_map</build_depend>
+  <build_depend>ndt_mcl</build_depend>
   <build_depend>ndt_registration</build_depend>
   <build_depend>ndt_visualisation</build_depend>
   <build_depend>ndt_generic</build_depend>
@@ -27,6 +28,7 @@
 
   <run_depend>ndt_fuser</run_depend>
   <run_depend>ndt_map</run_depend>
+  <run_depend>ndt_mcl</run_depend>
   <run_depend>ndt_registration</run_depend>
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>ndt_generic</run_depend>

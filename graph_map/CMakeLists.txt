@@ -33,7 +33,7 @@ find_package(Eigen REQUIRED COMPONENTS)
 
 catkin_package(
     DEPENDS Eigen libpcl-all-dev
-    CATKIN_DEPENDS ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
+    CATKIN_DEPENDS ndt_mcl ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     )
@@ -64,6 +64,7 @@ set (${PROJECT_NAME}_LIB_SRCS
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_graph test/test_graph.cpp )
+add_executable(test_particle_filter test/test_particle_filter.cpp )
 add_executable(test_serialization test/test_serialization.cpp )
 add_executable(show_map src/show_map.cpp )
 add_executable(graph_map_fuser_node src/graph_map_fuser_node.cpp )
@@ -74,6 +75,7 @@ add_executable(graph_map_fuser_node src/graph_map_fuser_node.cpp )
 #
 target_link_libraries(show_map ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(test_graph ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
+target_link_libraries(test_particle_filter ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(test_serialization ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(graph_map_fuser_node ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 

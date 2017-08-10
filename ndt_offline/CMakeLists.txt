@@ -4,7 +4,7 @@ project(ndt_offline)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_BUILD_TYPE release)
 add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   ndt_fuser
@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   ndt_registration
   ndt_visualisation
   ndt_rviz
+  ndt_mcl
   ndt_generic
   pcl_ros
   velodyne_msgs
@@ -24,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS ndt_fuser ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud graph_map tf tf_conversions genmsg
+  CATKIN_DEPENDS ndt_fuser ndt_mcl ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud graph_map tf tf_conversions genmsg
   DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
 )
 

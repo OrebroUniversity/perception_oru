@@ -1,3 +1,0 @@
-roslaunch ndt_offline visualize_graph_fuser.launch &
-rosrun ndt_offline graph_fuser3d_offline --base-name offline --dir-name ../bag --velodyne_packets_topic /velodyne_packets --velodyne_frame_id /velodyne --use-odometry --map_type_name ndt_map --registration_type_name ndt_d2d_reg --data-set oru-basement --velodyne_config_file ../config/velo32.yaml  --use-submap --gt-mapping --visualize --save-map --output-dir-name /home/daniel/.ros/maps --interchange-radius 4.0
-

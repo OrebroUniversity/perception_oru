@@ -56,8 +56,8 @@
   <run_depend>tf_conversions</run_depend>
   <run_depend>eigen_conversions</run_depend>
 
-<export>
+<!--<export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
-</export>
+</export>-->
 
 </package>

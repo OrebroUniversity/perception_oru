@@ -36,8 +36,8 @@ GraphMapFuser::GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, Grap
   pose_last_fuse_=init_pose;
 }
 void GraphMapFuser::SaveGraphMap(const std::string &filename){
-  cout<<"saving:\n"<<graph_map_->ToString()<<endl;
-  cout<<"to file:"<<filename<<endl;
+  cout<<"-----------------------------Saving---------------------------------\n"<<graph_map_->ToString()<<endl;
+  cout<<"----------------------------------------------------------------------\nTo file path:"<<filename<<endl;
   std::ofstream ofs(filename);
   boost::archive::text_oarchive ar(ofs);
   ar << graph_map_;
@@ -159,7 +159,7 @@ std::string GraphMapFuser::ToString(){
   std::stringstream ss;
   ss<<"fuser:"<<endl<<"initialized:"<<initialized_<<endl;
   ss<<"visualize:"<<visualize_<<endl;
-  ss<<"Key frame based update:"<<use_keyframe_<<endl;
+  ss<<"Key frame based update:"<<std::boolalpha<<use_keyframe_<<endl;
   if(use_keyframe_)
     ss<<"minimum keyframe distance(meter/deg):("<<min_keyframe_dist_<<","<<min_keyframe_rot_deg_<<")"<<endl;
   ss<<registrator_->ToString();

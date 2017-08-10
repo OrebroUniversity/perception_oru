@@ -10,21 +10,47 @@ ros::Publisher* GraphPlot::graphInfoPublisher_=NULL;
 ros::Publisher* GraphPlot::globalMapPublisher_=NULL;
 ros::Publisher* GraphPlot::global2MapPublisher_=NULL;
 ros::Publisher* GraphPlot::particlaCloudPublisher_=NULL;
-void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset){
+void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<PoseParticle> pcloud){
+  visualization_msgs::Marker marker;
 
+  std_msgs::ColorRGBA pcolor;
+  if(!initialized_)
+    Initialize();
 
-  //cloud.header.frame_id="/world";
-  //pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+  marker.color.a=0.7;
+  marker.color.r=0.8;
+  marker.color.b=0.1;
+  marker.color.g=0.1;
+  marker.ns="";
+  marker.header.frame_id="/world";
+  marker.header.stamp=ros::Time::now();
+  marker.id=0;
+  marker.action=visualization_msgs::Marker::ADD;
+  marker.type=visualization_msgs::Marker::POINTS;
+  marker.scale.x=0.05;
+  marker.scale.y=0.05;
+  for(int i=0;i<pcloud.size();i++){
+    geometry_msgs::Point point;
+    Eigen::Vector3d point_offset=offset*pcloud[i].T.translation();
+    point.x=point_offset(0);
+    point.y=point_offset(1);
+    point.z=point_offset(2);
+    marker.points.push_back(point);
+  }
+particlaCloudPublisher_->publish(marker);
+
 }
 
 void GraphPlot::Initialize(){
+  ParticleFilter3D test;
+
   cout<<"graph_plot: initialize"<<endl;
   nh_=new ros::NodeHandle("");
   graphPosePublisher_=    new ros::Publisher();
   localMapPublisher_=     new ros::Publisher();
   globalMapPublisher_=    new ros::Publisher();
   global2MapPublisher_=   new ros::Publisher();
-  graphInfoPublisher_=    new  ros::Publisher();
+  graphInfoPublisher_=    new ros::Publisher();
   particlaCloudPublisher_=new ros::Publisher();
 
   *localMapPublisher_=  nh_->advertise<visualization_msgs::MarkerArray>(NDT_LOCAL_MAP_TOPIC,10);
@@ -32,7 +58,7 @@ void GraphPlot::Initialize(){
   *global2MapPublisher_= nh_->advertise<visualization_msgs::MarkerArray>(NDT_GLOBAL2_MAP_TOPIC,10);
   *graphPosePublisher_=nh_->advertise<geometry_msgs::PoseArray>(GRAPH_POSE_TOPIC,10);
   *graphInfoPublisher_=nh_->advertise<visualization_msgs::MarkerArray>(GRAPH_INFO_TOPIC,10);
-  //*particlaCloudPublisher_=nh_->advertise<pcl::PointCloud<pcl::PointXYZ>>(PARTICLES_TOPIC,10);
+  *particlaCloudPublisher_=nh_->advertise<visualization_msgs::Marker>(PARTICLES_TOPIC,10);
   initialized_=true;
 }
 void GraphPlot::PlotPoseGraph(GraphMapPtr graph){

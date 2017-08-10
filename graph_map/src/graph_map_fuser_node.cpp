@@ -111,6 +111,7 @@ protected:
   Eigen::Affine3d last_tf_frame_;
   lslgeneric::MotionModel2d::Params motion_params;
   boost::mutex m;
+  ownRandom test;
 public:
   // Constructor
   GraphMapFuserNode(ros::NodeHandle param_nh) : frame_nr_(0)

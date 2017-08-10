@@ -12,7 +12,8 @@
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
 #include "pcl_conversions/pcl_conversions.h"
-//#include "ndt_mcl/3d_ndt_mcl.h"
+#include "ndt_mcl/3d_ndt_mcl.h"
+
 #define NDT_GLOBAL_MAP_TOPIC "NDTglobalMap"
 #define NDT_GLOBAL2_MAP_TOPIC "NDTglobal2Map"
 #define NDT_LOCAL_MAP_TOPIC  "NDTlocalMap"
@@ -32,7 +33,7 @@ public:
   static void SendGlobalMapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset=Affine3d::Identity());
   static void SendGlobal2MapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset=Affine3d::Identity());
   static void SendGlobal2MapToRviz(std::vector<lslgeneric::NDTCell*>cells, int color,const Affine3d &offset=Affine3d::Identity());
-  static void plotParticleCloud( const Eigen::Affine3d &offset);
+  static void plotParticleCloud( const Eigen::Affine3d &offset,std::vector<PoseParticle> pcloud);
 
   static void GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr, cov_vector &cov, mean_vector &mean);
   static void GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_vector &cov, mean_vector &mean);

@@ -58,7 +58,7 @@ namespace libgraphMap{
       for(int i=0;i<cells.size();i++){
         Eigen::Matrix3d cov=Tdiff.inverse().linear()*cells[i]->getCov()*Tdiff.linear();
         Eigen::Vector3d mean=Tdiff.inverse()*cells[i]->getMean();
-        targetPtr->GetMap()->addDistributionToCell(cov,mean,cells[i]->getN());
+        targetPtr->GetNDTMap()->addDistributionToCell(cov,mean,cells[i]->getN());
       }
 
     }

@@ -9,7 +9,7 @@
 #include "iostream"
 
 
-
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
 using namespace  std;
 namespace GraphMapLocalisation{
 
@@ -28,7 +28,6 @@ typedef boost::shared_ptr<TemplateLocalisationType> TemplateLocalisationTypePtr;
  */
 class TemplateLocalisationParam;
 typedef boost::shared_ptr<TemplateLocalisationParam> TemplateLocalisationParamPtr;
-
 
 
 class MCLNDTType;

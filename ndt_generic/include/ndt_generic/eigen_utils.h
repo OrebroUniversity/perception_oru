@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NDT_GENERIC_EIGEN_UTILS
+#define NDT_GENERIC_EIGEN_UTILS
 
 #include <vector>
 #include <Eigen/Core>
@@ -315,3 +316,4 @@ void updateRollPitch(Eigen::Affine3d &T, Eigen::Vector3d& euler) {
 
 
 } // namespace
+#endif

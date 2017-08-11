@@ -31,15 +31,13 @@
 //#include "ndt_mcl/3d_ndt_mcl.h"
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include "ndt_generic/io.h"
-#include "graph_localisation/localisation_factory.h"
-#include "graph_localisation/localisation_type.h"
-#include "mcl_ndt/mcl_ndt.h"
-#include "graph_map/graph_map_navigator.h"
+
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
 using namespace lslgeneric;
-using namespace GraphMapLocalisation;
+
+
 std::string dirname="";
 std::string output_dir_name="";
 std::string base_name="";
@@ -82,8 +80,8 @@ double min_dist=0, min_rot_in_deg=0;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
-LocalisationTypePtr localisation_type_ptr;
-GraphMapNavigatorPtr graph_map;
+NDTMCL3D *mcl;
+
 
 template<class T> std::string toString (const T& x)
 {
@@ -175,7 +173,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   Eigen::Vector3d transl;
   Eigen::Vector3d euler;
-  std::string localisation_type="";
   // First of all, make sure to advertise all program options
   desc.add_options()
       ("help", "produce help message")
@@ -184,7 +181,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("base-name", po::value<string>(&base_name)->default_value(std::string("mcl")), "prefix for all generated files")
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("data-set", po::value<string>(&dataset)->default_value(""), "where to save the pieces of the map (default it ./map)")
-      ("localisation-algorithm-name", po::value<string>(&localisation_type)->default_value("mcl_ndt"), "name of localisation algorihm e.g. mcl_ndt")
       ("filter-fov", "cutoff part of the field of view")
       ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
@@ -220,23 +216,9 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("use-submap", "Adopt the sub-mapping technique which represent the global map as a set of local submaps");
 
-
-
-
-
-
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
   po::notify(vm);
-  cout<<"Attempt to open file with name:\n"<<map_file_name<<endl;
-  std::ifstream ifs(map_file_name);
-  boost::archive::text_iarchive ia(ifs);
-  ia >> graph_map;
-  cout<<"map succesfully loaded"<<endl;
-  cout<<graph_map->ToString()<<endl;
-
-  LocalisationParamPtr localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
-  localisation_param_ptr->graph_map_=graph_map;
   cout<<"sensor pose"<<endl;
   if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
     exit(0);
@@ -257,8 +239,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   }
   cout<<"base-name:"<<base_name<<endl;
   cout<<"dir-name:"<<dirname<<endl;
-
-  localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
   return true;
 
 
@@ -302,7 +282,13 @@ int main(int argc, char **argv){
   if(!succesfull)
     exit(0);
   cout<<"load map from file"<<endl;
-
+  GraphMapNavigatorPtr graph_map;
+  //LoadGraphMap(map_file_name,graphMap);
+  std::ifstream ifs(map_file_name);
+  boost::archive::text_iarchive ia(ifs);
+  ia >> graph_map;
+  cout<<"map succesfully loaded"<<endl;
+  cout<<graph_map->ToString()<<endl;
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name);
   printParameters();
   initializeRosPublishers();
@@ -384,9 +370,12 @@ int main(int argc, char **argv){
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
         Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
-        Vector6d variances;
-        variances<<0.5,0.5,0.0001,0.00001,0.00001,0.001;
-        localisation_type_ptr->InitializeLocalization(init_pose,variances);
+        Eigen::Vector3d tgt_euler = init_pose.rotation().eulerAngles(0,1,2);
+        Eigen::Vector3d tgt_pos = init_pose.translation();
+        NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
+        mcl=new NDTMCL3D(resolution, *curr_node->GetNDTMap(),0);
+        //mcl->initializeFilter(tgt_pos(0),tgt_pos(1),tgt_pos(2),tgt_euler(0),tgt_euler(1),tgt_euler(2),0.1,0.1,0.0001,0.00001,0.00001,0.001,1000);
+        mcl->initializeFilter(tgt_pos(0),tgt_pos(1),tgt_pos(2),tgt_euler(0),tgt_euler(1),tgt_euler(2)  ,0.1,0.1,0.0001,0.00001,0.00001,0.001,600);
         counter ++;
         cloud.clear();
         cloud_nofilter.clear();
@@ -394,6 +383,9 @@ int main(int argc, char **argv){
       }
 
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
+      Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
+      ndt_generic::normalizeEulerAngles(Tmotion_euler);
+
       counter++;
 
       //pfilter.predict(Tmotion,0.01,0.01,0.01,0.00001,0.00001,0.001);
@@ -405,46 +397,49 @@ int main(int argc, char **argv){
           cloud.header.frame_id="/velodyne";
           pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
           cloud_pub->publish(cloud);
-
+          GraphPlot::plotParticleCloud(graph_map->GetCurrentNodePose(),mcl->pf.pcloud);
         }
       }
-      lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
-      localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
-      fuser_pose=graph_map->GetCurrentNodePose()*localisation_type_ptr->GetPose();
-      //cout<<"mean="<<mcl->getMean().translation().transpose()<<endl;
-      if(visualize){
-        gt_pose_msg.header.stamp=ros::Time::now();
-        tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-        gt_pub->publish(gt_pose_msg);
-        fuser_pose_msg.header.stamp=ros::Time::now();
-        tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-        fuser_pub->publish(fuser_pose_msg);
+        lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
+        mcl->updateAndPredictEff(Tmotion,cloud,1.0);
+        fuser_pose=graph_map->GetCurrentNodePose()*mcl->getMean();
+        cout<<"mean="<<mcl->getMean().translation().transpose()<<endl;
+        if(visualize){
+          gt_pose_msg.header.stamp=ros::Time::now();
+          tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
+          gt_pub->publish(gt_pose_msg);
+          fuser_pose_msg.header.stamp=ros::Time::now();
+          tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+          fuser_pub->publish(fuser_pose_msg);
+        }
+
+        //  fuser_->ProcessFrame(cloud,fuser_pose,Tmotion);
+
+     //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
+        if(visualize && counter%10==0){
+          GraphPlot::PlotPoseGraph(graph_map);
+          NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
+          GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+        }
+        double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
+        cout<<"norm between estimated and actual pose="<<diff<<endl;
+        Tgt_base_prev = Tgt_base;
+        Todom_base_prev = Todom_base;
+        cloud.clear();
+        cloud_nofilter.clear();
+
+        eval_files.Write( vreader.getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
+
       }
-      //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
-      if(visualize ){
-        GraphPlot::PlotPoseGraph(graph_map);
-        NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-        GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+    }
+    eval_files.Close();
+
+
+    if (alive) {
+      while (1) {
+        usleep(1000);
       }
-      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-      cout<<"norm between estimated and actual pose="<<diff<<endl;
-      Tgt_base_prev = Tgt_base;
-      Todom_base_prev = Todom_base;
-      cloud.clear();
-      cloud_nofilter.clear();
-
-      eval_files.Write( vreader.getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
-
     }
+    usleep(1000*1000);
+    std::cout << "Done." << std::endl;
   }
-  eval_files.Close();
-
-
-  if (alive) {
-    while (1) {
-      usleep(1000);
-    }
-  }
-  usleep(1000*1000);
-  std::cout << "Done." << std::endl;
-}

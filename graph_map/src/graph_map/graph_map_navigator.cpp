@@ -10,7 +10,7 @@ bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow, const Matrix6d &c
   double closest_distance=-1.0;
   cout<<"currently at pose="<<Tnow.translation()<<endl;
   for(std::vector<NodePtr>::iterator itr_node = nodes_.begin(); itr_node != nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
-    if( (*itr_node)->WithinRadius(Tnow,radius) ){ //if a node is within radius of pose and the node is of type "map type"
+    if(radius==0.0 || (*itr_node)->WithinRadius(Tnow,radius) ){ //if a node is within radius of pose and the node is of type "map type"
       if(  MapNodePtr found_map_node_ptr = boost::dynamic_pointer_cast< MapNode >(*itr_node) ){ //A map node has now been found within radius)
         double found_distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();//Euclidian distance between robot pose and map node pose;
         cout<<"Node is within range of previously created map, distance="<<found_distance<<endl;
@@ -33,6 +33,12 @@ bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow, const Matrix6d &c
   }
   return node_found;
 }
+bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow){
+  Eigen::Affine3d world_to_local;
+  double unlimited_distance=0.0;
+  return SwitchToClosestMapNode(Tnow,unit_covar,world_to_local,unlimited_distance);
+}
+
 bool GraphMapNavigator::AutomaticMapInterchange(Affine3d &Tnow, const Matrix6d &cov_incr, Affine3d & T_world_to_local_map,bool &changed_map_node,bool &created_map_node){
 
   created_map_node=false;

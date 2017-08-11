@@ -11,10 +11,14 @@ find_package(PCL 1.7 REQUIRED)
 find_package(catkin REQUIRED
     geometry_msgs
     cmake_modules
+    ndt_registration
+    ndt_map
+    ndt_mcl
+    ndt_localization
+    graph_map
     laser_geometry
     eigen_conversions
     pcl_ros
-    ndt_generic
     roscpp
     rospy
     sensor_msgs
@@ -26,23 +30,31 @@ find_package(catkin REQUIRED
     )
 find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED COMPONENTS)
-
-
+find_package(Boost REQUIRED COMPONENTS signals)
 catkin_package(
     DEPENDS Eigen libpcl-all-dev
-    CATKIN_DEPENDS roscpp cmake_modules ndt_generic laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
+    CATKIN_DEPENDS ndt_mcl graph_map ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     )
 
 
 include_directories(include  ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} )
+
+find_package(OpenMP REQUIRED)
+if(OPENMP_FOUND)
+ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 set (${PROJECT_NAME}_LIB_SRCS
     src/localisation_type.cpp
     src/localisation_factory.cpp
+    src/mcl_ndt/mcl_ndt.cpp
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_localisation test/test_localisation.cpp )

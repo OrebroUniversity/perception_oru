@@ -20,12 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   eigen_conversions
   graph_map
+  graph_localisation
   tf
   genmsg
 )
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS ndt_fuser ndt_mcl ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud graph_map tf tf_conversions genmsg
+  CATKIN_DEPENDS ndt_fuser ndt_mcl ndt_map ndt_registration ndt_visualisation pcl_ros velodyne_msgs velodyne_pointcloud graph_map graph_localisation tf tf_conversions genmsg
   DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
 )
 
@@ -54,6 +55,9 @@ include_directories(
 
 add_executable(fuser3d_offline src/fuser3d_offline.cpp)
 target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
+
+add_executable(mcl_offline src/mcl_offline.cpp)
+target_link_libraries(mcl_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
 
 add_executable(graph_mcl_offline src/graph_mcl_offline.cpp)
 target_link_libraries(graph_mcl_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})

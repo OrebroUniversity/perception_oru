@@ -37,7 +37,7 @@ bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::Point
 
   //Get ndt map pointer
   NDTMapPtr MapPtr = boost::dynamic_pointer_cast< NDTMapType >(maptype);
-  NDTMap *globalMap=MapPtr->GetMap();
+  NDTMap *globalMap=MapPtr->GetNDTMap();
   // cout<<"number of cell in (global/local) map"<<globalMap->getAllCells().size()<<","<<ndlocal.getAllCells().size()<<endl;
   bool matchSuccesfull;
   if(registration2d_){
@@ -78,8 +78,8 @@ bool NDTD2DRegType::RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eig
 
   NDTMap *prev,*next;
   bool match_succesfull;
-  prev=(boost::dynamic_pointer_cast<NDTMapType>(map_prev))->GetMap();
-  next=(boost::dynamic_pointer_cast<NDTMapType>(map_next))->GetMap();
+  prev=(boost::dynamic_pointer_cast<NDTMapType>(map_prev))->GetNDTMap();
+  next=(boost::dynamic_pointer_cast<NDTMapType>(map_next))->GetNDTMap();
   if(registration2d_){
     match_succesfull=matcher2D_.match(*prev,*next,Tdiff,true);
   }

@@ -14,10 +14,10 @@
 #include <ndt_map/pointcloud_utils.h>
 #include "ndt_mcl/ParticleFilter3D.h"
 #include <tf_conversions/tf_eigen.h>
-
 /**
  * NDT MCL - Class implementation
  */
+
 class NDTMCL3D{
     public:
   lslgeneric::NDTMap map; 		///<This is my map
@@ -145,17 +145,17 @@ class NDTMCL3D{
 	    //Eigen::Vector3d mm; mm<<m.x,m.y,m.a;
 	    //return mm;
 	}
-  
+
 
     private:
 	bool isInit;
 	int sinceSIR;
-	double getDoubleTime()
-	{
-	    struct timeval time;
-	    gettimeofday(&time,NULL);
-	    return time.tv_sec + time.tv_usec * 1e-6;
-	}
+  double getDoubleTime()
+  {
+      struct timeval time;
+      gettimeofday(&time,NULL);
+      return time.tv_sec + time.tv_usec * 1e-6;
+  }
 
 };
 

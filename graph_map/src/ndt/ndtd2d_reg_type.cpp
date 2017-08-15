@@ -93,9 +93,11 @@ bool NDTD2DRegType::RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eig
 std::string NDTD2DRegType::ToString(){
   std::stringstream ss;
   ss<<registrationType::ToString();
-  ss<<"NDT d2d registration type:"<<endl;
-  ss<<"resolution :"<< resolution_<<endl;
-  ss<<"resolutionLocalFactor :"<< resolutionLocalFactor_<<endl;
+  if(enableRegistration_){
+    ss<<"NDT d2d registration type:"<<endl;
+    ss<<"resolution :"<< resolution_<<endl;
+    ss<<"resolutionLocalFactor :"<< resolutionLocalFactor_<<endl;
+  }
   return ss.str();
 }
 

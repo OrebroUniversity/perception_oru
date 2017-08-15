@@ -51,6 +51,7 @@ bool filter_fov=false;
 bool step_control=false;
 bool check_consistency=true;
 bool registration2d=true;
+bool use_submap=true;
 
 bool alive=false;
 bool save_map=true;
@@ -304,13 +305,15 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   mapParPtr->min_range_=min_range;
   graphParPtr->compound_radius_=compound_radius_;
   graphParPtr->interchange_radius_=interchange_radius_;
+  cout<<"use keyframe="<<use_keyframe;
   graphParPtr->use_keyframe_=use_keyframe;
   graphParPtr->min_keyframe_dist_=min_keyframe_dist;
   graphParPtr->min_keyframe_rot_deg_=min_keyframe_dist_rot_deg;
   mapParPtr->enable_mapping_=!vm.count("disable-mapping");
   mapParPtr->sizey_=size_xy;
   mapParPtr->sizex_=size_xy;
-  graphParPtr->use_submap_=vm.count("use-submap");
+  use_submap=vm.count("use-submap");
+  graphParPtr->use_submap_=use_submap;
 
   if(  NDTD2DRegParamPtr ndt_reg_ptr=boost::dynamic_pointer_cast<NDTD2DRegParam>(regParPtr)){
     ndt_reg_ptr->resolution_=resolution;
@@ -353,6 +356,9 @@ void printParameters(){
     cout<<"No FOV filter."<<endl;
 
 }
+std::string boolToString(bool input){
+  return input?std::string("true"):std::string("false");
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////7
@@ -376,7 +382,7 @@ int main(int argc, char **argv){
   bool succesfull=ReadAllParameters(desc,argc,&argv);
   if(!succesfull)
     exit(0);
-  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name);
+  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
   initializeRosPublishers();
   tf::TransformBroadcaster br;
@@ -387,8 +393,10 @@ int main(int argc, char **argv){
   if(gt_mapping)
     tf_interp_link = gt_base_link_id;
 
-  base_name += gt_mapping? "_gt_":"_d2Dfuser_";
-  base_name += std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
+  stringstream ss;
+  string name= gt_mapping? "_gt_":"_fuser_";
+  ss<<name<<dataset<<std::string("_Sub")<<boolToString(use_submap)<<std::string("intch_r")<<interchange_radius_<<std::string("comp_r_")<<compound_radius_<<std::string("_res") << toString(resolution)<<std::string("_sensCut") << toString(max_range);
+  //base_name += dataset+std::string("_Sub")+boolToString(use_submap)+std::string("intch_r")+interchange_radius_+std::string("comp_r_")+compound_radius_+std::string("_res") + toString(resolution)+ std::string("_sensCut") + toString(max_range);
 
   ros::Time::init();
   srand(time(NULL));

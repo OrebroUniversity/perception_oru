@@ -30,6 +30,7 @@ public:
   virtual void UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tmotion)=0;
   virtual ~LocalisationType()=0;
   virtual Eigen::Affine3d GetPose()=0;//return pose of robot in world frame
+  virtual std::string ToString();
   protected:
   bool initialized_=false;
   GraphMapNavigatorPtr graph_map_;

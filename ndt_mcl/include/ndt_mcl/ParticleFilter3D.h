@@ -44,7 +44,7 @@ class ParticleFilter3D{
 	 */
 	void normalize();
 
-	void predict(Eigen::Affine3d Tmotion, double vx, double vy, double vz, double vroll, double vpitch, double vyaw);
+  void predict(Eigen::Affine3d Tmotion, double vx, double vy, double vz, double vroll, double vpitch, double vyaw,const Eigen::Affine3d offset=Eigen::Affine3d::Identity());
 
 	Eigen::Affine3d getMean();
 	//Eigen::Matrix<double,7,7> getCov();

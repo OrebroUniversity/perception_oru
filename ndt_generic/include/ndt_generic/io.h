@@ -128,13 +128,16 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
  }
  class CreateEvalFiles{
  public:
-   CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name){
+   CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name, bool enable=true){
      output_dir_name_=output_dir_name;
      base_name_=base_name;
      CreateOutputFiles();
+     enable_=enable;
    }
 
    bool CreateOutputFiles(){
+     if(!enable_)
+       return true;
 
      std::string filename;
      {
@@ -162,6 +165,8 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
        return true;
    }
    void Write(const ros::Time frame_time ,const Eigen::Affine3d &Tgtbase,const Eigen::Affine3d &Todombase,const Eigen::Affine3d &Tfuserpose,const Eigen::Affine3d &sensoroffset){
+     if(!enable_)
+       return;
      gt_file << frame_time << " " << transformToEvalString(Tgtbase);
      odom_file << frame_time << " " << transformToEvalString(Todombase);
      est_file << frame_time << " " << transformToEvalString(Tfuserpose);
@@ -169,6 +174,8 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
    }
 
    void Close(){
+     if(!enable_)
+       return;
      gt_file.close();
      odom_file.close();
      est_file.close();
@@ -176,6 +183,7 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
    }
 
  private:
+   bool enable_;
    std::string output_dir_name_,base_name_;
    std::ofstream gt_file, odom_file, est_file, sensorpose_est_file; //output files
  };

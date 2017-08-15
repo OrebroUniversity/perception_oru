@@ -69,6 +69,7 @@ MapParamPtr mapParPtr=NULL;
 GraphParamPtr graphParPtr=NULL;
 double sensor_time_offset=0;
 double resolution_local_factor=0;
+unsigned int n_particles=0;
 double max_range=0, min_range=0;
 double maxRotationNorm_=0;
 double interchange_radius_=0;
@@ -117,8 +118,19 @@ std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,
 bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen::Vector3d &euler,tf::Transform &tf_sensor){
 
   tf::Quaternion quat;
+
   bool found_sensor_pose=false;
-  if(dataset.compare("oru-basement")){
+  if(dataset.compare("oru-basement")==0){
+    transl[0]=0.3;
+    transl[1]=0;
+    transl[2]=0;
+    euler[0]=0;
+    euler[1]=0;
+    euler[2]=-1.62;
+    found_sensor_pose=true;
+    cout<<"foud oru parameters"<<endl;
+  }
+  else if(dataset.compare("default")==0){
     transl[0]=0.3;
     transl[1]=0;
     transl[2]=0;
@@ -127,10 +139,10 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
     euler[2]=-1.62;
     found_sensor_pose=true;
   }
-  else if(dataset.compare("default")){
-    transl[0]=0.3;
-    transl[1]=0;
-    transl[2]=0;
+  else if(dataset.compare("arla-2012")==0){
+    transl[0]=1.18;
+    transl[1]=-0.3;
+    transl[2]=2.0;
     euler[0]=0;
     euler[1]=0;
     euler[2]=-1.62;
@@ -217,11 +229,9 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
       ("registration2d","registration2d")
       ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
+      ("n-particles", po::value<unsigned int>(&n_particles)->default_value(270), "Total number of particles to use")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("use-submap", "Adopt the sub-mapping technique which represent the global map as a set of local submaps");
-
-
-
 
 
 
@@ -233,9 +243,13 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   boost::archive::text_iarchive ia(ifs);
   ia >> graph_map;
   cout<<"map succesfully loaded"<<endl;
-  cout<<graph_map->ToString()<<endl;
 
   LocalisationParamPtr localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
+  if(MCLNDTParamPtr parPtr=boost::dynamic_pointer_cast<MCLNDTParam>(localisation_param_ptr )){
+    cout<<"adding MCLNDT parameters"<<endl;
+    parPtr->resolution=resolution;
+    parPtr->n_particles_=n_particles;
+  }
   localisation_param_ptr->graph_map_=graph_map;
   cout<<"sensor pose"<<endl;
   if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
@@ -259,6 +273,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   cout<<"dir-name:"<<dirname<<endl;
 
   localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
+  cout<<localisation_type_ptr->ToString()<<endl;
   return true;
 
 
@@ -303,15 +318,14 @@ int main(int argc, char **argv){
     exit(0);
   cout<<"load map from file"<<endl;
 
-  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name);
+  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
   initializeRosPublishers();
   tf::TransformBroadcaster br;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
 
-  base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(max_range) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
-
+  base_name += std::string("_res") + toString(resolution) + std::string("_sensorcutoff") + toString(max_range);
   ros::Time::init();
   srand(time(NULL));
 
@@ -385,7 +399,7 @@ int main(int argc, char **argv){
         Todom_base_prev = Todom_base;
         Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
         Vector6d variances;
-        variances<<0.5,0.5,0.0001,0.00001,0.00001,0.001;
+        variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
         localisation_type_ptr->InitializeLocalization(init_pose,variances);
         counter ++;
         cloud.clear();
@@ -405,28 +419,27 @@ int main(int argc, char **argv){
           cloud.header.frame_id="/velodyne";
           pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
           cloud_pub->publish(cloud);
-
         }
       }
       lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
       localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
-      fuser_pose=graph_map->GetCurrentNodePose()*localisation_type_ptr->GetPose();
+      fuser_pose=localisation_type_ptr->GetPose();
       //cout<<"mean="<<mcl->getMean().translation().transpose()<<endl;
       if(visualize){
         gt_pose_msg.header.stamp=ros::Time::now();
+        fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
         gt_pub->publish(gt_pose_msg);
-        fuser_pose_msg.header.stamp=ros::Time::now();
         tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
         fuser_pub->publish(fuser_pose_msg);
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
-      if(visualize ){
+      if(visualize && counter%10==0){
         GraphPlot::PlotPoseGraph(graph_map);
         NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
         GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
       }
-      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
+      double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
       cout<<"norm between estimated and actual pose="<<diff<<endl;
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;
@@ -438,8 +451,7 @@ int main(int argc, char **argv){
     }
   }
   eval_files.Close();
-
-
+cout<<"finishing"<<endl;
   if (alive) {
     while (1) {
       usleep(1000);

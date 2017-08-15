@@ -12,6 +12,9 @@ GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const Gr
   use_submap_=graphparam->use_submap_;
   interchange_radius_=graphparam->interchange_radius_;
   compound_radius_=graphparam->compound_radius_;
+  use_keyframe_=graphparam->use_keyframe_;
+   min_keyframe_dist_=graphparam->min_keyframe_dist_;
+   min_keyframe_rot_deg_=graphparam->min_keyframe_rot_deg_;
 
   //double min_size=mapparam->sizex_< mapparam->sizey_? mapparam->sizex_ : mapparam->sizey_; //select min map length
   //interchange_radius_=min_size/2-mapparam_->max_range_;//
@@ -48,6 +51,9 @@ string GraphMap::ToString(){
   std::stringstream ss;
   ss<<"GraphMap:"<<endl;
   ss <<"Graph size="<<nodes_.size()<<endl;
+  ss <<"Interchange: "<<interchange_radius_<<endl;
+  ss <<"Compound_radius: "<<compound_radius_<<endl;
+  ss <<"use keyframe: "<<boolalpha<<use_keyframe_<<endl;
   for(int i=0;i<nodes_.size();i++){
     if(i==0)
       ss <<"Node positions:"<<endl;

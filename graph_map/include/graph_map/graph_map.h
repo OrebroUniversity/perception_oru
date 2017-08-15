@@ -54,6 +54,9 @@ protected:
   bool use_submap_=false;
   double interchange_radius_=0;
   double compound_radius_=0;
+  double min_keyframe_dist_=0.5;
+  double min_keyframe_rot_deg_=15;
+  bool use_keyframe_=true;
 private:
   friend class GraphFactory;
   friend class boost::serialization::access;

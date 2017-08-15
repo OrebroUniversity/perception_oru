@@ -31,14 +31,16 @@ std::string registrationType::ToString(){
   std::stringstream ss;
   ss<<"registration type:"<<endl;
   ss<<"enableRegistration: "<<std::boolalpha<<enableRegistration_<<endl;
-  ss<<"registration limited to 2d: "<<std::boolalpha<<registration2d_<<endl;
-  ss<<"Use soft constraints: "<<std::boolalpha<<do_soft_constraints_<<endl;
-  ss<<"Check consistency: "<<std::boolalpha<<checkConsistency_<<endl;
-  ss<<"max registration distances(translation,rotation): ("<<maxTranslationNorm_<<","<<maxRotationNorm_<<")"<<endl;
-  ss<<"max registration deltas(translationRegistrationDelta,rotationRegistrationDelta): ("<<translationRegistrationDelta_<<","<<rotationRegistrationDelta_<<")"<<endl;
-  ss<<"Maximum sensor range: "<<sensorRange_<<endl;
-  ss<<"Map size z: "<<mapSizeZ_<<endl;
-  ss<<"sensor position offset: (x,y,z): ("<<sensorPose_.translation().transpose()(0)<<","<<sensorPose_.translation().transpose()(1)<<","<<sensorPose_.translation().transpose()(2)<<")"<<endl;
+  if(enableRegistration_){
+    ss<<"registration limited to 2d: "<<std::boolalpha<<registration2d_<<endl;
+    ss<<"Use soft constraints: "<<std::boolalpha<<do_soft_constraints_<<endl;
+    ss<<"Check consistency: "<<std::boolalpha<<checkConsistency_<<endl;
+    ss<<"max registration distances(translation,rotation): ("<<maxTranslationNorm_<<","<<maxRotationNorm_<<")"<<endl;
+    ss<<"max registration deltas(translationRegistrationDelta,rotationRegistrationDelta): ("<<translationRegistrationDelta_<<","<<rotationRegistrationDelta_<<")"<<endl;
+    ss<<"Maximum sensor range: "<<sensorRange_<<endl;
+    ss<<"Map size z: "<<mapSizeZ_<<endl;
+    ss<<"sensor position offset: (x,y,z): ("<<sensorPose_.translation().transpose()(0)<<","<<sensorPose_.translation().transpose()(1)<<","<<sensorPose_.translation().transpose()(2)<<")"<<endl;
+  }
   return ss.str();
 }
 /* -------Parameters---------------- */

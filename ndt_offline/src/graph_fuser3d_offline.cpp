@@ -426,6 +426,15 @@ int main(int argc, char **argv){
     std::string bagfilename = ros_bag_paths[i];
     fprintf(stderr,"Opening %s\n",bagfilename.c_str());
     cout<<velodyne_config_file<<","<<bagfilename<<","<<velodyne_packets_topic<<","<<velodyne_frame_id<<","<<tf_world_frame<<","<<tf_topic<<endl;
+    cout<<"velodyne config="<<velodyne_config_file<<endl;
+    cout<<"bagfile name="<<bagfilename<<endl;
+    cout<<"velodyne_packets_topic="<<velodyne_packets_topic<<endl;
+    cout<<"velodyne config="<<velodyne_config_file<<endl;
+    cout<<"velodyne frame id="<<velodyne_frame_id<<endl;
+    cout<<"tf_world_frame="<<tf_world_frame<<endl;
+    cout<<"tf_topic="<<tf_topic<<endl;
+    cout<<"min range="<<min_range<<endl;
+    cout<<"max_range="<<max_range<<endl;
     VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file,
                                              bagfilename,
                                              velodyne_packets_topic,  //"/velodyne_packets"
@@ -500,7 +509,7 @@ int main(int argc, char **argv){
 
       fuser_pose=fuser_pose*Tmotion;
 
-      if(visualize){
+      if(1){ //visualize
         br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
         if(counter%5==0){
           cloud.header.frame_id="/velodyne";

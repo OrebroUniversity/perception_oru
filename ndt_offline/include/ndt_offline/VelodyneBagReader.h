@@ -188,6 +188,11 @@ class VelodyneBagReader{
 	    return true;
 	}
 
+	/**
+	* @param[in] NMeas : number of point cloud to stack
+	* @param[out] cloud<PointT> : point cloud out at the end. pointT is the type of the cloud but it needs to be x,y,z even though it's templated.
+	* @param[out] sensor_pose : sensor pose of measurement
+	*/
 	bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose){
 
 	    tf::Transform T;
@@ -252,14 +257,21 @@ class VelodyneBagReader{
 
 
 
+	    /**
+		 * @param[in] NMeas : number of point cloud to stack
+		 * @param[out] cloud<PointT> : point cloud out at the end. pointT is the type of the cloud
+		 * @param[out] sensor_pose : sensor pose of measurement
+		 * @param[out] base_pose : base pose of measurement
+		 * @param[in] base_pose_id : base_pose frame name
+		 */
 	    bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose, tf::Transform &base_pose, std::string base_pose_id){
 
-              if(readMultipleMeasurements(Nmeas, cloud, sensor_pose )){
-		    odosync->getTransformationForTime(timestamp_of_last_sensor_message,base_pose_id,base_pose);
-		}else{
-		    return false;
-		}
-		return true;
+			if(readMultipleMeasurements(Nmeas, cloud, sensor_pose )){
+				odosync->getTransformationForTime(timestamp_of_last_sensor_message,base_pose_id,base_pose);
+			}else{
+				return false;
+			}
+			return true;
 	    }
 
 	    /**

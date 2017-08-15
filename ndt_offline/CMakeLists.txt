@@ -30,6 +30,7 @@ catkin_package(
   DEPENDS eigen libpcl-all-dev mrpt glut libxmu-dev 
 )
 
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(LibXml2 REQUIRED)
@@ -49,6 +50,13 @@ find_package(OpenMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 
+FIND_PACKAGE(VTK REQUIRED NO_MODULE)
+IF (VTK_FOUND)
+  INCLUDE (${VTK_USE_FILE})
+ELSE(VTK_FOUND)
+  MESSAGE(FATAL_ERROR "Cannot build the executable without VTK. Please set the VTK_DIR")
+ENDIF (VTK_FOUND)
+
 include_directories(
   ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
 )
@@ -65,5 +73,10 @@ target_link_libraries(graph_mcl_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} $
 add_executable(graph_fuser3d_offline src/graph_fuser3d_offline.cpp)
 target_link_libraries(graph_fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
 
+
 add_executable(view_ndtmap src/view_ndtmap.cpp)
 target_link_libraries(view_ndtmap ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(ndt_offline_laser src/ndt_offline_laser.cpp)
+target_link_libraries(ndt_offline_laser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
+

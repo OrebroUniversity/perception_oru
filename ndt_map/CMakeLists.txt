@@ -13,14 +13,15 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions 
   std_msgs
   nav_msgs
-  message_generation
   cmake_modules
-)
+#   geometry_msgs
+  message_generation  )
 
 add_message_files(
   FILES
   NDTMapMsg.msg   
-  NDTCellMsg.msg
+  NDTCellMsg.msg 
+  NDTVectorMapMsg.msg
 )
 
 generate_messages(

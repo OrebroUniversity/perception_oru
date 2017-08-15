@@ -34,7 +34,7 @@
 
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
-//#include "gnuplot-iostream.h"
+
 #include "lidarUtils/lidar_utilities.h"
 
 #include <boost/archive/text_iarchive.hpp>

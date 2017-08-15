@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/line.h>
-#include "ndt_line_visual.hpp"
+#include "ndt_rviz_visualisation/ndt_line_visual.hpp"
 
 namespace lslgeneric{
   NDTLineVisual::NDTLineVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ){
@@ -58,11 +58,11 @@ namespace lslgeneric{
 
     NDT_l2_->setPosition(position);
     NDT_l2_->setOrientation(orient);
-    NDT_l2_->setPoints(Ogre::Vector3(-scale[1],0,0), Ogre::Vector3(scale[1],0,0));
+    NDT_l2_->setPoints(Ogre::Vector3(0,-scale[1],0), Ogre::Vector3(0,scale[1],0));
 
     NDT_l3_->setPosition(position);
     NDT_l3_->setOrientation(orient);
-    NDT_l3_->setPoints(Ogre::Vector3(-scale[2],0,0), Ogre::Vector3(scale[2],0,0));
+    NDT_l3_->setPoints(Ogre::Vector3(0,0,-scale[2]), Ogre::Vector3(0,0,scale[2]));
 
     // NDT_elipsoid_->setScale(scale);
     // NDT_elipsoid_->setPosition(position);

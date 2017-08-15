@@ -9,9 +9,9 @@
 #include <rviz/properties/int_property.h>
 #include <rviz/frame_manager.h>
 
-#include "ndt_visual.hpp"
+#include "ndt_rviz_visualisation/ndt_visual.hpp"
 
-#include "ndt_display.hpp"
+#include "ndt_rviz_visualisation/ndt_display.hpp"
 
 namespace lslgeneric{
   

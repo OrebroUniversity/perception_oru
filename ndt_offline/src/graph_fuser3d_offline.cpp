@@ -267,9 +267,16 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
   po::notify(vm);
-  cout<<"sensor pose"<<endl;
-  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
-    exit(0);
+
+  if (vm.count("help"))
+  {
+    cout << desc << "\n";
+    return 1;
+  }
+
+  if(GetSensorPose(dataset,transl,euler,tf_sensor_pose)) {
+    cout<<"sensor pose from dataset utilized [" << dataset << "]" << endl;
+  }
 
   mapParPtr= GraphFactory::CreateMapParam(map_type_name); //map_type_name
   regParPtr=GraphFactory::CreateRegParam(registration_type_name);

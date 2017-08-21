@@ -127,11 +127,12 @@ public:
             p_target.y=p_src.y;
             p_target.z=p_src.z;
              cloud.push_back(p_target);
-             timestamp_of_last_sensor_message=scan->header.stamp;
            }
            cloud.header.frame_id=scan->header.frame_id;
            pcl_conversions::toPCL(scan->header.stamp,cloud.header.stamp);
-           //std::cout<<"reading measurment with size:"<<cloud.size()<<"frame id-stamp:"<<cloud.header.frame_id<<"-"<<cloud.header.stamp<<std::endl;
+
+          //  cloud=*scan;
+           timestamp_of_last_sensor_message=scan->header.stamp;
           }
         }
         I++;

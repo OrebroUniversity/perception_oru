@@ -156,11 +156,10 @@ public:
     //if(odosync == NULL) return true;
     rosbag::MessageInstance const m = *I;
     if(m.getTopic()==velodynetopic_){
-      sensor_msgs::PointCloud p;
-      sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
+
       velodyne_msgs::VelodyneScan::ConstPtr scan = m.instantiate<velodyne_msgs::VelodyneScan>();
       if (scan != NULL){
-
+        sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
         velodyne_rawdata::VPointCloud pnts,conv_points;
         // process each packet provided by the driver
         tf::Transform T;
@@ -174,9 +173,11 @@ public:
             if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
               pcl_ros::transformPointCloud(pnts,conv_points,T);
               for(size_t i = 0;i<pnts.size();i++){
-               // PointT p;
+                // PointT p;
                 geometry_msgs::Point32 p;
-                p.x = conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+                p.x = conv_points.points[i].x;
+                p.y = conv_points.points[i].y;
+                p.z = conv_points.points[i].z;
                 cloud->points.push_back(p);
               }
             }else{
@@ -185,26 +186,28 @@ public:
             pnts.clear();
           }
 
+
         }else{
           fprintf(stderr,"No transformation\n");
         }
 
-      /*  geometry_msgs::Point32 p;
+        /*  geometry_msgs::Point32 p;
         sensor_msgs::PointCloud cld;
         for(int i=0;i<cloud.size();i++){
           p.x=cloud[i].x;
           p.y=cloud[i].y;
           p.z=cloud[i].z;
           cld.points.push_back(p);*/
-
         std::cout<<"Frame:"<<++counter<<", size:"<<cloud->points.size()<<std::endl;
         cloud->header.frame_id="/velodyne";
+        cloud->header.seq=counter;
         cloud->header.stamp=timestamp_of_last_sensor_message;
         outbag.write("/sensor_lidar",timestamp_of_last_sensor_message,cloud);
+
         //cld.header.frame_id=cloud.header.frame_id;
         //cld.header.stamp=timestamp_of_last_sensor_message;
         //outbag.write("/sensor_lidar",timestamp_of_last_sensor_message,  cld);
-        }
+      }
     }
     else{
       // std::cout<<"wrinting topic="<<m.getTopic()<<std::endl;

@@ -229,10 +229,9 @@ int main(int argc, char **argv){
   tf::Transform tf_scan_source;
   tf::Transform tf_gt_base;
   Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
+char c=getchar();
+  while(reader.ConvertToPclBag(tf_scan_source));
 
-  while(reader.ConvertToPclBag(tf_scan_source)){
-    cloud.clear();
-  }
 
  // while(reader.readMultipleMeasurements(1,cloud,tf_scan_source,tf_gt_base,base_link_id)){
 

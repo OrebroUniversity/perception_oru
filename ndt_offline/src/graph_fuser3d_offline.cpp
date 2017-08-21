@@ -31,6 +31,7 @@
 #include "ndt_generic/io.h"
 #include "ndt_offline/pointcloudbagreader.h"
 #include "ndt_offline/readbagfilegeneric.h"
+#include <unistd.h>
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
@@ -90,6 +91,7 @@ double translationRegistrationDelta_=0;
 double resolution=0;
 double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
+unsigned int skip_frame=20;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
@@ -250,6 +252,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
       ("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
+      ("skip-frame", po::value<unsigned int>(&skip_frame)->default_value(20), "sframes to skip before plot map etc.")
       ("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
       ("registration2d","registration2d")
       ("check-consistency", "if consistency should be checked after registration")
@@ -536,10 +539,12 @@ int main(int argc, char **argv){
     fuser_pose=fuser_pose*Tmotion;
 
     if(visualize){
-      cout<<"publish could"<<endl;
       br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
 
-      if(counter%50==0){
+      if(counter%skip_frame==0){
+       /* for(int i=0;i<cloud.size();i++){
+          cout<<"c(x,y,z)="<<cloud.points[i].x<<","<<cloud.points[i].y<<","<<cloud.points[i].z<<")"<<endl;
+        }*/
         cloud.header.frame_id="/velodyne";
         pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
         cloud_pub->publish(cloud);
@@ -556,7 +561,7 @@ int main(int argc, char **argv){
 
     fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
     double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-    if(visualize && counter%50==0 ){
+    if(visualize && counter%skip_frame==0 ){
       fuser_->plotMap();
       //cout<<"norm between estimated and actual pose="<<diff<<endl;
     }

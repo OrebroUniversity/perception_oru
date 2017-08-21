@@ -46,6 +46,7 @@ protected:
   void serialize(Archive & ar, const unsigned int version){
     ar & boost::serialization::base_object<MapType>(*this);
     ar & map_;
+    ar & resolution_;
     ar & resolution_local_factor_;
     ar & sensor_range_;
 

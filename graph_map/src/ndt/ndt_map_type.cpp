@@ -69,7 +69,8 @@ namespace libgraphMap{
     ss<<MapType::ToString()<<"NDT Map Type:"<<endl;
     ss<<"resolution:"<<resolution_<<endl;
     ss<<"resolution local factor:"<<resolution_local_factor_<<endl;
-    ss<<"maximum sensor range:"<<sensor_range_<<endl;
+  // TODO sensor_range_ is not used at the moment.
+    ss<<"maximum sensor range (not used):"<<sensor_range_<<endl;
     return ss.str();
   }
 

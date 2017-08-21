@@ -478,7 +478,7 @@ int main(int argc, char **argv){
     } else {
       cloud = cloud_nofilter;
     }
-
+    cout<<"cloud size:"<<cloud.size()<<endl;
     if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
     tf::Transform tf_odom_base;
@@ -518,63 +518,64 @@ int main(int argc, char **argv){
     if( found_scan!=true)
       break;
 
-      Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
-      Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
-      ndt_generic::normalizeEulerAngles(Tmotion_euler);
-      if(!use_odometry) {
-        Tmotion.setIdentity();
+    Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
+    Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
+    ndt_generic::normalizeEulerAngles(Tmotion_euler);
+    if(!use_odometry) {
+      Tmotion.setIdentity();
+    }
+    counter++;
+
+    fuser_pose=fuser_pose*Tmotion;
+
+    if(visualize){
+      br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
+
+
+      cloud.header.frame_id="/velodyne";
+      pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+      cloud_pub->publish(cloud);
+
+      gt_pose_msg.header.stamp=ros::Time::now();
+      tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
+      gt_pub->publish(gt_pose_msg);
+      if(!gt_mapping){
+        fuser_pose_msg.header.stamp=ros::Time::now();
+        tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+        fuser_pub->publish(fuser_pose_msg);
       }
-      counter++;
-
-      fuser_pose=fuser_pose*Tmotion;
-
-      if(visualize){
-        br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
-        if(counter%20==0){
-          cloud.header.frame_id="/velodyne";
-          pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-          cloud_pub->publish(cloud);
-        }
-        gt_pose_msg.header.stamp=ros::Time::now();
-        tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-        gt_pub->publish(gt_pose_msg);
-        if(!gt_mapping){
-          fuser_pose_msg.header.stamp=ros::Time::now();
-          tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-          fuser_pub->publish(fuser_pose_msg);
-        }
-      }
-
-      fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
-      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-      if(visualize && counter%5==0 ){
-        fuser_->plotMap();
-        cout<<"norm between estimated and actual pose="<<diff<<endl;
-      }
-
-      Tgt_base_prev = Tgt_base;
-      Todom_base_prev = Todom_base;
-      cloud.clear();
-      cloud_nofilter.clear();
-
-      eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
-      itr_end=ros::Time::now();
     }
 
-    eval_files.Close();
-
-    if(save_map && fuser_!=NULL && fuser_->FramesProcessed()>0){
-      char path[1000];
-      snprintf(path,999,"%s/%s.map",output_dir_name.c_str(),base_name.c_str());
-      fuser_->SaveGraphMap(path);
-      exit(0);
+    fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+    double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
+    if(visualize ){
+      fuser_->plotMap();
+      cout<<"norm between estimated and actual pose="<<diff<<endl;
     }
+    sleep(1);
+    Tgt_base_prev = Tgt_base;
+    Todom_base_prev = Todom_base;
+    cloud.clear();
+    cloud_nofilter.clear();
 
-    if (alive) {
-      while (1) {
-        usleep(1000);
-      }
-    }
-    usleep(1000*1000);
-    std::cout << "Done." << std::endl;
+    eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
+    itr_end=ros::Time::now();
   }
+
+  eval_files.Close();
+
+  if(save_map && fuser_!=NULL && fuser_->FramesProcessed()>0){
+    char path[1000];
+    snprintf(path,999,"%s/%s.map",output_dir_name.c_str(),base_name.c_str());
+    fuser_->SaveGraphMap(path);
+    exit(0);
+  }
+
+  if (alive) {
+    while (1) {
+      usleep(1000);
+    }
+  }
+  usleep(1000*1000);
+  std::cout << "Done." << std::endl;
+}

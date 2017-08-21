@@ -209,7 +209,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("size-xy", po::value<double>(&size_xy)->default_value(60.), "size of the central map xy")
-      ("itrs", po::value<int>(&itrs)->default_value(30), "resolution of the map")
+      ("itrs", po::value<int>(&itrs)->default_value(30), "number of iteration in the registration")
       ("fuse-incomplete", "fuse in registration estimate even if iterations ran out. may be useful in combination with low itr numbers")
       ("filter-fov", "cutoff part of the field of view")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
@@ -271,7 +271,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   if (vm.count("help"))
   {
     cout << desc << "\n";
-    return 1;
+    return false;
   }
 
   if(GetSensorPose(dataset,transl,euler,tf_sensor_pose)) {
@@ -380,15 +380,18 @@ int main(int argc, char **argv){
   ros::init(argc, argv, "graph_fuser3d_offline");
   cout<<"po options"<<endl;
   po::options_description desc("Allowed options");
+
+  cout<<"read params"<<endl;
+  bool succesfull=ReadAllParameters(desc,argc,&argv);
+  if(!succesfull)
+    exit(0);
+
   cout<<"node handle"<<endl;
   n_=new ros::NodeHandle("~");
   cout<<"test"<<endl;
 
   GraphMapFuser *fuser_;
-  cout<<"read params"<<endl;
-  bool succesfull=ReadAllParameters(desc,argc,&argv);
-  if(!succesfull)
-    exit(0);
+
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
   initializeRosPublishers();

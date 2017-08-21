@@ -15,7 +15,7 @@ Panels:
         - /TF1/Tree1
         - /PoseArray2
         - /MarkerArray1
-        - /PointCloud1
+        - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 745
   - Class: rviz/Selection
@@ -36,7 +36,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -103,13 +103,18 @@ Visualization Manager:
           Value: true
         velodyne:
           Value: true
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        world:
+          state_base_link:
+            velodyne:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -133,7 +138,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        {}
+        current: true
       Queue Size: 2000
       Value: true
     - Class: rviz/MarkerArray
@@ -141,7 +146,7 @@ Visualization Manager:
       Marker Topic: /graphInfo
       Name: MarkerArray
       Namespaces:
-        {}
+        graphInfo: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -160,9 +165,9 @@ Visualization Manager:
         Value: true
       Axis: Z
       Channel Name: intensity
-      Class: rviz/PointCloud
+      Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -170,14 +175,14 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud
-      Position Transformer: ""
+      Name: PointCloud2
+      Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.00999999978
       Style: Flat Squares
-      Topic: /sensor_lidar
+      Topic: /points2
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -206,24 +211,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 82.6338272
+      Distance: 8.21447182
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
+        X: 0.14876318
+        Y: -1.19822693
         Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.785398185
+      Pitch: 0.590399265
       Target Frame: state_base_link
       Value: XYOrbit (rviz)
-      Yaw: 0.785398185
+      Yaw: 1.85859394
     Saved: ~
 Window Geometry:
   Displays:

@@ -65,7 +65,8 @@ int setupOffline(std::string calibration_file, double max_range_, double min_ran
 #include <ndt_offline/PoseInterpolationNavMsgsOdo.h>
 #include <iostream>
 #include <pcl_ros/impl/transforms.hpp>
-
+#include "pointcloudbagreader.h"
+#include "VelodyneBagReader.h"
 #ifdef READ_RMLD_MESSAGES
 #include<SynchronizedRMLD.h>
 #endif
@@ -104,7 +105,7 @@ class VelodyneBagReader{
                                   velodyne_max_range,
                                   view_direction,
                                   view_width);
-	  
+      std::cout<<"Velodyne PARAMETERS FILTER: max="<<velodyne_max_range<<","<<velodyne_min_range<<std::endl;
 	    dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range); 
 	    sensor_time_offset_ = ros::Duration(sensor_time_offset);
 	    fprintf(stderr,"Opening '%s'\n",bagfilename.c_str());
@@ -117,6 +118,7 @@ class VelodyneBagReader{
 	    std::vector<std::string> topics;
 	    topics.push_back(tftopic);
 	    topics.push_back(velodynetopic_);
+
 #ifdef READ_RMLD_MESSAGES
 	    topics.push_back("/rmld/data");
 	    topics.push_back("/amtec/tilt_state");
@@ -168,6 +170,7 @@ class VelodyneBagReader{
 
 				    //				    p.x = pnts.points[i].x; p.y=pnts.points[i].y; p.z=pnts.points[i].z;//p.intensity = pnts.points[i].intensity;
 				    p.x = conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+
 				    cloud.push_back(p);
 
 				}

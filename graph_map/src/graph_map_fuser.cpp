@@ -85,14 +85,8 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::A
   Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
   Tnow=T_world_to_local_map*Tnow;//change frame to local map
 
-  if(fuse_this_frame)
-    cout<<"time to fuse a new frame="<<nr_frames_<<endl;
-
   Matrix6d motion_cov=motion_model_2d_.getCovMatrix6(Tmotion, 1., 1., 1.);
-  ros::Time t1=ros::Time::now();
   lslgeneric::transformPointCloudInPlace(sensorPose_, cloud);//Transform cloud into robot frame before registrating
-  ros::Time t2=ros::Time::now();
-  cout<<"transformation took t="<<t2-t1<<endl;
   if(fuse_this_frame||map_node_changed){
     registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
   }

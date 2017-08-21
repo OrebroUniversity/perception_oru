@@ -37,7 +37,7 @@ void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<Pos
     point.z=point_offset(2);
     marker.points.push_back(point);
   }
-particlaCloudPublisher_->publish(marker);
+  particlaCloudPublisher_->publish(marker);
 
 }
 
@@ -169,6 +169,12 @@ void GraphPlot::CovarToMarker(const Eigen::Matrix3d &cov,const Eigen::Vector3d &
   marker.scale.x=scale_axis(0);
   marker.scale.y=scale_axis(1);
   marker.scale.z=scale_axis(2);
+  if(marker.scale.x==0)
+    marker.scale.x==1.0;
+  if(marker.scale.y==0)
+    marker.scale.y==1.0;
+  if(marker.scale.z==0)
+    marker.scale.z==1.0;
   marker.pose.orientation.x=q_axis.x();
   marker.pose.orientation.y=q_axis.y();
   marker.pose.orientation.z=q_axis.z();
@@ -244,7 +250,7 @@ void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher
     marker.id = i;
     marray.markers.push_back(marker);
   }
-
+cout<<"publish markersize="<<marray.markers.size()<<endl;
   marray.markers.push_back(marker);
   for(int i=mean.size();i<max_size;i++){
     marker.id =i;

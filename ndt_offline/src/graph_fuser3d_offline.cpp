@@ -517,10 +517,14 @@ int main(int argc, char **argv){
     }
     if( found_scan!=true)
       break;
-
-    Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
+    Eigen::Affine3d Tmotion;
+    if(gt_mapping)
+      Tmotion = Tgt_base_prev.inverse()*Tgt_base;
+    else
+      Tmotion = Todom_base_prev.inverse()*Todom_base;
     Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
     ndt_generic::normalizeEulerAngles(Tmotion_euler);
+    //cout<<"Tmotion:"<<Tmotion.translation().transpose()<<endl;
     if(!use_odometry) {
       Tmotion.setIdentity();
     }
@@ -529,13 +533,14 @@ int main(int argc, char **argv){
     fuser_pose=fuser_pose*Tmotion;
 
     if(visualize){
+      cout<<"publish could"<<endl;
       br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
 
-
-      cloud.header.frame_id="/velodyne";
-      pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-      cloud_pub->publish(cloud);
-
+      if(counter%50==0){
+        cloud.header.frame_id="/velodyne";
+        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+        cloud_pub->publish(cloud);
+      }
       gt_pose_msg.header.stamp=ros::Time::now();
       tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
       gt_pub->publish(gt_pose_msg);
@@ -548,11 +553,11 @@ int main(int argc, char **argv){
 
     fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
     double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-    if(visualize ){
+    if(visualize && counter%50==0 ){
       fuser_->plotMap();
-      cout<<"norm between estimated and actual pose="<<diff<<endl;
+      //cout<<"norm between estimated and actual pose="<<diff<<endl;
     }
-    sleep(1);
+    //sleep(1);
     Tgt_base_prev = Tgt_base;
     Todom_base_prev = Todom_base;
     cloud.clear();

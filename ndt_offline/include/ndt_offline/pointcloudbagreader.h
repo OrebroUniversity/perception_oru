@@ -117,11 +117,21 @@ public:
         rosbag::MessageInstance const m = *I;
         std::string str =m.getTopic();
         if(m.getTopic()==point_cloud_topic_){
-          PointCloud::Ptr scan = m.instantiate<pcl::PointCloud<pcl::PointXYZ> >();
+          sensor_msgs::PointCloudConstPtr scan = m.instantiate<sensor_msgs::PointCloud>();
           if (scan != NULL){
             found_scan=true;
-             pcl_conversions::fromPCL(scan->header.stamp,timestamp_of_last_sensor_message);
-            cloud=*scan;
+           for(int i=0;i<scan->points.size();i++){
+           pcl::PointXYZ p_target;
+            geometry_msgs::Point32 p_src=  scan->points[i];
+            p_target.x=p_src.x;
+            p_target.y=p_src.y;
+            p_target.z=p_src.z;
+             cloud.push_back(p_target);
+             timestamp_of_last_sensor_message=scan->header.stamp;
+           }
+           cloud.header.frame_id=scan->header.frame_id;
+           pcl_conversions::toPCL(scan->header.stamp,cloud.header.stamp);
+           //std::cout<<"reading measurment with size:"<<cloud.size()<<"frame id-stamp:"<<cloud.header.frame_id<<"-"<<cloud.header.stamp<<std::endl;
           }
         }
         I++;

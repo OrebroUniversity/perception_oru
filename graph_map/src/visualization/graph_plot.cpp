@@ -250,7 +250,7 @@ void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher
     marker.id = i;
     marray.markers.push_back(marker);
   }
-cout<<"publish markersize="<<marray.markers.size()<<endl;
+  //cout<<"publish markersize="<<marray.markers.size()<<endl;
   marray.markers.push_back(marker);
   for(int i=mean.size();i<max_size;i++){
     marker.id =i;

@@ -66,9 +66,7 @@ int setupOffline(std::string calibration_file, double max_range_, double min_ran
 #include <iostream>
 #include <pcl_ros/impl/transforms.hpp>
 
-#ifdef READ_RMLD_MESSAGES
-#include<SynchronizedRMLD.h>
-#endif
+
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
 class ConvertVelodyneBagsToPcl{
@@ -132,10 +130,7 @@ public:
     topics.push_back("/wifi_sniffer/wlan0");
     topics.push_back("/wifi_sniffer/wlan1");
 
-#ifdef READ_RMLD_MESSAGES
-    topics.push_back("/rmld/data");
-    topics.push_back("/amtec/tilt_state");
-#endif
+
     for(int i=0; i<topics.size(); ++i) {
       fprintf(stderr,"Searched Topic [%d] = '%s'\n",i,topics[i].c_str());
     }
@@ -144,9 +139,7 @@ public:
     I = view->begin();
 
     odosync = new PoseInterpolationNavMsgsOdo(view,tftopic, fixed_frame_id,dur, sensor_link);
-#ifdef READ_RMLD_MESSAGES
-    rmldsync = new SynchronizedRMLD(view,tftopic,"/base_link",dur);
-#endif
+
     //odosync = NULL;
   }
 
@@ -163,7 +156,8 @@ public:
     //if(odosync == NULL) return true;
     rosbag::MessageInstance const m = *I;
     if(m.getTopic()==velodynetopic_){
-      PointCloud::Ptr cloud (new PointCloud);
+      sensor_msgs::PointCloud p;
+      sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
       velodyne_msgs::VelodyneScan::ConstPtr scan = m.instantiate<velodyne_msgs::VelodyneScan>();
       if (scan != NULL){
 
@@ -181,9 +175,9 @@ public:
               pcl_ros::transformPointCloud(pnts,conv_points,T);
               for(size_t i = 0;i<pnts.size();i++){
                // PointT p;
-                pcl::PointXYZ p;
+                geometry_msgs::Point32 p;
                 p.x = conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
-                cloud->push_back(p);
+                cloud->points.push_back(p);
               }
             }else{
               //fprintf(stderr,"No transformation\n");
@@ -203,9 +197,9 @@ public:
           p.z=cloud[i].z;
           cld.points.push_back(p);*/
 
-        std::cout<<"Frame:"<<++counter<<", size:"<<cloud->size()<<std::endl;
+        std::cout<<"Frame:"<<++counter<<", size:"<<cloud->points.size()<<std::endl;
         cloud->header.frame_id="/velodyne";
-        pcl_conversions::toPCL( timestamp_of_last_sensor_message,cloud->header.stamp);
+        cloud->header.stamp=timestamp_of_last_sensor_message;
         outbag.write("/sensor_lidar",timestamp_of_last_sensor_message,cloud);
         //cld.header.frame_id=cloud.header.frame_id;
         //cld.header.stamp=timestamp_of_last_sensor_message;

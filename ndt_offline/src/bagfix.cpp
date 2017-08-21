@@ -210,7 +210,7 @@ int main(int argc, char **argv){
 
   tf::StampedTransform sensor_link;
   sensor_link.child_frame_id_ = velodyne_frame_id;
-  sensor_link.frame_id_ = base_link_id;//tf_base_link; //"/odom_base_link";
+  sensor_link.frame_id_ = gt_base_link_id;//base_link_id;//tf_base_link; //"/odom_base_link";
   sensor_link.setData(tf_sensor_pose);
   //vmc_navserver::VMCEncodersStamped prev_enc_msg;
   ConvertVelodyneBagsToPcl reader(outbag_name,

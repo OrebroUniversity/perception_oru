@@ -31,9 +31,10 @@ protected:
   bool initialized_=false;
   int sinceSIR_=0; //ok
   double subsample_level_=1.0;
-private:
+  double z_filter_min=-10000.0;
   inline double getDoubleTime();
   inline void normalizeEulerAngles(Eigen::Vector3d &euler);
+  private:
   friend class LocalisationFactory;
 };
 class MCLNDTParam:public LocalisationParam{
@@ -41,12 +42,13 @@ public:
   void GetParamFromRos(){}
   MCLNDTParam();
   ~MCLNDTParam(){}
-  double resolution=0.5;
   bool forceSIR=false;
   double SIR_varP_threshold=0.6;
   int SIR_max_iters_wo_resampling_=30;
   unsigned int n_particles_=250;
   int SIR_max_iters_wo_resampling=25;
+  double z_filter_min=-10000.0;
+  double resolution=0;
   std::vector<double> motion_model, motion_model_offset;
 private:
   friend class LocalisationFactory;

@@ -81,6 +81,7 @@ double translationRegistrationDelta_=0;
 double resolution=0;
 double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
+double z_filter_min_height=0;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub,*odom_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg,odom_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
@@ -213,6 +214,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("filter-fov", "cutoff part of the field of view")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
       ("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
+      ("z-filter-height", po::value<double>(&z_filter_min_height)->default_value(-10000.0), "The minimum height of which ndtcells are used for localisation")
       ("Dd", po::value<double>(&motion_params.Dd)->default_value(1.), "forward uncertainty on distance traveled")
       ("Dt", po::value<double>(&motion_params.Dt)->default_value(1.), "forward uncertainty on rotation")
       ("Cd", po::value<double>(&motion_params.Cd)->default_value(1.), "side uncertainty on distance traveled")
@@ -263,8 +265,9 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
   if(MCLNDTParamPtr parPtr=boost::dynamic_pointer_cast<MCLNDTParam>(localisation_param_ptr )){
-    parPtr->resolution=resolution;
+    //parPtr->resolution=resolution;
     parPtr->n_particles_=n_particles;
+    parPtr->z_filter_min=z_filter_min_height;
   }
 
   cout<<"sensor pose"<<endl;
@@ -355,8 +358,14 @@ int main(int argc, char **argv){
     std::ifstream ifs(map_file);
     boost::archive::text_iarchive ia(ifs);
     ia >> graph_map;
+
     localisation_param_ptr->graph_map_=graph_map;
     localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
+    if(graph_map==NULL ||localisation_type_ptr==NULL){
+      cout<<"problem opening map"<<endl;
+      exit(0);
+    }
+
     cout<<"-------------------------- Map and Localisation parameter ----------------------------"<<endl;
     cout<<localisation_type_ptr->ToString()<<endl;
     cout<<"--------------------------------------------------------"<<endl;
@@ -381,8 +390,10 @@ int main(int argc, char **argv){
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
     Eigen::Affine3d Todom_base_prev,Tgt_base_prev,Todom_init,Tgt_init;
-
+    ros::Time t0,t1,t2,t3,t4,t5;
+    t5=ros::Time::now();
     while(reader->ReadNextMeasurement(cloud_nofilter)){
+      t0=ros::Time::now();
       if(!n_->ok())
         exit(0);
 
@@ -429,7 +440,6 @@ int main(int argc, char **argv){
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
       counter++;
 
-
       if(visualize &&counter%30==0){
         br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
         if(counter%1==0){
@@ -438,10 +448,12 @@ int main(int argc, char **argv){
           cloud_pub->publish(cloud);
         }
       }
+      t1=ros::Time::now();
       lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
       localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
+      t2=ros::Time::now();
+
       fuser_pose=localisation_type_ptr->GetPose();
-      //cout<<"mean="<<mcl->getMean().translation().transpose()<<endl;
       if(visualize){
         gt_pose_msg.header.stamp=ros::Time::now();
         fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
@@ -460,13 +472,19 @@ int main(int argc, char **argv){
         NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
         GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
       }
+      t3=ros::Time::now();
       double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
-      cout<<"norm between estimated and actual pose="<<diff<<endl;
+      //cout<<"norm between estimated and actual pose="<<diff<<endl;
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;
       cloud.clear();
       cloud_nofilter.clear();
       eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
+
+      t4=ros::Time::now();
+      cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;
+      t5=ros::Time::now();
+
     }
     delete reader;
     eval_files.Close();

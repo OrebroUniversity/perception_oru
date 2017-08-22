@@ -53,7 +53,7 @@ protected:
   Eigen::Affine3d Tgt,Tgt_prev,Tgt_init;
   bool init_gt_set=false;
   bool first_odom_set=false;
-
+  int t_merge_frames=1;
 
 public:
   // Constructor
@@ -63,6 +63,7 @@ public:
     param_nh.param<std::string>("odometry_topic",odometry_topic,"/vmc_navserver/odom");
     ///if we want to compare to a ground truth topic;
     param_nh.param<std::string>("gt_topic",gt_topic,"/vmc_navserver/state");
+    param_nh.param<int>("t_merge_frames",t_merge_frames,1);
     odom_sub_=new ros::Subscriber();
     gt_sub=new ros::Subscriber();
     gt_pub=new ros::Publisher();
@@ -78,6 +79,7 @@ public:
   // Callback
   void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
   {
+    static unsigned int counter=0;
     Eigen::Quaterniond qd;
     Eigen::Affine3d gt_pose;
 
@@ -90,7 +92,7 @@ public:
                                     msg_in->pose.pose.position.y,msg_in->pose.pose.position.z) * qd;
 
 
-    if(!init_gt_set) {
+    if(!init_gt_set && counter==t_merge_frames) {
       Tgt_init = gt_pose;
       ROS_INFO("Set initial pose from GT track");
       init_gt_set = true;
@@ -99,7 +101,7 @@ public:
     gt_pose_msg.header.stamp=msg_in->header.stamp;
     tf::poseEigenToMsg(gt_pose, gt_pose_msg.pose.pose);
     gt_pub->publish(gt_pose_msg);
-
+    counter++;
   }
   void odom_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
   {
@@ -114,7 +116,7 @@ public:
     Todom = Eigen::Translation3d (msg_in->pose.pose.position.x,
                                   msg_in->pose.pose.position.y,msg_in->pose.pose.position.z) * qd;
     std::cout<<"odom:"<<Todom.translation().transpose()<<std::endl;
-    if(!first_odom_set) {
+    if(!first_odom_set && init_gt_set) {
       Todom_init = Todom;
       ROS_INFO("Set initial odom pose");
       first_odom_set = true;

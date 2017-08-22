@@ -1,4 +1,4 @@
 #FILENAME=/home/daniel/.ros/maps/offline_gt_arla-2012_res0.5_sensorcutoff302.map
 roslaunch ndt_offline visualize_graph_fuser.launch arla-2012:=true &
-rosrun ndt_offline graph_mcl_offline --base-name mcl-ndt --bag-file-path ../bag/arla_bags/edited.bag --reader-type pcl_reader --map-dir-path /home/daniel/.ros/maps --velodyne_packets_topic /sensor_lidar --velodyne_frame_id /velodyne --data-set arla-2012 --velodyne_config_file ../config/velo32.yaml --output-dir-name /home/daniel/.ros/maps/evaluation --n-particles 60 --visualize
+rosrun ndt_offline graph_mcl_offline --z-filter-height 4.0 --base-name mcl-ndt --bag-file-path ../bag/arla_bags/edited.bag --reader-type pcl_reader --map-dir-path /home/daniel/.ros/maps --velodyne_packets_topic /sensor_lidar --velodyne_frame_id /velodyne --data-set arla-2012 --velodyne_config_file ../config/velo32.yaml --output-dir-name /home/daniel/.ros/maps/evaluation --n-particles 60 --visualize
 

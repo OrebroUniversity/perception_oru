@@ -8,10 +8,11 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
     motion_model_offset=mclParam->motion_model_offset;
     n_particles_=mclParam->n_particles_;
     counter=0;
+    z_filter_min=mclParam->z_filter_min;
     initialized_ = false;
     forceSIR = false;
     resolution_sensor=resolution;
-    cout<<resolution<<endl;
+
   }
   else{
     std::cerr<<"Cannot create MCLNDType. Illegal type for parameter param"<<endl;
@@ -32,7 +33,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   Eigen::Vector3d tr = Tmotion.translation();
   Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
-  cout<<"Tmotion="<<Tmotion.translation()<<endl;
+  //cout<<"Tmotion="<<Tmotion.translation()<<endl;
   double time_start = getDoubleTime();
 
   Eigen::Matrix<double, 6,6> motion_model_m(motion_model.data());
@@ -69,7 +70,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   double t_pred = getDoubleTime() - time_start;
 
-  std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
+  //std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
   lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
   //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
   local_map.loadPointCloud(cloud);//,30); //sensor_range);
@@ -97,7 +98,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   } else {
     ndts = ndts0;
   }
-  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
+//  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
 
   int Nn = 0;
   //		#pragma omp parallel for
@@ -117,7 +118,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
       for(int n=0;n<ndts.size();n++){
         Eigen::Vector3d m = T*ndts[n]->getMean();
-
+         if(m[2]<z_filter_min) continue;
 
         lslgeneric::NDTCell *cell;
         pcl::PointXYZ p;
@@ -168,9 +169,9 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
     }
     varP /= pf.size();
     varP = sqrt(varP);
-    fprintf(stderr,"Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf) itr since SIR= %d\n",varP,pf.size(), Nn, t_pred,t_pseudo,sinceSIR_);
+    //fprintf(stderr,"Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf) itr since SIR= %d\n",varP,pf.size(), Nn, t_pred,t_pseudo,sinceSIR_);
     if(varP > /*0.006*/SIR_varP_threshold || sinceSIR_ > /*25*/SIR_max_iters_wo_resampling_){
-      fprintf(stderr,"-SIR- ");
+      //fprintf(stderr,"-SIR- ");
       sinceSIR_ = 0;
       pf.SIRUpdate();
     }else{
@@ -190,7 +191,6 @@ std::string MCLNDTType::ToString(){
   ss<<"resolution: "<<resolution<<endl;
   ss<<"force SIR: "<<std::boolalpha<<forceSIR<<endl;
   ss<<"SIR var Probability threshold: "<<SIR_varP_threshold<<endl;
-  ss<<"resolution: "<<resolution<<endl;
   return ss.str();
 }
 

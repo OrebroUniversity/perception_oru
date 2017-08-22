@@ -14,6 +14,7 @@ Panels:
         - /MarkerArray1
         - /PointCloud21
         - /Odometry3
+        - /Grid2
       Splitter Ratio: 0.5
     Tree Height: 745
   - Class: rviz/Selection
@@ -195,6 +196,24 @@ Visualization Manager:
       Position Tolerance: 0.100000001
       Topic: /odom
       Value: true
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 255; 255; 255
+      Enabled: false
+      Line Style:
+        Line Width: 0.0299999993
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XZ
+      Plane Cell Count: 10
+      Reference Frame: state_base_link
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -219,24 +238,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 6.66604614
+      Distance: 25.091877
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.266943395
-        Y: -1.22937739
+        X: -0.133830547
+        Y: 0.127652764
         Z: -1.07288361e-06
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.41979599
+      Pitch: 0.794796228
       Target Frame: state_base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.50860596
+      Yaw: 6.07494879
     Saved: ~
 Window Geometry:
   Displays:

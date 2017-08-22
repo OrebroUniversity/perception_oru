@@ -37,7 +37,7 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace lslgeneric;
 
-std::string dirname="";
+std::string map_dir_name="";
 std::string output_dir_name="";
 std::string base_name="";
 std::string dataset="";
@@ -211,7 +211,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("base-name", po::value<string>(&base_name), "prefix for all generated files")
       ("reader-type", po::value<string>(&bag_reader_type)->default_value("velodyne_reader"), "e.g. velodyne_reader or pcl_reader")
       ("data-set", po::value<string>(&dataset)->default_value(std::string("default")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
-      ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
+      ("dir-name", po::value<string>(&map_dir_name), "where to look for ros bags")
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("map-size-xy", po::value<double>(&map_size_xy)->default_value(83.), "size of submaps")
       ("map-size-z", po::value<double>(&map_size_z)->default_value(6.0), "size of submaps")
@@ -348,7 +348,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     return false;
   }
   cout<<"base-name:"<<base_name<<endl;
-  cout<<"dir-name:"<<dirname<<endl;
+  cout<<"dir-name:"<<map_dir_name<<endl;
   return true;
 
 
@@ -427,17 +427,13 @@ int main(int argc, char **argv){
   sensor_link.setData(tf_sensor_pose);
 
   std::vector<std::string> ros_bag_paths;
-  if(!LocateRosBagFilePaths(dirname,ros_bag_paths)){
+  if(!LocateRosBagFilePaths(map_dir_name,ros_bag_paths)){
     cout<<"couldnt locate ros bags"<<endl;
     exit(0);
   }
 
   int counter = 0;
-  if(!eval_files.CreateOutputFiles()){
-    cout<<"couldnt create output files"<<endl;
-    exit(0);
-  }
-
+  eval_files.CreateOutputFiles();
 
   cout<<"opening bag files"<<endl;
   for(int i=0; i<ros_bag_paths.size(); i++) {
@@ -542,9 +538,7 @@ int main(int argc, char **argv){
       br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
 
       if(counter%skip_frame==0){
-       /* for(int i=0;i<cloud.size();i++){
-          cout<<"c(x,y,z)="<<cloud.points[i].x<<","<<cloud.points[i].y<<","<<cloud.points[i].z<<")"<<endl;
-        }*/
+
         cloud.header.frame_id="/velodyne";
         pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
         cloud_pub->publish(cloud);

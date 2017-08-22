@@ -135,9 +135,9 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
      enable_=enable;
    }
 
-   bool CreateOutputFiles(){
+   void CreateOutputFiles(){
      if(!enable_)
-       return true;
+       return;
 
      std::string filename;
      {
@@ -158,11 +158,11 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
      }
      if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
      {
-       return false;
-       std::cerr<<"Failed to open evaluation file";
+       std::cout<<"Error opening evaluation output files."<<std::endl;
+       exit(0);
      }
      else
-       return true;
+       return;
    }
    void Write(const ros::Time frame_time ,const Eigen::Affine3d &Tgtbase,const Eigen::Affine3d &Todombase,const Eigen::Affine3d &Tfuserpose,const Eigen::Affine3d &sensoroffset){
      if(!enable_)

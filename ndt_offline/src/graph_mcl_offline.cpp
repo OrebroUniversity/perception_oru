@@ -35,12 +35,13 @@
 #include "graph_localisation/localisation_type.h"
 #include "mcl_ndt/mcl_ndt.h"
 #include "graph_map/graph_map_navigator.h"
+#include "ndt_offline/readbagfilegeneric.h"
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
 using namespace lslgeneric;
 using namespace GraphMapLocalisation;
-std::string dirname="";
+std::string map_dir_name="";
 std::string output_dir_name="";
 std::string base_name="";
 std::string dataset="";
@@ -84,8 +85,13 @@ ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 LocalisationTypePtr localisation_type_ptr;
+LocalisationParamPtr localisation_param_ptr;
 GraphMapNavigatorPtr graph_map;
-
+ReadBagFileGeneric *reader;
+/// Set up the sensor link
+tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
+std::string bagfilename;
+std::string reader_type="velodyne_reader";
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -152,12 +158,14 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   tf::Vector3 trans(transl[0], transl[1], transl[2]);
   tf_sensor  = tf::Transform(quat,trans);
   tf::poseTFToEigen(tf_sensor,sensor_offset);
+
+
   return found_sensor_pose;
 }
 
 
 
-bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::string> &scanfiles){
+bool LocateMapFilePath(const std::string &folder_name,std::vector<std::string> &scanfiles){
   DIR *dir;
   struct dirent *ent;
   if ((dir = opendir (folder_name.c_str())) != NULL) {
@@ -166,7 +174,9 @@ bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::strin
       char tmpcname[400];
       snprintf(tmpcname,399,"%s/%s",folder_name.c_str(),ent->d_name);
       std::string tmpfname = tmpcname;
-      scanfiles.push_back(tmpfname);
+      if(tmpfname.substr(tmpfname.find_last_of(".") + 1) == "MAP"|| tmpfname.substr(tmpfname.find_last_of(".") + 1) == "map") {
+        scanfiles.push_back(tmpfname);
+      }
     }
     closedir (dir);
   } else {
@@ -183,7 +193,7 @@ bool LocateRosBagFilePaths(const std::string &folder_name,std::vector<std::strin
   }
   return true;
 }
-bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
+void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   Eigen::Vector3d transl;
   Eigen::Vector3d euler;
@@ -191,14 +201,16 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   // First of all, make sure to advertise all program options
   desc.add_options()
       ("help", "produce help message")
-      ("map-file-path", po::value<std::string>(&map_file_name)->default_value(std::string("graph_map.MAP")), "name of file to load containing graphMap")
-      ("visualize", "visualize the output")
+      ("map-file-path", po::value<std::string>(&map_file_name)->default_value(std::string("")), "file path to .MAP file containing graphMapNavigator")
+      ("map-dir-path", po::value<string>(&map_dir_name), "Folder to locate .MAP files in")
+      ("reader-type", po::value<std::string>(&reader_type)->default_value(std::string("velodyne_reader")), "Type of reader to use when open rosbag e.g. velodyne_reader (config file needed) or pcl_reader when opening pcl2 messages")
+      ("bag-file-path", po::value<string>(&bagfilename)->default_value(""), "File path to rosbag to play with maps")
+      ("visualize", "visualize the rosbag and fuser estimate/gt")
       ("base-name", po::value<string>(&base_name)->default_value(std::string("mcl")), "prefix for all generated files")
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("data-set", po::value<string>(&dataset)->default_value(""), "where to save the pieces of the map (default it ./map)")
       ("localisation-algorithm-name", po::value<string>(&localisation_type)->default_value("mcl_ndt"), "name of localisation algorihm e.g. mcl_ndt")
       ("filter-fov", "cutoff part of the field of view")
-      ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
       ("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
       ("Dd", po::value<double>(&motion_params.Dd)->default_value(1.), "forward uncertainty on distance traveled")
@@ -218,7 +230,6 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("min_range", po::value<double>(&min_range)->default_value(0.6), "minimum range used from scanner")
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("save-map", "saves the graph map at the end of execution")
-      ("nb_scan_msgs", po::value<int>(&nb_scan_msgs)->default_value(1), "number of scan messages that should be loaded at once from the bag")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
@@ -231,52 +242,39 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
       ("n-particles", po::value<unsigned int>(&n_particles)->default_value(270), "Total number of particles to use")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
-      ("use-submap", "Adopt the sub-mapping technique which represent the global map as a set of local submaps");
-
-
+      ;
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
   po::notify(vm);
-  cout<<"Attempt to open file with name:\n"<<map_file_name<<endl;
-  std::ifstream ifs(map_file_name);
-  boost::archive::text_iarchive ia(ifs);
-  ia >> graph_map;
-  cout<<"map succesfully loaded"<<endl;
-
-  LocalisationParamPtr localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
-  if(MCLNDTParamPtr parPtr=boost::dynamic_pointer_cast<MCLNDTParam>(localisation_param_ptr )){
-    cout<<"adding MCLNDT parameters"<<endl;
-    parPtr->resolution=resolution;
-    parPtr->n_particles_=n_particles;
-  }
-  localisation_param_ptr->graph_map_=graph_map;
-  cout<<"sensor pose"<<endl;
-  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
-    exit(0);
 
   visualize = vm.count("visualize");
   filter_fov = vm.count("filter-fov");
-  step_control = (vm.count("no-step-control") == 0);
-  alive = vm.count("alive");
   //Check if all iputs are assigned
-  if (!vm.count("base-name") || !vm.count("dir-name")){
-    cout << "Missing base or dir names.\n";
+  if (!vm.count("map-dir-path") || !vm.count("map-file-path")){
+    cout << "No .map file specified. Missing map-dir-path and map-file-path.\n";
     cout << desc << "\n";
-    return false;
+    exit(0);
   }
   if (vm.count("help")){
     cout << desc << "\n";
-    return false;
+    exit(0);
   }
-  cout<<"base-name:"<<base_name<<endl;
-  cout<<"dir-name:"<<dirname<<endl;
 
-  localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
-  cout<<localisation_type_ptr->ToString()<<endl;
-  return true;
+  localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
+  if(MCLNDTParamPtr parPtr=boost::dynamic_pointer_cast<MCLNDTParam>(localisation_param_ptr )){
+    parPtr->resolution=resolution;
+    parPtr->n_particles_=n_particles;
+  }
 
+  cout<<"sensor pose"<<endl;
+  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
+    exit(0);
+  sensor_link.child_frame_id_ = velodyne_frame_id;
+  sensor_link.frame_id_ = base_link_id;//tf_base_link; //"/odom_base_link";
+  sensor_link.setData(tf_sensor_pose);
 
+  return;
 }
 void initializeRosPublishers(){
   gt_pub=new ros::Publisher();
@@ -285,6 +283,7 @@ void initializeRosPublishers(){
   *gt_pub    =n_->advertise<nav_msgs::Odometry>("/GT", 50);
   *fuser_pub =n_->advertise<nav_msgs::Odometry>("/fuser", 50);
   *cloud_pub = n_->advertise<pcl::PointCloud<pcl::PointXYZ>>("/points2", 1);
+  cout<<"initialized publishers"<<endl;
 }
 void printParameters(){
   cout<<"Output directory: "<<output_dir_name<<endl;
@@ -293,8 +292,13 @@ void printParameters(){
   else
     cout<<"No FOV filter."<<endl;
 
-}
+  if(reader_type.compare("velodyne_reader"));
+  cout<<"Velodyne config path:"<<velodyne_config_file<<endl;
 
+  cout<<"Bagfile: "<<bagfilename<<endl;
+  cout<<"Lidar topic: "<<velodyne_packets_topic<<", lidar frame id: "<<velodyne_frame_id<<endl;
+  cout<<"World frame: "<<tf_world_frame<<", tf topic"<<tf_topic<<endl;
+}
 
 /////////////////////////////////////////////////////////////////////////////////7
 /////////////////////////////////////////////////////////////////////////////////7
@@ -304,70 +308,78 @@ void printParameters(){
 ///
 
 int main(int argc, char **argv){
-  cout<<"start"<<endl;
+
+
   ros::init(argc, argv, "graph_fuser3d_offline");
-  cout<<"po options"<<endl;
   po::options_description desc("Allowed options");
-  cout<<"node handle"<<endl;
   n_=new ros::NodeHandle("~");
-  cout<<"test"<<endl;
-
-
-  bool succesfull=ReadAllParameters(desc,argc,&argv);
-  if(!succesfull)
-    exit(0);
-  cout<<"load map from file"<<endl;
-
-  ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
-  printParameters();
+  ros::Time::init();
   initializeRosPublishers();
+  ReadAllParameters(desc,argc,&argv);
+  srand(time(NULL));
   tf::TransformBroadcaster br;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
 
-  base_name += std::string("_res") + toString(resolution) + std::string("_sensorcutoff") + toString(max_range);
-  ros::Time::init();
-  srand(time(NULL));
 
-  /// Set up the sensor link
-  tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
-  sensor_link.child_frame_id_ = velodyne_frame_id;
-  sensor_link.frame_id_ = base_link_id;//tf_base_link; //"/odom_base_link";
-  sensor_link.setData(tf_sensor_pose);
 
-  std::vector<std::string> ros_bag_paths;
-  if(!LocateRosBagFilePaths(dirname,ros_bag_paths)){
-    cout<<"couldnt locate ros bags"<<endl;
-    exit(0);
+
+
+
+  std::vector<std::string> map_file_path;
+  if(map_file_name.length()>0){
+    cout<<"Open single map: map_file_name"<<endl;
+    map_file_path.push_back(map_file_name);
+  }
+  else if(map_dir_name.length()>0){
+    cout<<"Map directory: "<<map_dir_name<<endl;
+    if(LocateMapFilePath(map_dir_name,map_file_path)){
+      cout<<"Maps found: "<<endl;
+      for (std::vector<std::string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it)
+        cout<<*it<<endl;
+    }
+    else{
+      cout<<"No maps found"<<endl;
+      exit(0);
+    }
+
   }
 
-  int counter = 0;
-  if(!eval_files.CreateOutputFiles()){
-    cout<<"couldnt create output files"<<endl;
-    exit(0);
-  }
+  for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it){
 
-  cout<<"opening bag files"<<endl;
-  for(int i=0; i<ros_bag_paths.size(); i++) {
-    std::string bagfilename = ros_bag_paths[i];
-    fprintf(stderr,"Opening %s\n",bagfilename.c_str());
-    cout<<velodyne_config_file<<","<<bagfilename<<","<<velodyne_packets_topic<<","<<velodyne_frame_id<<","<<tf_world_frame<<","<<tf_topic<<endl;
-    VelodyneBagReader<pcl::PointXYZ> vreader(velodyne_config_file,
-                                             bagfilename,
-                                             velodyne_packets_topic,  //"/velodyne_packets"
-                                             velodyne_frame_id,
-                                             tf_world_frame,
-                                             tf_topic,
-                                             ros::Duration(3600),
-                                             &sensor_link, max_range, min_range,
-                                             sensor_time_offset);
+    string map_file= *it;
+    cout<<"Opening map number :"<<(it-map_file_path.begin()+1)<<" out of "<<((map_file_path.end()-map_file_path.begin()))<<endl;
+    std::ifstream ifs(map_file);
+    boost::archive::text_iarchive ia(ifs);
+    ia >> graph_map;
+    localisation_param_ptr->graph_map_=graph_map;
+    localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
+    cout<<"-------------------------- Map and Localisation parameter ----------------------------"<<endl;
+    cout<<localisation_type_ptr->ToString()<<endl;
+    cout<<"--------------------------------------------------------"<<endl;
+    base_name += std::string("_res") + toString(resolution) + std::string("_sensorcutoff") + toString(max_range);
+    ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);//true
+    eval_files.CreateOutputFiles();
+    int counter = 0;
+    reader=new ReadBagFileGeneric(reader_type,
+                                  base_link_id,
+                                  velodyne_config_file,
+                                  bagfilename,
+                                  velodyne_packets_topic,
+                                  velodyne_frame_id,
+                                  tf_world_frame,
+                                  tf_topic,
+                                  ros::Duration(3600),
+                                  &sensor_link, max_range, min_range,
+                                  sensor_time_offset);
+    printParameters();
 
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
     Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
 
-    while(vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,tf_scan_source,tf_gt_base,base_link_id)){
+    while(reader->ReadNextMeasurement(cloud_nofilter)){
       if(!n_->ok())
         exit(0);
 
@@ -382,8 +394,9 @@ int main(int argc, char **argv){
       if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
       tf::Transform tf_odom_base;
-      vreader.getPoseFor(tf_odom_base, base_link_id);
-      vreader.getPoseFor(tf_gt_base, gt_base_link_id);
+      reader->getPoseFor(tf_odom_base,base_link_id);
+      reader->getPoseFor(tf_gt_base,gt_base_link_id);
+
       Eigen::Affine3d Todom_base,Tgt_base;
       tf::transformTFToEigen(tf_gt_base,Tgt_base);
       tf::transformTFToEigen(tf_odom_base,Todom_base);
@@ -394,9 +407,10 @@ int main(int argc, char **argv){
         cloud_nofilter.clear();
         continue;
       }
-      if(counter == 1){
+      if((counter == 1)){
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
+        graph_map->SwitchToClosestMapNode(Tgt_base);
         Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
         Vector6d variances;
         variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
@@ -406,7 +420,12 @@ int main(int argc, char **argv){
         cloud_nofilter.clear();
         continue;
       }
-
+   /*   if(counter==20){
+        Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
+        Vector6d variances;
+        variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
+        localisation_type_ptr->InitializeLocalization(init_pose,variances);
+      }*/
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
       counter++;
 
@@ -415,7 +434,7 @@ int main(int argc, char **argv){
 
       if(visualize){
         br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
-        if(counter%10==0){
+        if(counter%1==0){
           cloud.header.frame_id="/velodyne";
           pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
           cloud_pub->publish(cloud);
@@ -434,7 +453,7 @@ int main(int argc, char **argv){
         fuser_pub->publish(fuser_pose_msg);
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
-      if(visualize && counter%10==0){
+      if(visualize && counter%15==0){
         GraphPlot::PlotPoseGraph(graph_map);
         NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
         GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
@@ -445,18 +464,11 @@ int main(int argc, char **argv){
       Todom_base_prev = Todom_base;
       cloud.clear();
       cloud_nofilter.clear();
-
-      eval_files.Write( vreader.getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
-
+      eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
     }
+    delete reader;
+    eval_files.Close();
   }
-  eval_files.Close();
-cout<<"finishing"<<endl;
-  if (alive) {
-    while (1) {
-      usleep(1000);
-    }
-  }
-  usleep(1000*1000);
-  std::cout << "Done." << std::endl;
+
+
 }

@@ -38,7 +38,7 @@ using namespace std;
 using namespace lslgeneric;
 
 
-std::string dirname="";
+std::string map_dir_name="";
 std::string output_dir_name="";
 std::string base_name="";
 std::string dataset="";
@@ -182,7 +182,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
       ("data-set", po::value<string>(&dataset)->default_value(""), "where to save the pieces of the map (default it ./map)")
       ("filter-fov", "cutoff part of the field of view")
-      ("dir-name", po::value<string>(&dirname), "where to look for ros bags")
+      ("dir-name", po::value<string>(&map_dir_name), "where to look for ros bags")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
       ("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
       ("Dd", po::value<double>(&motion_params.Dd)->default_value(1.), "forward uncertainty on distance traveled")
@@ -238,7 +238,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     return false;
   }
   cout<<"base-name:"<<base_name<<endl;
-  cout<<"dir-name:"<<dirname<<endl;
+  cout<<"dir-name:"<<map_dir_name<<endl;
   return true;
 
 
@@ -308,16 +308,14 @@ int main(int argc, char **argv){
   sensor_link.setData(tf_sensor_pose);
 
   std::vector<std::string> ros_bag_paths;
-  if(!LocateRosBagFilePaths(dirname,ros_bag_paths)){
+  if(!LocateRosBagFilePaths(map_dir_name,ros_bag_paths)){
     cout<<"couldnt locate ros bags"<<endl;
     exit(0);
   }
 
   int counter = 0;
-  if(!eval_files.CreateOutputFiles()){
-    cout<<"couldnt create output files"<<endl;
-    exit(0);
-  }
+  eval_files.CreateOutputFiles();
+
 
   cout<<"opening bag files"<<endl;
   for(int i=0; i<ros_bag_paths.size(); i++) {

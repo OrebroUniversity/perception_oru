@@ -81,8 +81,8 @@ double translationRegistrationDelta_=0;
 double resolution=0;
 double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
-ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
-nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
+ros::Publisher *gt_pub,*fuser_pub,*cloud_pub,*odom_pub;
+nav_msgs::Odometry gt_pose_msg,fuser_pose_msg,odom_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 LocalisationTypePtr localisation_type_ptr;
 LocalisationParamPtr localisation_param_ptr;
@@ -278,10 +278,12 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 }
 void initializeRosPublishers(){
   gt_pub=new ros::Publisher();
+  odom_pub=new ros::Publisher();
   fuser_pub=new ros::Publisher();
   cloud_pub=new ros::Publisher();
   *gt_pub    =n_->advertise<nav_msgs::Odometry>("/GT", 50);
   *fuser_pub =n_->advertise<nav_msgs::Odometry>("/fuser", 50);
+  *odom_pub =n_->advertise<nav_msgs::Odometry>("/odom", 50);
   *cloud_pub = n_->advertise<pcl::PointCloud<pcl::PointXYZ>>("/points2", 1);
   cout<<"initialized publishers"<<endl;
 }
@@ -320,6 +322,7 @@ int main(int argc, char **argv){
   tf::TransformBroadcaster br;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
+  odom_pose_msg.header.frame_id="/world";
 
 
 
@@ -377,7 +380,7 @@ int main(int argc, char **argv){
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
-    Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
+    Eigen::Affine3d Todom_base_prev,Tgt_base_prev,Todom_init,Tgt_init;
 
     while(reader->ReadNextMeasurement(cloud_nofilter)){
       if(!n_->ok())
@@ -408,6 +411,8 @@ int main(int argc, char **argv){
         continue;
       }
       if((counter == 1)){
+        Todom_init=Todom_base;
+        Tgt_init=Tgt_base;
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
         graph_map->SwitchToClosestMapNode(Tgt_base);
@@ -420,19 +425,12 @@ int main(int argc, char **argv){
         cloud_nofilter.clear();
         continue;
       }
-   /*   if(counter==20){
-        Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
-        Vector6d variances;
-        variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
-        localisation_type_ptr->InitializeLocalization(init_pose,variances);
-      }*/
+
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
       counter++;
 
-      //pfilter.predict(Tmotion,0.01,0.01,0.01,0.00001,0.00001,0.001);
-      //fuser_pose=fuser_pose*Tmotion;
 
-      if(visualize){
+      if(visualize &&counter%30==0){
         br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
         if(counter%1==0){
           cloud.header.frame_id="/velodyne";
@@ -447,13 +445,17 @@ int main(int argc, char **argv){
       if(visualize){
         gt_pose_msg.header.stamp=ros::Time::now();
         fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
+        odom_pose_msg.header.stamp=gt_pose_msg.header.stamp;
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-        gt_pub->publish(gt_pose_msg);
         tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+        Eigen::Affine3d odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;
+        tf::poseEigenToMsg(odom_pose, odom_pose_msg.pose.pose);
+        odom_pub->publish(odom_pose_msg);
+        gt_pub->publish(gt_pose_msg);
         fuser_pub->publish(fuser_pose_msg);
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
-      if(visualize && counter%15==0){
+      if(visualize && counter%30==0){
         GraphPlot::PlotPoseGraph(graph_map);
         NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
         GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());

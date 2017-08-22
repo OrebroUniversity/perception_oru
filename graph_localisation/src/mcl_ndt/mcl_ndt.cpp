@@ -272,11 +272,18 @@ MCLNDTParam::MCLNDTParam(){
   motion_model.push_back(0.01);
   motion_model.push_back(0.1);
 
-  motion_model_offset.push_back(0.002);
+  /*motion_model_offset.push_back(0.00);
   motion_model_offset.push_back(0.002);
   motion_model_offset.push_back(0.0000001);//0.002
   motion_model_offset.push_back(0.0000001);//0.001
   motion_model_offset.push_back(0.0000001);//0.001
-  motion_model_offset.push_back(0.001);
+  motion_model_offset.push_back(0.001);*/
+
+  motion_model_offset.push_back(0.005);
+  motion_model_offset.push_back(0.005);
+  motion_model_offset.push_back(0.0000001);//0.002
+  motion_model_offset.push_back(0.0000001);//0.001
+  motion_model_offset.push_back(0.0000001);//0.001
+  motion_model_offset.push_back(0.003);
 }
 }

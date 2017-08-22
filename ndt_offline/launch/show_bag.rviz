@@ -7,13 +7,10 @@ Panels:
         - /Global Options1
         - /Status1
         - /Grid1
-        - /Odometry1
-        - /Odometry2
         - /TF1/Frames1
         - /TF1/Tree1
-        - /MarkerArray1
-        - /PointCloud21
-        - /Odometry3
+        - /Odometry1
+        - /Odometry2
       Splitter Ratio: 0.5
     Tree Height: 745
   - Class: rviz/Selection
@@ -34,7 +31,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -56,50 +53,18 @@ Visualization Manager:
       Plane Cell Count: 2000
       Reference Frame: <Fixed Frame>
       Value: true
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Color: 255; 255; 0
-      Enabled: true
-      Keep: 6000
-      Length: 0.5
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Topic: /GT
-      Value: true
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Color: 255; 25; 0
-      Enabled: true
-      Keep: 6000
-      Length: 0.5
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Topic: /fuser
-      Value: true
-    - Alpha: 1
-      Arrow Length: 0.300000012
-      Axes Length: 0.5
-      Axes Radius: 0.0500000007
-      Class: rviz/PoseArray
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.0700000003
-      Head Radius: 0.0299999993
-      Name: PoseArray
-      Shaft Length: 0.230000004
-      Shaft Radius: 0.00999999978
-      Shape: Axes
-      Topic: /graphMap
-      Unreliable: false
-      Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        state_base_link:
+        base_laser_link:
           Value: true
-        velodyne:
+        base_link:
+          Value: true
+        odom_base_link:
+          Value: true
+        state_base_link:
           Value: true
         world:
           Value: true
@@ -110,90 +75,31 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
+          odom_base_link:
+            {}
           state_base_link:
-            velodyne:
-              {}
+            {}
       Update Interval: 0
-      Value: true
-    - Alpha: 1
-      Arrow Length: 0.300000012
-      Axes Length: 0.300000012
-      Axes Radius: 0.00999999978
-      Class: rviz/PoseArray
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.0700000003
-      Head Radius: 0.0299999993
-      Name: PoseArray
-      Shaft Length: 0.230000004
-      Shaft Radius: 0.00999999978
-      Shape: Arrow (3D)
-      Topic: /graphMap
-      Unreliable: false
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /NDTglobalMap
-      Name: MarkerArray
-      Namespaces:
-        current: true
-      Queue Size: 2000
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /graphInfo
-      Name: MarkerArray
-      Namespaces:
-        graphInfo: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /ParticleCloud
-      Name: Marker
-      Namespaces:
-        "": true
-      Queue Size: 100
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /points2
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
       Color: 0; 170; 255
       Enabled: true
-      Keep: 6000
-      Length: 0.5
+      Keep: 60000
+      Length: 1
       Name: Odometry
       Position Tolerance: 0.100000001
-      Topic: /odom
+      Topic: /bag_file_view/odom_aligned_with_gt
+      Value: true
+    - Angle Tolerance: 0.100000001
+      Class: rviz/Odometry
+      Color: 255; 255; 0
+      Enabled: true
+      Keep: 60000
+      Length: 1
+      Name: Odometry
+      Position Tolerance: 0.100000001
+      Topic: /bag_file_view/gt_odom
       Value: true
   Enabled: true
   Global Options:
@@ -219,24 +125,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 6.66604614
+      Distance: 10
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.266943395
-        Y: -1.22937739
-        Z: -1.07288361e-06
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.41979599
+      Pitch: 0.785398185
       Target Frame: state_base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.50860596
+      Yaw: 0.785398185
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+<node pkg="ndt_offline" type="bag_file_view" name="bag_file_view"  output="screen">
+
+</node>
+
+<arg name="arla-2012" default="false" />
+<arg name="oru-basement" default="false" />
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_offline)/launch/show_bag.rviz" />
+
+<arg name="path" default="$(find ndt_offline)/bag/arla_bags/" />
+<arg name="file_1" default="2012.bag" />
+<node pkg="rosbag" type="play" name="player" output="screen" args="-r 10 $(arg path)$(arg file_1)"/>
+
+
+</launch>
+

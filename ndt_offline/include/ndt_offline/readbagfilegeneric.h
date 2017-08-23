@@ -57,13 +57,13 @@ public:
       else if(preader_!=NULL)
         return preader_->readNextMeasurement(cloud);//if preader reader is used, the cloud was already adjusted for movement in theconversion.
     }
-    bool getPoseFor(tf::Transform &pose, std::string pose_id){
+    bool getPoseFor(tf::Transform &pose, const std::string &pose_id){
       if(vreader_!=NULL)
         return  vreader_->getPoseFor(pose,pose_id);
       else if(preader_!=NULL)
         return  preader_->getPoseFor(pose,pose_id);
     }
-    bool getPoseFor(Eigen::Affine3d &pose_out, std::string pose_id){
+    bool getPoseFor(Eigen::Affine3d &pose_out, const std::string &pose_id){
       tf::Transform pose;
       bool pose_succesfull=false;
       if(vreader_!=NULL){

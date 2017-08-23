@@ -237,8 +237,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("velodyne_frame_id", po::value<std::string>(&velodyne_frame_id)->default_value(std::string("/velodyne")), "frame_id of the laser sensor")
       ("alive", "keep the mapper/visualization running even though it is completed (e.g. to take screen shots etc.")
       ("nb_neighbours", po::value<int>(&nb_neighbours)->default_value(2), "number of neighbours used in the registration")
-      ("min_range", po::value<double>(&min_range)->default_value(1.0), "minimum range used from scanner")
-      ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
+      ("min-range", po::value<double>(&min_range)->default_value(1.0), "minimum range used from scanner")
+      ("max-range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("save-map", "saves the graph map at the end of execution")
       ("nb_scan_msgs", po::value<int>(&nb_scan_msgs)->default_value(1), "number of scan messages that should be loaded at once from the bag")
       ("disable-keyframe-update", "use every scan to update map rather than update map upon distance traveled")
@@ -254,7 +254,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
       ("skip-frame", po::value<unsigned int>(&skip_frame)->default_value(20), "sframes to skip before plot map etc.")
       ("sensor_time_offset", po::value<double>(&sensor_time_offset)->default_value(0.), "timeoffset of the scanner data")
-      ("registration2d","registration2d")
+      ("registration3d","registration3d")
       ("check-consistency", "if consistency should be checked after registration")
       ("do-soft-constraints", "do_soft_constraints_")
       ("disable-registration", "Disable Registration")
@@ -301,7 +301,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   check_consistency=vm.count("check-consistency");
   alive = vm.count("alive");
   save_map = vm.count("save-map");
-  registration2d=vm.count("registration2d");
+  registration2d=!vm.count("registration3d");
   do_soft_constraints=vm.count("do-soft-constraints");
   regParPtr->do_soft_constraints_ = vm.count("do-soft-constraints");
   regParPtr->enableRegistration_ = !vm.count("disable-registration") && !gt_mapping;
@@ -354,6 +354,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
 }
 void initializeRosPublishers(){
+  ros::Time::init();
+  srand(time(NULL));
   gt_pub=new ros::Publisher();
   fuser_pub=new ros::Publisher();
   cloud_pub=new ros::Publisher();
@@ -408,13 +410,6 @@ int main(int argc, char **argv){
   if(gt_mapping)
     tf_interp_link = gt_base_link_id;
 
-
-  //base_name += dataset+std::string("_Sub")+boolToString(use_submap)+std::string("intch_r")+interchange_radius_+std::string("comp_r_")+compound_radius_+std::string("_res") + toString(resolution)+ std::string("_sensCut") + toString(max_range);
-
-  ros::Time::init();
-  srand(time(NULL));
-
-  //ndtslammer.disableRegistration = disable_reg;
 
   /// Set up the sensor link
   tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
@@ -476,9 +471,11 @@ int main(int argc, char **argv){
     } else {
       cloud = cloud_nofilter;
     }
-    cout<<"cloud size:"<<cloud.size()<<endl;
+
     if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
+   // reader->getPoseFor(Todom_base, base_link_id);
+    //reader->getPoseFor(Tgt_base, gt_base_link_id);
     tf::Transform tf_odom_base;
     reader->getPoseFor(tf_odom_base, base_link_id);
     reader->getPoseFor(tf_gt_base, gt_base_link_id);
@@ -491,7 +488,7 @@ int main(int argc, char **argv){
 
     if(counter == 0){
       if( found_scan!=true){
-        cout<<"Cannot find any scans at all"<<endl;
+        cout<<"Problem with bag filel"<<endl;
         exit(0);
       }
       counter ++;
@@ -528,7 +525,7 @@ int main(int argc, char **argv){
     }
     counter++;
 
-    fuser_pose=fuser_pose*Tmotion;
+    //fuser_pose=fuser_pose*Tmotion;
 
     if(visualize){
       br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
@@ -549,7 +546,7 @@ int main(int argc, char **argv){
       }
     }
 
-    fuser_->ProcessFrame(cloud,fuser_pose,Eigen::Affine3d::Identity());
+    fuser_->ProcessFrame(cloud,fuser_pose,Tmotion);
     double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
     if(visualize && counter%skip_frame==0 ){
       fuser_->plotMap();

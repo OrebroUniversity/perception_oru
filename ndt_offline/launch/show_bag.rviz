@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /Grid1
+        - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry1
@@ -50,7 +51,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 2000
+      Plane Cell Count: 100
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
@@ -60,11 +61,11 @@ Visualization Manager:
         All Enabled: false
         base_laser_link:
           Value: true
-        base_link:
-          Value: true
         odom_base_link:
           Value: true
         state_base_link:
+          Value: true
+        velodyne:
           Value: true
         world:
           Value: true
@@ -78,7 +79,10 @@ Visualization Manager:
           odom_base_link:
             {}
           state_base_link:
-            {}
+            base_laser_link:
+              {}
+            velodyne:
+              {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.100000001
@@ -89,7 +93,7 @@ Visualization Manager:
       Length: 1
       Name: Odometry
       Position Tolerance: 0.100000001
-      Topic: /bag_file_view/odom_aligned_with_gt
+      Topic: /bag_file_view/gt_odom
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
@@ -99,7 +103,7 @@ Visualization Manager:
       Length: 1
       Name: Odometry
       Position Tolerance: 0.100000001
-      Topic: /bag_file_view/gt_odom
+      Topic: /bag_file_view/odom_aligned_with_gt
       Value: true
   Enabled: true
   Global Options:
@@ -125,24 +129,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 10
+      Distance: 31.7297497
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -6.37931252
+        Y: 19.2463226
+        Z: -1.38172602e-37
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.785398185
+      Pitch: 1.38039768
       Target Frame: state_base_link
       Value: XYOrbit (rviz)
-      Yaw: 0.785398185
+      Yaw: 2.01039577
     Saved: ~
 Window Geometry:
   Displays:

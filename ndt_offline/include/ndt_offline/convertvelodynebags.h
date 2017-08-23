@@ -202,7 +202,7 @@ public:
         cloud->header.frame_id="/velodyne";
         cloud->header.seq=counter;
         cloud->header.stamp=timestamp_of_last_sensor_message;
-        outbag.write("/sensor_lidar",timestamp_of_last_sensor_message,cloud);
+        outbag.write(m.getTopic() ,timestamp_of_last_sensor_message,cloud);
 
         //cld.header.frame_id=cloud.header.frame_id;
         //cld.header.stamp=timestamp_of_last_sensor_message;

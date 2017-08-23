@@ -203,7 +203,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   desc.add_options()
       ("help", "produce help message")
       ("map_type_name", po::value<string>(&map_type_name)->default_value(std::string("default")), "type of map to use e.g. ndt_map or ndt_dl_map (default it default)")
-      ("registration_type_name", po::value<string>(&registration_type_name)->default_value(std::string("default")), "type of map to use e.g. ndt_d2d_reg or ndt_dl_reg (default it default)")
+      ("registration_type_name", po::value<string>(&registration_type_name)->default_value(std::string("ndt_d2d_reg")), "type of map to use e.g. ndt_d2d_reg or ndt_dl_reg (default it default)")
       ("visualize", "visualize the output")
       ("use-odometry", "use initial guess from odometry")
       ("disable-mapping", "build maps from cloud data")
@@ -234,7 +234,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("velodyne_config_file", po::value<std::string>(&velodyne_config_file)->default_value(std::string("../config/velo32.yaml")), "configuration file for the scanner")
       ("tf_world_frame", po::value<std::string>(&tf_world_frame)->default_value(std::string("/world")), "tf world frame")
       ("velodyne-packets-topic", po::value<std::string>(&velodyne_packets_topic)->default_value(std::string("/velodyne_packets")), "velodyne packets topic used")
-      ("velodyne_frame_id", po::value<std::string>(&velodyne_frame_id)->default_value(std::string("/velodyne")), "frame_id of the velodyne")
+      ("velodyne_frame_id", po::value<std::string>(&velodyne_frame_id)->default_value(std::string("/velodyne")), "frame_id of the laser sensor")
       ("alive", "keep the mapper/visualization running even though it is completed (e.g. to take screen shots etc.")
       ("nb_neighbours", po::value<int>(&nb_neighbours)->default_value(2), "number of neighbours used in the registration")
       ("min_range", po::value<double>(&min_range)->default_value(1.0), "minimum range used from scanner")
@@ -264,7 +264,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("translationRegistrationDelta",po::value<double>(&translationRegistrationDelta_)->default_value(1.5),"sensorRange")
       ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
-      ("use-submap", "Adopt the sub-mapping technique which represent the global map as a set of local submaps")
+      ("disable-submaps", "Adopt the sub-mapping technique which represent the global map as a set of local submaps")
       ("compound-radius", po::value<double>(&compound_radius_)->default_value(10.0), "Requires sub-mapping enabled, When creating new sub-lamps, information from previous map is transfered to the new map. The following radius is used to select the map objects to transfer")
       ("interchange-radius", po::value<double>(&interchange_radius_)->default_value(10.0), "This radius is used to trigger creation or selection of which submap to use");
 
@@ -325,7 +325,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   mapParPtr->enable_mapping_=!vm.count("disable-mapping");
   mapParPtr->sizey_=map_size_xy;
   mapParPtr->sizex_=map_size_xy;
-  use_submap=vm.count("use-submap");
+  use_submap=!vm.count("disable-submaps");
   graphParPtr->use_submap_=use_submap;
 
   if(  NDTD2DRegParamPtr ndt_reg_ptr=boost::dynamic_pointer_cast<NDTD2DRegParam>(regParPtr)){
@@ -382,22 +382,21 @@ std::string boolToString(bool input){
 ///
 
 int main(int argc, char **argv){
-  cout<<"start"<<endl;
   ros::init(argc, argv, "graph_fuser3d_offline");
-  cout<<"po options"<<endl;
   po::options_description desc("Allowed options");
 
-  cout<<"read params"<<endl;
+  cout<<"Read params"<<endl;
   bool succesfull=ReadAllParameters(desc,argc,&argv);
   if(!succesfull)
     exit(0);
 
-  cout<<"node handle"<<endl;
   n_=new ros::NodeHandle("~");
-  cout<<"test"<<endl;
 
   GraphMapFuser *fuser_;
-
+  stringstream ss;
+  string name= gt_mapping? "_gt_":"_fuser_";
+  ss<<name<<dataset<<std::string("_Sub=")<<use_submap<<"_sizexy="<<map_size_xy<<"_Z="<<map_size_z<<std::string("_intrchR=")<<interchange_radius_<<std::string("_compR=")<<compound_radius_<<std::string("_res=") <<resolution<<std::string("maxSensd=") << max_range<<"keyF="<<use_keyframe<<"_d="<<min_keyframe_dist<<"_deg="<<min_keyframe_dist_rot_deg;
+  base_name+=ss.str();
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
   initializeRosPublishers();
@@ -409,10 +408,7 @@ int main(int argc, char **argv){
   if(gt_mapping)
     tf_interp_link = gt_base_link_id;
 
-  stringstream ss;
-  string name= gt_mapping? "_gt_":"_fuser_";
-  ss<<name<<dataset<<std::string("_Sub=")<<use_submap<<"_sizexy="<<map_size_xy<<"_Z="<<map_size_z<<std::string("_intrchR=")<<interchange_radius_<<std::string("_compR=")<<compound_radius_<<std::string("_res=") <<resolution<<std::string("maxSensd=") << max_range<<"keyF="<<use_keyframe<<"_d="<<min_keyframe_dist<<"_deg="<<min_keyframe_dist_rot_deg;
-  base_name+=ss.str();
+
   //base_name += dataset+std::string("_Sub")+boolToString(use_submap)+std::string("intch_r")+interchange_radius_+std::string("comp_r_")+compound_radius_+std::string("_res") + toString(resolution)+ std::string("_sensCut") + toString(max_range);
 
   ros::Time::init();

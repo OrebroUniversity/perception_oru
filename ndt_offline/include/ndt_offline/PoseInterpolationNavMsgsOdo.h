@@ -27,7 +27,7 @@ class PoseInterpolationNavMsgsOdo{
 		* @param sensor_link Possibility to add a link, e.g. from base to sensor frame.
 		*/ 
 		PoseInterpolationNavMsgsOdo(std::string bagfilename, std::string tftopic, 
-																std::string _fixedframe, 
+                                const std::string &_fixedframe,
 																ros::Duration dur = ros::Duration(180), 
 																tf::StampedTransform *sensor_link=NULL):
 																
@@ -54,7 +54,7 @@ class PoseInterpolationNavMsgsOdo{
 		*/ 
 		PoseInterpolationNavMsgsOdo(rosbag::View *view,
 																std::string tftopic, 
-																std::string _fixedframe, 
+                                const std::string &_fixedframe,
 																ros::Duration dur = ros::Duration(180), 
 																tf::StampedTransform *sensor_link=NULL):																
 																transformer( true, dur)
@@ -88,12 +88,12 @@ class PoseInterpolationNavMsgsOdo{
 		* @param frame_id The id of the frame that you want to use (e.g. "/odom")
 		* @param &T Output as Eigen::Affine3d 
 		*/
-		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,Eigen::Affine3d &T);
+    bool getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id,Eigen::Affine3d &T);
 		
 		/**
 		* Returns the global pose for the t0
 		*/		
-		bool getTransformationForTime(ros::Time t0, std::string frame_id,tf::Transform &T);
+    bool getTransformationForTime(ros::Time t0, const std::string &frame_id,tf::Transform &T);
 		/**
 		* Returns the interpolated tf transformation for a Time t1
 		* @param t0 The time that acts as a reference for computing differential motion
@@ -101,9 +101,9 @@ class PoseInterpolationNavMsgsOdo{
 		* @param frame_id The id of the frame that you want to use (e.g. "/odom")
 		* @param &T Output as tf::Transform 
 		*/
-		bool getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,tf::Transform &T);
+    bool getTransformationForTime(ros::Time t0, ros::Time t1, const std::__cxx11::string &frame_id, tf::Transform &T);
 
-		bool getTransformationForTime(ros::Time t0, std::string frame_id,Eigen::Affine3d &T);
+    bool getTransformationForTime(ros::Time t0, const std::string &frame_id,Eigen::Affine3d &T);
 		
 
 		ros::Time getLastReadTime() const {
@@ -236,7 +236,7 @@ void PoseInterpolationNavMsgsOdo::TransformTFToEigen(const tf::Transform &t, Eig
 /**
 * Returns the interpolated Affine transformation for a Time t
 */
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,tf::Transform &T){
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id,tf::Transform &T){
 	tf::StampedTransform transform;
 	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
 	
@@ -265,7 +265,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 /**
 * Returns the interpolated Affine transformation for a Time t
 */
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, std::string frame_id,Eigen::Affine3d &T){
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id,Eigen::Affine3d &T){
 
 	tf::StampedTransform transform;
 	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, t1, frame_id, transform);
@@ -277,7 +277,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 /**
 * Returns the sensor pose for time t
 */
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id,tf::Transform &T){
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const std::string &frame_id,tf::Transform &T){
 	tf::StampedTransform transform;
 	//fprintf(stderr,"DT: %lf ",t0.toSec()-t1.toSec());
 	std::string schaiba;
@@ -293,7 +293,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::st
 	return true;
 }
 
-bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, std::string frame_id,Eigen::Affine3d &T){
+bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const std::string &frame_id,Eigen::Affine3d &T){
 	tf::StampedTransform transform;
 	bool ret_val = PoseInterpolationNavMsgsOdo::getTransformationForTime(t0, frame_id, transform);
 	TransformTFToEigen (transform, T);

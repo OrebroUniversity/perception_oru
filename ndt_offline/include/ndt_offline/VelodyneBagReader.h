@@ -88,9 +88,9 @@ class VelodyneBagReader{
 	VelodyneBagReader(std::string calibration_file, 
 		std::string bagfilename,
 		std::string velodynetopic, 
-		std::string tf_pose_id, 
-		std::string fixed_frame_id="/world",
-		std::string tftopic="/tf", 
+    const std::string &tf_pose_id,
+    const std::string &fixed_frame_id="/world",
+    const std::string &tftopic="/tf",
 		ros::Duration dur = ros::Duration(3600),
 		tf::StampedTransform *sensor_link=NULL,
 		double velodyne_max_range=130.0, 
@@ -255,7 +255,7 @@ class VelodyneBagReader{
 
 
 
-	    bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose, tf::Transform &base_pose, std::string base_pose_id){
+      bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose, tf::Transform &base_pose, const std::string &base_pose_id){
 
               if(readMultipleMeasurements(Nmeas, cloud, sensor_pose )){
 		    odosync->getTransformationForTime(timestamp_of_last_sensor_message,base_pose_id,base_pose);
@@ -268,7 +268,7 @@ class VelodyneBagReader{
 	    /**
 	     * Get pose for latest measurement with pose id
 	     */
-	    bool getPoseFor(tf::Transform &pose, std::string pose_id){
+      bool getPoseFor(tf::Transform &pose, const std::string &pose_id){
 		if(odosync->getTransformationForTime(timestamp_of_last_sensor_message,pose_id,pose)){
 		    return true;
 		}

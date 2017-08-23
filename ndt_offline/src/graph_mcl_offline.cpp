@@ -56,6 +56,7 @@ bool step_control=false;
 bool registration2d=true;
 bool alive=false;
 bool disable_reg=false, do_soft_constraints=false;
+bool save_eval_results=false;
 lslgeneric::MotionModel2d::Params motion_params;
 std::string base_link_id="", gt_base_link_id="", tf_world_frame="";
 std::string velodyne_config_file="";
@@ -207,8 +208,9 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("reader-type", po::value<std::string>(&reader_type)->default_value(std::string("velodyne_reader")), "Type of reader to use when open rosbag e.g. velodyne_reader (config file needed) or pcl_reader when opening pcl2 messages")
       ("bag-file-path", po::value<string>(&bagfilename)->default_value(""), "File path to rosbag to play with maps")
       ("visualize", "visualize the rosbag and fuser estimate/gt")
+      ("save-results", "save trajectory for gt, estimation, sensor and odometry")
       ("base-name", po::value<string>(&base_name)->default_value(std::string("mcl")), "prefix for all generated files")
-      ("output-dir-name", po::value<string>(&output_dir_name)->default_value("/home/daniel/.ros/maps"), "where to save the pieces of the map (default it ./map)")
+      ("output-dir-name", po::value<string>(&output_dir_name)->default_value(""), "where to save the pieces of the map (default it ./map)")
       ("data-set", po::value<string>(&dataset)->default_value(""), "where to save the pieces of the map (default it ./map)")
       ("localisation-algorithm-name", po::value<string>(&localisation_type)->default_value("mcl_ndt"), "name of localisation algorihm e.g. mcl_ndt")
       ("filter-fov", "cutoff part of the field of view")
@@ -249,7 +251,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
   po::notify(vm);
-
+  save_eval_results=vm.count("save-results");
   visualize = vm.count("visualize");
   filter_fov = vm.count("filter-fov");
   //Check if all iputs are assigned
@@ -369,8 +371,9 @@ int main(int argc, char **argv){
     cout<<"-------------------------- Map and Localisation parameter ----------------------------"<<endl;
     cout<<localisation_type_ptr->ToString()<<endl;
     cout<<"--------------------------------------------------------"<<endl;
-    base_name += std::string("_res") + toString(resolution) + std::string("_sensorcutoff") + toString(max_range);
-    ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);//true
+
+    std::string output_file_name = map_file+"_npart:"+toString(n_particles);
+    ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
     eval_files.CreateOutputFiles();
     int counter = 0;
     reader=new ReadBagFileGeneric(reader_type,
@@ -389,7 +392,8 @@ int main(int argc, char **argv){
     pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
-    Eigen::Affine3d Todom_base_prev,Tgt_base_prev,Todom_init,Tgt_init;
+    Eigen::Affine3d Todom_base,odom_pose,Todom_base_prev, Todom_init; //Todom_base =current odometry pose, odom_pose=current aligned with gt, Todom_base_prev=previous pose, Todom_init= first odometry pose in dataset.
+    Eigen::Affine3d Tgt_base,Tgt_base_prev,Tgt_init;//Tgt_base=current GT pose,Tgt_base_prev=previous GT pose, Tgt_init=first gt pose in dataset;
     ros::Time t0,t1,t2,t3,t4,t5;
     t5=ros::Time::now();
     while(reader->ReadNextMeasurement(cloud_nofilter)){
@@ -407,6 +411,8 @@ int main(int argc, char **argv){
 
       if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
+    //  reader->getPoseFor(Todom_base,base_link_id);
+   //   reader->getPoseFor(Tgt_base,gt_base_link_id);
       tf::Transform tf_odom_base;
       reader->getPoseFor(tf_odom_base,base_link_id);
       reader->getPoseFor(tf_gt_base,gt_base_link_id);
@@ -454,13 +460,13 @@ int main(int argc, char **argv){
       t2=ros::Time::now();
 
       fuser_pose=localisation_type_ptr->GetPose();
+      odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;//Correct for initial odometry
       if(visualize){
         gt_pose_msg.header.stamp=ros::Time::now();
         fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
         odom_pose_msg.header.stamp=gt_pose_msg.header.stamp;
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
         tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-        Eigen::Affine3d odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;
         tf::poseEigenToMsg(odom_pose, odom_pose_msg.pose.pose);
         odom_pub->publish(odom_pose_msg);
         gt_pub->publish(gt_pose_msg);
@@ -479,7 +485,7 @@ int main(int argc, char **argv){
       Todom_base_prev = Todom_base;
       cloud.clear();
       cloud_nofilter.clear();
-      eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
+      eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,odom_pose,fuser_pose,sensor_offset);
 
       t4=ros::Time::now();
       cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;

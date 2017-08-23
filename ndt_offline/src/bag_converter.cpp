@@ -111,7 +111,7 @@ void get_euler_angles(Eigen::Vector3d &euler, const geometry_msgs::PoseStamped &
     euler[2] = angles::normalize_angle(euler[2]);
   }
 }
-bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen::Vector3d &euler,tf::Transform &tf_sensor){
+void GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen::Vector3d &euler,tf::Transform &tf_sensor){
 
   tf::Quaternion quat;
 
@@ -126,12 +126,12 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
     found_sensor_pose=true;
   }
   else if(dataset.compare("default")==0){
-    transl[0]=0.3;
+    transl[0]=0;
     transl[1]=0;
     transl[2]=0;
     euler[0]=0;
     euler[1]=0;
-    euler[2]=-1.62;
+    euler[2]=0;
     found_sensor_pose=true;
   }
   else if(dataset.compare("arla-2012")==0){
@@ -147,7 +147,14 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   tf::Vector3 trans(transl[0], transl[1], transl[2]);
   tf_sensor  = tf::Transform(quat,trans);
 
-  return found_sensor_pose;
+  if(found_sensor_pose)
+    cout<<"Sensor settings for dataset : \""<<dataset<<"\" is used"<<endl;
+  cout<<"Sensor offset (x,y,z)=("<<transl(0)<<","<<transl(1)<<","<<transl(2)<<")"<<endl<<"Sensor angles (r,p,y)=("<<euler(0)<<","<<euler(1)<<","<<euler(2)<<")"<<endl;
+  cout<<"Are these the correct settings? y/n"<<endl;
+  char c=getchar();
+  getchar();
+  if(!( c=='y'||c=='Y'))
+    exit(0);
 }
 
 void update_roll_pitch(Eigen::Affine3d &t, Eigen::Vector3d euler, double yaw) {
@@ -180,7 +187,7 @@ int main(int argc, char **argv){
       ("tf_gt_link", po::value<std::string>(&gt_base_link_id)->default_value(std::string("/state_base_link")), "tf ground truth link")
       ("tf_world_frame", po::value<std::string>(&tf_world_frame)->default_value(std::string("/world")), "tf world frame")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
-      ("min_range", po::value<double>(&min_range)->default_value(2.0), "minimum range used from scanner")
+      ("min_range", po::value<double>(&min_range)->default_value(0.7), "minimum range used from scanner")
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
@@ -188,7 +195,7 @@ int main(int argc, char **argv){
       ("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
       ("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
-      ("data-set", po::value<string>(&dataset)->default_value(std::string("arla-2012")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
+      ("data-set", po::value<string>(&dataset)->default_value(std::string("oru-basement")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ;
 
   po::variables_map vm;
@@ -198,15 +205,20 @@ int main(int argc, char **argv){
     cout << desc << "\n";
     return 1;
   }
+  cout<<"Point cloud will be filtered according to:\n min="<<min_range<<" < range < max="<<max_range<<endl<<"Continue? y/n";
+  char c=getchar();
+  getchar();
+  if(!( c=='y'||c=='Y')){
+    cout << desc << "\n";
+    exit(0);
+  }
 
   po::notify(vm);
 
   rosbag::Bag outbag;
   //bag.open(inbag_name, rosbag::bagmode::Read);
   outbag_name = inbag_name + std::string("_edited.bag");
-
-  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
-    exit(0);
+  GetSensorPose(dataset,transl,euler,tf_sensor_pose);
 
   tf::StampedTransform sensor_link;
   sensor_link.child_frame_id_ = velodyne_frame_id;

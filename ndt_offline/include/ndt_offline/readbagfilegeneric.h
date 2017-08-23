@@ -63,6 +63,19 @@ public:
       else if(preader_!=NULL)
         return  preader_->getPoseFor(pose,pose_id);
     }
+    bool getPoseFor(Eigen::Affine3d &pose_out, std::string pose_id){
+      tf::Transform pose;
+      bool pose_succesfull=false;
+      if(vreader_!=NULL){
+        pose_succesfull=  vreader_->getPoseFor(pose,pose_id);
+        tf::transformTFToEigen(pose,pose_out);
+      }
+      else if(preader_!=NULL){
+        pose_succesfull=  preader_->getPoseFor(pose,pose_id);
+        tf::transformTFToEigen(pose,pose_out);
+      }
+      return pose_succesfull;
+    }
     ros::Time getTimeStampOfLastSensorMsg() const {
       if(vreader_!=NULL)
         return vreader_->getTimeStampOfLastSensorMsg();

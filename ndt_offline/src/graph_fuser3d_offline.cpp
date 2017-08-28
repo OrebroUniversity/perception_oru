@@ -32,6 +32,7 @@
 #include "ndt_offline/pointcloudbagreader.h"
 #include "ndt_offline/readbagfilegeneric.h"
 #include <unistd.h>
+#include "tf_conversions/tf_eigen.h"
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
@@ -135,7 +136,7 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   if(dataset.compare("oru-basement")==0){
     transl[0]=0.3;
     transl[1]=0;
-    transl[2]=0;
+    transl[2]=1.3;
     euler[0]=0;
     euler[1]=0;
     euler[2]=-1.62;
@@ -474,17 +475,22 @@ int main(int argc, char **argv){
 
     if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
-   // reader->getPoseFor(Todom_base, base_link_id);
+    // reader->getPoseFor(Todom_base, base_link_id);
     //reader->getPoseFor(Tgt_base, gt_base_link_id);
     tf::Transform tf_odom_base;
     reader->getPoseFor(tf_odom_base, base_link_id);
     reader->getPoseFor(tf_gt_base, gt_base_link_id);
+
+
     //  vreader->getPoseFor(tf_odom_base, base_link_id);
     // vreader->getPoseFor(tf_gt_base, gt_base_link_id);
 
     Eigen::Affine3d Todom_base,Tgt_base;
     tf::transformTFToEigen(tf_gt_base,Tgt_base);
     tf::transformTFToEigen(tf_odom_base,Todom_base);
+
+
+
 
     if(counter == 0){
       if( found_scan!=true){
@@ -526,27 +532,36 @@ int main(int argc, char **argv){
     counter++;
 
     //fuser_pose=fuser_pose*Tmotion;
-
+    ros::Time tplot=ros::Time::now();
     if(visualize){
-      br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
 
-      if(counter%skip_frame==0){
+      br.sendTransform(tf::StampedTransform(tf_gt_base,tplot,   "/world", "/state_base_link"));
 
-        cloud.header.frame_id="/velodyne";
-        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-        cloud_pub->publish(cloud);
-      }
-      gt_pose_msg.header.stamp=ros::Time::now();
-      tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-      gt_pub->publish(gt_pose_msg);
       if(!gt_mapping){
-        fuser_pose_msg.header.stamp=ros::Time::now();
+        fuser_pose_msg.header.stamp=tplot;
         tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
         fuser_pub->publish(fuser_pose_msg);
+      }
+      gt_pose_msg.header.stamp=tplot;
+      tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
+      gt_pub->publish(gt_pose_msg);
+
+      if(counter%skip_frame==0){
+        if(gt_mapping)
+          cloud.header.frame_id="/state_base_laser_link";
+        else
+          cloud.header.frame_id="/fuser_laser_link";
+
+        pcl_conversions::toPCL(tplot, cloud.header.stamp);
+        cloud_pub->publish(cloud);
       }
     }
 
     fuser_->ProcessFrame(cloud,fuser_pose,Tmotion);
+    tf::Transform tf_fuser_pose;
+    tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
+    br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
+
     double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
     if(visualize && counter%skip_frame==0 ){
       fuser_->plotMap();

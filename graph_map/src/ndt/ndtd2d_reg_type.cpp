@@ -108,7 +108,7 @@ void NDTD2DRegParam::GetParametersFromRos(){
   registrationParameters::GetParametersFromRos();
   cout<<"derived class read from ros"<<endl;
   ros::NodeHandle nh("~");//base class parameters
-  nh.param("resolution",resolution_,1.0);
+  nh.param("resolution",resolution_,0.4);
   nh.param("resolutionLocalFactor",resolutionLocalFactor_,1.0);
 }
 

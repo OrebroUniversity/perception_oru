@@ -10,6 +10,28 @@ ros::Publisher* GraphPlot::graphInfoPublisher_=NULL;
 ros::Publisher* GraphPlot::globalMapPublisher_=NULL;
 ros::Publisher* GraphPlot::global2MapPublisher_=NULL;
 ros::Publisher* GraphPlot::particlaCloudPublisher_=NULL;
+void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMarker marker){
+
+  if(NDTMapPtr ptr=boost::dynamic_pointer_cast<NDTMapType>(map)){
+
+    if(marker==plotmarker::sphere){
+      cout<<"inside marker::sphere plot"<<endl;
+      GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMap(),color,offset);
+    }
+    else if(marker==plotmarker::point){
+      cout<<"inside marker::point plot"<<endl;
+      cov_vector cov;
+      mean_vector mean;
+      GetAllCellsMeanCov(ptr->GetNDTMap(), cov, mean);
+      PublishMapAsPoints(mean,color,0.5*ptr->GetResolution(),offset);
+    }
+
+  }
+}
+void CreateMarker(Eigen::Matrix3d cov,Eigen::Vector3d mean, PlotMarker marker,int color){
+
+}
+
 void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<PoseParticle> pcloud){
   visualization_msgs::Marker marker;
 
@@ -202,6 +224,56 @@ void GraphPlot::CovarToMarker(const Eigen::Matrix3d &cov,const Eigen::Vector3d &
   marker.pose.position.x=mean(0);
   marker.pose.position.y=mean(1);
   marker.pose.position.z=mean(2);
+
+}
+void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset){
+
+  if(!initialized_)
+    Initialize();
+
+  cout<<"publish points"<<mean.size()<<endl;;
+  visualization_msgs::Marker marker;
+  visualization_msgs::MarkerArray markerarr;
+  marker.header.frame_id = "/world";
+  marker.header.stamp = ros::Time();
+  marker.ns = "my_namespace";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::POINTS;
+  marker.action = visualization_msgs::Marker::ADD;
+
+  marker.scale.x = 0.1;
+  marker.scale.y = 0.1;
+  marker.scale.z = 0.1;
+
+  if(color==0){
+    marker.color.a = 0.75;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+  }
+  else if(color==1){
+    marker.color.a = 0.6;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+  }
+  else if(color==2){
+    marker.color.a = 0.4 ;
+    marker.color.r = 0.4;
+    marker.color.g = 0.6;
+    marker.color.b = 1.0;
+  }
+    marker.id=0;
+    geometry_msgs::Point p;
+  for(unsigned int i=0;i<mean.size();i++){
+    Eigen::Vector3d m_tmp = offset*mean[i];
+    p.x=m_tmp(0);
+    p.y=m_tmp(1);
+    p.z=m_tmp(2);
+    marker.points.push_back(p);
+  }
+  markerarr.markers.push_back(marker);
+  globalMapPublisher_->publish(markerarr);
 
 }
 void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher *mapPublisher, string frame, int color,const Affine3d &offset,string ns,int markerType){

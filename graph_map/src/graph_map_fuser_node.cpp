@@ -224,9 +224,9 @@ public:
     adjusted_odom_publisher_=param_nh.advertise<nav_msgs::Odometry>("odom_gt_init",50);
 
     if(gt_mapping)
-       use_tf_listener_= use_tf_listener_ && state_base_link_id != std::string("");// check if odometry topic exists
+      use_tf_listener_= use_tf_listener_ && state_base_link_id != std::string("");// check if odometry topic exists
     else
-    use_tf_listener_= use_tf_listener_ && odometry_link_id != std::string("");// check if odometry topic exists
+      use_tf_listener_= use_tf_listener_ && odometry_link_id != std::string("");// check if odometry topic exists
 
 
     sensorPose_ =  Eigen::Translation<double,3>(sensor_pose_x,sensor_pose_y,sensor_pose_z)*
@@ -518,7 +518,6 @@ public:
     m.lock();
     fuser_->ProcessFrame(cloud,pose_,Tmotion);
     fuser_->plotMap();
-
     m.unlock();
   }
   void GTLaserPointsOdomCallbackTF(const sensor_msgs::PointCloud2::ConstPtr& msg_in)//this callback is used for GT based mapping with TF lookup

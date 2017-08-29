@@ -38,7 +38,7 @@
 
 <param name="size_x_meters" value="83" />
 <param name="size_y_meters" value="83" />
-<param name="size_z_meters" value="12" />
+<param name="size_z_meters" value="10" />
 
 <param name="resolution" value="0.5" />
 <!--<param name="laser_variance_z" value="0.02" /> -->
@@ -47,10 +47,10 @@
 
 <!-- Specific sensor offset parameters for the example file -->
 <param name="sensor_pose_x" value="1.18" />
-<param name="sensor_pose_y" value="-0.03" />
+<param name="sensor_pose_y" value="-0.3" />
 <param name="sensor_pose_z" value="2.0" />
 <param name="sensor_pose_t" value="-1.62" />
-<param name="sensor_offset_t" value="0.025" />
+<param name="sensor_offset_t" value="0.0" />
 
 <param name="pose_init_x" value="10.73" />
 <param name="pose_init_y" value="2.185" />

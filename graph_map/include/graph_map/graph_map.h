@@ -43,6 +43,8 @@ public:
   virtual Eigen::Affine3d GetCurrentNodePose();
   virtual Eigen::Affine3d GetPreviousNodePose();
   virtual void AddFactor(MapNodePtr prev, MapNodePtr next, Affine3d Tdiff, Matrix6d cov);
+
+
   //virtual std::vector<FactorPtr> GetFactors(NodePtr node);//Get all factors for current node
   GraphMap();
 protected:

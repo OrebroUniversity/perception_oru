@@ -171,7 +171,7 @@ int main(int argc, char **argv){
   Eigen::Vector3d euler;
   tf::Transform tf_sensor_pose;
   string inbag_name, outbag_name, dataset;
-  string velodyne_config_file,velodyne_packets_topic,velodyne_frame_id,base_link_id,gt_base_link_id,tf_topic,tf_world_frame;
+  string velodyne_config_file,velodyne_packets_topic,velodyne_frame_id,base_link_id,gt_base_link_id,tf_topic,tf_world_frame,interpolation_link_id;
   double min_dist;
   double min_range=0.6,max_range=30;
   Eigen::Vector3d imu_offset_vec;;
@@ -189,13 +189,14 @@ int main(int argc, char **argv){
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("min_range", po::value<double>(&min_range)->default_value(0.7), "minimum range used from scanner")
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
+      ("gt-interpolation-link", po::value<std::string>(&interpolation_link_id)->default_value("/state_base_link"), "id in which lidar is interpolated")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
       ("z", po::value<double>(&transl[2])->default_value(0.), "sensor pose - translation vector z")
       ("ex", po::value<double>(&euler[0])->default_value(0.), "sensor pose - euler angle vector x")
       ("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
-      ("data-set", po::value<string>(&dataset)->default_value(std::string("oru-basement")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
+      ("data-set", po::value<string>(&dataset)->default_value(std::string("arla-2012")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ;
 
   po::variables_map vm;
@@ -206,11 +207,21 @@ int main(int argc, char **argv){
     return 1;
   }
   cout<<"Point cloud will be filtered according to:\n min="<<min_range<<" < range < max="<<max_range<<endl<<"Continue? y/n";
-  char c=getchar();
-  getchar();
-  if(!( c=='y'||c=='Y')){
-    cout << desc << "\n";
-    exit(0);
+  {char c=getchar();
+    getchar();
+    if(!( c=='y'||c=='Y')){
+      cout << desc << "\n";
+      exit(0);
+    }
+  }
+  cout<<"Never run SLAM with data interpolated in GT frame."<<endl;
+  cout<<"Data will be interpolated in link: "<<interpolation_link_id<<".\n is this the correct link id? y/n"<<endl;
+  {char c=getchar();
+    getchar();
+    if(!( c=='y'||c=='Y')){
+      cout << desc << "\n";
+      exit(0);
+    }
   }
 
   po::notify(vm);
@@ -222,19 +233,19 @@ int main(int argc, char **argv){
 
   tf::StampedTransform sensor_link;
   sensor_link.child_frame_id_ = velodyne_frame_id;
-  sensor_link.frame_id_ = gt_base_link_id;//base_link_id;//tf_base_link; //"/odom_base_link";
+  sensor_link.frame_id_ = interpolation_link_id;//base_link_id;//tf_base_link; //"/odom_base_link";
   sensor_link.setData(tf_sensor_pose);
   //vmc_navserver::VMCEncodersStamped prev_enc_msg;
   ConvertVelodyneBagsToPcl reader(outbag_name,
-                                                 velodyne_config_file,
-                                                 inbag_name,
-                                                 velodyne_packets_topic,  //"/velodyne_packets"
-                                                 velodyne_frame_id,
-                                                 tf_world_frame,
-                                                 tf_topic,
-                                                 ros::Duration(3600),
-                                                 &sensor_link, max_range, min_range,
-                                                 0);
+                                  velodyne_config_file,
+                                  inbag_name,
+                                  velodyne_packets_topic,  //"/velodyne_packets"
+                                  velodyne_frame_id,
+                                  tf_world_frame,
+                                  tf_topic,
+                                  ros::Duration(3600),
+                                  &sensor_link, max_range, min_range,
+                                  0);
 
 
   pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -244,7 +255,7 @@ int main(int argc, char **argv){
   while(reader.ConvertToPclBag(tf_scan_source));
 
 
- // while(reader.readMultipleMeasurements(1,cloud,tf_scan_source,tf_gt_base,base_link_id)){
+  // while(reader.readMultipleMeasurements(1,cloud,tf_scan_source,tf_gt_base,base_link_id)){
 
 
 

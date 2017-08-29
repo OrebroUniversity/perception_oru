@@ -106,7 +106,8 @@ class VelodyneBagReader{
                                   view_direction,
                                   view_width);
       std::cout<<"Velodyne PARAMETERS FILTER: max="<<velodyne_max_range<<","<<velodyne_min_range<<std::endl;
-	    dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range); 
+      if(dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range)!=0)
+        exit(0);
 	    sensor_time_offset_ = ros::Duration(sensor_time_offset);
 	    fprintf(stderr,"Opening '%s'\n",bagfilename.c_str());
 

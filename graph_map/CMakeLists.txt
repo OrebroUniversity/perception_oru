@@ -26,6 +26,7 @@ find_package(catkin REQUIRED
     tf_conversions
     tf
     genmsg
+    tf_conversions
     )
 find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED COMPONENTS)

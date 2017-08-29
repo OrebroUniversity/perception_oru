@@ -26,6 +26,7 @@ bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::Point
     cout<<"Registration disabled - motion based on odometry"<<endl;
     return true;
   }
+  cout<<" registration ";
   ///Create local map
   lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution_*resolutionLocalFactor_));
   ndlocal.guessSize(0,0,0,sensorRange_,sensorRange_,mapSizeZ_);

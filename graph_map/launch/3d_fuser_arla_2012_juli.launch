@@ -7,14 +7,14 @@
 
 <node pkg="graph_map" type="graph_map_fuser_node" name="graph_node" output="screen">
 
-<param name="renderGTmap" value="true" />
+<param name="renderGTmap" value="false" />
 <param name="gt_topic" value="/vmc_navserver/state" />
 <param name="initPoseFromGT" value="true" />
 
 <param name="map_type" value="ndt_map" />
 <param name="registration_type" value="ndt_d2d_reg" />
 
-<param name="use_submap" value="true" />
+<param name="use_submap" value="false" />
 <param name="interchange_radius" value="10" />
 <param name="compound_radius" value="0" />
 
@@ -36,21 +36,21 @@
 <param name="max_translation_norm" value="0.4" />
 <param name="max_rotation_norm" value="0.78539816339" />
 
-<param name="size_x_meters" value="83" />
-<param name="size_y_meters" value="83" />
+<param name="size_x_meters" value="200" />
+<param name="size_y_meters" value="200" />
 <param name="size_z_meters" value="10" />
 
 <param name="resolution" value="0.5" />
 <!--<param name="laser_variance_z" value="0.02" /> -->
-<param name="sensor_range" value="30." />
+<param name="sensor_range" value="100." />
 <param name="min_laser_range" value="1.0" />
 
 <!-- Specific sensor offset parameters for the example file -->
 <param name="sensor_pose_x" value="1.18" />
 <param name="sensor_pose_y" value="-0.3" />
 <param name="sensor_pose_z" value="2.0" />
-<param name="sensor_pose_t" value="-1.62" />
-<param name="sensor_offset_t" value="0.0" />
+<param name="sensor_pose_t" value="-1.625" />
+<param name="sensor_offset_t" value="0.25" />
 
 <param name="pose_init_x" value="10.73" />
 <param name="pose_init_y" value="2.185" />
@@ -73,7 +73,7 @@
 
 <arg name="path" default="$(find ndt_offline)/bag/arla_bags/" />
 <arg name="file_1" default="2012-09-05-09-44-50_0.bagfix.bag" />
-<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 3 -q $(arg path)$(arg file_1)"/>
+<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 1.5 -q $(arg path)$(arg file_1)"/>
 
 <!--<node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 state_base_link velodyne" />-->
 

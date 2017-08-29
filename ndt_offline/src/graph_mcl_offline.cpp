@@ -58,7 +58,7 @@ bool alive=false;
 bool disable_reg=false, do_soft_constraints=false;
 bool save_eval_results=false;
 lslgeneric::MotionModel2d::Params motion_params;
-std::string base_link_id="", gt_base_link_id="", tf_world_frame="";
+std::string base_link_id="", gt_base_link_id="", tf_world_frame="", tf_fuser_frame="fuser";
 std::string velodyne_config_file="";
 std::string velodyne_packets_topic="";
 std::string velodyne_frame_id="";
@@ -270,11 +270,64 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     //parPtr->resolution=resolution;
     parPtr->n_particles_=n_particles;
     parPtr->z_filter_min=z_filter_min_height;
+
+    if (dataset == "hx") {
+      parPtr->motion_model[0] = 0.01;
+      parPtr->motion_model[1] = 0.002;
+      parPtr->motion_model[2] = 0.001;
+      parPtr->motion_model[3] = 0.001;
+      parPtr->motion_model[4] = 0.001;
+      parPtr->motion_model[5] = 0.005;
+
+      parPtr->motion_model[6] = 0.002;
+      parPtr->motion_model[7] = 0.005;
+      parPtr->motion_model[8] = 0.001;
+      parPtr->motion_model[9] = 0.001;
+      parPtr->motion_model[10] = 0.001;
+      parPtr->motion_model[11] = 0.005;
+
+      parPtr->motion_model[12] = 0.005;
+      parPtr->motion_model[13] = 0.001;
+      parPtr->motion_model[14] = 0.01;
+      parPtr->motion_model[15] = 0.0001;
+      parPtr->motion_model[16] = 0.0001;
+      parPtr->motion_model[17] = 0.005;
+
+      parPtr->motion_model[18] = 0.002;
+      parPtr->motion_model[19] = 0.001;
+      parPtr->motion_model[20] = 0.001;
+      parPtr->motion_model[21] = 0.01;
+      parPtr->motion_model[22] = 0.001;
+      parPtr->motion_model[23] = 0.001;
+
+      parPtr->motion_model[24] = 0.002;
+      parPtr->motion_model[25] = 0.0001;
+      parPtr->motion_model[26] = 0.001;
+      parPtr->motion_model[27] = 0.001;
+      parPtr->motion_model[28] = 0.01;
+      parPtr->motion_model[29] = 0.001;
+
+      parPtr->motion_model[30] = 0.005;
+      parPtr->motion_model[31] = 0.002;
+      parPtr->motion_model[32] = 0.0001;
+      parPtr->motion_model[33] = 0.001;
+      parPtr->motion_model[34] = 0.001;
+      parPtr->motion_model[35] = 0.01;
+
+      parPtr->motion_model_offset[0] = 0.02;
+      parPtr->motion_model_offset[1] = 0.00002;
+      parPtr->motion_model_offset[2] = 0.002;
+      parPtr->motion_model_offset[3] = 0.000002;
+      parPtr->motion_model_offset[4] = 0.000002;
+      parPtr->motion_model_offset[5] = 0.000002;
+    }
   }
 
   cout<<"sensor pose"<<endl;
-  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose))
-    exit(0);
+  if(!GetSensorPose(dataset,transl,euler,tf_sensor_pose)) {
+    cout << "no valid dataset specified, will use the provided sensor pose params" << endl;
+  }
+  cout << "transl : " << transl << " euler : " << euler;
   sensor_link.child_frame_id_ = velodyne_frame_id;
   sensor_link.frame_id_ = base_link_id;//tf_base_link; //"/odom_base_link";
   sensor_link.setData(tf_sensor_pose);
@@ -325,14 +378,12 @@ int main(int argc, char **argv){
   ReadAllParameters(desc,argc,&argv);
   srand(time(NULL));
   tf::TransformBroadcaster br;
-  gt_pose_msg.header.frame_id="/world";
-  fuser_pose_msg.header.frame_id="/world";
-  odom_pose_msg.header.frame_id="/world";
+  gt_pose_msg.header.frame_id=tf_world_frame;
+  fuser_pose_msg.header.frame_id=tf_world_frame;
+  odom_pose_msg.header.frame_id=tf_world_frame;
 
 
-
-
-
+  NDTMapPtr curr_node = NULL;
 
   std::vector<std::string> map_file_path;
   if(map_file_name.length()>0){
@@ -411,8 +462,8 @@ int main(int argc, char **argv){
 
       if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
-    //  reader->getPoseFor(Todom_base,base_link_id);
-   //   reader->getPoseFor(Tgt_base,gt_base_link_id);
+      //  reader->getPoseFor(Todom_base,base_link_id);
+      //   reader->getPoseFor(Tgt_base,gt_base_link_id);
       tf::Transform tf_odom_base;
       reader->getPoseFor(tf_odom_base,base_link_id);
       reader->getPoseFor(tf_gt_base,gt_base_link_id);
@@ -446,21 +497,34 @@ int main(int argc, char **argv){
       Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
       counter++;
 
-      if(visualize &&counter%30==0){
-        br.sendTransform(tf::StampedTransform(tf_gt_base,ros::Time::now(), "/world", "/state_base_link"));
-        if(counter%1==0){
-          cloud.header.frame_id="/velodyne";
-          pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-          cloud_pub->publish(cloud);
-        }
-      }
       t1=ros::Time::now();
       lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
       localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
       t2=ros::Time::now();
 
+
       fuser_pose=localisation_type_ptr->GetPose();
       odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;//Correct for initial odometry
+
+      if (visualize)
+      {
+        tf::Transform tf_fuser;
+        tf::transformEigenToTF(fuser_pose, tf_fuser);
+        br.sendTransform(tf::StampedTransform(tf_fuser,ros::Time::now(), tf_world_frame,  tf_fuser_frame));
+        if (tf_world_frame != "/world") {
+          tf::Transform tf_none;
+          tf_none.setIdentity();
+          br.sendTransform(tf::StampedTransform(tf_none, ros::Time::now(), "/world", tf_world_frame));
+        }
+      }
+
+      if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot
+        br.sendTransform(tf::StampedTransform(sensor_link,ros::Time::now(), tf_fuser_frame, velodyne_frame_id));
+        cloud.header.frame_id=velodyne_frame_id;// "/velodyne";
+        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+        cloud_pub->publish(cloud);
+      }
+
       if(visualize){
         gt_pose_msg.header.stamp=ros::Time::now();
         fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
@@ -473,11 +537,19 @@ int main(int argc, char **argv){
         fuser_pub->publish(fuser_pose_msg);
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
+
       if(visualize && counter%30==0){
         GraphPlot::PlotPoseGraph(graph_map);
-        NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-        GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+
+        if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
+          // Do nothing
+        }
+        else {
+          curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
+          GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+        }
       }
+
       t3=ros::Time::now();
       double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
       //cout<<"norm between estimated and actual pose="<<diff<<endl;
@@ -490,7 +562,6 @@ int main(int argc, char **argv){
       t4=ros::Time::now();
       cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;
       t5=ros::Time::now();
-
     }
     delete reader;
     eval_files.Close();

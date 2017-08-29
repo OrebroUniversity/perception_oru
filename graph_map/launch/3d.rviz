@@ -58,7 +58,7 @@ Visualization Manager:
         Y: 0.385399997
         Z: 0
       Plane: XY
-      Plane Cell Count: 40
+      Plane Cell Count: 4000
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -145,7 +145,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        current: true
+        my_namespace: true
       Queue Size: 1000
       Value: true
     - Alpha: 1
@@ -287,24 +287,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 10
+      Distance: 21.4747219
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
+        X: 119.088707
+        Y: 133.980637
         Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.34039855
-      Target Frame: odom_base_link
+      Pitch: 0.994796872
+      Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.48040199
+      Yaw: 4.61540318
     Saved:
       - Class: rviz/Orbit
         Distance: 39.1665726

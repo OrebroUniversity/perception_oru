@@ -67,6 +67,7 @@ protected:
   message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
   message_filters::Subscriber<sensor_msgs::LaserScan> *laser_sub_;
   message_filters::Subscriber<nav_msgs::Odometry> *odom_sub_;
+  plotmarker plot_marker;
 
   message_filters::Subscriber<nav_msgs::Odometry> *gt_fuser_sub_;
   ros::Subscriber gt_sub,points2OdomTfSub;
@@ -134,6 +135,21 @@ public:
     ///range to cutoff sensor measurements
     ///
     param_nh.param("sensor_range",sensor_range,3.);
+
+    ///visualize in a local window
+    param_nh.param("visualize",visualize,true);
+
+    std::string marker_str;
+    param_nh.param<std::string>("plot_marker",marker_str,"sphere");
+    if(marker_str.compare("sphere")==0)
+      plot_marker=plotmarker::sphere;
+    else if(marker_str.compare("point")==0)
+      plot_marker=plotmarker::point;
+    else
+      plot_marker=plotmarker::sphere;
+
+
+
     ///range to cutoff sensor measurements
     param_nh.param("min_laser_range",min_laser_range_,0.1);
 
@@ -177,8 +193,6 @@ public:
     param_nh.param<bool>("do_soft_constraints", do_soft_constraints, false);
     param_nh.param("laser_variance_z",varz,resolution/4);
 
-    ///visualize in a local window
-    param_nh.param("visualize",visualize,true);
     param_nh.param<std::string>("bagfile_name",bag_name,"data.bag");
     cout<<"bagfile_name"<<points_topic<<endl;
 
@@ -556,7 +570,7 @@ public:
       fuser_=new GraphMapFuser(map_type_name,reg_type_name,pose_,sensorPose_);
       cout<<"----------------------------FUSER------------------------"<<endl;
       cout<<fuser_->ToString()<<endl;
-      fuser_->Visualize(visualize);
+      fuser_->Visualize(visualize,plot_marker);
       cout<<"---------------------------------------------------------"<<endl;
       initPoseSet = true;
     }

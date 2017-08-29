@@ -51,6 +51,11 @@ void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<Pos
   marker.type=visualization_msgs::Marker::POINTS;
   marker.scale.x=0.05;
   marker.scale.y=0.05;
+  marker.scale.z=0.05;
+
+  std_msgs::ColorRGBA c;
+  c.a=1.0;
+
   for(int i=0;i<pcloud.size();i++){
     geometry_msgs::Point point;
     Eigen::Vector3d point_offset=offset*pcloud[i].T.translation();
@@ -245,32 +250,43 @@ void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,con
   marker.scale.y = 0.1;
   marker.scale.z = 0.1;
 
-  if(color==0){
-    marker.color.a = 0.75;
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+  marker.id=0;
+
+
+  geometry_msgs::Point p;
+  float min_z,max_z;
+  if(mean.size()>0){
+    Eigen::Vector3d m_tmp = offset*mean[0];
+    min_z=m_tmp(2);
+    max_z=m_tmp(2);
   }
-  else if(color==1){
-    marker.color.a = 0.6;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
-  }
-  else if(color==2){
-    marker.color.a = 0.4 ;
-    marker.color.r = 0.4;
-    marker.color.g = 0.6;
-    marker.color.b = 1.0;
-  }
-    marker.id=0;
-    geometry_msgs::Point p;
+  mean_vector mean_vek;
   for(unsigned int i=0;i<mean.size();i++){
     Eigen::Vector3d m_tmp = offset*mean[i];
     p.x=m_tmp(0);
     p.y=m_tmp(1);
     p.z=m_tmp(2);
+    if(p.z<min_z)
+      min_z=p.z;
+    if(p.z>max_z)
+      max_z=p.z;
     marker.points.push_back(p);
+    mean_vek.push_back(m_tmp);
+  }
+  std_msgs::ColorRGBA p_color;
+  p_color.a=1.0;
+  GraphPlot::ColorGradient color_map;
+  color_map.createDefaultHeatMapGradient();
+  for(int i=0;i<mean_vek.size();i++){
+    float r,g,b;
+    float z=mean_vek[i](2);
+    z=(z-min_z)/(max_z-min_z);
+    cout<<"z="<<(z)<<endl;
+    color_map.getColorAtValue(z,r,g,b);
+    p_color.r=r;
+    p_color.g=g;
+    p_color.b=b;
+    marker.colors.push_back(p_color);
   }
   markerarr.markers.push_back(marker);
   globalMapPublisher_->publish(markerarr);
@@ -385,5 +401,6 @@ void GraphPlot::SendGlobal2MapToRviz(  std::vector<lslgeneric::NDTCell*>cells, i
   GetAllCellsMeanCov(cells,cov,mean);
   sendMapToRviz(mean,cov,globalMapPublisher_,"world",color,offset,"prev",visualization_msgs::Marker::CUBE);
 }
+
 
 }

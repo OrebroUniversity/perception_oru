@@ -59,6 +59,7 @@
 <param name="map_directory" value="$(find graph_map)/maps" />
 
 <param name="visualize" value="true" />
+<param name="plot_marker" value="point" />
 
 
 <param name="use_keyframe" value="true" />
@@ -74,7 +75,7 @@
 <arg name="file_1" default="2012-09-05-09-44-50_0.bagfix.bag" />
 <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 3 -q $(arg path)$(arg file_1)"/>
 
-<node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 state_base_link velodyne" />
+<!--<node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 state_base_link velodyne" />-->
 
 </launch>
 <!--

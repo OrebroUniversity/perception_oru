@@ -43,7 +43,10 @@ void GraphMapFuser::SaveGraphMap(const std::string &filename){
   ar << graph_map_;
   ofs.close();
 }
-
+void GraphMapFuser::Visualize(bool enableVisualOutput,plotmarker marker){
+  visualize_=enableVisualOutput;
+  marker_=marker;
+}
 //!
 //! \brief GraphMapFuser::KeyFrameBasedFuse
 //! \param Tnow pose of base specified in the GLOBAL world frame
@@ -124,7 +127,7 @@ void GraphMapFuser::plotMap(){
 /*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
   GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
   cout<<"fuser: plot marker"<<endl;
-  GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),1,graph_map_->GetCurrentNodePose(),plotmarker::sphere);
+  GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),1,graph_map_->GetCurrentNodePose(),marker_);
   GraphPlot::PlotPoseGraph(graph_map_);
 }
 

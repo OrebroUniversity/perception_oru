@@ -14,7 +14,7 @@
 #include "ndt_map/ndt_map.h"
 #include "ndt_generic/motion_model_2d.h"
 #include "ndt_generic/eigen_utils.h"
-
+#include "visualization/graph_plot.h"
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include "boost/serialization/shared_ptr.hpp"
@@ -36,7 +36,7 @@ public:
   void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
   bool ErrorStatus(string status="");
   unsigned int FramesProcessed() const{return nr_frames_;}
-  void Visualize(bool enableVisualOutput){visualize_=enableVisualOutput;}
+  void Visualize(bool enableVisualOutput,plotmarker marker=plotmarker::sphere);
   std::string ToString();
   void plotMap();
 protected:
@@ -56,6 +56,7 @@ protected:
   MotionModel2d motion_model_2d_;
   bool initialized_=false;
   bool visualize_=false;
+  plotmarker marker_;
   bool use_keyframe_=true;
   double min_keyframe_dist_=0.5;
   double min_keyframe_rot_deg_=15;

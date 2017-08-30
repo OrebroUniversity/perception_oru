@@ -514,7 +514,7 @@ int main(int argc, char **argv){
 						
 					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
 // 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud);
+						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud, vreader.getTimeStampOfLastSensorMsg());
 						
 						added_motion.setIdentity();
 						

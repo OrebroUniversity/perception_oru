@@ -33,16 +33,16 @@ namespace perception_oru {
 			*
 			*
 			*/
-			Eigen::Affine3d update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
+			Eigen::Affine3d update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Time time = ros::Time::now()){
 				std::cout << "Update in the logger" << std::endl;
 				Eigen::Affine3d Tnow_out = lslgeneric::NDTFuserHMT::update(Tmotion, cloud);
 				
-				logT(Tnow_out);
+				logT(Tnow_out, time);
 				return Tnow_out;
 				
 			}
 			
-			void logT(const Eigen::Affine3d& T_out){
+			void logT(const Eigen::Affine3d& T_out, ros::Time time = ros::Time::now()){
 				std::cout <<"Log in " << _file_out_logger << std::endl;
 				Eigen::Affine2d T2d = eigenAffine3dTo2d(T_out);
 				
@@ -61,8 +61,8 @@ namespace perception_oru {
 				
 				if (myfile.is_open())
 				{
-					std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << std::endl;
-					myfile << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << "\n";
+					std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << time << std::endl;
+					myfile << t(0) << " " << t(1) << " " << R.angle() << " " << time << "\n";
 					myfile.close();
 				}
 				else std::cout << "Unable to open file";

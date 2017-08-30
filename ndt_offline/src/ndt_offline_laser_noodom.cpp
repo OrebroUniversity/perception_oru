@@ -465,7 +465,7 @@ int main(int argc, char **argv){
 // 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-				double roll = 0, pitch = 0, yaw = 0;
+				double roll =  3.14159, pitch = 0, yaw = 0;
 				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
@@ -474,6 +474,7 @@ int main(int argc, char **argv){
 				/******************************/
 				/******************************/
 				
+				ndtslammer.setSensorPose(sens);
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
 				
@@ -514,7 +515,7 @@ int main(int argc, char **argv){
 						
 					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
 // 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud);
+						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud, vreader.getTimeStampOfLastSensorMsg());
 						
 						added_motion.setIdentity();
 						

@@ -387,7 +387,7 @@ int main(int argc, char **argv){
 
   std::vector<std::string> map_file_path;
   if(map_file_name.length()>0){
-    cout<<"Open single map: map_file_name"<<endl;
+    cout<<"Open single map: " << map_file_name <<endl;
     map_file_path.push_back(map_file_name);
   }
   else if(map_dir_name.length()>0){
@@ -538,7 +538,7 @@ int main(int argc, char **argv){
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
 
-      if(visualize && counter%30==0){
+      if(visualize){
         GraphPlot::PlotPoseGraph(graph_map);
 
         if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
@@ -546,7 +546,8 @@ int main(int argc, char **argv){
         }
         else {
           curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-          GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+          GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
+          //GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
         }
       }
 

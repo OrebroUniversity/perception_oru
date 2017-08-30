@@ -30,7 +30,7 @@
 
 namespace perception_oru{
 	namespace ndt_offline{
-		template<typename PointT>
+		template<typename sensorMsgType, typename sensorMsgTypeCst>
 		class BagReaderInterface{
 			
 		protected:
@@ -42,7 +42,8 @@ namespace perception_oru{
 			std::string tf_base_link_;
 			std::string tf_sensor_link_;
 			std::string fixed_frame_id_;
-			sensor_msgs::LaserScan::ConstPtr global_scan;
+// 			sensor_msgs::LaserScan::ConstPtr global_scan;
+			sensorMsgTypeCst global_scan;
 			ros::Time timestamp_of_last_sensor_message;
 			Eigen::Affine3d _last_pose;
 			///Pose of the sensor with respect to the world frame
@@ -51,6 +52,9 @@ namespace perception_oru{
 			Eigen::Affine3d _sensor_pose;
 			Eigen::Affine3d motion_;
 			ros::Duration sensor_time_offset_;
+			
+			bool use_odom_;
+			bool use_sensor_pose_;
 			
 			
 		public:
@@ -74,10 +78,11 @@ namespace perception_oru{
 				std::string tftopic="/tf", 
 				ros::Duration dur = ros::Duration(3600),
 				tf::StampedTransform *sensor_link=NULL,
-				double velodyne_max_range=130.0, 
-				double velodyne_min_range=2.0,
-				double sensor_time_offset=0.0) : fixed_frame_id_(fixed_frame_id), velodynetopic_(velodynetopic), tf_base_link_(tf_base_link), tf_sensor_link_(tf_sensor_link)
-			
+// 				double velodyne_max_range=130.0, 
+				double sensor_time_offset=0.0,
+				bool use_odo = true,
+				bool use_sensor_p = true
+  							) : fixed_frame_id_(fixed_frame_id), velodynetopic_(velodynetopic), tf_base_link_(tf_base_link), tf_sensor_link_(tf_sensor_link), use_odom_(use_odo), use_sensor_pose_(use_sensor_p)			
 			{
 // 				dataParser.setupOffline(calibration_file, velodyne_max_range, velodyne_min_range); 
 				sensor_time_offset_ = ros::Duration(sensor_time_offset);
@@ -112,59 +117,82 @@ namespace perception_oru{
 				assert(I != view->end());
 				rosbag::MessageInstance const m = *(this->I);
 // 					global_scan = m.instantiate<velodyne_msgs::VelodyneScan>();
-				this->global_scan = m.instantiate<sensor_msgs::LaserScan>();
+				this->global_scan = m.instantiate<sensorMsgType>();
 				this->I++;
 				
 				while(this->global_scan == NULL){
 					std::cout << "forward " << std::endl;
 					rosbag::MessageInstance const m_tmp = *(this->I);
-					this->global_scan = m_tmp.instantiate<sensor_msgs::LaserScan>();
+					this->global_scan = m_tmp.instantiate<sensorMsgType>();
 					this->I++;
 				}
 								
 				timestamp_of_last_sensor_message = this->global_scan->header.stamp;
 					
-				//Update motion
-				//Get BaseLink Pose
-				tf::Transform pose_bl;
-				if(!getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl)){
-					std::cout << "Not transform found between " << this->tf_base_link_ << " and " << this->fixed_frame_id_ << std::endl;
-					throw std::runtime_error("Not transform found");
-				}
-// 				tf::transformTFToEigen (pose_bl, _baselink_pose);
-				transformtoAffine2d(pose_bl, _baselink_pose);
+				if(use_odom_ == true){
+					std::cout << "Using TF" << std::endl;
+					//Update motion
+					//Get BaseLink Pose
+					tf::Transform pose_bl;
+					if(!getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl)){
+						std::cout << "Not transform found between " << this->tf_base_link_ << " and " << this->fixed_frame_id_ << std::endl;
+						throw std::runtime_error("Not transform found");
+					}
+	// 				tf::transformTFToEigen (pose_bl, _baselink_pose);
+					transformtoAffine2d(pose_bl, _baselink_pose);
 
-				_last_pose = _baselink_pose;
+					_last_pose = _baselink_pose;
+				}
+				else{
+					
+					_baselink_pose.matrix() << 0, 0, 0, 0,
+									0, 0, 0, 0,
+									0, 0, 0, 0,
+									0, 0, 0, 1;
+					_last_pose = _baselink_pose;
 				
-				std::cout << "Last pose " << std::endl << _baselink_pose.matrix() << std::endl;
-				
-				//Get sensor Pose
-				tf::Transform pose_sensor;
-				if(!getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor)){
-					std::cout << "Not transform found between " << this->tf_sensor_link_ << " and " << this->tf_base_link_ << std::endl;
-					throw std::runtime_error("Not transform found");
+				}
+				if(use_sensor_pose_ == true){
+					
+					std::cout << "Last pose " << std::endl << _baselink_pose.matrix() << std::endl;
+					
+					//Get sensor Pose
+					tf::Transform pose_sensor;
+					if(!getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor)){
+						std::cout << "Not transform found between " << this->tf_sensor_link_ << " and " << this->tf_base_link_ << std::endl;
+						throw std::runtime_error("Not transform found");
+					}
+					
+					double x = pose_sensor.getOrigin().x();
+					double y = pose_sensor.getOrigin().y();
+					double z = pose_sensor.getOrigin().z();
+					double roll, pitch, yaw;
+					pose_sensor.getBasis().getRPY(roll, pitch, yaw);
+					std::cout << " between so: "<< x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
+		
+		
+	// 				tf::transformTFToEigen (pose_sensor, _sensor_pose);
+					transformtoAffine2d(pose_sensor, _sensor_pose);
+					std::cout << "sensor pose " << std::endl  << _sensor_pose.matrix() << std::endl;
+					}
+				else{
+					
+					_sensor_pose.matrix() << 0, 0, 0, 0,
+									0, 0, 0, 0,
+									0, 0, 0, 0,
+									0, 0, 0, 1;
 				}
 				
-				double x = pose_sensor.getOrigin().x();
-				double y = pose_sensor.getOrigin().y();
-				double z = pose_sensor.getOrigin().z();
-				double roll, pitch, yaw;
-				pose_sensor.getBasis().getRPY(roll, pitch, yaw);
-				std::cout << " between so: "<< x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
-	
-	
-// 				tf::transformTFToEigen (pose_sensor, _sensor_pose);
-				transformtoAffine2d(pose_sensor, _sensor_pose);
-				std::cout << "sensor pose " << std::endl  << _sensor_pose.matrix() << std::endl;
-				
-// 				exit(0);
+	// 				exit(0);
 				std::cout << "GOT " << m.getTopic() << " at " << this->global_scan->header.stamp << std::endl;
-
+				
 
 				std::cout << "end initi" << std::endl;
 // 				exit(0);
 				
 			}
+			
+			void useTF(bool in) {use_odom_ = in;}
 			
 			void print(){
 				std::cout <<
@@ -180,8 +208,8 @@ namespace perception_oru{
 			const Eigen::Affine3d& getLastPose() const {return _last_pose;}
 			Eigen::Affine3d& getBaseLinkPose(){return _baselink_pose;}
 			Eigen::Affine3d& getSensorPose(){return _sensor_pose;}
-			sensor_msgs::LaserScan::ConstPtr getLastLaserScan(){return global_scan;}
-			const sensor_msgs::LaserScan::ConstPtr& getLastLaserScan() const {return global_scan;}
+			sensorMsgTypeCst getLastMsgScan(){return global_scan;}
+			const sensorMsgTypeCst& getLastMsgScan() const {return global_scan;}
 			
 			/**
 			* Get pose for latest measurement with pose id
@@ -222,32 +250,20 @@ namespace perception_oru{
 				while(!done){
 					rosbag::MessageInstance const m = *(this->I);
 // 					global_scan = m.instantiate<velodyne_msgs::VelodyneScan>();
-					this->global_scan = m.instantiate<sensor_msgs::LaserScan>();
+					this->global_scan = m.instantiate<sensorMsgType>();
 					this->I++;
 					if(this->I == this->view->end()) done = true;
 					if(this->global_scan != NULL){
 						
 						timestamp_of_last_sensor_message = this->global_scan->header.stamp;
 						
-						//Update motion
-						//Get BaseLink Pose
-						tf::Transform pose_bl;
-						getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl);
-// 						tf::transformTFToEigen (pose_bl, _baselink_pose);
-						transformtoAffine2d(pose_bl, _baselink_pose);
-						
-// 						std::cout << "last pose " <<_last_pose.matrix() << std::endl << std::endl << "base link  " << _baselink_pose.matrix() << std::endl << std::endl;
-						
-						motion_ = _last_pose.inverse() * _baselink_pose;
-						_last_pose = _baselink_pose;
-						
-// 						std::cout << "motion " << motion_.matrix() << std::endl << std::endl;
-						
-						//Get sensor Pose
-						tf::Transform pose_sensor;
-						getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor);
-// 						tf::transformTFToEigen (pose_sensor, _sensor_pose);
-						transformtoAffine2d(pose_sensor, _sensor_pose);
+						if(use_odom_ == true){
+							updateMotion();
+						}
+						if(use_sensor_pose_ == true){
+// 							std::cout << "motion " << motion_.matrix() << std::endl << std::endl;
+							updateSensorPose();
+						}
 						
 // 						std::cout << "GOT " << m.getTopic() << " at " << this->global_scan->header.stamp << " on frame " << this->global_scan->header.frame_id << std::endl;
 						done = true;
@@ -259,6 +275,31 @@ namespace perception_oru{
 				return true;
 			}
 			
+			
+			/**
+			 * Update motion
+			 */
+			void updateMotion(){
+				//Update motion
+				//Get BaseLink Pose
+				tf::Transform pose_bl;
+				getPoseFor( this->tf_base_link_, this->fixed_frame_id_, pose_bl);
+// 						tf::transformTFToEigen (pose_bl, _baselink_pose);
+				transformtoAffine2d(pose_bl, _baselink_pose);
+				
+// 						std::cout << "last pose " <<_last_pose.matrix() << std::endl << std::endl << "base link  " << _baselink_pose.matrix() << std::endl << std::endl;
+				
+				motion_ = _last_pose.inverse() * _baselink_pose;
+				_last_pose = _baselink_pose;
+			}
+			
+			void updateSensorPose(){
+				//Get sensor Pose
+				tf::Transform pose_sensor;
+				getPoseFor(this->tf_sensor_link_, this->tf_base_link_, pose_sensor);
+// 						tf::transformTFToEigen (pose_sensor, _sensor_pose);
+				transformtoAffine2d(pose_sensor, _sensor_pose);
+			}
 			
 			
 		};

@@ -57,3 +57,9 @@ target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${J
 add_executable(ndt_offline_laser src/ndt_offline_laser.cpp)
 target_link_libraries(ndt_offline_laser ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
 
+add_executable(ndt_offline_laser_noodom src/ndt_offline_laser_noodom.cpp)
+target_link_libraries(ndt_offline_laser_noodom ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
+
+add_executable(ndt_offline_pointcloud src/ndt_offline_pointcloud.cpp)
+target_link_libraries(ndt_offline_pointcloud ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
+

@@ -242,9 +242,12 @@ int main(int argc, char **argv){
 
     base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(sensor_cutoff) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 	
+	
 	std::cout << resolution << " " << size_xy << " " << size_xy << " " << size_z << " " << 
                                        sensor_cutoff << " " << visualize << " match2d " << match2d << " " << use_multires << " " << 
-                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << std::endl;
+                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << " min range " << min_range << std::endl;
+									   
+// 									   exit(0);
 									   
 // 	//PARAMETERS for ransac
 // 	//Same as for logger test
@@ -396,7 +399,7 @@ int main(int argc, char **argv){
     if (use_gt_as_interp_link) {
       tf_interp_link = tf_gt_link;
     }
-    
+
     for(int i=0; i<scanfiles.size(); i++) {
 		
 		std::string bagfilename = scanfiles[i];
@@ -410,7 +413,7 @@ int main(int argc, char **argv){
 							tf_topic,
 							ros::Duration(3600),
 							&sensor_link,
-							sensor_time_offset);  
+							sensor_time_offset, 0.02, min_range, true, false);  
 
 		pcl::PointCloud<pcl::PointXYZ> cloud;	
 		tf::Transform sensor_pose;
@@ -457,20 +460,19 @@ int main(int argc, char **argv){
 				/******************************/
 				
 				///GOOD ONE FROM THE BAG
-				Eigen::Affine3d sens = vreader.getSensorPose();
-				sens(2,3) = -0.505;
+// 				Eigen::Affine3d sens = vreader.getSensorPose();
+// 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-// 				double roll = 0, pitch = 0, yaw = 0;
-// 				Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(0,0,0)*
-// 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
-// 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
-// 					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
+				double roll = 0, pitch = 0, yaw = 0;
+				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
+					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
+					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
+					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
 					
 				/******************************/
 				/******************************/
-	
-				ndtslammer.setSensorPose(sens);
+				
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
 				

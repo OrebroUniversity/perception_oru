@@ -138,6 +138,26 @@ class VelodyneBagReader{
 	    //odosync = NULL;
 	}
 
+  void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
+                         pcl::PointCloud<PointT> &cloud) {
+   for(size_t i = 0;i<conv_points.size();i++){
+     PointT p;
+     p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+     cloud.push_back(p);
+   }
+ }
+
+ void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
+                                                         pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud) {
+   for(size_t i = 0;i<conv_points.size();i++){
+     PointT p;
+     p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+     p.intensity = conv_points.points[i].intensity;
+     p.ring = conv_points.points[i].ring;
+     cloud.push_back(p);
+   }
+}
+
 	/**
 	 * Reads the next measurment.
 	 * @param cloud The generated point cloud
@@ -148,6 +168,7 @@ class VelodyneBagReader{
 		fprintf(stderr,"End of measurement file Reached!!\n");
 		return false;
 	    }
+
 	    //if(odosync == NULL) return true;
 	    rosbag::MessageInstance const m = *I;
 	    velodyne_msgs::VelodyneScan::ConstPtr scan = m.instantiate<velodyne_msgs::VelodyneScan>();
@@ -166,15 +187,7 @@ class VelodyneBagReader{
 
 			    if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
 				pcl_ros::transformPointCloud(pnts,conv_points,T);
-				for(size_t i = 0;i<pnts.size();i++){ 
-				    PointT p;
-
-				    //				    p.x = pnts.points[i].x; p.y=pnts.points[i].y; p.z=pnts.points[i].z;//p.intensity = pnts.points[i].intensity;
-				    p.x = conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
-
-				    cloud.push_back(p);
-
-				}
+        convertPointCloud(conv_points, cloud);
 			    }else{
 				//fprintf(stderr,"No transformation\n");
 			    }
@@ -192,11 +205,14 @@ class VelodyneBagReader{
 	    return true;
 	}
 
+
+
 	bool readMultipleMeasurements(unsigned int Nmeas, pcl::PointCloud<PointT> &cloud, tf::Transform &sensor_pose){
 
 	    tf::Transform T;
 	    ros::Time t0;
 	    velodyne_rawdata::VPointCloud pnts,conv_points;
+
 
 	    if(!getNextScanMsg()) return false;
 	    t0 = global_scan->header.stamp + sensor_time_offset_ ;
@@ -214,15 +230,9 @@ class VelodyneBagReader{
 		if(odosync->getTransformationForTime(t1,tf_pose_id_,T)){
 		    tf::Transform Td = sensor_pose.inverse() * T;
 
-		    pcl_ros::transformPointCloud(pnts,conv_points,Td);
-		    for(size_t i = 0;i<conv_points.size();i++){
-			PointT p;
-			//if(conv_points.points[i].z>-0.8){
-			p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;//p.intensity = conv_points.points[i].intensity;
-			cloud.push_back(p);
-			//}
-		    }
-		    conv_points.clear();
+        pcl_ros::transformPointCloud(pnts,conv_points,Td);
+        convertPointCloud(conv_points, cloud);
+        conv_points.clear();
 		}
 		pnts.clear();
 	    }	
@@ -230,28 +240,23 @@ class VelodyneBagReader{
 	    for(unsigned int nscans=1;nscans<Nmeas;nscans++){
 		if(!getNextScanMsg()) return false;
 
-		for (size_t next = 0; next < global_scan->packets.size(); ++next){
-		    dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
-		    ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
+    for (size_t next = 0; next < global_scan->packets.size(); ++next){
+      dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
+      ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
 
-		    //if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
-		    if(odosync->getTransformationForTime(t1,tf_pose_id_,T)){
-			tf::Transform Td = sensor_pose.inverse() * T;
-			pcl_ros::transformPointCloud(pnts,conv_points,Td);
-			for(size_t i = 0;i<conv_points.size();i++){
-			    PointT p;
-			    //if(conv_points.points[i].z>-0.8){
-			    p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;//p.intensity = conv_points.points[i].intensity;
-			    cloud.push_back(p);
-			    //}
-			}
-		    }
-		    pnts.clear();
-		}
-		}
+      //if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
+      if(odosync->getTransformationForTime(t1,tf_pose_id_,T)){
+        tf::Transform Td = sensor_pose.inverse() * T;
+        pcl_ros::transformPointCloud(pnts,conv_points,Td);
+        convertPointCloud(conv_points, cloud);
+      }
+        pnts.clear();
+
+    }
+      }
 		//std::cerr<<"Got cloud\n";
 		return true;
-	    }
+      }
 
 
 

@@ -10,14 +10,9 @@ Panels:
         - /PoseArray1
         - /Odometry1
         - /Odometry2
-        - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /MarkerArray1
-        - /MarkerArray2
-        - /LaserScan1
         - /Odometry3
-        - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 745
   - Class: rviz/Selection
@@ -58,7 +53,7 @@ Visualization Manager:
         Y: 0.385399997
         Z: 0
       Plane: XY
-      Plane Cell Count: 40
+      Plane Cell Count: 4000
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -106,10 +101,10 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        fuser_base_link:
+          Value: true
         odom_base_link:
           Value: false
-        online_/state_base_link:
-          Value: true
         state_base_link:
           Value: true
         velodyne:
@@ -123,11 +118,11 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          odom_base_link:
-            {}
-          online_/state_base_link:
+          fuser_base_link:
             velodyne:
               {}
+          odom_base_link:
+            {}
           state_base_link:
             {}
       Update Interval: 0
@@ -145,7 +140,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        current: true
+        my_namespace: true
       Queue Size: 1000
       Value: true
     - Alpha: 1
@@ -172,7 +167,7 @@ Visualization Manager:
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.00999999978
-      Style: Flat Squares
+      Style: Spheres
       Topic: /graph_node/laserscan_in_fuser_frame
       Unreliable: false
       Use Fixed Frame: true
@@ -183,7 +178,7 @@ Visualization Manager:
       Color: 255; 25; 0
       Enabled: true
       Keep: 3000
-      Length: 0.0500000007
+      Length: 10
       Name: Odometry
       Position Tolerance: 0.100000001
       Topic: /graph_node/fuser_odom
@@ -202,36 +197,6 @@ Visualization Manager:
       Namespaces:
         graphInfo: true
       Queue Size: 100
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 255
-      Min Color: 0; 0; 0
-      Min Intensity: 55
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /velodyne_points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -287,24 +252,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 10
+      Distance: 27.7269478
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 123.49688
+        Y: 128.497971
+        Z: -9.53674316e-07
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.34039855
-      Target Frame: odom_base_link
+      Pitch: 0.644797623
+      Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.48040199
+      Yaw: 4.39040089
     Saved:
       - Class: rviz/Orbit
         Distance: 39.1665726

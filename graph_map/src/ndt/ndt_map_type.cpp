@@ -22,6 +22,7 @@ namespace libgraphMap{
   void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     if(initialized_ && enable_mapping_){
+      cout<<" update ";
       Eigen::Vector3d localMapSize(max_range_,max_range_,sizez_);
       map_->addPointCloudMeanUpdate(Tsensor.translation(),cloud,localMapSize, 1e5, 25, 2*sizez_, 0.06);
     }

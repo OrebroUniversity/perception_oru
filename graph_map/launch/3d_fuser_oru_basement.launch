@@ -7,7 +7,7 @@
 
 <node pkg="graph_map" type="graph_map_fuser_node" name="graph_node" output="screen">
 
-      <param name="renderGTmap" value="false" />
+      <param name="rendermap" value="false" />
       <param name="gt_topic" value="/vmc_navserver/state" />
       <param name="initPoseFromGT" value="true" />
 
@@ -18,7 +18,7 @@
       <param name="interchange_radius" value="4" />
       <param name="compound_radius" value="2" />
 
-      <param name="enable_registration" value="false" />
+      <param name="enable_registration" value="t" />
       <param name="registration_2D" value="true" />
       <param name="enable_mapping" value="false" />
 

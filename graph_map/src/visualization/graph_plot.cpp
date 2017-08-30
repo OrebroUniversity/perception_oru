@@ -15,15 +15,13 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
   if(NDTMapPtr ptr=boost::dynamic_pointer_cast<NDTMapType>(map)){
 
     if(marker==plotmarker::sphere){
-      cout<<"inside marker::sphere plot"<<endl;
       GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMap(),color,offset);
     }
     else if(marker==plotmarker::point){
-      cout<<"inside marker::point plot"<<endl;
       cov_vector cov;
       mean_vector mean;
       GetAllCellsMeanCov(ptr->GetNDTMap(), cov, mean);
-      PublishMapAsPoints(mean,color,0.5*ptr->GetResolution(),offset);
+      PublishMapAsPoints(mean,color,0.2*ptr->GetResolution(),offset);
     }
 
   }
@@ -51,6 +49,11 @@ void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<Pos
   marker.type=visualization_msgs::Marker::POINTS;
   marker.scale.x=0.05;
   marker.scale.y=0.05;
+  marker.scale.z=0.05;
+
+  std_msgs::ColorRGBA c;
+  c.a=1.0;
+
   for(int i=0;i<pcloud.size();i++){
     geometry_msgs::Point point;
     Eigen::Vector3d point_offset=offset*pcloud[i].T.translation();
@@ -231,7 +234,6 @@ void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,con
   if(!initialized_)
     Initialize();
 
-  cout<<"publish points"<<mean.size()<<endl;;
   visualization_msgs::Marker marker;
   visualization_msgs::MarkerArray markerarr;
   marker.header.frame_id = "/world";
@@ -241,36 +243,46 @@ void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,con
   marker.type = visualization_msgs::Marker::POINTS;
   marker.action = visualization_msgs::Marker::ADD;
 
-  marker.scale.x = 0.1;
-  marker.scale.y = 0.1;
-  marker.scale.z = 0.1;
+  marker.scale.x = scale;
+  marker.scale.y = scale;
+  marker.scale.z = scale;
 
-  if(color==0){
-    marker.color.a = 0.75;
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
+  marker.id=0;
+
+
+  geometry_msgs::Point p;
+  float min_z,max_z;
+  if(mean.size()>0){
+    Eigen::Vector3d m_tmp = offset*mean[0];
+    min_z=m_tmp(2);
+    max_z=m_tmp(2);
   }
-  else if(color==1){
-    marker.color.a = 0.6;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
-  }
-  else if(color==2){
-    marker.color.a = 0.4 ;
-    marker.color.r = 0.4;
-    marker.color.g = 0.6;
-    marker.color.b = 1.0;
-  }
-    marker.id=0;
-    geometry_msgs::Point p;
+  mean_vector mean_vek;
   for(unsigned int i=0;i<mean.size();i++){
     Eigen::Vector3d m_tmp = offset*mean[i];
     p.x=m_tmp(0);
     p.y=m_tmp(1);
     p.z=m_tmp(2);
+    if(p.z<min_z)
+      min_z=p.z;
+    if(p.z>max_z)
+      max_z=p.z;
     marker.points.push_back(p);
+    mean_vek.push_back(m_tmp);
+  }
+  std_msgs::ColorRGBA p_color;
+  p_color.a=0.6;
+  GraphPlot::ColorGradient color_map;
+  color_map.createDefaultHeatMapGradient();
+  for(int i=0;i<mean_vek.size();i++){
+    float r,g,b;
+    float z=mean_vek[i](2);
+    z=(z-min_z)/(max_z-min_z);
+    color_map.getColorAtValue(z,r,g,b);
+    p_color.r=r;
+    p_color.g=g;
+    p_color.b=b;
+    marker.colors.push_back(p_color);
   }
   markerarr.markers.push_back(marker);
   globalMapPublisher_->publish(markerarr);
@@ -285,7 +297,6 @@ void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher
   if(max_size<mean.size())
     max_size=mean.size();
 
-  //cout<<"plotting "<<mean.size()<<" cells, however have previously plotted "<<max_size<<" cells"<<endl;
   visualization_msgs::MarkerArray marray;
   visualization_msgs::Marker marker;
   marray.markers.clear();
@@ -322,7 +333,6 @@ void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher
     marker.id = i;
     marray.markers.push_back(marker);
   }
-  //cout<<"publish markersize="<<marray.markers.size()<<endl;
   marray.markers.push_back(marker);
   for(int i=mean.size();i<max_size;i++){
     marker.id =i;
@@ -385,5 +395,6 @@ void GraphPlot::SendGlobal2MapToRviz(  std::vector<lslgeneric::NDTCell*>cells, i
   GetAllCellsMeanCov(cells,cov,mean);
   sendMapToRviz(mean,cov,globalMapPublisher_,"world",color,offset,"prev",visualization_msgs::Marker::CUBE);
 }
+
 
 }

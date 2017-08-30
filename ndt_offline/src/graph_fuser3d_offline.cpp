@@ -95,10 +95,9 @@ double min_dist=0, min_rot_in_deg=0;
 unsigned int skip_frame=20;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
-pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 //VelodyneBagReader<pcl::PointXYZ> *vreader;
 //PointCloudBagReader<pcl::PointXYZ> *preader;
-ReadBagFileGeneric<pcl::PointXYZ> *reader;
+//ReadBagFileGeneric<pcl::PointXYZ> *reader;
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -109,7 +108,9 @@ template<class T> std::string toString (const T& x)
   return o.str ();
 }
 
-void filter_fov_fun(pcl::PointCloud<pcl::PointXYZ> &cloud, pcl::PointCloud<pcl::PointXYZ> &cloud_nofilter, double hori_min, double hori_max) {
+
+template<class PointT>
+void filter_fov_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &cloud_nofilter, double hori_min, double hori_max) {
   for(int i=0; i<cloud_nofilter.points.size(); ++i) {
     double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
     if(ang < hori_min || ang > hori_max) continue;
@@ -376,22 +377,8 @@ std::string boolToString(bool input){
   return input?std::string("true"):std::string("false");
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////7
-/////////////////////////////////////////////////////////////////////////////////7
-/// *!!MAIN!!*
-/////////////////////////////////////////////////////////////////////////////////7
-/////////////////////////////////////////////////////////////////////////////////7
-///
-
-int main(int argc, char **argv){
-  ros::init(argc, argv, "graph_fuser3d_offline");
-  po::options_description desc("Allowed options");
-
-  cout<<"Read params"<<endl;
-  bool succesfull=ReadAllParameters(desc,argc,&argv);
-  if(!succesfull)
-    exit(0);
+template<typename PointT>
+void processData() {
 
   n_=new ros::NodeHandle("~");
 
@@ -432,159 +419,182 @@ int main(int argc, char **argv){
     std::string bagfilename = ros_bag_paths[i];
     fprintf(stderr,"Opening %s\n",bagfilename.c_str());
     char c=getchar();
-    reader=new ReadBagFileGeneric<pcl::PointXYZ>(bag_reader_type,
-                                  tf_interp_link,
-                                  velodyne_config_file,
-                                  bagfilename,
-                                  velodyne_packets_topic,
-                                  velodyne_frame_id,
-                                  tf_world_frame,
-                                  tf_topic,
-                                  ros::Duration(3600),
-                                  &sensor_link, max_range, min_range,
-                                  sensor_time_offset);
-  }
-  pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
-  tf::Transform tf_scan_source;
-  tf::Transform tf_gt_base;
-  Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
-  ros::Time itr=ros::Time::now();
-  ros::Time itr_end=itr;
-  bool found_scan=true;
+    //reader=new ReadBagFileGeneric<pcl::PointXYZ>(bag_reader_type,
+    ReadBagFileGeneric<PointT> reader(bag_reader_type,
+                                             tf_interp_link,
+                                             velodyne_config_file,
+                                             bagfilename,
+                                             velodyne_packets_topic,
+                                             velodyne_frame_id,
+                                             tf_world_frame,
+                                             tf_topic,
+                                             ros::Duration(3600),
+                                             &sensor_link, max_range, min_range,
+                                             sensor_time_offset);
 
-  while(found_scan){
+    pcl::PointCloud<PointT> cloud, cloud_nofilter;
+    tf::Transform tf_scan_source;
+    tf::Transform tf_gt_base;
+    Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
+    ros::Time itr=ros::Time::now();
+    ros::Time itr_end=itr;
+    bool found_scan=true;
 
-    //end_of_bag_file=  vreader->readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,tf_scan_source,tf_gt_base,tf_interp_link);
-    //found_scan= preader->readNextMeasurement(cloud_nofilter);
-    found_scan= reader->ReadNextMeasurement(cloud_nofilter);
-    if(!n_->ok())
-      exit(0);
+    while(found_scan){
 
-
-    cout<<"iteration time="<<ros::Time::now()-itr<<endl;
-    itr=ros::Time::now();
-    cout<<"time to read bag file="<<itr_end-itr<<endl;
-
-    if(cloud_nofilter.size()==0) continue;
-
-    if(filter_fov) {
-      filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
-    } else {
-      cloud = cloud_nofilter;
-    }
-
-    if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
-
-    // reader->getPoseFor(Todom_base, base_link_id);
-    //reader->getPoseFor(Tgt_base, gt_base_link_id);
-    tf::Transform tf_odom_base;
-    reader->getPoseFor(tf_odom_base, base_link_id);
-    reader->getPoseFor(tf_gt_base, gt_base_link_id);
-
-
-    //  vreader->getPoseFor(tf_odom_base, base_link_id);
-    // vreader->getPoseFor(tf_gt_base, gt_base_link_id);
-
-    Eigen::Affine3d Todom_base,Tgt_base;
-    tf::transformTFToEigen(tf_gt_base,Tgt_base);
-    tf::transformTFToEigen(tf_odom_base,Todom_base);
-
-
-
-
-    if(counter == 0){
-      if( found_scan!=true){
-        cout<<"Problem with bag filel"<<endl;
+      //end_of_bag_file=  vreader.readMultipleMeasurements(nb_scan_msgs,cloud_nofilter,tf_scan_source,tf_gt_base,tf_interp_link);
+      //found_scan= preader.readNextMeasurement(cloud_nofilter);
+      found_scan= reader.ReadNextMeasurement(cloud_nofilter);
+      if(!n_->ok())
         exit(0);
+
+
+      cout<<"iteration time="<<ros::Time::now()-itr<<endl;
+      itr=ros::Time::now();
+      cout<<"time to read bag file="<<itr_end-itr<<endl;
+
+      if(cloud_nofilter.size()==0) continue;
+
+      if(filter_fov) {
+        filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
+      } else {
+        cloud = cloud_nofilter;
       }
-      counter ++;
-      cloud.clear();
-      cloud_nofilter.clear();
-      continue;
-    }
-    if(counter == 1){
-      fuser_pose=Tgt_base;
+
+      if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
+
+      // reader.getPoseFor(Todom_base, base_link_id);
+      //reader.getPoseFor(Tgt_base, gt_base_link_id);
+      tf::Transform tf_odom_base;
+      reader.getPoseFor(tf_odom_base, base_link_id);
+      reader.getPoseFor(tf_gt_base, gt_base_link_id);
+
+
+      //  vreader.getPoseFor(tf_odom_base, base_link_id);
+      // vreader.getPoseFor(tf_gt_base, gt_base_link_id);
+
+      Eigen::Affine3d Todom_base,Tgt_base;
+      tf::transformTFToEigen(tf_gt_base,Tgt_base);
+      tf::transformTFToEigen(tf_odom_base,Todom_base);
+
+
+
+
+      if(counter == 0){
+        if( found_scan!=true){
+          cout<<"Problem with bag filel"<<endl;
+          exit(0);
+        }
+        counter ++;
+        cloud.clear();
+        cloud_nofilter.clear();
+        continue;
+      }
+      if(counter == 1){
+        fuser_pose=Tgt_base;
+        Tgt_base_prev = Tgt_base;
+        Todom_base_prev = Todom_base;
+        fuser_=new GraphMapFuser(regParPtr,mapParPtr,graphParPtr,Tgt_base,sensor_offset);
+        cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
+        cout<<fuser_->ToString()<<endl;
+        cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
+        fuser_->Visualize(visualize,plotmarker::point);
+        counter ++;
+        cloud.clear();
+        cloud_nofilter.clear();
+        continue;
+      }
+      if( found_scan!=true)
+        break;
+      Eigen::Affine3d Tmotion;
+      if(gt_mapping)
+        Tmotion = Tgt_base_prev.inverse()*Tgt_base;
+      else
+        Tmotion = Todom_base_prev.inverse()*Todom_base;
+      Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
+      ndt_generic::normalizeEulerAngles(Tmotion_euler);
+      //cout<<"Tmotion:"<<Tmotion.translation().transpose()<<endl;
+      if(!use_odometry) {
+        Tmotion.setIdentity();
+      }
+      counter++;
+
+      //fuser_pose=fuser_pose*Tmotion;
+      ros::Time tplot=ros::Time::now();
+      if(visualize){
+
+        br.sendTransform(tf::StampedTransform(tf_gt_base,tplot,   "/world", "/state_base_link"));
+
+        if(!gt_mapping){
+          fuser_pose_msg.header.stamp=tplot;
+          tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+          fuser_pub->publish(fuser_pose_msg);
+        }
+        gt_pose_msg.header.stamp=tplot;
+        tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
+        gt_pub->publish(gt_pose_msg);
+
+        if(counter%skip_frame==0){
+          if(gt_mapping)
+            cloud.header.frame_id="/state_base_laser_link";
+          else
+            cloud.header.frame_id="/fuser_laser_link";
+
+          pcl_conversions::toPCL(tplot, cloud.header.stamp);
+          cloud_pub->publish(cloud);
+        }
+      }
+
+      fuser_->ProcessFrame<PointT>(cloud,fuser_pose,Tmotion);
+      tf::Transform tf_fuser_pose;
+      tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
+      br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
+
+      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
+      if(visualize && counter%skip_frame==0 ){
+        fuser_->plotMap();
+        //cout<<"norm between estimated and actual pose="<<diff<<endl;
+      }
+      //sleep(1);
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;
-      fuser_=new GraphMapFuser(regParPtr,mapParPtr,graphParPtr,Tgt_base,sensor_offset);
-      cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
-      cout<<fuser_->ToString()<<endl;
-      cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
-      fuser_->Visualize(visualize,plotmarker::point);
-      counter ++;
       cloud.clear();
       cloud_nofilter.clear();
-      continue;
+
+      eval_files.Write( reader.getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
+      itr_end=ros::Time::now();
     }
-    if( found_scan!=true)
-      break;
-    Eigen::Affine3d Tmotion;
-    if(gt_mapping)
-      Tmotion = Tgt_base_prev.inverse()*Tgt_base;
-    else
-      Tmotion = Todom_base_prev.inverse()*Todom_base;
-    Eigen::Vector3d Tmotion_euler = Tmotion.rotation().eulerAngles(0,1,2);
-    ndt_generic::normalizeEulerAngles(Tmotion_euler);
-    //cout<<"Tmotion:"<<Tmotion.translation().transpose()<<endl;
-    if(!use_odometry) {
-      Tmotion.setIdentity();
-    }
-    counter++;
-
-    //fuser_pose=fuser_pose*Tmotion;
-    ros::Time tplot=ros::Time::now();
-    if(visualize){
-
-      br.sendTransform(tf::StampedTransform(tf_gt_base,tplot,   "/world", "/state_base_link"));
-
-      if(!gt_mapping){
-        fuser_pose_msg.header.stamp=tplot;
-        tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-        fuser_pub->publish(fuser_pose_msg);
-      }
-      gt_pose_msg.header.stamp=tplot;
-      tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-      gt_pub->publish(gt_pose_msg);
-
-      if(counter%skip_frame==0){
-        if(gt_mapping)
-          cloud.header.frame_id="/state_base_laser_link";
-        else
-          cloud.header.frame_id="/fuser_laser_link";
-
-        pcl_conversions::toPCL(tplot, cloud.header.stamp);
-        cloud_pub->publish(cloud);
-      }
-    }
-
-    fuser_->ProcessFrame(cloud,fuser_pose,Tmotion);
-    tf::Transform tf_fuser_pose;
-    tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
-    br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
-
-    double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-    if(visualize && counter%skip_frame==0 ){
-      fuser_->plotMap();
-      //cout<<"norm between estimated and actual pose="<<diff<<endl;
-    }
-    //sleep(1);
-    Tgt_base_prev = Tgt_base;
-    Todom_base_prev = Todom_base;
-    cloud.clear();
-    cloud_nofilter.clear();
-
-    eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,Todom_base,fuser_pose,sensor_offset);
-    itr_end=ros::Time::now();
   }
-
   eval_files.Close();
 
   if(save_map && fuser_!=NULL && fuser_->FramesProcessed()>0){
     char path[1000];
     snprintf(path,999,"%s/%s.map",output_dir_name.c_str(),base_name.c_str());
     fuser_->SaveGraphMap(path);
-    exit(0);
   }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////7
+/////////////////////////////////////////////////////////////////////////////////7
+/// *!!MAIN!!*
+/////////////////////////////////////////////////////////////////////////////////7
+/////////////////////////////////////////////////////////////////////////////////7
+///
+
+int main(int argc, char **argv){
+  ros::init(argc, argv, "graph_fuser3d_offline");
+  po::options_description desc("Allowed options");
+
+  cout<<"Read params"<<endl;
+  bool succesfull=ReadAllParameters(desc,argc,&argv);
+  if(!succesfull)
+    exit(0);
+
+  processData<pcl::PointXYZ>();
+  //processData<velodyne_pointcloud::PointXYZIR>();
+
+
 
   if (alive) {
     while (1) {

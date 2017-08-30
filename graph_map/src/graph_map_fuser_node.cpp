@@ -327,7 +327,7 @@ public:
     ros::Time tplot=ros::Time::now();
     plotPointcloud2(cloud,tplot);
     m.lock();
-    fuser_->ProcessFrame(cloud,pose_,Tmotion);
+    fuser_->ProcessFrame<pcl::PointXYZ>(cloud,pose_,Tmotion);
     m.unlock();
     fuser_->plotMap();
     tf::Transform Transform;

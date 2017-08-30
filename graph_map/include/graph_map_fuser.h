@@ -33,7 +33,8 @@ public:
   Affine3d GetPoseLastFuse() const{return pose_last_fuse_;}
   void SaveGraphMap(const std::string &filename);
   void SetMotionParameters(const MotionModel2d &motion_param){motion_model_2d_=motion_param;}
-  void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
+  template<class PointT> void ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
+  //void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
   bool ErrorStatus(string status="");
   unsigned int FramesProcessed() const{return nr_frames_;}
   void Visualize(bool enableVisualOutput,plotmarker marker=plotmarker::sphere);
@@ -64,4 +65,6 @@ protected:
 };
 
 }
+#include <graph_map_fuser_impl.h>
+
 #endif // GRAPH_MAP_FUSER_H

@@ -17,7 +17,7 @@
 #include <eigen_conversions/eigen_msg.h>
 #include <angles/angles.h>
 #include <velodyne_msgs/VelodyneScan.h>
-
+#include <ros/package.h>
 using namespace std;
 namespace po = boost::program_options;
 bool create_odom=true,create_tf=true;
@@ -171,16 +171,17 @@ int main(int argc, char **argv){
   Eigen::Vector3d euler;
   tf::Transform tf_sensor_pose;
   string inbag_name, outbag_name, dataset;
-  string velodyne_config_file,velodyne_packets_topic,velodyne_frame_id,base_link_id,gt_base_link_id,tf_topic,tf_world_frame,interpolation_link_id;
+  std::string velodyne_config_file,velodyne_packets_topic,velodyne_frame_id,base_link_id,gt_base_link_id,tf_topic,tf_world_frame,interpolation_link_id;
   double min_dist;
   double min_range=0.6,max_range=30;
   Eigen::Vector3d imu_offset_vec;;
+  interpolation_link_id="/state_base_link";
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help", "produce help message")
       ("debug", "additional output")
       ("inbag", po::value<string>(&inbag_name)->required(), "bag file to be used")
-      ("velodyne_config_file", po::value<std::string>(&velodyne_config_file)->default_value(std::string("../config/velo32.yaml")), "configuration file for the scanner")
+      ("velodyne_config_file", po::value<std::string>(&velodyne_config_file)->default_value( ros::package::getPath("ndt_offline")+std::string("/config/velo32.yaml")), "configuration file for the scanner")
       ("velodyne_packets_topic", po::value<std::string>(&velodyne_packets_topic)->default_value(std::string("/velodyne_packets")), "velodyne packets topic used")
       ("velodyne_frame_id", po::value<std::string>(&velodyne_frame_id)->default_value(std::string("/velodyne")), "frame_id of the velodyne")
       ("tf_base_link", po::value<std::string>(&base_link_id)->default_value(std::string("/odom_base_link")), "tf_base_link")
@@ -189,7 +190,7 @@ int main(int argc, char **argv){
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("min_range", po::value<double>(&min_range)->default_value(0.7), "minimum range used from scanner")
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
-      ("gt-interpolation-link", po::value<std::string>(&interpolation_link_id)->default_value("/state_base_link"), "id in which lidar is interpolated")
+      ("interpolation_link", po::value<std::string>(&interpolation_link_id)->default_value("/state_base_link"), "id in which lidar is interpolated")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
       ("z", po::value<double>(&transl[2])->default_value(0.), "sensor pose - translation vector z")
@@ -198,10 +199,10 @@ int main(int argc, char **argv){
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
       ("data-set", po::value<string>(&dataset)->default_value(std::string("arla-2012")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ;
-
+  //interpolation_link_id="/state_base_link";
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
-
+  po::notify(vm);
   if (vm.count("help")) {
     cout << desc << "\n";
     return 1;
@@ -215,7 +216,7 @@ int main(int argc, char **argv){
     }
   }
   cout<<"Never run SLAM with data interpolated in GT frame."<<endl;
-  cout<<"Data will be interpolated in link: "<<interpolation_link_id<<".\n is this the correct link id? y/n"<<endl;
+  cout<<"Data will be interpolated in link: "<<interpolation_link_id<<"\n is this the correct link id? y/n"<<endl;
   {char c=getchar();
     getchar();
     if(!( c=='y'||c=='Y')){

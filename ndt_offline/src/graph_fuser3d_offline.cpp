@@ -510,7 +510,7 @@ int main(int argc, char **argv){
       cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
       cout<<fuser_->ToString()<<endl;
       cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
-      fuser_->Visualize(visualize);
+      fuser_->Visualize(visualize,plotmarker::point);
       counter ++;
       cloud.clear();
       cloud_nofilter.clear();

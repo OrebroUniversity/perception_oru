@@ -20,6 +20,7 @@
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
 #include <ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
+#include <ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
 
 
 #include "ndt_offline/PointCloudReader.hpp"
@@ -285,8 +286,8 @@ int main(int argc, char **argv){
 									   
 
 // 	exit(0);
-	
-    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
+	std::string file_to_log("/home/malcolm/Documents/log_fuser/log_fuser_pointcloud_offline.txt");
+    perception_oru::ndt_fuser::NDTFuserHMTLogger ndtslammer(file_to_log, resolution, size_xy, size_xy, size_z, 
                                        sensor_cutoff, visualize, match2d, use_multires, 
                                        fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
 //     ros::Time::init();

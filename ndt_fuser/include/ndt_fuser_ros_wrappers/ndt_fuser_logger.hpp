@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 
 #include "ros/time.h"
 
@@ -49,14 +50,22 @@ namespace perception_oru {
 				Eigen::Vector2d t(T2d.translation());
 				R.fromRotationMatrix(T2d.linear());
 				
-				std::ofstream out(_file_out_logger.c_str(), std::ios::in | std::ios::out | std::ios::ate);
-// 				out.open (_file_out_logger.c_str());
 				
-				std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << std::endl;
-				out << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << "\n";
-				out.close();
+				std::ofstream myfile;
+				if(!exists_test3(_file_out_logger)){
+					myfile.open (_file_out_logger.c_str());
+				}
+				else{
+					myfile.open (_file_out_logger.c_str(), std::ios::out | std::ios::app);
+				}
 				
-// 				exit(0);
+				if (myfile.is_open())
+				{
+					std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << std::endl;
+					myfile << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << "\n";
+					myfile.close();
+				}
+				else std::cout << "Unable to open file";
 				
 			}
 			
@@ -76,6 +85,11 @@ namespace perception_oru {
 				if (v1(0)*v2(1)-v1(1)*v2(0) > 0)
 					return angle;
 				return -angle;
+			}
+			
+			inline bool exists_test3 (const std::string& name) {
+				struct stat buffer;   
+				return (stat (name.c_str(), &buffer) == 0); 
 			}
 			
 			

@@ -270,7 +270,7 @@ int main(int argc, char **argv){
 	use_odometry = true;
 	use_multires = 0;
 	resolution = 1;
-	sensor_cutoff = 30;
+	sensor_cutoff = 20;
 	step_control = true;
 	motion_params.Dd = 1;
 	motion_params.Dt = 1;
@@ -465,8 +465,8 @@ int main(int argc, char **argv){
 // 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-				double roll = 0, pitch = 0, yaw = 0;
-				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
+				double roll = 3.14159, pitch = 0, yaw = 0;
+				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,1)*
 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
 					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
@@ -474,6 +474,7 @@ int main(int argc, char **argv){
 				/******************************/
 				/******************************/
 				
+				ndtslammer.setSensorPose(sens);
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
 				
@@ -535,11 +536,11 @@ int main(int argc, char **argv){
 							
 // 							std::cout << "pub" << std::endl;
 							ros::spinOnce();
-// 							sensor_msgs::PointCloud2 mesg;
-// 							mesg.header.frame_id = "/velodyne";
-// 							mesg.header.stamp = ros::Time::now();
+							sensor_msgs::PointCloud2 mesg;
+							mesg.header.frame_id = "/velodyne";
+							mesg.header.stamp = ros::Time::now();
 							
-// 							pcl::toROSMsg (cloud, mesg);
+							pcl::toROSMsg (cloud, mesg);
 							
 // 							std::cout << "FRAME " << mesg.header.frame_id << std::endl;
 // 							exit(0);

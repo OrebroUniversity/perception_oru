@@ -89,7 +89,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 LocalisationTypePtr localisation_type_ptr;
 LocalisationParamPtr localisation_param_ptr;
 GraphMapNavigatorPtr graph_map;
-ReadBagFileGeneric *reader;
+ReadBagFileGeneric<pcl::PointXYZ> *reader;
 /// Set up the sensor link
 tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
 std::string bagfilename;
@@ -427,7 +427,7 @@ int main(int argc, char **argv){
     ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
     eval_files.CreateOutputFiles();
     int counter = 0;
-    reader=new ReadBagFileGeneric(reader_type,
+    reader=new ReadBagFileGeneric<pcl::PointXYZ>(reader_type,
                                   base_link_id,
                                   velodyne_config_file,
                                   bagfilename,

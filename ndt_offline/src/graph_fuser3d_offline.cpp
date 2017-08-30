@@ -98,7 +98,7 @@ nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 //VelodyneBagReader<pcl::PointXYZ> *vreader;
 //PointCloudBagReader<pcl::PointXYZ> *preader;
-ReadBagFileGeneric *reader;
+ReadBagFileGeneric<pcl::PointXYZ> *reader;
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -432,7 +432,7 @@ int main(int argc, char **argv){
     std::string bagfilename = ros_bag_paths[i];
     fprintf(stderr,"Opening %s\n",bagfilename.c_str());
     char c=getchar();
-    reader=new ReadBagFileGeneric(bag_reader_type,
+    reader=new ReadBagFileGeneric<pcl::PointXYZ>(bag_reader_type,
                                   tf_interp_link,
                                   velodyne_config_file,
                                   bagfilename,

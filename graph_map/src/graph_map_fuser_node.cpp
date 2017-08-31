@@ -85,6 +85,7 @@ protected:
   std::string map_type_name,reg_type_name;
   std::string map_name="graph_map";
   std::string points_topic, laser_topic, map_dir, odometry_topic,odometry_adjusted_topic;
+  std::string file_format_map=".JFF";
   std::string world_link_id, odometry_link_id, fuser_base_link_id,laser_link_id, init_pose_frame, gt_topic, bag_name,state_base_link_id;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
   bool visualize, match2D, matchLaser, beHMT, useOdometry,
@@ -159,6 +160,7 @@ public:
     ///the old maps are loaded automatically
     param_nh.param<std::string>("map_directory",map_dir,"/map/");
     param_nh.param<std::string>("map_type",map_type_name,"default_map");
+    param_nh.param<std::string>("file_format_map",file_format_map,".JFF");
 
 
     ///initial pose of the vehicle with respect to the map
@@ -365,7 +367,11 @@ public:
     if(fuser_!=NULL){
       snprintf(path,999,"%s/%s_.MAP",map_dir.c_str(),time.c_str());
       m.lock();
+      if(file_format_map.compare(".JFF")==0)
+      fuser_->SaveCurrentNodeAsJFF(path);
+        else
       fuser_->SaveGraphMap(path);
+
       m.unlock();
       ROS_INFO("Current map was saved to path= %s", path);
       return true;

@@ -175,7 +175,6 @@ int main(int argc, char **argv){
   double min_dist;
   double min_range=0.6,max_range=30;
   Eigen::Vector3d imu_offset_vec;;
-  interpolation_link_id="/state_base_link";
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help", "produce help message")
@@ -199,10 +198,11 @@ int main(int argc, char **argv){
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
       ("data-set", po::value<string>(&dataset)->default_value(std::string("arla-2012")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
       ;
-  //interpolation_link_id="/state_base_link";
+
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
+
   if (vm.count("help")) {
     cout << desc << "\n";
     return 1;

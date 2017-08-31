@@ -37,4 +37,16 @@ pcl::PointXYZ eigenToPCLPoint(const Eigen::Vector3d &pt) {
     return p;
 }
 
+template<class PointT>
+void filter_fov_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &cloud_nofilter, double hori_min, double hori_max) {
+  for(int i=0; i<cloud_nofilter.points.size(); ++i) {
+    double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
+    if(ang < hori_min || ang > hori_max) continue;
+    cloud.points.push_back(cloud_nofilter.points[i]);
+  }
+  cloud.width = cloud.points.size();
+  cloud.height = 1;
+}
+
+
 } // namespace

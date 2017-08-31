@@ -46,22 +46,19 @@ protected:
   ros::NodeHandle n_;
   string maptype_,registratorType_;
   Eigen::Affine3d initPose_,sensorPose_,pose_last_fuse_;
-
   GraphMapNavigatorPtr graph_map_;
   GraphParamPtr graph_param_;
   MapParamPtr mapParam_;
   RegParamPtr regParam_;
   RegTypePtr registrator_;
-  unsigned int nr_frames_;
-  pcl::PointCloud<pcl::PointXYZ> cloud;
   MotionModel2d motion_model_2d_;
+  plotmarker marker_;
   bool initialized_=false;
   bool visualize_=false;
-  plotmarker marker_;
   bool use_keyframe_=true;
   double min_keyframe_dist_=0.5;
   double min_keyframe_rot_deg_=15;
-
+  unsigned int nr_frames_;
 };
 
 }

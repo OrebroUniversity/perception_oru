@@ -6,6 +6,7 @@
 #include "pcl/point_types.h"
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include <angles/angles.h>
+#include <velodyne_pointcloud/point_types.h>
 
 namespace GraphMapLocalisation{
 
@@ -16,6 +17,7 @@ public:
    Eigen::Affine3d GetPose(){ return pose_;}
   void InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance); //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   void UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tmotion);
+  void UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion);
   std::string ToString();
 protected:
   ParticleFilter3D pf; 						///<This is the particle filter

@@ -27,6 +27,17 @@ void NDTDL::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ>
   }
 }
 
+void NDTDL::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+
+  cout<<"please implement map update for NDT-DL for point type PointXYZIR"<<endl;
+  if(initialized_){
+    //Initialize map
+  }else{
+    //Update map
+    initialized_ = true;
+  }
+}
+
 bool NDTDL::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
 
   return true;

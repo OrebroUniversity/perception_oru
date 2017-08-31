@@ -11,6 +11,7 @@
 #include <boost/serialization/base_object.hpp>
 #include "boost/serialization/shared_ptr.hpp"
 #include "ndt_generic/serialization.h"
+#include <velodyne_pointcloud/point_types.h>
 
 namespace libgraphMap{
 /*!
@@ -43,7 +44,9 @@ private:
 class MapNode:public Node{
 
 public:
-  virtual void updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud);
+//  template<class PointT> void updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<PointT> &cloud);
+  void updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud);
+  void updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);
   virtual bool Initialized(){return initialized_;}
   virtual MapTypePtr GetMap(){return map_;}
   virtual string ToString();

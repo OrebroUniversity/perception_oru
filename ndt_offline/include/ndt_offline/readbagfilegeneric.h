@@ -21,6 +21,8 @@
 #include <pcl/point_cloud.h>
 #include "pcl/io/pcd_io.h"
 #include "VelodyneBagReader.h"
+
+template<typename PointT>
 class ReadBagFileGeneric{
 public:
   ReadBagFileGeneric(const std::string &type,
@@ -40,15 +42,15 @@ public:
     velodyne_tf_interpolation_string_=velodyne_tf_interpolation_string;
 
     if(type.compare("pcl_reader")==0){
-      preader_=new PointCloudBagReader<pcl::PointXYZ>(calibration_file,bagfilename,point_cloud_topic,tf_pose_id,fixed_frame_id,
+      preader_=new PointCloudBagReader<PointT>(calibration_file,bagfilename,point_cloud_topic,tf_pose_id,fixed_frame_id,
                                                       tftopic,dur,sensor_link,velodyne_max_range,velodyne_min_range,sensor_time_offset);
     }
       else{
-        vreader_=new VelodyneBagReader<pcl::PointXYZ>(calibration_file,bagfilename,point_cloud_topic,tf_pose_id,fixed_frame_id,
+        vreader_=new VelodyneBagReader<PointT>(calibration_file,bagfilename,point_cloud_topic,tf_pose_id,fixed_frame_id,
                                                       tftopic,dur,sensor_link,velodyne_max_range,velodyne_min_range,sensor_time_offset);
       }
     }
-    bool ReadNextMeasurement(pcl::PointCloud<pcl::PointXYZ> &cloud){
+    bool ReadNextMeasurement(pcl::PointCloud<PointT> &cloud){
       if(vreader_!=NULL){
         tf::Transform tf_scan_source;
         tf::Transform tf_gt_base;
@@ -86,8 +88,8 @@ public:
     }
 
     private:
-    VelodyneBagReader<pcl::PointXYZ> *vreader_=NULL;
-    PointCloudBagReader<pcl::PointXYZ> *preader_=NULL;
+    VelodyneBagReader<PointT> *vreader_=NULL;
+    PointCloudBagReader<PointT> *preader_=NULL;
     std::string velodyne_tf_interpolation_string_="";
     std::string type_="";
   };

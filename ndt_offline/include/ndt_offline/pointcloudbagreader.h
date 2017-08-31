@@ -106,7 +106,7 @@ public:
   }
 
 
-    bool readNextMeasurement(pcl::PointCloud<pcl::PointXYZ> &cloud){
+    bool readNextMeasurement(pcl::PointCloud<PointT> &cloud){
       cloud.clear();
       bool found_scan=false;
       while(!found_scan){
@@ -121,7 +121,7 @@ public:
           if (scan != NULL){
             found_scan=true;
            for(int i=0;i<scan->points.size();i++){
-           pcl::PointXYZ p_target;
+           PointT p_target;
             geometry_msgs::Point32 p_src=  scan->points[i];
             p_target.x=p_src.x;
             p_target.y=p_src.y;

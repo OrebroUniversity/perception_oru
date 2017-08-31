@@ -37,10 +37,6 @@ MapNode::MapNode(){
   map_=NULL;
 }
 
-void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud){
-  map_->update(Tnow,cloud);
-  initialized_=true;
-}
 string MapNode::ToString(){
   stringstream ss;
   ss<<"MapNode:\ninitialized: "<<initialized_<<"\nid:"<<id_<<"\nPosition(x,y,z):"<<pose_.translation().transpose()<<endl;;
@@ -48,7 +44,17 @@ string MapNode::ToString(){
   return ss.str();
 }
 
+void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud){
+  map_->update(Tnow,cloud);
+  initialized_=true;
+}
 
+void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){
+  map_->update(Tnow,cloud);
+  initialized_=true;
+}
 
 
 }
+
+//#include <graph_map/map_node_impl.h>

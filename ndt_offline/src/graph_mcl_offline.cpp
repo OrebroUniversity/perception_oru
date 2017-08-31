@@ -89,7 +89,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
 LocalisationTypePtr localisation_type_ptr;
 LocalisationParamPtr localisation_param_ptr;
 GraphMapNavigatorPtr graph_map;
-ReadBagFileGeneric *reader;
+ReadBagFileGeneric<pcl::PointXYZ> *reader;
 /// Set up the sensor link
 tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
 std::string bagfilename;
@@ -387,7 +387,7 @@ int main(int argc, char **argv){
 
   std::vector<std::string> map_file_path;
   if(map_file_name.length()>0){
-    cout<<"Open single map: map_file_name"<<endl;
+    cout<<"Open single map: " << map_file_name <<endl;
     map_file_path.push_back(map_file_name);
   }
   else if(map_dir_name.length()>0){
@@ -427,7 +427,7 @@ int main(int argc, char **argv){
     ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
     eval_files.CreateOutputFiles();
     int counter = 0;
-    reader=new ReadBagFileGeneric(reader_type,
+    reader=new ReadBagFileGeneric<pcl::PointXYZ>(reader_type,
                                   base_link_id,
                                   velodyne_config_file,
                                   bagfilename,
@@ -538,7 +538,7 @@ int main(int argc, char **argv){
       }
       //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
 
-      if(visualize && counter%30==0){
+      if(visualize){
         GraphPlot::PlotPoseGraph(graph_map);
 
         if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
@@ -546,7 +546,8 @@ int main(int argc, char **argv){
         }
         else {
           curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-          GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+          GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
+          //GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
         }
       }
 

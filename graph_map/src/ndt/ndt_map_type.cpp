@@ -31,6 +31,15 @@ namespace libgraphMap{
       initialized_ = true;
     }
   }
+
+  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+
+    cerr << "TODO: implement update for point type PointXYZIR - will convert to PointXYZ for now" << endl;
+    pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+    pcl::copyPointCloud(cloud, cloud_xyz);
+    update(Tsensor, cloud_xyz);
+  }
+
   void NDTMapType::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){
     cout<<"initialize map"<<endl;
     map_->addPointCloud(Tsensor.translation(),cloud, 0.1, 100.0, 0.1);

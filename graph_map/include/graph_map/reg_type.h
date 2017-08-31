@@ -35,7 +35,7 @@ class registrationType{
 public:
 
   virtual ~registrationType()=0;
-  virtual bool Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d covar=unit_covar){}//This methods attempts to register the point cloud versus the map using the affine transformation guess "Tm"
+  template<class PointT> bool Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<PointT> &cloud,Matrix6d covar=unit_covar){}//This methods attempts to register the point cloud versus the map using the affine transformation guess "Tm"
   virtual bool RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eigen::Affine3d &Tdiff,double match_score){}
   virtual std::string ToString();
   bool enableRegistration_=false;

@@ -23,7 +23,7 @@ using namespace lslgeneric;
 class NDTD2DRegType:public registrationType{
 public:
   ~NDTD2DRegType();
-  bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
+  template<class PointT> bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<PointT> &cloud,Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
   bool RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eigen::Affine3d &Tdiff,double match_score);
   std::string ToString();
 protected:
@@ -53,5 +53,8 @@ private:
 
 };
 }
+
+#include <ndt/ndtd2d_reg_type_impl.h>
+
 #endif // NDTD2DREGTYPE_H
 

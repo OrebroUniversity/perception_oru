@@ -21,6 +21,7 @@ public:
   NDTDL(MapParamPtr paramptr);
   NDTDL(){}
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);//Mandatory, base method implemented as pure virtual
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);//Mandatory, base method implemented as pure virtual
   //Optional
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);//Optional
 private:

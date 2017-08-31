@@ -98,6 +98,8 @@ nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 //VelodyneBagReader<pcl::PointXYZ> *vreader;
 //PointCloudBagReader<pcl::PointXYZ> *preader;
 //ReadBagFileGeneric<pcl::PointXYZ> *reader;
+bool use_pointtype_xyzir;
+
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -268,7 +270,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("disable-submaps", "Adopt the sub-mapping technique which represent the global map as a set of local submaps")
       ("compound-radius", po::value<double>(&compound_radius_)->default_value(10.0), "Requires sub-mapping enabled, When creating new sub-lamps, information from previous map is transfered to the new map. The following radius is used to select the map objects to transfer")
-      ("interchange-radius", po::value<double>(&interchange_radius_)->default_value(10.0), "This radius is used to trigger creation or selection of which submap to use");
+      ("interchange-radius", po::value<double>(&interchange_radius_)->default_value(10.0), "This radius is used to trigger creation or selection of which submap to use")
+      ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)");
 
 
   //Boolean parameres are read through notifiers
@@ -349,6 +352,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     cout << desc << "\n";
     return false;
   }
+
+  use_pointtype_xyzir = vm.count("use_pointtype_xyzir");
   cout<<"base-name:"<<base_name<<endl;
   cout<<"dir-name:"<<map_dir_name<<endl;
   return true;
@@ -591,8 +596,13 @@ int main(int argc, char **argv){
   if(!succesfull)
     exit(0);
 
-  processData<pcl::PointXYZ>();
-  //processData<velodyne_pointcloud::PointXYZIR>();
+  if (use_pointtype_xyzir) {
+    processData<velodyne_pointcloud::PointXYZIR>();
+  }
+  else {
+    processData<pcl::PointXYZ>();
+  }
+
 
 
 

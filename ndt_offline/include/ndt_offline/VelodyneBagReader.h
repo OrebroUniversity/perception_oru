@@ -71,7 +71,29 @@ int setupOffline(std::string calibration_file, double max_range_, double min_ran
 #include<SynchronizedRMLD.h>
 #endif
 
-template<typename PointT>
+
+template<class PointT> void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
+                       pcl::PointCloud<PointT> &cloud) {
+ for(size_t i = 0;i<conv_points.size();i++){
+   PointT p;
+   p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+   cloud.push_back(p);
+ }
+}
+
+template<> void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
+                                                       pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud) {
+ for(size_t i = 0;i<conv_points.size();i++){
+   velodyne_pointcloud::PointXYZIR p;
+   p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
+   p.intensity = conv_points.points[i].intensity;
+   p.ring = conv_points.points[i].ring;
+   cloud.push_back(p);
+ }
+}
+
+
+template<class PointT>
 class VelodyneBagReader{
     public:
 	/**
@@ -138,25 +160,6 @@ class VelodyneBagReader{
 	    //odosync = NULL;
 	}
 
-  void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
-                         pcl::PointCloud<PointT> &cloud) {
-   for(size_t i = 0;i<conv_points.size();i++){
-     PointT p;
-     p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
-     cloud.push_back(p);
-   }
- }
-
- void convertPointCloud(const velodyne_rawdata::VPointCloud &conv_points,
-                                                         pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud) {
-   for(size_t i = 0;i<conv_points.size();i++){
-     PointT p;
-     p.x =conv_points.points[i].x; p.y=conv_points.points[i].y; p.z=conv_points.points[i].z;
-     p.intensity = conv_points.points[i].intensity;
-     p.ring = conv_points.points[i].ring;
-     cloud.push_back(p);
-   }
-}
 
 	/**
 	 * Reads the next measurment.

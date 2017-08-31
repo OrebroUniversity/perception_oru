@@ -23,6 +23,7 @@ class NDTMapType:public MapType{
 public:
   ~NDTMapType();
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);
   virtual NDTMap* GetNDTMap() { return map_;}
   //Advanced
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);

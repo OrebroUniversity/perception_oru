@@ -414,7 +414,7 @@ int main(int argc, char **argv){
 							tf_topic,
 							ros::Duration(3600),
 							&sensor_link,
-							sensor_time_offset, 0.02, min_range, true, false);  
+							0, 0.02, min_range, true, false);  
 
 		pcl::PointCloud<pcl::PointXYZ> cloud;	
 		tf::Transform sensor_pose;

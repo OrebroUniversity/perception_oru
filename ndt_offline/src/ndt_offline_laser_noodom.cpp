@@ -465,7 +465,7 @@ int main(int argc, char **argv){
 // 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-				double roll =  0, pitch = 0, yaw = 3.14159;
+				double roll =  3.14159, pitch = 0, yaw = 0;
 				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *

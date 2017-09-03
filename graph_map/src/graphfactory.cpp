@@ -19,7 +19,11 @@
 namespace libgraphMap{
 
 
-
+//!
+//! \brief GraphFactory::CreateMapParam Creates parameter type based on string input
+//! \param mapname
+//! \return
+//!
 MapParamPtr GraphFactory::CreateMapParam(string mapname){
   if(mapname.compare(ndt_map_type_name)==0){
     cout<<"Graphfactory: Created parameters for map type: \""<<ndt_map_type_name<<"\""<<endl;

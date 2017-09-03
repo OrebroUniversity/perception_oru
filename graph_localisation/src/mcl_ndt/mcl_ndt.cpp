@@ -181,6 +181,17 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   }
   pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
 }
+
+
+void MCLNDTType::UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion){
+  cerr << "TODO: implement UpdateAndPredict() for point type PointXYZIR - will convert to PointXYZ for now" << endl;
+  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+  pcl::copyPointCloud(cloud, cloud_xyz);
+  UpdateAndPredict(cloud_xyz, Tmotion);
+}
+
+
+
 std::string MCLNDTType::ToString(){
 
   std::stringstream ss;

@@ -13,6 +13,7 @@
 #include "pcl/point_types.h"
 #include "pcl_conversions/pcl_conversions.h"
 #include "ndt_mcl/3d_ndt_mcl.h"
+#include "ndt_dl/ndtdl_map_type.h"
 
 #define NDT_GLOBAL_MAP_TOPIC "NDTglobalMap"
 #define NDT_GLOBAL2_MAP_TOPIC "NDTglobal2Map"

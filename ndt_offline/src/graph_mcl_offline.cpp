@@ -1,6 +1,7 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 #include <ndt_offline/VelodyneBagReader.h>
 #include <ndt_generic/eigen_utils.h>
+#include <ndt_generic/pcl_utils.h>
 // PCL specific includes
 #include <pcl/conversions.h>
 #include <pcl/point_cloud.h>
@@ -94,6 +95,8 @@ ReadBagFileGeneric<pcl::PointXYZ> *reader;
 tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
 std::string bagfilename;
 std::string reader_type="velodyne_reader";
+bool use_pointtype_xyzir;
+
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -104,16 +107,6 @@ template<class T> std::string toString (const T& x)
   return o.str ();
 }
 
-void filter_fov_fun(pcl::PointCloud<pcl::PointXYZ> &cloud, pcl::PointCloud<pcl::PointXYZ> &cloud_nofilter, double hori_min, double hori_max) {
-  for(int i=0; i<cloud_nofilter.points.size(); ++i) {
-    double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
-    if(ang < hori_min || ang > hori_max) continue;
-    cloud.points.push_back(cloud_nofilter.points[i]);
-  }
-  cloud.width = cloud.points.size();
-  cloud.height = 1;
-  std::cout << "nb clouds : " << cloud.points.size() << std::endl;
-}
 
 
 std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T) {
@@ -246,6 +239,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
       ("n-particles", po::value<unsigned int>(&n_particles)->default_value(270), "Total number of particles to use")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
+      ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)")
       ;
 
   po::variables_map vm;
@@ -254,6 +248,8 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   save_eval_results=vm.count("save-results");
   visualize = vm.count("visualize");
   filter_fov = vm.count("filter-fov");
+  use_pointtype_xyzir = vm.count("use_pointtype_xyzir");
+
   //Check if all iputs are assigned
   if (!vm.count("map-dir-path") || !vm.count("map-file-path")){
     cout << "No .map file specified. Missing map-dir-path and map-file-path.\n";
@@ -360,6 +356,202 @@ void printParameters(){
   cout<<"World frame: "<<tf_world_frame<<", tf topic"<<tf_topic<<endl;
 }
 
+template<typename PointT>
+void processData() {
+
+srand(time(NULL));
+tf::TransformBroadcaster br;
+gt_pose_msg.header.frame_id=tf_world_frame;
+fuser_pose_msg.header.frame_id=tf_world_frame;
+odom_pose_msg.header.frame_id=tf_world_frame;
+
+
+NDTMapPtr curr_node = NULL;
+
+std::vector<std::string> map_file_path;
+if(map_file_name.length()>0){
+  cout<<"Open single map: " << map_file_name <<endl;
+  map_file_path.push_back(map_file_name);
+}
+else if(map_dir_name.length()>0){
+  cout<<"Map directory: "<<map_dir_name<<endl;
+  if(LocateMapFilePath(map_dir_name,map_file_path)){
+    cout<<"Maps found: "<<endl;
+    for (std::vector<std::string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it)
+      cout<<*it<<endl;
+  }
+  else{
+    cout<<"No maps found"<<endl;
+    exit(0);
+  }
+
+}
+
+for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it){
+
+  string map_file= *it;
+  cout<<"Opening map number :"<<(it-map_file_path.begin()+1)<<" out of "<<((map_file_path.end()-map_file_path.begin()))<<endl;
+  std::ifstream ifs(map_file);
+  boost::archive::text_iarchive ia(ifs);
+  ia >> graph_map;
+
+  localisation_param_ptr->graph_map_=graph_map;
+  localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
+  if(graph_map==NULL ||localisation_type_ptr==NULL){
+    cout<<"problem opening map"<<endl;
+    exit(0);
+  }
+
+  cout<<"-------------------------- Map and Localisation parameter ----------------------------"<<endl;
+  cout<<localisation_type_ptr->ToString()<<endl;
+  cout<<"--------------------------------------------------------"<<endl;
+
+  std::string output_file_name = map_file+"_npart:"+toString(n_particles);
+  ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
+  eval_files.CreateOutputFiles();
+  int counter = 0;
+  ReadBagFileGeneric<PointT> reader(reader_type,
+                                base_link_id,
+                                velodyne_config_file,
+                                bagfilename,
+                                velodyne_packets_topic,
+                                velodyne_frame_id,
+                                tf_world_frame,
+                                tf_topic,
+                                ros::Duration(3600),
+                                &sensor_link, max_range, min_range,
+                                sensor_time_offset);
+  printParameters();
+
+  pcl::PointCloud<PointT> cloud, cloud_nofilter;
+  tf::Transform tf_scan_source;
+  tf::Transform tf_gt_base;
+  Eigen::Affine3d Todom_base,odom_pose,Todom_base_prev, Todom_init; //Todom_base =current odometry pose, odom_pose=current aligned with gt, Todom_base_prev=previous pose, Todom_init= first odometry pose in dataset.
+  Eigen::Affine3d Tgt_base,Tgt_base_prev,Tgt_init;//Tgt_base=current GT pose,Tgt_base_prev=previous GT pose, Tgt_init=first gt pose in dataset;
+  ros::Time t0,t1,t2,t3,t4,t5;
+  t5=ros::Time::now();
+  while(reader.ReadNextMeasurement(cloud_nofilter)){
+    t0=ros::Time::now();
+    if(!n_->ok())
+      exit(0);
+
+    if(cloud_nofilter.size()==0) continue;
+
+    if(filter_fov) {
+      ndt_generic::filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
+    } else {
+      cloud = cloud_nofilter;
+    }
+
+    if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
+
+    //  reader.getPoseFor(Todom_base,base_link_id);
+    //   reader.getPoseFor(Tgt_base,gt_base_link_id);
+    tf::Transform tf_odom_base;
+    reader.getPoseFor(tf_odom_base,base_link_id);
+    reader.getPoseFor(tf_gt_base,gt_base_link_id);
+
+    Eigen::Affine3d Todom_base,Tgt_base;
+    tf::transformTFToEigen(tf_gt_base,Tgt_base);
+    tf::transformTFToEigen(tf_odom_base,Todom_base);
+
+    if(counter == 0){
+      counter ++;
+      cloud.clear();
+      cloud_nofilter.clear();
+      continue;
+    }
+    if((counter == 1)){
+      Todom_init=Todom_base;
+      Tgt_init=Tgt_base;
+      Tgt_base_prev = Tgt_base;
+      Todom_base_prev = Todom_base;
+      graph_map->SwitchToClosestMapNode(Tgt_base);
+      Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
+      Vector6d variances;
+      variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
+      localisation_type_ptr->InitializeLocalization(init_pose,variances);
+      counter ++;
+      cloud.clear();
+      cloud_nofilter.clear();
+      continue;
+    }
+
+    Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
+    counter++;
+
+    t1=ros::Time::now();
+    lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
+    localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
+    t2=ros::Time::now();
+
+
+    fuser_pose=localisation_type_ptr->GetPose();
+    odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;//Correct for initial odometry
+
+    if (visualize)
+    {
+      tf::Transform tf_fuser;
+      tf::transformEigenToTF(fuser_pose, tf_fuser);
+      br.sendTransform(tf::StampedTransform(tf_fuser,ros::Time::now(), tf_world_frame,  tf_fuser_frame));
+      if (tf_world_frame != "/world") {
+        tf::Transform tf_none;
+        tf_none.setIdentity();
+        br.sendTransform(tf::StampedTransform(tf_none, ros::Time::now(), "/world", tf_world_frame));
+      }
+    }
+
+    if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot
+      br.sendTransform(tf::StampedTransform(sensor_link,ros::Time::now(), tf_fuser_frame, velodyne_frame_id));
+      cloud.header.frame_id=velodyne_frame_id;// "/velodyne";
+      pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+      cloud_pub->publish(cloud);
+    }
+
+    if(visualize){
+      gt_pose_msg.header.stamp=ros::Time::now();
+      fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
+      odom_pose_msg.header.stamp=gt_pose_msg.header.stamp;
+      tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
+      tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
+      tf::poseEigenToMsg(odom_pose, odom_pose_msg.pose.pose);
+      odom_pub->publish(odom_pose_msg);
+      gt_pub->publish(gt_pose_msg);
+      fuser_pub->publish(fuser_pose_msg);
+    }
+    //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
+
+    if(visualize){
+      GraphPlot::PlotPoseGraph(graph_map);
+
+      if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
+        // Do nothing
+      }
+      else {
+        curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
+        GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
+        //GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+      }
+    }
+
+    t3=ros::Time::now();
+    double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
+    //cout<<"norm between estimated and actual pose="<<diff<<endl;
+    Tgt_base_prev = Tgt_base;
+    Todom_base_prev = Todom_base;
+    cloud.clear();
+    cloud_nofilter.clear();
+    eval_files.Write( reader.getTimeStampOfLastSensorMsg(),Tgt_base,odom_pose,fuser_pose,sensor_offset);
+
+    t4=ros::Time::now();
+    cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;
+    t5=ros::Time::now();
+  }
+  eval_files.Close();
+}
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////7
 /////////////////////////////////////////////////////////////////////////////////7
 /// *!!MAIN!!*
@@ -376,197 +568,12 @@ int main(int argc, char **argv){
   ros::Time::init();
   initializeRosPublishers();
   ReadAllParameters(desc,argc,&argv);
-  srand(time(NULL));
-  tf::TransformBroadcaster br;
-  gt_pose_msg.header.frame_id=tf_world_frame;
-  fuser_pose_msg.header.frame_id=tf_world_frame;
-  odom_pose_msg.header.frame_id=tf_world_frame;
 
-
-  NDTMapPtr curr_node = NULL;
-
-  std::vector<std::string> map_file_path;
-  if(map_file_name.length()>0){
-    cout<<"Open single map: " << map_file_name <<endl;
-    map_file_path.push_back(map_file_name);
+  if (use_pointtype_xyzir) {
+    processData<velodyne_pointcloud::PointXYZIR>();
   }
-  else if(map_dir_name.length()>0){
-    cout<<"Map directory: "<<map_dir_name<<endl;
-    if(LocateMapFilePath(map_dir_name,map_file_path)){
-      cout<<"Maps found: "<<endl;
-      for (std::vector<std::string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it)
-        cout<<*it<<endl;
-    }
-    else{
-      cout<<"No maps found"<<endl;
-      exit(0);
-    }
-
+  else {
+    processData<pcl::PointXYZ>();
   }
-
-  for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_path.end(); ++it){
-
-    string map_file= *it;
-    cout<<"Opening map number :"<<(it-map_file_path.begin()+1)<<" out of "<<((map_file_path.end()-map_file_path.begin()))<<endl;
-    std::ifstream ifs(map_file);
-    boost::archive::text_iarchive ia(ifs);
-    ia >> graph_map;
-
-    localisation_param_ptr->graph_map_=graph_map;
-    localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
-    if(graph_map==NULL ||localisation_type_ptr==NULL){
-      cout<<"problem opening map"<<endl;
-      exit(0);
-    }
-
-    cout<<"-------------------------- Map and Localisation parameter ----------------------------"<<endl;
-    cout<<localisation_type_ptr->ToString()<<endl;
-    cout<<"--------------------------------------------------------"<<endl;
-
-    std::string output_file_name = map_file+"_npart:"+toString(n_particles);
-    ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
-    eval_files.CreateOutputFiles();
-    int counter = 0;
-    reader=new ReadBagFileGeneric<pcl::PointXYZ>(reader_type,
-                                  base_link_id,
-                                  velodyne_config_file,
-                                  bagfilename,
-                                  velodyne_packets_topic,
-                                  velodyne_frame_id,
-                                  tf_world_frame,
-                                  tf_topic,
-                                  ros::Duration(3600),
-                                  &sensor_link, max_range, min_range,
-                                  sensor_time_offset);
-    printParameters();
-
-    pcl::PointCloud<pcl::PointXYZ> cloud, cloud_nofilter;
-    tf::Transform tf_scan_source;
-    tf::Transform tf_gt_base;
-    Eigen::Affine3d Todom_base,odom_pose,Todom_base_prev, Todom_init; //Todom_base =current odometry pose, odom_pose=current aligned with gt, Todom_base_prev=previous pose, Todom_init= first odometry pose in dataset.
-    Eigen::Affine3d Tgt_base,Tgt_base_prev,Tgt_init;//Tgt_base=current GT pose,Tgt_base_prev=previous GT pose, Tgt_init=first gt pose in dataset;
-    ros::Time t0,t1,t2,t3,t4,t5;
-    t5=ros::Time::now();
-    while(reader->ReadNextMeasurement(cloud_nofilter)){
-      t0=ros::Time::now();
-      if(!n_->ok())
-        exit(0);
-
-      if(cloud_nofilter.size()==0) continue;
-
-      if(filter_fov) {
-        filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
-      } else {
-        cloud = cloud_nofilter;
-      }
-
-      if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
-
-      //  reader->getPoseFor(Todom_base,base_link_id);
-      //   reader->getPoseFor(Tgt_base,gt_base_link_id);
-      tf::Transform tf_odom_base;
-      reader->getPoseFor(tf_odom_base,base_link_id);
-      reader->getPoseFor(tf_gt_base,gt_base_link_id);
-
-      Eigen::Affine3d Todom_base,Tgt_base;
-      tf::transformTFToEigen(tf_gt_base,Tgt_base);
-      tf::transformTFToEigen(tf_odom_base,Todom_base);
-
-      if(counter == 0){
-        counter ++;
-        cloud.clear();
-        cloud_nofilter.clear();
-        continue;
-      }
-      if((counter == 1)){
-        Todom_init=Todom_base;
-        Tgt_init=Tgt_base;
-        Tgt_base_prev = Tgt_base;
-        Todom_base_prev = Todom_base;
-        graph_map->SwitchToClosestMapNode(Tgt_base);
-        Eigen::Affine3d init_pose=graph_map->GetCurrentNodePose().inverse()*Tgt_base;
-        Vector6d variances;
-        variances<<0.1,0.1,0.000001,0.0000001,0.0000001,0.001;
-        localisation_type_ptr->InitializeLocalization(init_pose,variances);
-        counter ++;
-        cloud.clear();
-        cloud_nofilter.clear();
-        continue;
-      }
-
-      Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
-      counter++;
-
-      t1=ros::Time::now();
-      lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
-      localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
-      t2=ros::Time::now();
-
-
-      fuser_pose=localisation_type_ptr->GetPose();
-      odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;//Correct for initial odometry
-
-      if (visualize)
-      {
-        tf::Transform tf_fuser;
-        tf::transformEigenToTF(fuser_pose, tf_fuser);
-        br.sendTransform(tf::StampedTransform(tf_fuser,ros::Time::now(), tf_world_frame,  tf_fuser_frame));
-        if (tf_world_frame != "/world") {
-          tf::Transform tf_none;
-          tf_none.setIdentity();
-          br.sendTransform(tf::StampedTransform(tf_none, ros::Time::now(), "/world", tf_world_frame));
-        }
-      }
-
-      if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot
-        br.sendTransform(tf::StampedTransform(sensor_link,ros::Time::now(), tf_fuser_frame, velodyne_frame_id));
-        cloud.header.frame_id=velodyne_frame_id;// "/velodyne";
-        pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
-        cloud_pub->publish(cloud);
-      }
-
-      if(visualize){
-        gt_pose_msg.header.stamp=ros::Time::now();
-        fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
-        odom_pose_msg.header.stamp=gt_pose_msg.header.stamp;
-        tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
-        tf::poseEigenToMsg(fuser_pose, fuser_pose_msg.pose.pose);
-        tf::poseEigenToMsg(odom_pose, odom_pose_msg.pose.pose);
-        odom_pub->publish(odom_pose_msg);
-        gt_pub->publish(gt_pose_msg);
-        fuser_pub->publish(fuser_pose_msg);
-      }
-      //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
-
-      if(visualize){
-        GraphPlot::PlotPoseGraph(graph_map);
-
-        if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
-          // Do nothing
-        }
-        else {
-          curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-          GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
-          //GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
-        }
-      }
-
-      t3=ros::Time::now();
-      double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
-      //cout<<"norm between estimated and actual pose="<<diff<<endl;
-      Tgt_base_prev = Tgt_base;
-      Todom_base_prev = Todom_base;
-      cloud.clear();
-      cloud_nofilter.clear();
-      eval_files.Write( reader->getTimeStampOfLastSensorMsg(),Tgt_base,odom_pose,fuser_pose,sensor_offset);
-
-      t4=ros::Time::now();
-      cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;
-      t5=ros::Time::now();
-    }
-    delete reader;
-    eval_files.Close();
-  }
-
 
 }

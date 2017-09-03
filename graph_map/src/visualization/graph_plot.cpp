@@ -25,6 +25,9 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
     }
 
   }
+  if(NDTDLMapTypePtr ptr=boost::dynamic_pointer_cast<NDTDL>(map)){
+    cout<<"not plot method exists for NDT-DL"<<endl;
+  }
 }
 void CreateMarker(Eigen::Matrix3d cov,Eigen::Vector3d mean, PlotMarker marker,int color){
 

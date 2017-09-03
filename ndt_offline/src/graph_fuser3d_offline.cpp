@@ -1,6 +1,7 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 #include <ndt_offline/VelodyneBagReader.h>
 #include <ndt_generic/eigen_utils.h>
+#include <ndt_generic/pcl_utils.h>
 // PCL specific includes
 #include <pcl/conversions.h>
 #include <pcl/point_cloud.h>
@@ -109,20 +110,6 @@ template<class T> std::string toString (const T& x)
 
   return o.str ();
 }
-
-
-template<class PointT>
-void filter_fov_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &cloud_nofilter, double hori_min, double hori_max) {
-  for(int i=0; i<cloud_nofilter.points.size(); ++i) {
-    double ang = atan2(cloud_nofilter.points[i].y, cloud_nofilter.points[i].x);
-    if(ang < hori_min || ang > hori_max) continue;
-    cloud.points.push_back(cloud_nofilter.points[i]);
-  }
-  cloud.width = cloud.points.size();
-  cloud.height = 1;
-  std::cout << "nb clouds : " << cloud.points.size() << std::endl;
-}
-
 
 std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T) {
   std::ostringstream stream;
@@ -461,7 +448,7 @@ void processData() {
       if(cloud_nofilter.size()==0) continue;
 
       if(filter_fov) {
-        filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
+        ndt_generic::filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
       } else {
         cloud = cloud_nofilter;
       }

@@ -77,7 +77,7 @@ bool GraphMapFuser::KeyFrameBasedFuse(const Affine3d &Tnow ){
   }
 }
 
-void GraphMapFuser::plotMap(){
+void GraphMapFuser::PlotMapType(){
 /*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
   GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
   cout<<"fuser: plot marker"<<endl;

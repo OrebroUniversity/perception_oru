@@ -557,7 +557,7 @@ void processData() {
 
       double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
       if(visualize && counter%skip_frame==0 ){
-        fuser_->plotMap();
+        fuser_->PlotMapType();
         //cout<<"norm between estimated and actual pose="<<diff<<endl;
       }
       //sleep(1);

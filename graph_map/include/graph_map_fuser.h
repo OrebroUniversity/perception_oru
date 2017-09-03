@@ -40,7 +40,7 @@ public:
   unsigned int FramesProcessed() const{return nr_frames_;}
   void Visualize(bool enableVisualOutput,plotmarker marker=plotmarker::sphere);
   std::string ToString();
-  void plotMap();
+  void PlotMapType();
 protected:
   bool KeyFrameBasedFuse(const Affine3d &Tnow );
   void plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud);

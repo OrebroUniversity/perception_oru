@@ -43,6 +43,13 @@ void GraphMapFuser::SaveGraphMap(const std::string &filename){
   ar << graph_map_;
   ofs.close();
 }
+void GraphMapFuser::SaveCurrentNodeAsJFF(const std::string &filename){
+  cout<<"-----------------------------Saving JFF---------------------------------\n"<<graph_map_->ToString()<<endl;
+  cout<<"----------------------------------------------------------------------\nTo file path:"<<filename<<endl;
+  NDTMap * map=boost::dynamic_pointer_cast<NDTMapType> (graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  std::string name=filename+std::string(".JFF");
+  map->writeToJFF(name.c_str());
+}
 void GraphMapFuser::Visualize(bool enableVisualOutput,plotmarker marker){
   visualize_=enableVisualOutput;
   marker_=marker;
@@ -70,7 +77,7 @@ bool GraphMapFuser::KeyFrameBasedFuse(const Affine3d &Tnow ){
   }
 }
 
-void GraphMapFuser::plotMap(){
+void GraphMapFuser::PlotMapType(){
 /*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
   GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
   cout<<"fuser: plot marker"<<endl;

@@ -32,6 +32,7 @@ public:
   GraphMapFuser(  RegParamPtr regParam,  MapParamPtr mapParam, GraphParamPtr graph_param, const Eigen::Affine3d &init_pose, const Eigen::Affine3d &sensorPose);
   Affine3d GetPoseLastFuse() const{return pose_last_fuse_;}
   void SaveGraphMap(const std::string &filename);
+  void SaveCurrentNodeAsJFF (const  std::string &filename);
   void SetMotionParameters(const MotionModel2d &motion_param){motion_model_2d_=motion_param;}
   template<class PointT> void ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
   //void ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion); //cloud is the current scan in robot frame,  Tnow is the current pose in world frame
@@ -39,7 +40,7 @@ public:
   unsigned int FramesProcessed() const{return nr_frames_;}
   void Visualize(bool enableVisualOutput,plotmarker marker=plotmarker::sphere);
   std::string ToString();
-  void plotMap();
+  void PlotMapType();
 protected:
   bool KeyFrameBasedFuse(const Affine3d &Tnow );
   void plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud);

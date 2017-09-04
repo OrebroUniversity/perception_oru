@@ -126,7 +126,7 @@ public:
             p_target.x=p_src.x;
             p_target.y=p_src.y;
             p_target.z=p_src.z;
-             cloud.push_back(p_target);
+            cloud.push_back(p_target);
            }
            cloud.header.frame_id=scan->header.frame_id;
            pcl_conversions::toPCL(scan->header.stamp,cloud.header.stamp);

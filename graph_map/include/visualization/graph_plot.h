@@ -41,7 +41,7 @@ public:
   static void PlotPoseGraph(GraphMapPtr graph);
   static void PlotMap(MapTypePtr map,int color, const Affine3d &offset=Affine3d::Identity(),PlotMarker marker=sphere);
 private:
-  static void PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset);
+  static void PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset, std::string ns = "pts", int id = 0);
   static void CovarToMarker(const Eigen::Matrix3d &cov,const Eigen::Vector3d &mean,visualization_msgs::Marker &marker);
   static void GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr, cov_vector &cov, mean_vector &mean);
   static void GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_vector &cov, mean_vector &mean);

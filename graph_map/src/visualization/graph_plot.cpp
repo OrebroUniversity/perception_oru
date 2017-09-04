@@ -1,5 +1,5 @@
 #include "visualization/graph_plot.h"
-
+#include <ndt_rviz/ndt_rviz.h>
 
 namespace libgraphMap{
 bool GraphPlot::initialized_=false;
@@ -17,6 +17,7 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
     if(marker==plotmarker::sphere){
       GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMap(),color,offset);
     }
+
     else if(marker==plotmarker::point){
       cov_vector cov;
       mean_vector mean;
@@ -26,9 +27,21 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
 
   }
   if(NDTDLMapTypePtr ptr=boost::dynamic_pointer_cast<NDTDL>(map)){
-    cout<<"not plot method exists for NDT-DL"<<endl;
+    if(marker==plotmarker::sphere){
+      GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMapFlat(),color,offset);
+//      GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMapEdge(),color+1,offset);
+    }
+    else if(marker==plotmarker::point){
+      cov_vector cov;
+      mean_vector mean;
+      GetAllCellsMeanCov(ptr->GetNDTMapFlat(), cov, mean);
+      PublishMapAsPoints(mean,color,0.2*ptr->GetResolution(),offset, std::string("flat"));
+      GetAllCellsMeanCov(ptr->GetNDTMapEdge(), cov, mean);
+      PublishMapAsPoints(mean,color+1,/*0.2**/ptr->GetResolution(),offset, std::string("edge"));
+    }
   }
 }
+
 void CreateMarker(Eigen::Matrix3d cov,Eigen::Vector3d mean, PlotMarker marker,int color){
 
 }
@@ -232,7 +245,7 @@ void GraphPlot::CovarToMarker(const Eigen::Matrix3d &cov,const Eigen::Vector3d &
   marker.pose.position.z=mean(2);
 
 }
-void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset){
+void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset, std::string ns, int id){
 
   if(!initialized_)
     Initialize();
@@ -241,8 +254,8 @@ void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,con
   visualization_msgs::MarkerArray markerarr;
   marker.header.frame_id = "/world";
   marker.header.stamp = ros::Time();
-  marker.ns = "my_namespace";
-  marker.id = 0;
+  marker.ns = ns;
+  marker.id = id;
   marker.type = visualization_msgs::Marker::POINTS;
   marker.action = visualization_msgs::Marker::ADD;
 
@@ -273,19 +286,27 @@ void GraphPlot::PublishMapAsPoints(mean_vector &mean, int color,double scale,con
     marker.points.push_back(p);
     mean_vek.push_back(m_tmp);
   }
-  std_msgs::ColorRGBA p_color;
-  p_color.a=0.6;
-  GraphPlot::ColorGradient color_map;
-  color_map.createDefaultHeatMapGradient();
-  for(int i=0;i<mean_vek.size();i++){
-    float r,g,b;
-    float z=mean_vek[i](2);
-    z=(z-min_z)/(max_z-min_z);
-    color_map.getColorAtValue(z,r,g,b);
-    p_color.r=r;
-    p_color.g=g;
-    p_color.b=b;
-    marker.colors.push_back(p_color);
+
+  if (color < 0) {
+
+    std_msgs::ColorRGBA p_color;
+    p_color.a=0.6;
+    GraphPlot::ColorGradient color_map;
+    color_map.createDefaultHeatMapGradient();
+    for(int i=0;i<mean_vek.size();i++){
+      float r,g,b;
+      float z=mean_vek[i](2);
+      z=(z-min_z)/(max_z-min_z);
+      color_map.getColorAtValue(z,r,g,b);
+      p_color.r=r;
+      p_color.g=g;
+      p_color.b=b;
+      marker.colors.push_back(p_color);
+    }
+  }
+  else {
+    ndt_visualisation::assignColor(marker, color);
+
   }
   markerarr.markers.push_back(marker);
   globalMapPublisher_->publish(markerarr);

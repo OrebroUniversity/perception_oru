@@ -10,11 +10,11 @@
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/ndt_map_hmt.h>
 #include "visualization/graph_plot.h"
-#include "visualization/graph_plot.h"
 #include <ndt_map/pointcloud_utils.h>
 //#include <ndt_fuser/motion_model_2d.h>
 #include "stdio.h"
 #include "sstream"
+
 #define ndt_map_type_name "ndt_map"
 namespace libgraphMap{
 using namespace lslgeneric;

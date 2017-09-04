@@ -54,6 +54,7 @@
 <build_depend>ndt_mcl</build_depend>
 <build_depend>ndt_localization</build_depend>
 <build_depend>ndt_registration</build_depend>
+<build_depend>ndt_rviz</build_depend>
 <build_depend>eigen_conversions</build_depend>
 <build_depend>tf_conversions</build_depend>
 <build_depend>tf</build_depend>
@@ -73,6 +74,7 @@
 <run_depend>ndt_mcl</run_depend>
 <run_depend>ndt_localization</run_depend>
 <run_depend>ndt_registration</run_depend>
+<run_depend>ndt_rviz</run_depend>
 <run_depend>libpcl-all-dev</run_depend>
 <run_depend>eigen_conversions</run_depend>
 <run_depend>tf_conversions</run_depend>

@@ -10,6 +10,7 @@ ros::Publisher* GraphPlot::graphInfoPublisher_=NULL;
 ros::Publisher* GraphPlot::globalMapPublisher_=NULL;
 ros::Publisher* GraphPlot::global2MapPublisher_=NULL;
 ros::Publisher* GraphPlot::particlaCloudPublisher_=NULL;
+
 void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMarker marker){
 
   if(NDTMapPtr ptr=boost::dynamic_pointer_cast<NDTMapType>(map)){
@@ -22,11 +23,11 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
       cov_vector cov;
       mean_vector mean;
       GetAllCellsMeanCov(ptr->GetNDTMap(), cov, mean);
-      PublishMapAsPoints(mean,color,0.2*ptr->GetResolution(),offset);
+      PublishMapAsPoints(mean,-1/*color*/,0.2*ptr->GetResolution(),offset);
     }
 
   }
-  if(NDTDLMapTypePtr ptr=boost::dynamic_pointer_cast<NDTDL>(map)){
+  if(NDTDLMapPtr ptr=boost::dynamic_pointer_cast<NDTDLMapType>(map)){
     if(marker==plotmarker::sphere){
       GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMapFlat(),color,offset);
 //      GraphPlot::SendGlobalMapToRviz( ptr->GetNDTMapEdge(),color+1,offset);

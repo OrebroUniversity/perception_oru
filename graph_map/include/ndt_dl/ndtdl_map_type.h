@@ -20,10 +20,10 @@
 namespace libgraphMap{
 using namespace lslgeneric;
 
-class NDTDL:public MapType{
+class NDTDLMapType:public MapType{
 public:
   //Mandatory
-  ~NDTDL();
+  ~NDTDLMapType();
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);//Mandatory, base method implemented as pure virtual
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);//Mandatory, base method implemented as pure virtual
   //Optional
@@ -31,8 +31,8 @@ public:
   NDTMap* GetNDTMapEdge() { return map_edge_; }
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);//Optional
   double GetResolution() const{return resolution_;}
-  NDTDL(MapParamPtr paramptr);
-  NDTDL(){}
+  NDTDLMapType(MapParamPtr paramptr);
+  NDTDLMapType(){}
   NDTMap *map_flat_=NULL;
   NDTMap *map_edge_=NULL;
 private:

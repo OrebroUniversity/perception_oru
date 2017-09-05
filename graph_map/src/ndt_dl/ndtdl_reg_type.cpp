@@ -38,7 +38,7 @@ bool NDTDLRegType::Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::Poin
     return false;
   }
   else{
-    NDTDLMapTypePtr MapPtr = boost::dynamic_pointer_cast< NDTDL >(maptype);
+    NDTDLMapPtr MapPtr = boost::dynamic_pointer_cast< NDTDLMapType >(maptype);
     //Perform registration based on prediction "Tinit", your map "MapPtr" and the "cloud"
   }
 

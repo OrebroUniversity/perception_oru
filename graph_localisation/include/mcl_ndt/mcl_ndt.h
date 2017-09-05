@@ -20,6 +20,7 @@ public:
   void UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion);
   std::string ToString();
 protected:
+  NDTMap* GetCurrentNodeNDTMap();
   ParticleFilter3D pf; 						///<This is the particle filter
   NDTMap * map_;
   double resolution=0.5;

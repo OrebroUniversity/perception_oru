@@ -73,6 +73,7 @@ GraphParamPtr graphParPtr=NULL;
 double sensor_time_offset=0;
 double resolution_local_factor=0;
 unsigned int n_particles=0;
+double SIR_varP_threshold=0;
 double max_range=0, min_range=0;
 double maxRotationNorm_=0;
 double interchange_radius_=0;
@@ -238,6 +239,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("registration2d","registration2d")
       ("resolution", po::value<double>(&resolution)->default_value(0.4), "resolution of the map")
       ("n-particles", po::value<unsigned int>(&n_particles)->default_value(270), "Total number of particles to use")
+      ("SIR_varP_threshold", po::value<double>(&SIR_varP_threshold)->default_value(0.6), "resampling threshold")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)")
       ;
@@ -263,9 +265,10 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
 
   localisation_param_ptr=LocalisationFactory::CreateLocalisationParam(localisation_type);
   if(MCLNDTParamPtr parPtr=boost::dynamic_pointer_cast<MCLNDTParam>(localisation_param_ptr )){
-    //parPtr->resolution=resolution;
+    parPtr->resolution=resolution;
     parPtr->n_particles_=n_particles;
     parPtr->z_filter_min=z_filter_min_height;
+    parPtr->SIR_varP_threshold=SIR_varP_threshold;
 
     if (dataset == "hx") {
       parPtr->motion_model[0] = 0.01;
@@ -296,11 +299,17 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       parPtr->motion_model[22] = 0.001;
       parPtr->motion_model[23] = 0.001;
 
-      parPtr->motion_model[24] = 0.002;
-      parPtr->motion_model[25] = 0.0001;
-      parPtr->motion_model[26] = 0.001;
+      //      parPtr->motion_model[24] = 0.002;
+      //      parPtr->motion_model[25] = 0.0001;
+      //      parPtr->motion_model[26] = 0.001;
+      //      parPtr->motion_model[27] = 0.001;
+      //      parPtr->motion_model[28] = 0.01;
+      //      parPtr->motion_model[29] = 0.001;
+      parPtr->motion_model[25] = 0.005;
+      parPtr->motion_model[26] = 0.002;
+      parPtr->motion_model[24] = 0.0001;
       parPtr->motion_model[27] = 0.001;
-      parPtr->motion_model[28] = 0.01;
+      parPtr->motion_model[28] = 0.04;
       parPtr->motion_model[29] = 0.001;
 
       parPtr->motion_model[30] = 0.005;
@@ -311,10 +320,11 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       parPtr->motion_model[35] = 0.01;
 
       parPtr->motion_model_offset[0] = 0.02;
+
       parPtr->motion_model_offset[1] = 0.00002;
       parPtr->motion_model_offset[2] = 0.002;
       parPtr->motion_model_offset[3] = 0.000002;
-      parPtr->motion_model_offset[4] = 0.000002;
+      parPtr->motion_model_offset[4] = 0.02;//0.000002;
       parPtr->motion_model_offset[5] = 0.000002;
     }
   }
@@ -366,7 +376,8 @@ fuser_pose_msg.header.frame_id=tf_world_frame;
 odom_pose_msg.header.frame_id=tf_world_frame;
 
 
-NDTMapPtr curr_node = NULL;
+//NDTMapPtr = NULL;
+MapNodePtr curr_node = NULL;
 
 std::vector<std::string> map_file_path;
 if(map_file_name.length()>0){
@@ -395,8 +406,14 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   boost::archive::text_iarchive ia(ifs);
   ia >> graph_map;
 
+  ROS_ERROR_STREAM("MAP OPENED!");
+
   localisation_param_ptr->graph_map_=graph_map;
+  ROS_ERROR_STREAM("Creating localisation type");
+
   localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
+  ROS_ERROR_STREAM("Creating localisation type - done");
+
   if(graph_map==NULL ||localisation_type_ptr==NULL){
     cout<<"problem opening map"<<endl;
     exit(0);
@@ -478,7 +495,6 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
     }
 
     Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
-    counter++;
 
     t1=ros::Time::now();
     lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
@@ -501,9 +517,9 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
       }
     }
 
-    if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot
+    if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot, note also that this is given in the vehicle frame...
       br.sendTransform(tf::StampedTransform(sensor_link,ros::Time::now(), tf_fuser_frame, velodyne_frame_id));
-      cloud.header.frame_id=velodyne_frame_id;// "/velodyne";
+      cloud.header.frame_id=tf_fuser_frame;//velodyne_frame_id;// "/velodyne";
       pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
       cloud_pub->publish(cloud);
     }
@@ -519,18 +535,23 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
       gt_pub->publish(gt_pose_msg);
       fuser_pub->publish(fuser_pose_msg);
     }
-    //   graph_map->SwitchToClosestMapNode(fuser_pose,unit_covar,T,std::numeric_limits<double>::max());
 
     if(visualize){
+      bool plot_map = false;
+      if (counter %30 == 2) { // Plot the map occationally...
+        plot_map = true;
+      }
       GraphPlot::PlotPoseGraph(graph_map);
 
-      if (curr_node == boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap())) {
+      if (curr_node == graph_map->GetCurrentNode()) {
         // Do nothing
       }
       else {
-        curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map->GetCurrentNode()->GetMap());
-        GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
-        //GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map->GetCurrentNodePose());
+        curr_node = graph_map->GetCurrentNode();
+        plot_map = true;
+      }
+      if (plot_map) {
+        GraphPlot::PlotMap(curr_node->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
       }
     }
 
@@ -546,6 +567,7 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
     t4=ros::Time::now();
     cout<<"iteration: "<<t5-t4<<", update: "<<t2-t1<<", plot: "<<t3-t2<<endl;
     t5=ros::Time::now();
+    counter++;
   }
   eval_files.Close();
 }

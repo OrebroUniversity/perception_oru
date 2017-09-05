@@ -53,7 +53,7 @@ MapTypePtr GraphFactory::CreateMapType(MapParamPtr mapparam){
   }
   else if(  NDTDLMapParamPtr ndtdlMapParam = boost::dynamic_pointer_cast< NDTDLMapParam >(mapparam) ){ //perform typecast and check if not null conversion
     cout<<"Graphfactory: Created map of type: \""<<ndtdl_map_type_name<<"\""<<endl;
-    return  MapTypePtr(new NDTDL(ndtdlMapParam));
+    return  MapTypePtr(new NDTDLMapType(ndtdlMapParam));
   }
   else if(TemplateMapParamPtr template_par=boost::dynamic_pointer_cast<TemplateMapParam>(mapparam)){
     cerr<<"Graphfactory: no map exists for \"template\""<<endl;

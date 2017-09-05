@@ -1,18 +1,30 @@
 #include "mcl_ndt/mcl_ndt.h"
+#include <ndt_dl/point_curv.h>
 namespace GraphMapLocalisation{
 MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   if(MCLNDTParamPtr mclParam=boost::dynamic_pointer_cast<MCLNDTParam>(param)){
-    resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+
+
+//    NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
+//    if (current_map != NULL) {
+//      resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+//    }
+//    else {
+//      ROS_INFO_STREAM("Not a NDTMapType used(!)");
+//    }
+
+    resolution=mclParam->resolution;
     forceSIR=mclParam->forceSIR;
     motion_model=mclParam->motion_model;
     motion_model_offset=mclParam->motion_model_offset;
     n_particles_=mclParam->n_particles_;
+    SIR_varP_threshold=mclParam->SIR_varP_threshold;
     counter=0;
     z_filter_min=mclParam->z_filter_min;
     initialized_ = false;
     forceSIR = false;
     resolution_sensor=resolution;
-
+      ROS_ERROR("created MCLNDTType!");
   }
   else{
     std::cerr<<"Cannot create MCLNDType. Illegal type for parameter param"<<endl;
@@ -20,7 +32,21 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   }
 }
 
+NDTMap* MCLNDTType::GetCurrentNodeNDTMap() {
+  // Currently exist two different maps of NDT, NDT and NDTDL, find out which we have in the graph and return it...
+  {
+    NDTMapPtr p = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+    if (p != NULL) {
+      return p->GetNDTMap();
+    }
+  }
 
+  {
+    NDTDLMapPtr p = boost::dynamic_pointer_cast< NDTDLMapType >(graph_map_->GetCurrentNode()->GetMap());
+    return p->GetNDTMapFlat();
+  }
+  return NULL;
+}
 
 void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tmotion){
   counter++;
@@ -54,7 +80,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
     remap_prev_to_new_frame=(graph_map_->GetPreviousNodePose().inverse()*graph_map_->GetCurrentNodePose()).inverse();
     cout<<"change frame, transf="<<remap_prev_to_new_frame.translation().transpose()<<endl;
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5],remap_prev_to_new_frame);
-    map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+    //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+    map_ = this->GetCurrentNodeNDTMap();
   }
   else
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5]);
@@ -137,7 +164,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
             if(!exists) continue;
             double l = (cell->getMean() - m).dot(icov*(cell->getMean() - m));
             if(l*0 != 0) continue;
-            score += 0.1 + 0.9 * exp(-0.05*l/2.0);
+            //score += 0.1 + 0.9 * exp(-0.05*l/2.0);
+            score += 0.3 + 0.7 * exp(-0.05*l/2.0);
           }else{
           }
         }
@@ -184,10 +212,20 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
 
 void MCLNDTType::UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion){
-  cerr << "TODO: implement UpdateAndPredict() for point type PointXYZIR - will convert to PointXYZ for now" << endl;
-  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
-  pcl::copyPointCloud(cloud, cloud_xyz);
-  UpdateAndPredict(cloud_xyz, Tmotion);
+
+  // Filter out the flat parts...
+  pcl::PointCloud<pcl::PointXYZ> cornerPointsSharp;
+  pcl::PointCloud<pcl::PointXYZ> cornerPointsLessSharp;
+  pcl::PointCloud<pcl::PointXYZ> surfPointsFlat;
+  pcl::PointCloud<pcl::PointXYZ> surfPointsLessFlat;
+
+  segmentPointCurvature(cloud, cornerPointsSharp, cornerPointsLessSharp, surfPointsFlat, surfPointsLessFlat);
+
+  UpdateAndPredict(surfPointsLessFlat, Tmotion);
+
+//  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+//  pcl::copyPointCloud(cloud, cloud_xyz);
+//  UpdateAndPredict(cloud_xyz, Tmotion);
 }
 
 
@@ -202,13 +240,18 @@ std::string MCLNDTType::ToString(){
   ss<<"resolution: "<<resolution<<endl;
   ss<<"force SIR: "<<std::boolalpha<<forceSIR<<endl;
   ss<<"SIR var Probability threshold: "<<SIR_varP_threshold<<endl;
+  ss<<"motion model: ";
+  for (int i = 0; i < motion_model.size(); i++) { if (i % 6 == 0) {ss << endl;} ss<<motion_model[i] << " " << endl; }
+  ss<<"motion model offset: ";
+  for (int i = 0; i < motion_model_offset.size(); i++) { if (i % 6 == 0) {ss << endl;}; ss<<motion_model_offset[i] << " " << endl; }
   return ss.str();
 }
 
 void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   pose_=pose;
   graph_map_->SwitchToClosestMapNode(pose_);//specified in local frame, should be specified in gloval
-  map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  map_ = this->GetCurrentNodeNDTMap();
   Eigen::Vector3d pos=pose_.translation();
   Eigen::Vector3d euler = pose_.rotation().eulerAngles(0,1,2);
   normalizeEulerAngles(euler);

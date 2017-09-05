@@ -2,12 +2,12 @@
 #include <boost/serialization/export.hpp>
 #include <ndt_dl/point_curv.h>
 
-BOOST_CLASS_EXPORT(libgraphMap::NDTDL)
+BOOST_CLASS_EXPORT(libgraphMap::NDTDLMapType)
 namespace libgraphMap{
   using namespace std;
 
 
-  NDTDL::NDTDL( MapParamPtr paramptr) : MapType(paramptr){
+  NDTDLMapType::NDTDLMapType( MapParamPtr paramptr) : MapType(paramptr){
     NDTDLMapParamPtr param = boost::dynamic_pointer_cast< NDTDLMapParam >(paramptr);//Should not be NULL
     if(param!=NULL){
       resolution_=param ->resolution_;
@@ -20,9 +20,9 @@ namespace libgraphMap{
     else
       cerr<<"templateMapType: Cannot create instance for \"templateMapType\""<<std::endl;
   }
-  NDTDL::~NDTDL(){}
+  NDTDLMapType::~NDTDLMapType(){}
 
-  void NDTDL::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     cout<<"The NDT-DL update with PointXYZ is please implement map update for NDT-DL"<<endl;
     if(initialized_){
@@ -33,7 +33,7 @@ namespace libgraphMap{
     }
   }
 
-  void NDTDL::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
 
     // Segment the point based on curvature
@@ -63,7 +63,7 @@ namespace libgraphMap{
     }
   }
 
-  void NDTDL::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloudFlat, pcl::PointCloud<pcl::PointXYZ> &cloudEdge){
+  void NDTDLMapType::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloudFlat, pcl::PointCloud<pcl::PointXYZ> &cloudEdge){
     cout<<"initialize map"<<endl;
     map_flat_->addPointCloud(Tsensor.translation(),cloudFlat, 0.1, 100.0, 0.1);
     map_flat_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tsensor.translation(), 0.1);
@@ -72,11 +72,11 @@ namespace libgraphMap{
     map_edge_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tsensor.translation(), 0.1);
   }
 
-  bool NDTDL::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
+  bool NDTDLMapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
 
     return true;
     cout<<"please implement map compound for improved usage of submaps"<<endl;
-    if( NDTDLMapTypePtr targetPtr=boost::dynamic_pointer_cast<NDTDL>(target) ){
+    if( NDTDLMapPtr targetPtr=boost::dynamic_pointer_cast<NDTDLMapType>(target) ){
 
       cout<<"\"CompoundMapsByRadius\" not overrided by template but not implemented"<<endl;
     }

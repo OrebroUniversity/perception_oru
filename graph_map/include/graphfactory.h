@@ -70,8 +70,8 @@ class NDTD2DRegType;
 typedef boost::shared_ptr<NDTD2DRegType> NDTD2DRegTypePtr;
 
 
-class NDTDL;
-typedef boost::shared_ptr<NDTDL> NDTDLMapTypePtr;
+class NDTDLMapType;
+typedef boost::shared_ptr<NDTDLMapType> NDTDLMapPtr;
 
 class NDTDLMapParam;
 typedef boost::shared_ptr<NDTDLMapParam> NDTDLMapParamPtr;

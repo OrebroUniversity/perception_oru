@@ -100,6 +100,9 @@ nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
 //PointCloudBagReader<pcl::PointXYZ> *preader;
 //ReadBagFileGeneric<pcl::PointXYZ> *reader;
 bool use_pointtype_xyzir;
+int min_nb_points_for_gaussian;
+bool keep_min_nb_points;
+bool min_nb_points_set_uniform;
 
 template<class T> std::string toString (const T& x)
 {
@@ -258,8 +261,10 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("disable-submaps", "Adopt the sub-mapping technique which represent the global map as a set of local submaps")
       ("compound-radius", po::value<double>(&compound_radius_)->default_value(10.0), "Requires sub-mapping enabled, When creating new sub-lamps, information from previous map is transfered to the new map. The following radius is used to select the map objects to transfer")
       ("interchange-radius", po::value<double>(&interchange_radius_)->default_value(10.0), "This radius is used to trigger creation or selection of which submap to use")
-      ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)");
-
+      ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)")
+      ("min_nb_points_for_gaussian", po::value<int>(&min_nb_points_for_gaussian)->default_value(6), "minimum number of points per cell to compute a gaussian")
+      ("keep_min_nb_points", "If the number of points stored in a NDTCell should be cleared if the number is less than min_nb_points_for_gaussian")
+      ("min_nb_points_set_uniform", "If the number of points of one cell is less than min_nb_points_for_gaussian, set the distribution to a uniform one (cov = Identity)");
 
   //Boolean parameres are read through notifiers
   po::variables_map vm;
@@ -271,6 +276,10 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     cout << desc << "\n";
     return false;
   }
+
+  keep_min_nb_points = vm.count("clear_min_nb_points");
+  min_nb_points_set_uniform = vm.count("min_nb_points_set_uniform");
+  NDTCell::setParameters(0.1, 8*M_PI/18., 1000, min_nb_points_for_gaussian, !keep_min_nb_points, min_nb_points_set_uniform);
 
   if(GetSensorPose(dataset,transl,euler,tf_sensor_pose)) {
     cout<<"sensor pose from dataset utilized [" << dataset << "]" << endl;
@@ -324,10 +333,14 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     ndt_reg_ptr->resolution_=resolution;
     ndt_reg_ptr->resolutionLocalFactor_=resolution_local_factor;
   }
-  if(  NDTMapParamPtr ndt_map_ptr=boost::dynamic_pointer_cast<NDTMapParam>(mapParPtr)){
-    ndt_map_ptr->resolution_=resolution;
+  {
+   if(  NDTMapParamPtr ndt_map_ptr=boost::dynamic_pointer_cast<NDTMapParam>(mapParPtr)){
+      ndt_map_ptr->resolution_=resolution;
+    }
+    if (NDTDLMapParamPtr ndt_map_ptr=boost::dynamic_pointer_cast<NDTDLMapParam>(mapParPtr)){
+      ndt_map_ptr->resolution_ = resolution;
+    }
   }
-
 
   //Check if all iputs are assigned
   if (!vm.count("base-name") || !vm.count("dir-name")){
@@ -404,7 +417,6 @@ void processData() {
   }
 
   int counter = 0;
-  eval_files.CreateOutputFiles();
 
   cout<<"opening bag files"<<endl;
   for(int i=0; i<ros_bag_paths.size(); i++) {
@@ -490,7 +502,7 @@ void processData() {
         cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
         cout<<fuser_->ToString()<<endl;
         cout<<"----------------------PARAMETERS FOR MAPPING--------------------------"<<endl;
-        fuser_->Visualize(visualize,plotmarker::point);
+        fuser_->Visualize(visualize,plotmarker::point/*plotmarker::sphere*/);
         counter ++;
         cloud.clear();
         cloud_nofilter.clear();

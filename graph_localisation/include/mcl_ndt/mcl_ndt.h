@@ -35,6 +35,7 @@ protected:
   int sinceSIR_=0; //ok
   double subsample_level_=1.0;
   double z_filter_min=-10000.0;
+  double score_cell_weight=0.1;
   inline double getDoubleTime();
   inline void normalizeEulerAngles(Eigen::Vector3d &euler);
   private:
@@ -51,6 +52,7 @@ public:
   unsigned int n_particles_=250;
   int SIR_max_iters_wo_resampling=25;
   double z_filter_min=-10000.0;
+  double score_cell_weight=0.1;
   double resolution=0;
   std::vector<double> motion_model, motion_model_offset;
 private:

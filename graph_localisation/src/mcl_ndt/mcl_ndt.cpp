@@ -21,6 +21,7 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
     SIR_varP_threshold=mclParam->SIR_varP_threshold;
     counter=0;
     z_filter_min=mclParam->z_filter_min;
+    score_cell_weight=mclParam->score_cell_weight;
     initialized_ = false;
     forceSIR = false;
     resolution_sensor=resolution;
@@ -164,9 +165,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
             if(!exists) continue;
             double l = (cell->getMean() - m).dot(icov*(cell->getMean() - m));
             if(l*0 != 0) continue;
-            //score += 0.1 + 0.9 * exp(-0.05*l/2.0);
-            score += 0.3 + 0.7 * exp(-0.05*l/2.0);
-          }else{
+            score += score_cell_weight + (1.0 - score_cell_weight) * exp(-0.05*l/2.0);
+            }else{
           }
         }
       }
@@ -208,6 +208,9 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   }
   pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
+
+  GraphPlot::PlotMap(local_map,1,pose_,plotmarker::sphere/*plotmarker::point*/, "ndtmcl");
+
 }
 
 

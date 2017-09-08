@@ -81,7 +81,7 @@ void GraphMapFuser::PlotMapType(){
 /*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
   GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
   cout<<"fuser: plot marker"<<endl;
-  GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),1,graph_map_->GetCurrentNodePose(),marker_);
+  GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),-1,graph_map_->GetCurrentNodePose(),marker_);
   GraphPlot::PlotPoseGraph(graph_map_);
 }
 

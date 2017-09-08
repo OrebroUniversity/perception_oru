@@ -314,7 +314,6 @@ int main(int argc, char **argv){
   }
 
   int counter = 0;
-  eval_files.CreateOutputFiles();
 
 
   cout<<"opening bag files"<<endl;

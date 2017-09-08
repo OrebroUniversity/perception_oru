@@ -53,6 +53,7 @@ int nb_scan_msgs=0;
 bool use_odometry=true;
 bool visualize=true;
 bool filter_fov=false;
+bool filter_ring_nb=false;
 bool step_control=false;
 bool registration2d=true;
 bool alive=false;
@@ -85,6 +86,7 @@ double resolution=0;
 double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
 double z_filter_min_height=0;
+double score_cell_weight=0;
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub,*odom_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg,odom_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
@@ -97,6 +99,9 @@ tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
 std::string bagfilename;
 std::string reader_type="velodyne_reader";
 bool use_pointtype_xyzir;
+int min_nb_points_for_gaussian;
+bool keep_min_nb_points;
+bool min_nb_points_set_uniform;
 
 template<class T> std::string toString (const T& x)
 {
@@ -108,6 +113,22 @@ template<class T> std::string toString (const T& x)
   return o.str ();
 }
 
+template <typename PointT> void filter_ring_nb_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &cloud_nofilter, const std::set<int>& rings) {
+  std::cerr << "Can only filter_ring_nb if they are of type velodyne_pointcloud::PointXYZIR" << std::endl;
+  cloud = cloud_nofilter;
+}
+
+template <> void filter_ring_nb_fun<velodyne_pointcloud::PointXYZIR>(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud,
+                                                                 pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud_nofilter,
+                                                                 const std::set<int>& rings) {
+  for(int i=0; i<cloud_nofilter.points.size(); ++i) {
+    if (rings.find((int)cloud_nofilter[i].ring) != rings.end()) {
+      cloud.points.push_back(cloud_nofilter.points[i]);
+    }
+  }
+  cloud.width = cloud.points.size();
+  cloud.height = 1;
+}
 
 
 std::string transformToEvalString(const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> &T) {
@@ -210,7 +231,9 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("filter-fov", "cutoff part of the field of view")
       ("hori-max", po::value<double>(&hori_max)->default_value(2*M_PI), "the maximum field of view angle horizontal")
       ("hori-min", po::value<double>(&hori_min)->default_value(-hori_max), "the minimum field of view angle horizontal")
+      ("filter-ring-nb", "if the number of rings should be reduced")
       ("z-filter-height", po::value<double>(&z_filter_min_height)->default_value(-10000.0), "The minimum height of which ndtcells are used for localisation")
+      ("score-cell-weight", po::value<double>(&score_cell_weight)->default_value(0.1), "The constant score added to the likelihood by hitting a cell with a gaussian.")
       ("Dd", po::value<double>(&motion_params.Dd)->default_value(1.), "forward uncertainty on distance traveled")
       ("Dt", po::value<double>(&motion_params.Dt)->default_value(1.), "forward uncertainty on rotation")
       ("Cd", po::value<double>(&motion_params.Cd)->default_value(1.), "side uncertainty on distance traveled")
@@ -242,18 +265,26 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("SIR_varP_threshold", po::value<double>(&SIR_varP_threshold)->default_value(0.6), "resampling threshold")
       ("resolution_local_factor", po::value<double>(&resolution_local_factor)->default_value(1.), "resolution factor of the local map used in the match and fusing step")
       ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)")
+      ("min_nb_points_for_gaussian", po::value<int>(&min_nb_points_for_gaussian)->default_value(6), "minimum number of points per cell to compute a gaussian")
+      ("keep_min_nb_points", "If the number of points stored in a NDTCell should be cleared if the number is less than min_nb_points_for_gaussian")
+      ("min_nb_points_set_uniform", "If the number of points of one cell is less than min_nb_points_for_gaussian, set the distribution to a uniform one (cov = Identity)")
       ;
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, *argv, desc), vm);
   po::notify(vm);
+
+  keep_min_nb_points = vm.count("clear_min_nb_points");
+  min_nb_points_set_uniform = vm.count("min_nb_points_set_uniform");
+  NDTCell::setParameters(0.1, 8*M_PI/18., 1000, min_nb_points_for_gaussian, !keep_min_nb_points, min_nb_points_set_uniform);
+
   save_eval_results=vm.count("save-results");
   visualize = vm.count("visualize");
   filter_fov = vm.count("filter-fov");
+  filter_ring_nb = vm.count("filter-ring-nb");
   use_pointtype_xyzir = vm.count("use_pointtype_xyzir");
-
   //Check if all iputs are assigned
-  if (!vm.count("map-dir-path") || !vm.count("map-file-path")){
+  if (!vm.count("map-dir-path") && !vm.count("map-file-path")){
     cout << "No .map file specified. Missing map-dir-path and map-file-path.\n";
     cout << desc << "\n";
     exit(0);
@@ -268,6 +299,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     parPtr->resolution=resolution;
     parPtr->n_particles_=n_particles;
     parPtr->z_filter_min=z_filter_min_height;
+    parPtr->score_cell_weight=score_cell_weight;
     parPtr->SIR_varP_threshold=SIR_varP_threshold;
 
     if (dataset == "hx") {
@@ -406,13 +438,10 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   boost::archive::text_iarchive ia(ifs);
   ia >> graph_map;
 
-  ROS_ERROR_STREAM("MAP OPENED!");
 
   localisation_param_ptr->graph_map_=graph_map;
-  ROS_ERROR_STREAM("Creating localisation type");
 
   localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
-  ROS_ERROR_STREAM("Creating localisation type - done");
 
   if(graph_map==NULL ||localisation_type_ptr==NULL){
     cout<<"problem opening map"<<endl;
@@ -423,9 +452,8 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   cout<<localisation_type_ptr->ToString()<<endl;
   cout<<"--------------------------------------------------------"<<endl;
 
-  std::string output_file_name = map_file+"_npart:"+toString(n_particles);
-  ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);//true
-  eval_files.CreateOutputFiles();
+  std::string output_file_name = map_file+"_npart="+toString(n_particles)+"_res="+toString(resolution)+"_mpsu="+toString(min_nb_points_set_uniform)+"_mnpfg="+toString(min_nb_points_for_gaussian);
+  ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);
   int counter = 0;
   ReadBagFileGeneric<PointT> reader(reader_type,
                                 base_link_id,
@@ -458,6 +486,14 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
       ndt_generic::filter_fov_fun(cloud,cloud_nofilter,hori_min,hori_max);
     } else {
       cloud = cloud_nofilter;
+    }
+
+    if (filter_ring_nb) {
+      std::set<int> rings;
+      rings.insert(7);
+      cloud_nofilter = cloud;
+      cloud.clear();
+      filter_ring_nb_fun(cloud, cloud_nofilter, rings);
     }
 
     if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
@@ -582,6 +618,7 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
 ///
 
 int main(int argc, char **argv){
+
 
 
   ros::init(argc, argv, "graph_fuser3d_offline");

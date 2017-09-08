@@ -39,7 +39,8 @@ public:
   static void SendGlobal2MapToRviz(std::vector<lslgeneric::NDTCell*>cells, int color,const Affine3d &offset=Affine3d::Identity());
   static void plotParticleCloud( const Eigen::Affine3d &offset,std::vector<PoseParticle> pcloud);
   static void PlotPoseGraph(GraphMapPtr graph);
-  static void PlotMap(MapTypePtr map,int color, const Affine3d &offset=Affine3d::Identity(),PlotMarker marker=sphere);
+  static void PlotMap(MapTypePtr map,int color, const Affine3d &offset=Affine3d::Identity(),PlotMarker marker=sphere, std::string ns="");
+  static void PlotMap(NDTMap &map, int color, const Affine3d &offset=Affine3d::Identity(),PlotMarker marker=sphere, std::string ns="ndtmap", double point_size=0.1);
 private:
   static void PublishMapAsPoints(mean_vector &mean, int color,double scale,const Eigen::Affine3d &offset, std::string ns = "pts", int id = 0);
   static void CovarToMarker(const Eigen::Matrix3d &cov,const Eigen::Vector3d &mean,visualization_msgs::Marker &marker);

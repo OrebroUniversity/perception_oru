@@ -11,7 +11,7 @@ ros::Publisher* GraphPlot::globalMapPublisher_=NULL;
 ros::Publisher* GraphPlot::global2MapPublisher_=NULL;
 ros::Publisher* GraphPlot::particlaCloudPublisher_=NULL;
 
-void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMarker marker){
+void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMarker marker, std::string ns){
 
   if(NDTMapPtr ptr=boost::dynamic_pointer_cast<NDTMapType>(map)){
 
@@ -23,7 +23,7 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
       cov_vector cov;
       mean_vector mean;
       GetAllCellsMeanCov(ptr->GetNDTMap(), cov, mean);
-      PublishMapAsPoints(mean,-1/*color*/,0.2*ptr->GetResolution(),offset);
+      PublishMapAsPoints(mean,color,0.2*ptr->GetResolution(),offset, ns);
     }
 
   }
@@ -36,15 +36,24 @@ void GraphPlot::PlotMap(MapTypePtr map,int color, const Affine3d &offset,PlotMar
       cov_vector cov;
       mean_vector mean;
       GetAllCellsMeanCov(ptr->GetNDTMapFlat(), cov, mean);
-      PublishMapAsPoints(mean,color,0.2*ptr->GetResolution(),offset, std::string("flat"));
+      PublishMapAsPoints(mean,color,0.4*ptr->GetResolution(),offset, ns+std::string("flat"));
       GetAllCellsMeanCov(ptr->GetNDTMapEdge(), cov, mean);
-      PublishMapAsPoints(mean,color+1,/*0.2**/ptr->GetResolution(),offset, std::string("edge"));
+      PublishMapAsPoints(mean,color+2,/*0.2**/ptr->GetResolution(),offset, ns+std::string("edge"));
     }
   }
 }
 
-void CreateMarker(Eigen::Matrix3d cov,Eigen::Vector3d mean, PlotMarker marker,int color){
-
+void GraphPlot::PlotMap(NDTMap &map, int color, const Affine3d &offset,PlotMarker marker, std::string ns, double point_size)
+{
+  if(marker==plotmarker::sphere){
+    GraphPlot::SendGlobalMapToRviz(&map,color,offset);
+  }
+  else if (marker==plotmarker::point) {
+    cov_vector cov;
+    mean_vector mean;
+    GetAllCellsMeanCov(&map, cov, mean);
+    PublishMapAsPoints(mean,color,point_size,offset, ns);
+  }
 }
 
 void GraphPlot::plotParticleCloud(const Eigen::Affine3d &offset, std::vector<PoseParticle> pcloud){

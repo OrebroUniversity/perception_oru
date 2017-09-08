@@ -35,7 +35,7 @@ public:
   NDTDLMapType(){}
   NDTMap *map_flat_=NULL;
   NDTMap *map_edge_=NULL;
-private:
+protected:
   double resolution_=0.4;
 
   friend class GraphFactory;// objects of type <template_map_type> are created by using teh factory design pattern, don't forget to register <template_map_type> for creation in factory

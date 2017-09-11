@@ -127,6 +127,13 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
      }  
    ofs.close();
  }
+
+ std::string removeExtension(const std::string& filename) {
+   size_t lastdot = filename.find_last_of(".");
+   if (lastdot == std::string::npos) return filename;
+   return filename.substr(0, lastdot);
+ }
+
  class CreateEvalFiles{
  public:
    CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name, bool enable=true){

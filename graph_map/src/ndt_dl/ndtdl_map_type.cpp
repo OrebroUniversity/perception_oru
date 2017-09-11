@@ -52,7 +52,6 @@ namespace libgraphMap{
 
 
     if(initialized_ && enable_mapping_){
-      ROS_ERROR_STREAM("update");
       Eigen::Vector3d localMapSize(max_range_,max_range_,sizez_);
       map_flat_->addPointCloudMeanUpdate(Tsensor.translation(),surfPointsLessFlat,localMapSize, 1e5, 25, 2*sizez_, 0.06);
       map_edge_->addPointCloudMeanUpdate(Tsensor.translation(),cornerPointsLessSharp,localMapSize, 1e5, 25, 2*sizez_, 0.06);

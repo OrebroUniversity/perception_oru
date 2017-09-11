@@ -390,7 +390,7 @@ void processData() {
   GraphMapFuser *fuser_;
   stringstream ss;
   string name= gt_mapping? "_gt_":"_fuser_";
-  ss<<name<<dataset<<std::string("_Sub=")<<use_submap<<"_sizexy="<<map_size_xy<<"_Z="<<map_size_z<<std::string("_intrchR=")<<interchange_radius_<<std::string("_compR=")<<compound_radius_<<std::string("_res=") <<resolution<<std::string("maxSensd=") << max_range<<"keyF="<<use_keyframe<<"_d="<<min_keyframe_dist<<"_deg="<<min_keyframe_dist_rot_deg;
+  ss<<name<<dataset<<std::string("__Sub=")<<use_submap<<"_sizexy="<<map_size_xy<<"_Z="<<map_size_z<<std::string("_intrchR=")<<interchange_radius_<<std::string("_compR=")<<compound_radius_<<std::string("_res=") <<resolution<<std::string("_maxSensd=") << max_range<<"_keyF="<<use_keyframe<<"_d="<<min_keyframe_dist<<"_deg="<<min_keyframe_dist_rot_deg;
   base_name+=ss.str();
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
@@ -422,7 +422,7 @@ void processData() {
   for(int i=0; i<ros_bag_paths.size(); i++) {
     std::string bagfilename = ros_bag_paths[i];
     fprintf(stderr,"Opening %s\n",bagfilename.c_str());
-    char c=getchar();
+    //char c=getchar();
     //reader=new ReadBagFileGeneric<pcl::PointXYZ>(bag_reader_type,
     ReadBagFileGeneric<PointT> reader(bag_reader_type,
                                              tf_interp_link,

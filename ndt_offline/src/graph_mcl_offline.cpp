@@ -452,7 +452,7 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   cout<<localisation_type_ptr->ToString()<<endl;
   cout<<"--------------------------------------------------------"<<endl;
 
-  std::string output_file_name = map_file+"_npart="+toString(n_particles)+"_res="+toString(resolution)+"_mpsu="+toString(min_nb_points_set_uniform)+"_mnpfg="+toString(min_nb_points_for_gaussian);
+  std::string output_file_name = ndt_generic::removeExtension(map_file)+"_npart="+toString(n_particles)+"_res="+toString(resolution)+"_mpsu="+toString(min_nb_points_set_uniform)+"_mnpfg="+toString(min_nb_points_for_gaussian);
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,output_file_name,save_eval_results);
   int counter = 0;
   ReadBagFileGeneric<PointT> reader(reader_type,

@@ -43,6 +43,7 @@ std::string registrationType::ToString(){
   }
   return ss.str();
 }
+
 /* -------Parameters---------------- */
 registrationParameters::registrationParameters(){}
 registrationParameters::~registrationParameters(){}

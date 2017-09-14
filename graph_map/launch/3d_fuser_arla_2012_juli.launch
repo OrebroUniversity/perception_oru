@@ -36,11 +36,11 @@
 <param name="max_translation_norm" value="0.4" />
 <param name="max_rotation_norm" value="0.78539816339" />
 
-<param name="size_x_meters" value="200" />
-<param name="size_y_meters" value="200" />
+<param name="size_x_meters" value="300" />
+<param name="size_y_meters" value="300" />
 <param name="size_z_meters" value="10" />
 
-<param name="resolution" value="0.5" />
+<param name="resolution" value="0.6" />
 <!--<param name="laser_variance_z" value="0.02" /> -->
 <param name="sensor_range" value="100." />
 <param name="min_laser_range" value="1.0" />
@@ -50,7 +50,7 @@
 <param name="sensor_pose_y" value="-0.3" />
 <param name="sensor_pose_z" value="2.0" />
 <param name="sensor_pose_t" value="-1.625" />
-<param name="sensor_offset_t" value="0.25" />
+<param name="sensor_offset_t" value="0.025" />
 
 <param name="pose_init_x" value="10.73" />
 <param name="pose_init_y" value="2.185" />
@@ -61,11 +61,9 @@
 <param name="visualize" value="true" />
 <param name="plot_marker" value="point" />
 
-
 <param name="use_keyframe" value="true" />
 <param name="min_keyframe_dist" value="0.5" />
 <param name="min_keyframe_rot_deg" value="15.0" />
-
 
 </node>
 

@@ -50,7 +50,7 @@ public:
                                                       tftopic,dur,sensor_link,velodyne_max_range,velodyne_min_range,sensor_time_offset);
       }
     }
-    bool ReadNextMeasurement(pcl::PointCloud<PointT> &cloud){
+    bool ReadNextMeasurement(pcl::PointCloud<PointT> &cloud) {
       if(vreader_!=NULL){
         tf::Transform tf_scan_source;
         tf::Transform tf_gt_base;

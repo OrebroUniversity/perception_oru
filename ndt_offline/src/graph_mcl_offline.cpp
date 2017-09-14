@@ -87,6 +87,8 @@ double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
 double z_filter_min_height=0;
 double score_cell_weight=0;
+unsigned int skip_frame=20;
+
 ros::Publisher *gt_pub,*fuser_pub,*cloud_pub,*odom_pub;
 nav_msgs::Odometry gt_pose_msg,fuser_pose_msg,odom_pose_msg;
 pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud;
@@ -102,7 +104,7 @@ bool use_pointtype_xyzir;
 int min_nb_points_for_gaussian;
 bool keep_min_nb_points;
 bool min_nb_points_set_uniform;
-
+plotmarker marker_=plotmarker::point;
 template<class T> std::string toString (const T& x)
 {
   std::ostringstream o;
@@ -251,6 +253,7 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("min_range", po::value<double>(&min_range)->default_value(0.6), "minimum range used from scanner")
       ("max_range", po::value<double>(&max_range)->default_value(30), "minimum range used from scanner")
       ("save-map", "saves the graph map at the end of execution")
+      ("skip-frame", po::value<unsigned int>(&skip_frame)->default_value(20), "sframes to skip before plot map etc.")
       ("tf_topic", po::value<std::string>(&tf_topic)->default_value(std::string("/tf")), "tf topic to listen to")
       ("x", po::value<double>(&transl[0])->default_value(0.), "sensor pose - translation vector x")
       ("y", po::value<double>(&transl[1])->default_value(0.), "sensor pose - translation vector y")
@@ -400,7 +403,7 @@ void printParameters(){
 
 template<typename PointT>
 void processData() {
-
+cout<<"process data"<<endl;
 srand(time(NULL));
 tf::TransformBroadcaster br;
 gt_pose_msg.header.frame_id=tf_world_frame;
@@ -438,9 +441,7 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   boost::archive::text_iarchive ia(ifs);
   ia >> graph_map;
 
-
   localisation_param_ptr->graph_map_=graph_map;
-
   localisation_type_ptr=LocalisationFactory::CreateLocalisationType(localisation_param_ptr);
 
   if(graph_map==NULL ||localisation_type_ptr==NULL){
@@ -475,7 +476,9 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   Eigen::Affine3d Tgt_base,Tgt_base_prev,Tgt_init;//Tgt_base=current GT pose,Tgt_base_prev=previous GT pose, Tgt_init=first gt pose in dataset;
   ros::Time t0,t1,t2,t3,t4,t5;
   t5=ros::Time::now();
+  cout<<"Read scans from bag."<<endl;
   while(reader.ReadNextMeasurement(cloud_nofilter)){
+cout<<"just read first scan"<<endl;
     t0=ros::Time::now();
     if(!n_->ok())
       exit(0);
@@ -540,28 +543,28 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
 
     fuser_pose=localisation_type_ptr->GetPose();
     odom_pose=Tgt_init*Todom_init.inverse()*Todom_base;//Correct for initial odometry
-
+    ros::Time tplot =ros::Time::now();
     if (visualize)
     {
       tf::Transform tf_fuser;
       tf::transformEigenToTF(fuser_pose, tf_fuser);
-      br.sendTransform(tf::StampedTransform(tf_fuser,ros::Time::now(), tf_world_frame,  tf_fuser_frame));
+      br.sendTransform(tf::StampedTransform(tf_fuser,tplot, tf_world_frame,  tf_fuser_frame));
       if (tf_world_frame != "/world") {
         tf::Transform tf_none;
         tf_none.setIdentity();
-        br.sendTransform(tf::StampedTransform(tf_none, ros::Time::now(), "/world", tf_world_frame));
+        br.sendTransform(tf::StampedTransform(tf_none, tplot, "/world", tf_world_frame));
       }
     }
 
-    if(visualize/* &&counter%30==0*/){ // This is relatively cheap to plot, note also that this is given in the vehicle frame...
-      br.sendTransform(tf::StampedTransform(sensor_link,ros::Time::now(), tf_fuser_frame, velodyne_frame_id));
+    if(visualize && counter % skip_frame==0){ // This is relatively cheap to plot, note also that this is given in the vehicle frame...
+      br.sendTransform(tf::StampedTransform(sensor_link,tplot, tf_fuser_frame, velodyne_frame_id));
       cloud.header.frame_id=tf_fuser_frame;//velodyne_frame_id;// "/velodyne";
-      pcl_conversions::toPCL(ros::Time::now(), cloud.header.stamp);
+      pcl_conversions::toPCL(tplot, cloud.header.stamp);
       cloud_pub->publish(cloud);
     }
 
     if(visualize){
-      gt_pose_msg.header.stamp=ros::Time::now();
+      gt_pose_msg.header.stamp=tplot;
       fuser_pose_msg.header.stamp=gt_pose_msg.header.stamp;
       odom_pose_msg.header.stamp=gt_pose_msg.header.stamp;
       tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
@@ -572,24 +575,8 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
       fuser_pub->publish(fuser_pose_msg);
     }
 
-    if(visualize){
-      bool plot_map = false;
-      if (counter %30 == 2) { // Plot the map occationally...
-        plot_map = true;
-      }
-      GraphPlot::PlotPoseGraph(graph_map);
-
-      if (curr_node == graph_map->GetCurrentNode()) {
-        // Do nothing
-      }
-      else {
-        curr_node = graph_map->GetCurrentNode();
-        plot_map = true;
-      }
-      if (plot_map) {
-        GraphPlot::PlotMap(curr_node->GetMap(),1,graph_map->GetCurrentNodePose(),/*plotmarker::sphere*/plotmarker::point);
-      }
-    }
+    if(visualize && counter % skip_frame== 0)
+       GraphPlot::PlotMap(graph_map->GetCurrentNode()->GetMap(),-1,graph_map->GetCurrentNodePose(),marker_);
 
     t3=ros::Time::now();
     double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
@@ -634,5 +621,6 @@ int main(int argc, char **argv){
   else {
     processData<pcl::PointXYZ>();
   }
+  cout<<"end of program"<<endl;
 
 }

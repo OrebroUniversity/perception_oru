@@ -10,6 +10,7 @@ Panels:
         - /PoseArray1
         - /Odometry1
         - /Odometry2
+        - /Odometry2/Shape1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry3
@@ -74,23 +75,71 @@ Visualization Manager:
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: false
       Keep: 5000
-      Length: 0.5
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /vmc_navserver/odom
+      Unreliable: false
       Value: false
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 255; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 3000
-      Length: 0.200000003
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 255; 127
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 0.5
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /vmc_navserver/state
+      Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: true
@@ -140,7 +189,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        my_namespace: true
+        pts: true
       Queue Size: 1000
       Value: true
     - Alpha: 1
@@ -175,13 +224,37 @@ Visualization Manager:
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 3000
-      Length: 10
       Name: Odometry
       Position Tolerance: 0.100000001
-      Topic: /graph_node/fuser_odom
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
+      Topic: /graph_node/fuser
+      Unreliable: false
       Value: true
     - Class: rviz/Axes
       Enabled: true
@@ -252,24 +325,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 27.7269478
+      Distance: 11.7713413
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 123.49688
-        Y: 128.497971
-        Z: -9.53674316e-07
+        X: 118.342567
+        Y: 127.139877
+        Z: -3.81469727e-06
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
+      Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.644797623
+      Pitch: 1.44979715
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.39040089
+      Yaw: 4.59039783
     Saved:
       - Class: rviz/Orbit
         Distance: 39.1665726
@@ -284,6 +358,7 @@ Visualization Manager:
           Z: 0
         Focal Shape Fixed Size: false
         Focal Shape Size: 0.0500000007
+        Invert Z Axis: false
         Name: Orbit
         Near Clip Distance: 0.00999999978
         Pitch: 0.785398185

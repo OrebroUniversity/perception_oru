@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /Grid1
         - /Odometry1
+        - /Odometry1/Shape1
         - /Odometry2
         - /TF1
         - /TF1/Frames1
@@ -60,23 +61,71 @@ Visualization Manager:
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 255; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 6000
-      Length: 0.5
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 255; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /GT
+      Unreliable: false
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 6000
-      Length: 0.5
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /fuser
+      Unreliable: false
       Value: true
     - Alpha: 1
       Arrow Length: 0.300000012
@@ -145,7 +194,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        current: true
+        "": true
       Queue Size: 2000
       Value: true
     - Class: rviz/MarkerArray
@@ -196,13 +245,37 @@ Visualization Manager:
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 0; 170; 255
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 6000
-      Length: 0.5
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /odom
+      Unreliable: false
       Value: true
     - Alpha: 0.5
       Cell Size: 1
@@ -245,20 +318,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.100001305
-      Class: rviz/TopDownOrtho
+      Class: rviz/XYOrbit
+      Distance: 29.380825
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: 123.387207
+        Y: 136.265854
+        Z: 4.03129843e-06
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 46.5445023
+      Pitch: 0.259796411
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
-      X: 123.798775
-      Y: 136.856949
+      Value: XYOrbit (rviz)
+      Yaw: 4.27858019
     Saved: ~
 Window Geometry:
   Displays:

@@ -150,7 +150,7 @@ bool GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
     transl[2]=2.0;
     euler[0]=0;
     euler[1]=0;
-    euler[2]=-1.62;
+    euler[2]=-1.625;
     found_sensor_pose=true;
   }
   quat.setRPY(euler[0], euler[1], euler[2]);
@@ -455,9 +455,9 @@ void processData() {
         exit(0);
 
 
-      cout<<"iteration time="<<ros::Time::now()-itr<<endl;
+     // cout<<"iteration time="<<ros::Time::now()-itr<<endl;
       itr=ros::Time::now();
-      cout<<"time to read bag file="<<itr_end-itr<<endl;
+     // cout<<"time to read bag file="<<itr_end-itr<<endl;
 
       if(cloud_nofilter.size()==0) continue;
 

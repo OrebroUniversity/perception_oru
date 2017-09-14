@@ -18,7 +18,7 @@
       <param name="interchange_radius" value="4" />
       <param name="compound_radius" value="2" />
 
-      <param name="enable_registration" value="t" />
+      <param name="enable_registration" value="true" />
       <param name="registration_2D" value="true" />
       <param name="enable_mapping" value="false" />
 

@@ -16,6 +16,7 @@ Panels:
         - /MarkerArray1
         - /PointCloud21
         - /Odometry3
+        - /Odometry3/Shape1
         - /Grid2
       Splitter Ratio: 0.691860437
     Tree Height: 745
@@ -148,6 +149,8 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        fuser:
+          Value: true
         fuser_base_link:
           Value: true
         fuser_laser_link:
@@ -155,6 +158,8 @@ Visualization Manager:
         state_base_laser_link:
           Value: true
         state_base_link:
+          Value: true
+        velodyne:
           Value: true
         world:
           Value: true
@@ -165,11 +170,8 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          fuser_base_link:
-            fuser_laser_link:
-              {}
-          state_base_link:
-            state_base_laser_link:
+          fuser:
+            velodyne:
               {}
       Update Interval: 0
       Value: true
@@ -195,6 +197,7 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         "": true
+        current: true
       Queue Size: 2000
       Value: true
     - Class: rviz/MarkerArray
@@ -202,7 +205,7 @@ Visualization Manager:
       Marker Topic: /graphInfo
       Name: MarkerArray
       Namespaces:
-        graphInfo: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -210,7 +213,7 @@ Visualization Manager:
       Marker Topic: /ParticleCloud
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -268,7 +271,7 @@ Visualization Manager:
         Alpha: 1
         Axes Length: 1
         Axes Radius: 0.100000001
-        Color: 255; 25; 0
+        Color: 0; 255; 255
         Head Length: 0.300000012
         Head Radius: 0.100000001
         Shaft Length: 1
@@ -319,25 +322,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 29.380825
+      Distance: 17.619545
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 123.387207
-        Y: 136.265854
-        Z: 4.03129843e-06
+        X: 121.49456
+        Y: 134.449036
+        Z: 2.1239498e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.259796411
+      Pitch: 0.884796381
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.27858019
+      Yaw: 4.55858088
     Saved: ~
 Window Geometry:
   Displays:

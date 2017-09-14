@@ -222,13 +222,13 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZI
   pcl::PointCloud<pcl::PointXYZ> surfPointsFlat;
   pcl::PointCloud<pcl::PointXYZ> surfPointsLessFlat;
 
-  segmentPointCurvature(cloud, cornerPointsSharp, cornerPointsLessSharp, surfPointsFlat, surfPointsLessFlat);
+  //segmentPointCurvature(cloud, cornerPointsSharp, cornerPointsLessSharp, surfPointsFlat, surfPointsLessFlat);
 
-  UpdateAndPredict(surfPointsLessFlat, Tmotion);
+  //UpdateAndPredict(surfPointsLessFlat, Tmotion);
 
-//  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
-//  pcl::copyPointCloud(cloud, cloud_xyz);
-//  UpdateAndPredict(cloud_xyz, Tmotion);
+  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+  pcl::copyPointCloud(cloud, cloud_xyz);
+  UpdateAndPredict(cloud_xyz, Tmotion);
 }
 
 

@@ -392,6 +392,8 @@ void processData() {
   string name= gt_mapping? "_gt_":"_fuser_";
   ss<<name<<dataset<<std::string("__Sub=")<<use_submap<<"_sizexy="<<map_size_xy<<"_Z="<<map_size_z<<std::string("_intrchR=")<<interchange_radius_<<std::string("_compR=")<<compound_radius_<<std::string("_res=") <<resolution<<std::string("_maxSensd=") << max_range<<"_keyF="<<use_keyframe<<"_d="<<min_keyframe_dist<<"_deg="<<min_keyframe_dist_rot_deg;
   base_name+=ss.str();
+  bool dl = (map_type_name == "ndt_dl_map");
+  base_name+="_dl="+toString(dl)+"_xyzir="+toString(use_pointtype_xyzir)+"_mpsu="+toString(min_nb_points_set_uniform)+"_mnpfg="+toString(min_nb_points_for_gaussian)+"kmnp"+toString(keep_min_nb_points);
   ndt_generic::CreateEvalFiles eval_files(output_dir_name,base_name,false);
   printParameters();
   initializeRosPublishers();

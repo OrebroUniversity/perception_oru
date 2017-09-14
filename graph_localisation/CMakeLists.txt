@@ -60,6 +60,10 @@ add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_localisation test/test_localisation.cpp )
 target_link_libraries(test_localisation ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 
+add_executable(graph_localisation_node src/graph_localisation_node.cpp)
+target_link_libraries(graph_localisation_node ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
+
+
 
 ##
 #

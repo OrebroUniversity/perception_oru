@@ -527,6 +527,18 @@ void processData() {
 
       //fuser_pose=fuser_pose*Tmotion;
       ros::Time tplot=ros::Time::now();
+
+      fuser_->ProcessFrame<PointT>(cloud,fuser_pose,Tmotion);
+      tf::Transform tf_fuser_pose;
+      tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
+      br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
+
+      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
+      if(visualize && counter%skip_frame==0 ){
+        fuser_->PlotMapType();
+        //cout<<"norm between estimated and actual pose="<<diff<<endl;
+      }
+
       if(visualize){
 
         br.sendTransform(tf::StampedTransform(tf_gt_base,tplot,   "/world", "/state_base_link"));
@@ -541,26 +553,15 @@ void processData() {
         gt_pub->publish(gt_pose_msg);
 
         if(counter%skip_frame==0){
-          if(gt_mapping)
-            cloud.header.frame_id="/state_base_laser_link";
-          else
-            cloud.header.frame_id="/fuser_laser_link";
+          cloud.header.frame_id="/fuser_base_link";
 
           pcl_conversions::toPCL(tplot, cloud.header.stamp);
           cloud_pub->publish(cloud);
+
+//          br.sendTransform(tf::StampedTransform(tf_sensor_pose,tplot,"/fuser_base_link","/fuser_laser_link"));
         }
       }
 
-      fuser_->ProcessFrame<PointT>(cloud,fuser_pose,Tmotion);
-      tf::Transform tf_fuser_pose;
-      tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
-      br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
-
-      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-      if(visualize && counter%skip_frame==0 ){
-        fuser_->PlotMapType();
-        //cout<<"norm between estimated and actual pose="<<diff<<endl;
-      }
       //sleep(1);
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;

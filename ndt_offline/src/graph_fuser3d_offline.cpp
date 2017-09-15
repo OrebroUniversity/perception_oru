@@ -103,6 +103,7 @@ bool use_pointtype_xyzir;
 int min_nb_points_for_gaussian;
 bool keep_min_nb_points;
 bool min_nb_points_set_uniform;
+int nb_measurements=1;
 
 template<class T> std::string toString (const T& x)
 {
@@ -264,7 +265,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("use_pointtype_xyzir", "If the points to be processed should contain ring and intensity information (velodyne_pointcloud::PointXYZIR)")
       ("min_nb_points_for_gaussian", po::value<int>(&min_nb_points_for_gaussian)->default_value(6), "minimum number of points per cell to compute a gaussian")
       ("keep_min_nb_points", "If the number of points stored in a NDTCell should be cleared if the number is less than min_nb_points_for_gaussian")
-      ("min_nb_points_set_uniform", "If the number of points of one cell is less than min_nb_points_for_gaussian, set the distribution to a uniform one (cov = Identity)");
+      ("min_nb_points_set_uniform", "If the number of points of one cell is less than min_nb_points_for_gaussian, set the distribution to a uniform one (cov = Identity)")
+      ("nb_measurements", po::value<int>(&nb_measurements)->default_value(1), "number of scans collecte at each read iteration");
 
   //Boolean parameres are read through notifiers
   po::variables_map vm;
@@ -436,7 +438,8 @@ void processData() {
                                              tf_topic,
                                              ros::Duration(3600),
                                              &sensor_link, max_range, min_range,
-                                             sensor_time_offset);
+                                             sensor_time_offset,
+                                             nb_measurements);
 
     pcl::PointCloud<PointT> cloud, cloud_nofilter;
     tf::Transform tf_scan_source;

@@ -37,9 +37,11 @@ public:
                      tf::StampedTransform *sensor_link=NULL,
                      double velodyne_max_range=130.0,
                      double velodyne_min_range=2.0,
-                     double sensor_time_offset=0.0){
+                     double sensor_time_offset=0.0,
+                     int nb_measurements=1){
     type_=type;
     velodyne_tf_interpolation_string_=velodyne_tf_interpolation_string;
+    nb_measurements_=nb_measurements;
 
     if(type.compare("pcl_reader")==0){
       preader_=new PointCloudBagReader<PointT>(calibration_file,bagfilename,point_cloud_topic,tf_pose_id,fixed_frame_id,
@@ -54,7 +56,7 @@ public:
       if(vreader_!=NULL){
         tf::Transform tf_scan_source;
         tf::Transform tf_gt_base;
-        return vreader_->readMultipleMeasurements(1,cloud,tf_scan_source,tf_gt_base,velodyne_tf_interpolation_string_);//if velodyne reader is used, the cloud needs to be compensated for movement during scan
+        return vreader_->readMultipleMeasurements(nb_measurements_,cloud,tf_scan_source,tf_gt_base,velodyne_tf_interpolation_string_);//if velodyne reader is used, the cloud needs to be compensated for movement during scan
       }
       else if(preader_!=NULL)
         return preader_->readNextMeasurement(cloud);//if preader reader is used, the cloud was already adjusted for movement in theconversion.
@@ -92,6 +94,7 @@ public:
     PointCloudBagReader<PointT> *preader_=NULL;
     std::string velodyne_tf_interpolation_string_="";
     std::string type_="";
+    int nb_measurements_;
   };
 
 #endif // READBAGFILEGENERIC_H

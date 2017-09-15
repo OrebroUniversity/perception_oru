@@ -6,14 +6,14 @@ namespace libgraphMap{
  * \param Tnow frame: world
  */
 template<class PointT>
-void GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion){
+bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion){
   //plotGTCloud(cloud);
-  bool map_node_created,registration_succesfull=true,fuse_this_frame=false;
+  bool map_node_created,registration_succesfull=false,fuse_this_frame=false;
   static bool map_node_changed=false;
   Tnow=Tnow*Tmotion;
   if(!initialized_){
     cerr<<"fuser not initialized"<<endl;
-    return;
+    return registration_succesfull;
   }
   fuse_this_frame=KeyFrameBasedFuse(Tnow);//fuse frame based on distance traveled
   Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
@@ -26,8 +26,9 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
    cout<<"registration, status"<<registration_succesfull<<endl;
   }
-  cout<<"no registration"<<endl;
-
+  else {
+    cout<<"no registration"<<endl;
+  }
   if(graph_map_->AutomaticMapInterchange(Tnow,motion_cov,T_world_to_local_map,map_node_changed,map_node_created) && map_node_changed)
   {
     //double score;
@@ -37,11 +38,11 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     //registrator_->RegisterMap2Map(Graph_nav_->GetPreviousNode()->GetMap(),Graph_nav_->GetCurrentNode()->GetMap(),Tdiff,score);
     //Graph_nav_->AddFactor(Graph_nav_->GetPreviousNode(),Graph_nav_->GetCurrentNode(),Tdiff,unit_covar);
   }
-  if(!registration_succesfull){
+  if(fuse_this_frame && !registration_succesfull){
     Tnow=T_world_to_local_map.inverse()*Tnow;//remap Tnow to global map frame
     cerr<<"REGISTRATION ERROR"<<endl;
     nr_frames_++;
-    return;
+    return registration_succesfull;
   }
   if(fuse_this_frame||map_node_changed){
     lslgeneric::transformPointCloudInPlace(Tnow, cloud);// The cloud should now be centered around the robot pose in the map frame
@@ -53,7 +54,7 @@ void GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     pose_last_fuse_=Tnow;
 
   nr_frames_++;
-
+  return registration_succesfull;
 }
 
 }

@@ -60,27 +60,42 @@ void GraphMapFuser::Visualize(bool enableVisualOutput,plotmarker marker){
 //! \return true if base has moved outside bounds and can fuse the current frame, otherwise return false. Will always return true the first frame
 //!
 bool GraphMapFuser::KeyFrameBasedFuse(const Affine3d &Tnow ){
-  if(nr_frames_==0)
+  bool ret = false;
+  if(nr_frames_==0) {
+    frame_idx_ = 0;
     return true;
+  }
   else{
     Affine3d diff=pose_last_fuse_.inverse()*Tnow;
     Eigen::Vector3d Tmotion_euler = diff.rotation().eulerAngles(0,1,2);
     ndt_generic::normalizeEulerAngles(Tmotion_euler);
     if(use_keyframe_ ){
-      if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0))
-        return true;
-      else
-        return false;
+      if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0)) {
+        ret = true;
+      }
+      else {
+        ret = false;
+      }
     }
-    else
-      return true;
+    else {
+      ret = true;
+    }
   }
+  frame_idx_++;
+  if (ret == true) {
+    if (frame_idx_ % 4 == 0) {// Avoid that the scanner covers the same region (one scan covers ~270 degrees angle and the same area is repeaded every 4rd frame)
+      ret = false;
+    }
+    else {
+      frame_idx_ = 0;
+    }
+  }
+  return ret;
 }
 
 void GraphMapFuser::PlotMapType(){
 /*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
   GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
-  cout<<"fuser: plot marker"<<endl;
   GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),-1,graph_map_->GetCurrentNodePose(),marker_);
   GraphPlot::PlotPoseGraph(graph_map_);
 }

@@ -66,6 +66,7 @@ public:
     cout<<"ndt map size="<<map->getAllCells().size()<<endl;
     robot_pose_pub_= param_nh_->advertise<geometry_msgs::PoseStamped>("/robot_pose",1);
     sub=param_nh_->subscribe("/initialpose",1,&OpenGraphMap::pose_callback,this);
+    marker_ = plotmarker::point;
   }
   void LoadGraphMap(string file_name){
     std::ifstream ifs(file_name);
@@ -87,9 +88,12 @@ public:
   void visualize(){
     cout<<"plot"<<endl;
     GraphPlot::PlotPoseGraph(graph_map_);
-    NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
-    GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());
+    GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(), -1, graph_map_->GetCurrentNodePose(), marker_);
   }
+  void setMarker(PlotMarker marker) {
+    marker_ = marker;
+  }
+
   void pose_callback (const geometry_msgs::PoseWithCovarianceStamped& target_pose){
     geometry_msgs::PoseStamped msg_pose;
     msg_pose.pose.orientation=target_pose.pose.pose.orientation;
@@ -116,8 +120,7 @@ private:
   ros::Publisher map_publisher_;
   bool got_pose_target=false;
   Eigen::Affine3d pose_target;
-
-
+  PlotMarker marker_;
 };
 
 int main(int argc, char **argv)

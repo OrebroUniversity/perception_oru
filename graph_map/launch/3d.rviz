@@ -7,13 +7,12 @@ Panels:
         - /Global Options1
         - /Status1
         - /Grid1
-        - /PoseArray1
-        - /Odometry1
-        - /Odometry2/Shape1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /Odometry3
-        - /Odometry3/Shape1
+        - /Odometry1
+        - /Odometry1/Shape1
+        - /Odometry2
+        - /Odometry2/Shape1
       Splitter Ratio: 0.5
     Tree Height: 745
   - Class: rviz/Selection
@@ -35,7 +34,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -73,74 +72,6 @@ Visualization Manager:
       Topic: /graphMap
       Unreliable: false
       Value: true
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.300000012
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
-      Enabled: false
-      Keep: 5000
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.100000001
-        Color: 255; 25; 0
-        Head Length: 0.300000012
-        Head Radius: 0.100000001
-        Shaft Length: 1
-        Shaft Radius: 0.0500000007
-        Value: Arrow
-      Topic: /vmc_navserver/odom
-      Unreliable: false
-      Value: false
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.300000012
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
-      Enabled: true
-      Keep: 3000
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.100000001
-        Color: 255; 255; 0
-        Head Length: 0.300000012
-        Head Radius: 0.100000001
-        Shaft Length: 0.300000012
-        Shaft Radius: 0.0500000007
-        Value: Arrow
-      Topic: /vmc_navserver/state
-      Unreliable: false
-      Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
@@ -149,8 +80,6 @@ Visualization Manager:
         base_laser_link:
           Value: true
         base_link:
-          Value: true
-        fuser_base_link:
           Value: true
         odom_base_link:
           Value: false
@@ -167,13 +96,11 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          fuser_base_link:
-            velodyne:
-              {}
           odom_base_link:
             {}
           state_base_link:
-            {}
+            velodyne:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/MarkerArray
@@ -189,7 +116,7 @@ Visualization Manager:
       Marker Topic: /NDTglobalMap
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 1000
       Value: true
     - Alpha: 1
@@ -222,40 +149,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.300000012
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
-      Enabled: true
-      Keep: 3000
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.100000001
-        Color: 255; 25; 0
-        Head Length: 0.300000012
-        Head Radius: 0.100000001
-        Shaft Length: 0.300000012
-        Shaft Radius: 0.0500000007
-        Value: Arrow
-      Topic: /graph_node/fuser
-      Unreliable: false
-      Value: true
     - Class: rviz/Axes
       Enabled: true
       Length: 1
@@ -268,7 +161,7 @@ Visualization Manager:
       Marker Topic: /graphInfo
       Name: MarkerArray
       Namespaces:
-        graphInfo: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -301,6 +194,74 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Angle Tolerance: 0.100000001
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.0700000003
+        Shaft Length: 0.5
+        Shaft Radius: 0.0299999993
+        Value: Arrow
+      Topic: /estimate
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.100000001
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 0.400000006
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 255; 0
+        Head Length: 0.300000012
+        Head Radius: 0.129999995
+        Shaft Length: 0.5
+        Shaft Radius: 0.0700000003
+        Value: Arrow
+      Topic: /vmc_navserver/state
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -325,16 +286,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 8.16896057
+      Distance: 8.61379814
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 123.031334
-        Y: 128.70256
-        Z: -3.81469727e-06
+        X: 124.399658
+        Y: 130.05278
+        Z: -4.34694448e-06
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -343,7 +304,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.58538866
+      Yaw: 6.00675726
     Saved:
       - Class: rviz/Orbit
         Distance: 39.1665726

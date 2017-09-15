@@ -391,6 +391,7 @@ void GraphPlot::GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr,cov_vector &
   for(int i=0;i<cells.size();i++){
     cov.push_back(cells[i]->getCov());
     mean.push_back(cells[i]->getMean());
+    delete cells[i];
   }
 }
 void GraphPlot::GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_vector &cov,mean_vector &mean){
@@ -399,7 +400,6 @@ void GraphPlot::GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_v
   for(int i=0;i<cells.size();i++){
     cov.push_back(cells[i]->getCov());
     mean.push_back(cells[i]->getMean());
-    //  delete cells[i];
   }
 }
 

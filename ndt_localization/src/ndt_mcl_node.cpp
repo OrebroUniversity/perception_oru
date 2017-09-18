@@ -153,7 +153,7 @@ class particle_filter_wrap {
 		transform.setOrigin( tf::Vector3(mean[0], mean[1], 0.0) );
 		transform.setRotation( q );
 		//br.sendTransform(tf::StampedTransform(transform, ts, "world", "mcl_pose"));
-		br.sendTransform(tf::StampedTransform(transform, ts, "map", "mcl_pose"));
+		br.sendTransform(tf::StampedTransform(transform, ts, rootTF, "mcl_pose"));
 		///Compute TF between map and odometry frame
 		Eigen::Affine3d Tmcl = getAsAffine(mean[0], mean[1], mean[2]);
 		Eigen::Affine3d Tmap_odo = Tmcl * Todometry.inverse();
@@ -167,8 +167,6 @@ class particle_filter_wrap {
 
 		return O;
 	}
-
-
 	geometry_msgs::PoseArray ParticlesToMsg(std::vector<lslgeneric::particle> particles){
 		ROS_INFO("publishing particles");
 		geometry_msgs::PoseArray ret;
@@ -186,7 +184,6 @@ class particle_filter_wrap {
 		ret.header.frame_id = rootTF;
 		return ret;
 	}
-
 	int LoadMap(){
 		//FILE * jffin;
 		//jffin = fopen(mapFile.c_str(),"r+b");
@@ -196,7 +193,6 @@ class particle_filter_wrap {
 			return -1;
 		return 0;
 	}
-
 	lslgeneric::NDTMap laserToNDT(const sensor_msgs::LaserScan::ConstPtr& scan){
 		double cxs, cys, czs;
 
@@ -249,7 +245,6 @@ class particle_filter_wrap {
 				}
 			}
 		}
-
 		if(firstLoad && (informed || ndt)){
 			for(int i = 0; i < cloud->points.size(); i++){
 				if(cloud->points[i].x < minx)
@@ -263,7 +258,6 @@ class particle_filter_wrap {
 		localMap.computeNDTCells(CELL_UPDATE_MODE_STUDENT_T);
 		return localMap;
 	}
-
 	void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
 		//    ROS_INFO("LASER recived");
 		sensor_msgs::PointCloud2 tempCloud;
@@ -280,11 +274,11 @@ class particle_filter_wrap {
 			ROS_INFO("Initialized");
 		}
 		//ROS_INFO_STREAM("test 1 "<<msg->header.stamp);
-//    tf_listener.waitForTransform(odomTF, "/base_link" , msg->header.stamp,ros::Duration(1.0));
-		tf_listener.waitForTransform(odomTF, "/base_link", msg->header.stamp, ros::Duration(0.1));
+//    tf_listener.waitForTransform(odomTF, "/state_base_link" , msg->header.stamp,ros::Duration(1.0));
+		tf_listener.waitForTransform(odomTF, "/state_base_link", msg->header.stamp, ros::Duration(0.1));
 		//ROS_INFO("test 2");
 		try{
-			tf_listener.lookupTransform(odomTF, "/base_link", msg->header.stamp, transform);
+			tf_listener.lookupTransform(odomTF, "/state_base_link", msg->header.stamp, transform);
 			yaw = tf::getYaw(transform.getRotation());
 			x = transform.getOrigin().x();
 			y = transform.getOrigin().y();

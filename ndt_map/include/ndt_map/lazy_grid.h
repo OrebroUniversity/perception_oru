@@ -37,9 +37,56 @@
 
 #include <ndt_map/spatial_index.h>
 #include <ndt_map/ndt_cell.h>
-
+#include <boost/serialization/base_object.hpp>
+#include "boost/serialization/serialization.hpp"
+#include <boost/serialization/export.hpp>
+#include "boost/serialization/array.hpp"
+#include "boost/serialization/list.hpp"
+#include <boost/serialization/vector.hpp>
+#include "stdio.h"
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
 namespace lslgeneric
 {
+class CellVector3d {
+public:
+  CellVector3d(size_t x=0, size_t y=0, size_t z=0,  NDTCell* init_val=NULL) :
+    d1(x), d2(y), d3(z), data(x*y*z, init_val)
+  {}
+  NDTCell* GetVal(size_t i, size_t j, size_t k, bool &successfull)  {
+    if(withinRange(i,j,k)){
+      successfull=true;
+      return data[i*d2*d3 + j*d3 + k];}
+    else{
+      successfull=false;
+      return(NDTCell*) NULL;
+    }
+  }
+  NDTCell* GetVal(size_t i, size_t j, size_t k)  {
+      bool not_used;
+      return GetVal( i,  j,  k, not_used);
+  }
+  void SetVal(size_t i, size_t j, size_t k,  NDTCell* cell){
+    if(withinRange(i,j,k))
+      data[i*d2*d3 + j*d3 + k]=cell;
+  }
+private:
+  bool withinRange(size_t i, size_t j, size_t k){
+    if(i<d1 && i>=0 && j<d2&& j>=0 &&k<d3 &&k>=0)
+      return true;
+    else return false;
+  }
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)//In order to clal this you need to register it to boost using "ar.template register_type<LazyGrid>();"
+  {
+    ar & d1 & d2 & d3;
+    ar & data;
+  }
+  size_t d1,d2,d3;
+  std::vector<NDTCell*> data;
+};
 
 /** \brief A spatial index represented as a grid map
     \details A grid map with delayed allocation of cells.
@@ -152,6 +199,9 @@ public:
 			this->getIndexForPoint(pt,indX,indY,indZ);
 			return(indX < sizeX && indY < sizeY && indZ < sizeZ && indX >=0 && indY >=0 && indZ >=0);
     }
+    void InitializeDefaultValues();
+    std::string GetDataString();
+    std::string ToString();
 protected:
     bool initialized;
     NDTCell ****dataArray;
@@ -166,6 +216,61 @@ protected:
     int sizeX,sizeY,sizeZ;
 
     virtual bool checkCellforNDT(int indX, int indY, int indZ, bool checkForGaussian=true);
+private:
+    LazyGrid(){InitializeDefaultValues();}
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void save(Archive& ar,  const unsigned int version) const {
+      ar & boost::serialization::base_object<SpatialIndex>(*this);
+      ar & protoType;
+      ar & sizeX & sizeY & sizeZ;
+      for(int i=0; i<sizeX; i++){
+        for(int j=0; j<sizeY; j++){
+          for(int k=0; k<sizeZ; k++){
+               ar & dataArray[i][j][k];
+          }
+        }
+      }
+      ar & activeCells;
+      ar & centerIsSet & sizeIsSet   & initialized; //Serialize all primitive types
+      ar & sizeXmeters & sizeYmeters & sizeZmeters;
+      ar & cellSizeX   & cellSizeY   & cellSizeZ;
+      ar & centerX     & centerY     & centerZ;
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version) {
+      ar & boost::serialization::base_object<SpatialIndex>(*this);
+      ar & protoType;
+      ar & sizeX & sizeY & sizeZ;
+
+     dataArray = new NDTCell***[sizeX];
+      for(int i=0; i<sizeX; i++)
+      {
+          dataArray[i] = new NDTCell**[sizeY];
+          for(int j=0; j<sizeY; j++)
+          {
+              dataArray[i][j] = new NDTCell*[sizeZ];
+              //set all cells to NULL
+              memset(dataArray[i][j],0,sizeZ*sizeof(NDTCell*));
+          }
+      }
+      for(int i=0; i<sizeX; i++){
+        for(int j=0; j<sizeY; j++){
+          for(int k=0; k<sizeZ; k++){
+             ar & dataArray[i][j][k];
+          }
+        }
+      }
+      ar & activeCells;
+      ar & centerIsSet & sizeIsSet   & initialized; //Serialize all primitive types
+      ar & sizeXmeters & sizeYmeters & sizeZmeters;
+      ar & cellSizeX   & cellSizeY   & cellSizeZ;
+      ar & centerX     & centerY     & centerZ;
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

@@ -47,7 +47,7 @@ class NDTFuserHMT{
 	    resolution = map_resolution;
 	    sensor_pose.setIdentity();
 	    checkConsistency = false;
-	    visualize = true;
+// 	    visualize = true; //Redundant 
 	    translation_fuse_delta = 0.0;
 	    rotation_fuse_delta = 0.0;
 	    //translation_fuse_delta = 0.05;
@@ -99,6 +99,44 @@ class NDTFuserHMT{
 #endif
 	    if(fAddTimes!=NULL) fclose(fAddTimes);
 	    if(fRegTimes!=NULL) fclose(fRegTimes);
+	}
+	
+	void print(){
+		std::cout << std::endl << "************ FUSER *********" << std::endl <<
+		"\nis init " << isInit << 
+		"\ndisable regist " << disableRegistration << 
+		"\nresolution " << resolution << 
+		"\nsensor pose " << sensor_pose.matrix() << 
+		"\ncheck consistency  " << checkConsistency <<
+		"\nvisualize " << visualize << 
+		"\ntranslation fuse delta " << translation_fuse_delta << 
+		"\nrotation fuse delta " << rotation_fuse_delta << 
+		"\nmax translation norm " << max_translation_norm << 
+		"\nmax rotation norm " << max_rotation_norm << 
+		"\nmap size x " << map_size_x << 
+		"\nmap size y " << map_size_y << 
+		"\nmap size z " << map_size_z << 
+		"\nbe 2d " << be2D << 
+		"\nsensor range " << sensor_range << 
+		"\nprefix " << prefix << 
+		"\ndo multires " << doMultires << 
+		"\ndo soft constraint " << doSoftConstraints << 
+		"\nctr " << ctr << 
+		"\nlocal map size " << localMapSize << 
+		"\nfuse inomplete " << fuseIncomplete << 
+		"\nmatcher iter max " << matcher.ITR_MAX << 
+		"\nmatcher2d itr max " << matcher2D.ITR_MAX << 
+		"\nmatcher sc itr max " << matcherSC.ITR_MAX << 
+		"\nmatcher step control " << matcher.step_control << 
+		"\nmatcher 2d step constrol " << matcher2D.step_control << 
+		"\nmatcher sc step constrol " <<matcherSC.step_control  << 
+		"\nmatcher nb neighbor " <<matcher.n_neighbours  <<
+		"\nmatcher 2d nb neighbor " <<matcher2D.n_neighbours  << 
+		"\nmatcher sc nb neighbor " <<matcherSC.n_neighbours  << 
+		"\nbeHMT " << beHMT  << 
+		"\nhmt map dir " <<hmt_map_dir << 
+		"\nresolution local factor " <<	resolution_local_factor << std::endl << std::endl;
+
 	}
 
 	double getDoubleTime()

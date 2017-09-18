@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(graph_map)
 set (CMAKE_CXX_STANDARD 11)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE release)
 
 if("$ENV{ROS_DISTRO}" STREQUAL "indigo")
 add_definitions(-std=c++11)
@@ -13,6 +13,8 @@ find_package(catkin REQUIRED
     cmake_modules
     ndt_registration
     ndt_map
+    ndt_mcl
+    ndt_localization
     laser_geometry
     eigen_conversions
     pcl_ros
@@ -30,8 +32,10 @@ find_package(Eigen REQUIRED COMPONENTS)
 
 
 catkin_package(
-    DEPENDS Eigen libpcl-all-dev gnuplot
-    CATKIN_DEPENDS ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
+#DEPENDS Eigen libpcl-all-dev gnuplot
+#   CATKIN_DEPENDS ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
+    DEPENDS Eigen libpcl-all-dev
+    CATKIN_DEPENDS ndt_mcl ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     )
@@ -62,20 +66,26 @@ set (${PROJECT_NAME}_LIB_SRCS
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_graph test/test_graph.cpp )
+add_executable(test_particle_filter test/test_particle_filter.cpp )
+add_executable(test_serialization test/test_serialization.cpp )
+add_executable(show_map src/show_map.cpp )
 add_executable(graph_map_fuser_node src/graph_map_fuser_node.cpp )
 
 
 
 ##
 #
+target_link_libraries(show_map ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(test_graph ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
+target_link_libraries(test_particle_filter ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
+target_link_libraries(test_serialization ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 target_link_libraries(graph_map_fuser_node ${PROJECT_NAME} ${catkin_LIBRARIES}  ${Boost_LIBRARIES})
 
 #  ${Eigen_LIBRARIES}
 #)
 
 #
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE)
+    install(DIRECTORY include/${PROJECT_NAME}/
+      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+      FILES_MATCHING PATTERN "*.h"
+      PATTERN ".svn" EXCLUDE)

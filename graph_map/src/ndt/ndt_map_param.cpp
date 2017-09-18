@@ -1,8 +1,10 @@
 #include "ndt/ndt_map_param.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::NDTMapParam)
 using namespace std;
 namespace libgraphMap{
 
-NDTMapParam::NDTMapParam(){}
+
 
 void NDTMapParam::GetParametersFromRos(){
   MapParam::GetParametersFromRos();
@@ -12,11 +14,6 @@ void NDTMapParam::GetParametersFromRos(){
   //nh.param("laser_variance_z",varz,resolution/4);
 }
 
-template<class Archive>
-void NDTMapParam::serialize(Archive & ar, const unsigned int version){
-  ar & boost::serialization::base_object<MapParam>(*this);
-  //ar & cenx_& ceny_ &cenz_;
-}
 
 
 

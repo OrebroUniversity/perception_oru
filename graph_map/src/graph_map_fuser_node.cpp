@@ -5,6 +5,7 @@
 #include <rosbag/view.h>
 
 #include <ndt_map/ndt_conversions.h>
+#include "ndt_generic/utils.h"
 #include <pcl_conversions/pcl_conversions.h>
 #include "pcl/point_cloud.h"
 #include <Eigen/Eigen>
@@ -33,8 +34,14 @@
 
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
-#include "gnuplot-iostream.h"
+
 #include "lidarUtils/lidar_utilities.h"
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <time.h>
+#include <fstream>
+#include <cstdio>
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
 #define MAX_TRANSLATION_DELTA 2.0
@@ -67,20 +74,24 @@ protected:
   tf::TransformListener tf_listener_;
   ros::Publisher output_pub_;
   Eigen::Affine3d pose_, T, sensorPose_;
+  std::string map_name="graph_map";
+
   unsigned int frame_nr_;
   double varz;
 
-  boost::mutex m, message_m;
+
   std::string points_topic, laser_topic, map_dir, map_type_name,reg_type_name, odometry_topic,
   world_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
-  bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack,
+  bool visualize, match2D, matchLaser, beHMT, useOdometry,
   initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
 
   double pose_init_x,pose_init_y,pose_init_z,
   pose_init_r,pose_init_p,pose_init_t;
   double sensor_pose_x,sensor_pose_y,sensor_pose_z,
   sensor_pose_r,sensor_pose_p,sensor_pose_t;
+
+
   laser_geometry::LaserProjection projector_;
   ScanPlot plotter_;
   message_filters::Synchronizer< LaserOdomSync > *sync_lo_;
@@ -99,6 +110,8 @@ protected:
   bool use_tf_listener_;
   Eigen::Affine3d last_tf_frame_;
   lslgeneric::MotionModel2d::Params motion_params;
+  boost::mutex m;
+  ownRandom test;
 public:
   // Constructor
   GraphMapFuserNode(ros::NodeHandle param_nh) : frame_nr_(0)
@@ -132,7 +145,7 @@ public:
     ///if using the HMT fuser, NDT maps are saved in this directory.
     ///a word of warning: if you run multiple times with the same directory,
     ///the old maps are loaded automatically
-    param_nh.param<std::string>("map_directory",map_dir,"map");
+    param_nh.param<std::string>("map_directory",map_dir,"/map/");
     param_nh.param<std::string>("map_type",map_type_name,"default_map");
 
 
@@ -175,14 +188,14 @@ public:
 
 
 
-    ///if we want to compare to a ground truth topic
-    param_nh.param("plotGTTrack",plotGTTrack,false);
+    ///if we want to create map based on GT pose
+    param_nh.param("renderGTmap",renderGTmap,false);
     param_nh.param<std::string>("gt_topic",gt_topic,"groundtruth");
     ///if we want to get the initial pose of the vehicle relative to a different frame
     param_nh.param("initPoseFromGT",initPoseFromGT,false);
     //plot the map from the GT track if available
-    param_nh.param("renderGTmap", renderGTmap,false);
-    renderGTmap &= plotGTTrack; //can't render if we don't have it
+
+
     //get it from TF?
     param_nh.param("initPoseFromTF",initPoseFromTF,false);
     //the frame to initialize to
@@ -219,6 +232,9 @@ public:
       initPoseSet=true;
 
       fuser_=new GraphMapFuser(map_type_name,reg_type_name,pose_,sensorPose_);
+      cout<<"set fuser viz="<<visualize<<endl;
+      fuser_->Visualize(visualize);
+
     }
 
 
@@ -229,7 +245,6 @@ public:
       points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,2);
       if(useOdometry) {
         if(renderGTmap){
-          cout<<"render GT true"<<endl;
           gt_fuser_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,gt_topic,10);
           sync_GTodom_ = new message_filters::Synchronizer< PointsGTOdomSync >(PointsGTOdomSync(SYNC_FRAMES), *points2_sub_, *gt_fuser_sub_);
           sync_GTodom_->registerCallback(boost::bind(&GraphMapFuserNode::GTLaserPointsOdomCallback, this, _1, _2));
@@ -253,15 +268,16 @@ public:
         ((void)0); //Do nothing, seriously consider using a laser only callback (no odometry sync)
       }
     }
-    if(plotGTTrack) {
+    if(initPoseFromGT) {
       gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&GraphMapFuserNode::gt_callback, this);
     }
+    save_map_ = param_nh.advertiseService("save_map", &GraphMapFuserNode::save_map_callback, this);
     cout<<"init done"<<endl;
   }
 
   void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud,
                     Eigen::Affine3d Tmotion) {
-    cout<<"process frame"<<endl;
+
     if(!initPoseSet)
       return;
 
@@ -270,26 +286,24 @@ public:
       time_last_itr=ros::Time::now();
     else{
       time_now=ros::Time::now();
-      //  cout<<"iteration time= "<<time_now-time_last_itr<<endl;
+
       time_last_itr=time_now;
 
 
       cout<<"frame nr="<<frame_nr_<<endl;
       if((Tmotion.translation().norm() <0.005 && Tmotion.rotation().eulerAngles(0,1,2)(2)< 0.005) && useOdometry) {    //sanity check for odometry
-        //cout<<"norm:" <<Tmotion.translation().norm()<<endl;
         std::cerr<<"No motion, skipping Frame\n";
         return;
       }
       (void)ResetInvalidMotion(Tmotion);
       pose_=pose_*Tmotion; //currently being changed to increment pose inside fuser
       cout<<"frame="<<frame_nr_<<"movement="<<(fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()<<endl;
-      if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
-        cout<<"perform update"<<endl;
-        fuser_->ProcessFrame(cloud,pose_,Tmotion);
-      }
-      else
-        cout<<"hold update"<<endl;
+      //  if((fuser_->GetPoseLastFuse().inverse()*pose_).translation().norm()>=0.0 || fuser_->FramesProcessed()==0){
 
+      cout<<"perform update"<<endl;
+      m.lock();
+      fuser_->ProcessFrame(cloud,pose_,Tmotion);
+      m.unlock();
       tf::Transform Transform;
       tf::transformEigenToTF(pose_,Transform);
       tf_.sendTransform(tf::StampedTransform(Transform, ros::Time::now(), world_frame, fuser_frame));
@@ -316,6 +330,24 @@ public:
     }
     else return false;
   }
+  bool save_map_callback(std_srvs::Empty::Request  &req,
+                         std_srvs::Empty::Response &res ) {
+    char path[1000];
+    string time=ndt_generic::currentDateTimeString();
+
+    if(fuser_!=NULL){
+      snprintf(path,999,"%s/%s_.MAP",map_dir.c_str(),time.c_str());
+      m.lock();
+      fuser_->SaveGraphMap(path);
+      m.unlock();
+      ROS_INFO("Current map was saved to path= %s", path);
+      return true;
+    }
+    else
+      ROS_INFO("No data to save");
+    return false;
+  }
+
   inline bool getAffine3dTransformFromTF(const ros::Time &time, Eigen::Affine3d& ret) {
     tf::StampedTransform transform;
     tf_listener_.waitForTransform("/world", tf_pose_frame_, time,ros::Duration(1.0));
@@ -398,7 +430,7 @@ public:
                            const nav_msgs::Odometry::ConstPtr& odo_in)
   {
     ros::Time tstart=ros::Time::now();
-    // cout<<"Point odom callback"<<endl;
+
     Eigen::Affine3d Tm;
     pcl::PointCloud<pcl::PointXYZ> cloud;
     tf::poseMsgToEigen(odo_in->pose.pose,this_odom);
@@ -409,7 +441,6 @@ public:
       Tm = last_odom.inverse()*this_odom;
     }
     last_odom = this_odom;
-    cout<<"odometry=\n"<<Tm.translation().norm()<<endl;
     pcl::fromROSMsg (*msg_in, cloud);
     this->processFrame(cloud,Tm);
     ros::Time tend=ros::Time::now();
@@ -422,7 +453,6 @@ public:
     if(frame_nr_==0){
       Tmotion=Eigen::Affine3d::Identity();
     }
-    //cout<<"GT point callback"<<endl;
     Eigen::Affine3d GT_pose;
     pcl::PointCloud<pcl::PointXYZ> cloud;
     tf::poseMsgToEigen(odo_in->pose.pose,pose_);
@@ -432,7 +462,6 @@ public:
   // Callback
   void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in)
   {
-    //  cout<<"GT odom callback"<<endl;
     Eigen::Affine3d gt_pose;
     tf::poseMsgToEigen(msg_in->pose.pose,gt_pose);
 
@@ -440,6 +469,7 @@ public:
       pose_ = gt_pose;
       ROS_INFO("Set initial pose from GT track");
       fuser_=new GraphMapFuser(map_type_name,reg_type_name,pose_,sensorPose_);
+      fuser_->Visualize(visualize);
       initPoseSet = true;
     }
   }

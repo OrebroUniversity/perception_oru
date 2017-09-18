@@ -79,13 +79,13 @@ Visualization Manager:
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Keep: 5000
       Length: 0.5
       Name: Odometry
       Position Tolerance: 0.100000001
       Topic: /vmc_navserver/odom
-      Value: true
+      Value: false
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
       Color: 255; 255; 0
@@ -101,6 +101,8 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_laser_link:
+          Value: true
         fuser:
           Value: true
         odom_base_link:
@@ -123,6 +125,8 @@ Visualization Manager:
           odom_base_link:
             {}
           state_base_link:
+            base_laser_link:
+              {}
             velodyne:
               {}
       Update Interval: 0
@@ -252,24 +256,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 20.1210861
+      Distance: 41.2576599
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -4.0259552
-        Y: -1.68693542
-        Z: -14.0227928
+        X: -0.959021449
+        Y: 7.60148525
+        Z: -12.6959333
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.28979659
+      Pitch: 1.26979661
       Target Frame: fuser
       Value: Orbit (rviz)
-      Yaw: 6.14493847
+      Yaw: 4.88993025
     Saved:
       - Class: rviz/Orbit
         Distance: 39.1665726

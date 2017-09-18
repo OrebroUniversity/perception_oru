@@ -5,7 +5,6 @@
 #include <boost/algorithm/string.hpp>
 #include "Eigen/Dense"
 #include "boost/shared_ptr.hpp"
-
 using namespace  std;
 namespace libgraphMap{
 
@@ -117,6 +116,7 @@ typedef boost::shared_ptr<GraphMap> GraphMapPtr;
 
 class GraphMapNavigator;
 typedef boost::shared_ptr<GraphMapNavigator> GraphMapNavigatorPtr;
+
 
 class GraphParam;
 typedef boost::shared_ptr<GraphParam> GraphParamPtr;

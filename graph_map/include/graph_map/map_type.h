@@ -11,39 +11,18 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/base_object.hpp>
+#include "boost/serialization/serialization.hpp"
 #include <stdio.h>
+#include <iostream>
 #include "ros/ros.h"
-
 
 using namespace std;
 namespace libgraphMap{
-
 
 /*!
  * ... Abstract class to present parameters for "mapType". this class contain generic parameters forr all map types.  ...
  */
 
-class MapParam{
-public:
-  virtual ~MapParam()=0;
-  string getMapName() const{return mapName_;}
-  virtual void GetParametersFromRos();
-  virtual string ToString();
-  double sizex_;
-  double sizey_;
-  double sizez_;
-  double max_range_;
-  double min_range_;
-  bool enable_mapping_;
-protected:
-  MapParam();
-  string mapName_;
-  /*-----Boost serialization------*/
-  friend class boost::serialization::access;
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version){}
-  /*-----End of Boost serialization------*/
-};
 
 
 
@@ -64,34 +43,57 @@ public:
   virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud)=0;
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius=5);
   virtual string GetMapName()const{return mapName_;}
+  virtual string ToString();
+  MapType();
 protected:
   MapType(MapParamPtr param);
-  //double radius_;
-  double sizex_;
-  double sizey_;
-  double sizez_;
-  double max_range_;
-  double min_range_;
-  bool initialized_;
+  double sizex_=0;
+  double sizey_=0;
+  double sizez_=0;
+  double max_range_=30;
+  double min_range_=0.6;
+  bool initialized_=false;
   bool enable_mapping_=true;
-  string mapName_;
-
+  string mapName_="";
 
   /*-----Boost serialization------*/
   friend class boost::serialization::access;
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version){
     ar & sizex_ & sizey_ & sizez_;
-    ar & max_range_ & max_range_;
+    ar & max_range_ & min_range_;
     ar & initialized_;
+    ar & enable_mapping_;
     ar & mapName_;
   }
-  /*-----End of Boost serialization------*/
 };
 
-
-
-
-
+class MapParam{
+public:
+  virtual ~MapParam()=0;
+  string getMapName() const{return mapName_;}
+  virtual void GetParametersFromRos();
+  virtual string ToString();
+  double sizex_=0;
+  double sizey_=0;
+  double sizez_=0;
+  double max_range_=30;
+  double min_range_=0.6;
+  bool enable_mapping_=true;
+protected:
+  MapParam(){}
+  string mapName_="";
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & sizex_;
+    ar & sizey_;
+    ar & sizez_;
+    ar & max_range_;
+    ar & min_range_;
+    ar & enable_mapping_;
+  }
+};
 }
 #endif // MAPTYPE_H

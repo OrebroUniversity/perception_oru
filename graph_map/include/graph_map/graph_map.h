@@ -15,11 +15,12 @@
 #include "ndt/ndt_map_type.h"
 #include "ros/ros.h"
 #include "ros/node_handle.h"
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/vector.hpp"
 
 namespace libgraphMap{
 using namespace lslgeneric;
 typedef std::vector<Eigen::Affine3d,Eigen::aligned_allocator<Eigen::Affine3d> > EigenAffineVector;
-
 class GraphMap{
 public:
   /*!
@@ -43,30 +44,54 @@ public:
   virtual Eigen::Affine3d GetPreviousNodePose();
   virtual void AddFactor(MapNodePtr prev, MapNodePtr next, Affine3d Tdiff, Matrix6d cov);
   //virtual std::vector<FactorPtr> GetFactors(NodePtr node);//Get all factors for current node
+  GraphMap();
 protected:
   GraphMap(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam);
-  MapNodePtr currentNode_,prevNode_;//The current node
+  MapNodePtr currentNode_=NULL,prevNode_=NULL;//The current node
   std::vector<NodePtr> nodes_;//Vector of all nodes in graph
   std::vector<FactorPtr> factors_;
-  MapParamPtr mapparam_;//
-
-  bool use_submap_;
-  double interchange_radius_;
-  double compound_radius_;
+  MapParamPtr mapparam_=NULL;//
+  bool use_submap_=false;
+  double interchange_radius_=0;
+  double compound_radius_=0;
+  double min_keyframe_dist_=0.5;
+  double min_keyframe_rot_deg_=15;
+  bool use_keyframe_=true;
 private:
   friend class GraphFactory;
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & currentNode_;
+    ar & prevNode_;
+    ar & nodes_;
+    ar & factors_;
+    ar & use_submap_;
+    ar & interchange_radius_;
+    ar & compound_radius_;
+  }
+
 };
+
 
 class GraphParam{
 public:
   void GetParametersFromRos();
-  bool use_submap_;
-  double interchange_radius_;
-  double compound_radius_;
-protected:
+  bool use_submap_=false;
+  double interchange_radius_=0;
+  double compound_radius_=0;
+  bool use_keyframe_=true;
+  double min_keyframe_dist_=0.5;
+  double min_keyframe_rot_deg_=15;
   GraphParam();
 private:
   friend class GraphFactory;
+  /* friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+  }*/
 };
 }
 #endif // GRAPH_H

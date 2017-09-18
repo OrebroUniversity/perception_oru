@@ -1,0 +1,5 @@
+FILENAME=/home/daniel/.ros/maps/offline_gt__res0.5_SC0_mindist0.2_sensorcutoff30_neighbours2_rlf1.map
+#"$1"
+roslaunch ndt_offline visualize_graph_fuser.launch &
+rosrun ndt_offline mcl_offline --dir-name ../bag --velodyne_packets_topic /velodyne_packets --velodyne_frame_id /velodyne --map-file-path ${FILENAME} --data-set oru-basement --velodyne_config_file ../config/velo32.yaml  --use-submap --visualize  --output-dir-name /home/daniel/.ros/maps
+

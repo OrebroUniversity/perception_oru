@@ -35,12 +35,12 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 0.400000006
+      Cell Size: 0.100000001
       Class: rviz/Grid
       Color: 160; 160; 164
       Enabled: true
@@ -54,15 +54,15 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 2000
       Reference Frame: <Fixed Frame>
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
       Color: 255; 255; 0
       Enabled: true
-      Keep: 2000
-      Length: 0.300000012
+      Keep: 4
+      Length: 0.100000001
       Name: Odometry
       Position Tolerance: 0.100000001
       Topic: /GT
@@ -71,16 +71,16 @@ Visualization Manager:
       Class: rviz/Odometry
       Color: 255; 25; 0
       Enabled: true
-      Keep: 2000
-      Length: 0.300000012
+      Keep: 4
+      Length: 0.400000006
       Name: Odometry
       Position Tolerance: 0.100000001
       Topic: /fuser
       Value: true
     - Alpha: 1
       Arrow Length: 0.300000012
-      Axes Length: 0.300000012
-      Axes Radius: 0.00999999978
+      Axes Length: 0.5
+      Axes Radius: 0.0500000007
       Class: rviz/PoseArray
       Color: 255; 25; 0
       Enabled: true
@@ -130,8 +130,6 @@ Visualization Manager:
         All Enabled: false
         state_base_link:
           Value: true
-        velodyne:
-          Value: false
         world:
           Value: true
       Marker Scale: 1
@@ -142,8 +140,7 @@ Visualization Manager:
       Tree:
         world:
           state_base_link:
-            velodyne:
-              {}
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -178,6 +175,14 @@ Visualization Manager:
         graphInfo: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /ParticleCloud
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -201,25 +206,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 15.8571301
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 7.66017103
-        Y: 9.7500391
-        Z: -9.84746647
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.36479652
+      Scale: 31.4934826
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.66983879
+      Value: TopDownOrtho (rviz)
+      X: 126.639633
+      Y: 143.628799
     Saved: ~
 Window Geometry:
   Displays:

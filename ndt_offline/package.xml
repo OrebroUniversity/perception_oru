@@ -1,47 +1,51 @@
 <?xml version="1.0"?>
 <package>
-  <name>ndt_offline</name>
-  <version>1.0.31</version>
-  <description>The ndt_offline package</description>
+<name>ndt_offline</name>
+<version>1.0.31</version>
+<description>The ndt_offline package</description>
 
-  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
-  <maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
-  <author>Henrik Andreasson</author>
+<maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+<maintainer email="todor.stoyanov@oru.se">Todor Stoyanov</maintainer>
+<author>Henrik Andreasson</author>
 
-  <license>BSD</license>
+<license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>ndt_fuser</build_depend>
-  <build_depend>ndt_map</build_depend>
-  <build_depend>ndt_registration</build_depend>
-  <build_depend>ndt_visualisation</build_depend>
-  <build_depend>ndt_generic</build_depend>
-  <build_depend>pcl_ros</build_depend>
-  <build_depend>velodyne_msgs</build_depend>
-  <build_depend>velodyne_pointcloud</build_depend>
-  <build_depend>tf_conversions</build_depend>
-  <build_depend>eigen_conversions</build_depend>
-  <build_depend>graph_map</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>genmsg</build_depend>
+<buildtool_depend>catkin</buildtool_depend>
+<build_depend>ndt_fuser</build_depend>
+<build_depend>ndt_map</build_depend>
+<build_depend>ndt_mcl</build_depend>
+<build_depend>ndt_registration</build_depend>
+<build_depend>ndt_visualisation</build_depend>
+<build_depend>ndt_generic</build_depend>
+<build_depend>pcl_ros</build_depend>
+<build_depend>velodyne_msgs</build_depend>
+<build_depend>velodyne_pointcloud</build_depend>
+<build_depend>tf_conversions</build_depend>
+<build_depend>eigen_conversions</build_depend>
+<build_depend>graph_map</build_depend>
+<build_depend>graph_localisation</build_depend>
+<build_depend>tf</build_depend>
+<build_depend>genmsg</build_depend>
 
-  <run_depend>ndt_fuser</run_depend>
-  <run_depend>ndt_map</run_depend>
-  <run_depend>ndt_registration</run_depend>
-  <run_depend>ndt_visualisation</run_depend>
-  <run_depend>ndt_generic</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>velodyne_msgs</run_depend>
-  <run_depend>velodyne_pointcloud</run_depend>
-  <run_depend>tf_conversions</run_depend>
-  <run_depend>eigen_conversions</run_depend>
-  <run_depend>graph_map</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>genmsg</run_depend>
+<run_depend>ndt_fuser</run_depend>
+<run_depend>ndt_map</run_depend>
+<run_depend>ndt_mcl</run_depend>
+<run_depend>ndt_registration</run_depend>
+<run_depend>ndt_visualisation</run_depend>
+<run_depend>ndt_generic</run_depend>
+<run_depend>pcl_ros</run_depend>
+<run_depend>velodyne_msgs</run_depend>
+<run_depend>velodyne_pointcloud</run_depend>
+<run_depend>tf_conversions</run_depend>
+<run_depend>eigen_conversions</run_depend>
+<run_depend>graph_map</run_depend>
+<run_depend>graph_localisation</run_depend>
+<run_depend>tf</run_depend>
+<run_depend>genmsg</run_depend>
 
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
-  </export>
+<!-- The export tag contains other, unspecified, tags -->
+<export>
+<!-- Other tools can request additional information be placed here -->
+<cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include"/>
+</export>
 </package>

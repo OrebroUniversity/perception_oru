@@ -4,6 +4,7 @@ using namespace std;
 namespace libgraphMap{
 
 GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const GraphParamPtr graphparam){
+  factors_.clear();
   prevNode_=NULL;
   currentNode_=GraphFactory::CreateMapNode(nodepose,mapparam);//The first node to be added
   nodes_.push_back(currentNode_);
@@ -11,14 +12,25 @@ GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const Gr
   use_submap_=graphparam->use_submap_;
   interchange_radius_=graphparam->interchange_radius_;
   compound_radius_=graphparam->compound_radius_;
-
-  cout<<"interchange_radius_ set to: "<<interchange_radius_<<endl;
-  cout<<"use_submap_ set to: "<<use_submap_<<endl;
+  use_keyframe_=graphparam->use_keyframe_;
+   min_keyframe_dist_=graphparam->min_keyframe_dist_;
+   min_keyframe_rot_deg_=graphparam->min_keyframe_rot_deg_;
 
   //double min_size=mapparam->sizex_< mapparam->sizey_? mapparam->sizex_ : mapparam->sizey_; //select min map length
   //interchange_radius_=min_size/2-mapparam_->max_range_;//
 
 }
+GraphMap::GraphMap(){
+  currentNode_=NULL;
+  prevNode_=NULL;
+  nodes_.clear();//Vector of all nodes in graph
+  factors_.clear();
+  mapparam_=NULL;//
+  bool use_submap_=false;
+  double interchange_radius_=0;
+  double compound_radius_=0;
+}
+
 MapNodePtr GraphMap::GetCurrentNode(){
   return currentNode_;
 }
@@ -36,13 +48,26 @@ void GraphMap::AddMapNode(const MapParamPtr &mapparam, const Affine3d &diff, con
   currentNode_=newNode;
 }
 string GraphMap::ToString(){
-  string s="Graph map: \n";
+  std::stringstream ss;
+  ss<<"GraphMap:"<<endl;
+  ss <<"Graph size="<<nodes_.size()<<endl;
+  ss <<"Interchange: "<<interchange_radius_<<endl;
+  ss <<"Compound_radius: "<<compound_radius_<<endl;
+  ss <<"use keyframe: "<<boolalpha<<use_keyframe_<<endl;
   for(int i=0;i<nodes_.size();i++){
+    if(i==0)
+      ss <<"Node positions:"<<endl;
+
     NodePtr ptr=nodes_[i];
-    s=s+ptr->ToString()+"\n";
+    Eigen::Vector3d position=ptr->GetPose().translation();
+    ss<<"node "<<i<<" (x,y,z):("<<position(0)<<","<<position(1)<<","<<position(2)<<")"<<endl;
   }
-  return s;
+  if(currentNode_!=NULL)
+    ss<<"Detailed info node 0:"<<endl<<currentNode_->ToString();
+
+  return ss.str();
 }
+
 Affine3d GraphMap::GetNodePose(int nodeNr){
   if(nodeNr<GraphSize())
     return nodes_[nodeNr]->GetPose();
@@ -77,5 +102,8 @@ void GraphParam::GetParametersFromRos(){
   nh.param("use_submap",use_submap_,false);
   nh.param("interchange_radius",interchange_radius_,100.0);
   nh.param("compound_radius",compound_radius_,100.0);
+  nh.param("use_keyframe",use_keyframe_,true);
+  nh.param("min_keyframe_dist",min_keyframe_dist_,0.5);
+  nh.param("min_keyframe_rot_deg",min_keyframe_rot_deg_,15.0);
 }
 }

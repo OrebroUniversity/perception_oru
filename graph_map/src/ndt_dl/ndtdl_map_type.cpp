@@ -1,4 +1,6 @@
 #include "ndt_dl/ndtdl_map_type.h"
+#include <boost/serialization/export.hpp>
+BOOST_CLASS_EXPORT(libgraphMap::NDTDL)
 namespace libgraphMap{
 using namespace std;
 
@@ -45,11 +47,7 @@ void NDTDLMapParam::GetParametersFromRos(){
   nh.param<std::string>("Super_important_map_parameter",SuperImportantMapParameter,"parhaps not so important...");
 }
 
-template<class Archive>
-void NDTDLMapParam::serialize(Archive & ar, const unsigned int version){
-  ar & boost::serialization::base_object<MapParam>(*this);
-  //ar & cenx_& ceny_ &cenz_;
-}
+
 
 }
 

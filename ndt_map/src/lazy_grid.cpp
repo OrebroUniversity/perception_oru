@@ -837,4 +837,47 @@ bool LazyGrid::insertCell(NDTCell cell){
     }
     return true;
     }
+void LazyGrid::InitializeDefaultValues(){
+
+  protoType  =  NULL;
+  activeCells.clear();
+  centerIsSet = sizeIsSet   = initialized = false;
+  sizeXmeters = sizeYmeters = sizeZmeters=0;
+  cellSizeX   = cellSizeY   = cellSizeZ=0;
+  centerX     = centerY     = centerZ =0;
+  sizeX       = sizeY       = sizeZ=0;
+}
+std::string LazyGrid::GetDataString()
+{
+  std::stringstream ss;
+  //  for(int i=0;i<activeCells.size();i++){
+  //    if(activeCells[i]->hasGaussian_)
+  //      ss<<activeCells[i]->ToString()<<std::endl;
+  //  }
+  for(int i=0; i<sizeX; i++)
+  {
+    for(int j=0; j<sizeY; j++)
+    {
+      for(int k=0; k<sizeZ; k++)
+      {
+        if(dataArray[i][j][k]!=NULL){
+          if(dataArray[i][j][k]->hasGaussian_){
+            ss<<"mean=\n"<< dataArray[i][j][k]->getMean()<<"\ncov=\n"<<dataArray[i][j][k]->getCov()<<std::endl;
+          }
+        }
+
+
+      }
+    }
+  }
+  return ss.str();
+}
+std::string LazyGrid::ToString(){
+  std::stringstream ss;
+  ss <<"<<LazyGrid:initialized="<<initialized<<", active cells="<<activeCells.size()<<"\nCenterIsSet="<<centerIsSet<< "\nSizeIsSet="<<sizeIsSet<<"\nsizeXmeters="<<sizeXmeters<<", sizeYmeters="<<sizeYmeters<<", sizeZmeters="<<sizeZmeters<<"\ncellSizeX="<<cellSizeX<<", cellSizeY="<<cellSizeY<<", cellSizeZ="<<cellSizeZ<<std::endl;
+  ss<<"centerX="<<centerX<<", centerY="<<centerY<<", centerZ="<<centerZ<<"\nsizeX="<<sizeX<<", sizeY="<<sizeY<<", sizeZ="<<sizeZ<<std::endl;
+  ss<<"prototype="<<protoType->ToString()<<"lazygrid>>"<<std::endl;
+  ss<<"datastring=\n"<<GetDataString()<<std::endl;
+  return ss.str();
+}
 } //end namespace

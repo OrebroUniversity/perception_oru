@@ -5,7 +5,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
     Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
 
     double t_start = getDoubleTime();
-    pf.predict(Tmotion, tr[0]*0.1, tr[1]*0.1, tr[2]*0.1, rot[0]*0.1, rot[1]*0.1, rot[2]*0.1);
+    pf.predict(Tmotion, tr[0]*0.1, tr[1]*0.1, tr[2]*0.01, rot[0]*0.01, rot[1]*0.01, rot[2]*0.1);
     double t_pred = getDoubleTime() - t_start;	
 
     //pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.1 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.1+0.001));
@@ -39,7 +39,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
 	    pcl::PointXYZ p;
 	    p.x = m[0];p.y=m[1];p.z=m[2];
 
-	    if(map.getCellAtPoint(p,cell)){
+      if(map.getCellAtPoint(p,cell)){
 		//if(map.getCellForPoint(p,cell)){
 		if(cell == NULL) continue;
 		if(cell->hasGaussian_){
@@ -194,7 +194,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     int Nn = 0;
     //		#pragma omp parallel for
     double t_pseudo = getDoubleTime();
-#pragma omp parallel num_threads(4)
+#pragma omp parallel num_threads(8)
     {
 #pragma omp for
 	for(int i=0;i<pf.size();i++){
@@ -216,7 +216,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 		pcl::PointXYZ p;
 		p.x = m[0];p.y=m[1];p.z=m[2];
 
-		if(map.getCellAtPoint(p,cell)){
+    if(map.getCellAtPoint(p,cell)){
 		    //if(map.getCellForPoint(p,cell)){
 		    if(cell == NULL) continue;
 		    if(cell->hasGaussian_){

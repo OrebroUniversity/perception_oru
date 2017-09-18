@@ -9,11 +9,17 @@
 #include "geometry_msgs/PoseArray.h"
 #include "eigen_conversions/eigen_msg.h"
 #include "graph_map/graph_map.h"
+#include "pcl/point_cloud.h"
+#include "pcl/point_types.h"
+#include "pcl_conversions/pcl_conversions.h"
+#include "ndt_mcl/3d_ndt_mcl.h"
+
 #define NDT_GLOBAL_MAP_TOPIC "NDTglobalMap"
 #define NDT_GLOBAL2_MAP_TOPIC "NDTglobal2Map"
 #define NDT_LOCAL_MAP_TOPIC  "NDTlocalMap"
 #define GRAPH_POSE_TOPIC "graphMap"
 #define GRAPH_INFO_TOPIC "graphInfo"
+#define PARTICLES_TOPIC "ParticleCloud"
 namespace libgraphMap{
 using namespace std;
 using Eigen::Affine3d;
@@ -27,6 +33,7 @@ public:
   static void SendGlobalMapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset=Affine3d::Identity());
   static void SendGlobal2MapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset=Affine3d::Identity());
   static void SendGlobal2MapToRviz(std::vector<lslgeneric::NDTCell*>cells, int color,const Affine3d &offset=Affine3d::Identity());
+  static void plotParticleCloud( const Eigen::Affine3d &offset,std::vector<PoseParticle> pcloud);
 
   static void GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr, cov_vector &cov, mean_vector &mean);
   static void GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_vector &cov, mean_vector &mean);
@@ -41,7 +48,7 @@ protected:
   static ros::NodeHandle *nh_;
   static ros::Publisher *localMapPublisher_;
   static ros::Publisher *globalMapPublisher_,*global2MapPublisher_;
-  static ros::Publisher *graphPosePublisher_, *graphInfoPublisher_;
+  static ros::Publisher *graphPosePublisher_, *graphInfoPublisher_,*particlaCloudPublisher_;
 private:
   GraphPlot();
 };

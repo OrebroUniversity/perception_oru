@@ -7,10 +7,17 @@ namespace lslgeneric
 
 
 bool NDTCell::parametersSet_ = false;
-double NDTCell::EVAL_ROUGH_THR;
-double NDTCell::EVEC_INCLINED_THR;
-double NDTCell::EVAL_FACTOR;
+double NDTCell::EVAL_ROUGH_THR=0;
+double NDTCell::EVEC_INCLINED_THR=0;
+double NDTCell::EVAL_FACTOR=0;
 
+std::string NDTCell::ToString(){
+  std::stringstream ss;
+  ss <<"\n<<NDTCell: type= "<<cl_<<"ParametersSet_="<<parametersSet_<<"\nHasGaussian_="<<hasGaussian_<< "\nCost="<<cost<<"\nIsEmpty="<<(bool)isEmpty<<"\nConsistency_score="<<consistency_score;
+  ss<<"\nCenter_.x="<<center_.x<<", center_.y="<<center_.y<<", center_.z="<<center_.z<<"\nXsize_="<<xsize_<<", ysize_="<<ysize_<<", zsize_="<<zsize_<<std::endl;
+  ss<<"mean_=\n"<<mean_<<"\ncov_="<<cov_<<">>"<<std::endl;
+  return ss.str();
+}
 void NDTCell::setParameters(double _EVAL_ROUGH_THR   ,
                                     double _EVEC_INCLINED_THR,
                                     double _EVAL_FACTOR
@@ -28,6 +35,7 @@ void NDTCell::setParameters(double _EVAL_ROUGH_THR   ,
 */
 NDTCell* NDTCell::clone() const
 {
+
     NDTCell *ret = new NDTCell();
     ret->setDimensions(this->xsize_,this->ysize_,this->zsize_);
     ret->setCenter(this->center_);
@@ -46,7 +54,6 @@ NDTCell* NDTCell::clone() const
 NDTCell* NDTCell::copy() const
 {
     NDTCell *ret = new NDTCell();
-
     ret->setDimensions(this->xsize_,this->ysize_,this->zsize_);
     ret->setCenter(this->center_);
 

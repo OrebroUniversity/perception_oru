@@ -1,11 +1,14 @@
 # Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
-set(CMAKE_BUILD_TYPE Release) 
+set(CMAKE_BUILD_TYPE release)
 project(ndt_mcl)
+
 # Load catkin and all dependencies required for this package
-find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros tf_conversions eigen_conversions cmake_modules velodyne_pointcloud velodyne_msgs)
+
+# find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros tf_conversions eigen_conversions cmake_modules velodyne_pointcloud velodyne_msgs)
 find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_generic ndt_map ndt_registration ndt_rviz visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions cmake_modules)
+
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
@@ -13,6 +16,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )
+
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 #find_package(Eigen REQUIRED)

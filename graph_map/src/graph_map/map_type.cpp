@@ -2,9 +2,48 @@
 namespace libgraphMap{
 
 
-MapParam::~MapParam(){}
 
-MapParam::MapParam(){}
+MapType::MapType(){
+  sizex_= 0;
+  sizey_= 0;
+  sizez_= 0;
+  max_range_=0;
+  min_range_=0;
+  initialized_=false;
+  enable_mapping_=true;
+  mapName_="";
+}
+
+MapType::MapType(MapParamPtr param){
+  initialized_=false;
+  enable_mapping_=param->enable_mapping_;
+  sizex_= param->sizex_;
+  sizey_= param->sizey_;
+  sizez_= param->sizez_;
+  max_range_=param->max_range_;
+  min_range_=param->min_range_;
+  mapName_="";
+}
+
+bool MapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
+  cout<<"Compunding map not possible in base class"<<endl;
+  return false;
+}
+std::string MapType::ToString(){
+  stringstream ss;
+  ss<<"MapType\nInitialized: "<<std::boolalpha<<initialized_<<endl;
+  ss<<"Map Name: "<<mapName_<<endl;
+  ss<<"Mapping enabled: "<<std::boolalpha<<enable_mapping_<<endl;
+  ss<<"Size(x,y,z): ("<< sizex_<<","<<sizey_<<","<<sizez_<<")"<<endl;
+  ss<<"Sensor range(min/max): ("<<min_range_<<","<<max_range_<<")"<<endl;
+  return ss.str();
+}
+
+MapParam::~MapParam(){
+
+}
+
+
 void MapParam::GetParametersFromRos(){
   ros::NodeHandle nh("~");//base class parameters
   nh.param("sensor_range",max_range_,30.);
@@ -23,22 +62,4 @@ string MapParam::ToString(){
   ss<<"size(x,y,z)=("<<sizex_<<","<<sizey_<<","<<sizez_<<")";
   return ss.str();
 }
-
-
-
-MapType::MapType(MapParamPtr param){
-  initialized_=false;
-  enable_mapping_=param->enable_mapping_;
-  sizex_= param->sizex_;
-  sizey_= param->sizey_;
-  sizez_= param->sizez_;
-  max_range_=param->max_range_;
-  min_range_=param->min_range_;
-}
-
-bool MapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
-  cout<<"Compunding map not possible in base class"<<endl;
-  return false;
-}
-
 }

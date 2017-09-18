@@ -16,21 +16,21 @@ namespace libgraphMap{
 class NDTMapParam : public MapParam{
 public:
   ~NDTMapParam(){}
+  NDTMapParam(){}
   void GetParametersFromRos();
 
-  double resolution_;
-  std::string directory_;
-  bool saveOnDelete_, match2D_,beHMT,matchLaser;
-protected:
-  NDTMapParam();
-
-private:
-  friend class GraphFactory;
+  double resolution_=0.4;
+  std::string directory_="";
+  bool saveOnDelete_=false,match2D_=false,beHMT=false,matchLaser=false;
   /*-----Boost serialization------*/
   friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int version);
-  /*-----End of Boost serialization------*/
+  void serialize(Archive & ar, const unsigned int version){
+    ar & boost::serialization::base_object<MapParam>(*this);
+    ar & resolution_;
+    ar & saveOnDelete_ & match2D_ & beHMT & matchLaser;
+  }
+
 
 };
 

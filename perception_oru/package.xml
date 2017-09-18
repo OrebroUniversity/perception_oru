@@ -36,6 +36,7 @@
   <run_depend>ndt_visualisation</run_depend>
   <run_depend>ndt_rviz_visualisation</run_depend>
   <run_depend>ndt_calibration</run_depend>	
+  <run_depend>ndt_feature_finder</run_depend>	
   <!-- Dependencies needed only for running tests. -->
  <export> <metapackage/> </export>
 </package>

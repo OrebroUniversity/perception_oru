@@ -116,7 +116,7 @@ std::vector<Eigen::Affine3d> UKF3D::getSigmasAsAffine3d() const {
         if (sigmas_.empty()) {
             return ret;
         }
-        assert(sigmas_.size() != 2*N+1);
+        assert(sigmas_.size() != 2*N_+1);
         
         for (int i = 0; i < this->getNbSigmaPoints(); i++) {
             ret.push_back(ndt_generic::vectorToAffine3d(sigmas_[i]));

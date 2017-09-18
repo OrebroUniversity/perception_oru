@@ -30,11 +30,12 @@
       <param name="useOdometry" value="true" />
       <param name="odometry_topic" value="/vmc_navserver/odom" />
 
+
       <param name="max_translation_norm" value="0.4" />
       <param name="max_rotation_norm" value="0.78539816339" />
 
-      <param name="size_x_meters" value="60" />
-      <param name="size_y_meters" value="60" />
+      <param name="size_x_meters" value="120" />
+      <param name="size_y_meters" value="120" />
       <param name="size_z_meters" value="6" />
 
       <param name="resolution" value="0.6" />
@@ -51,11 +52,14 @@
       <param name="pose_init_y" value="2.185" />
       <param name="pose_init_t" value="0.02" />
 
-      <param name="map_directory" value="$(find ndt_fuser)/maps/" />
-
+      <param name="map_directory" value="$(find graph_map)/maps" />
 
       <param name="visualize" value="true" />
-      <param name="plotGTTrack" value="true" />
+
+
+      <param name="use_keyframe" value="true" />
+      <param name="min_keyframe_dist" value="0.5" />
+      <param name="min_keyframe_rot_deg" value="15.0" />
 
   </node>
 

@@ -39,7 +39,7 @@
 #include <iostream>
 
 #include <ndt_map/ndt_cell.h>
-
+#include "boost/serialization/serialization.hpp"
 namespace lslgeneric
 {
 
@@ -104,6 +104,12 @@ public:
         std::cerr << "Calling from SpatialIndex.h\n";
         return -1;
     }
+  virtual std::string ToString(){return "SpatialIndex base class";}
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+  }
 };
 
 } //end namespace

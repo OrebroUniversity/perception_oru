@@ -2518,6 +2518,12 @@ bool NDTMap::insertCell(NDTCell cell){
     LazyGrid* gr = dynamic_cast<LazyGrid*>(index_);
     gr->insertCell(*cell.copy());
 }
+std::string NDTMap::ToString(){
+   std::stringstream ss;
+   if(index_!=NULL)
+    ss<<"NDTMap: index= \n"<<index_->ToString()<<std::endl;
+return ss.str();
 
 
+}
 }

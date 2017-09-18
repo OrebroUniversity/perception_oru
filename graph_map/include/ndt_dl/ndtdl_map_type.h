@@ -6,6 +6,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/base_object.hpp>
+#include "boost/serialization/serialization.hpp"
 #include "ros/ros.h"
 #include "ros/node_handle.h"
 
@@ -18,6 +19,7 @@ public:
   //Mandatory
   ~NDTDL();
   NDTDL(MapParamPtr paramptr);
+  NDTDL(){}
   virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);//Mandatory, base method implemented as pure virtual
   //Optional
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);//Optional
@@ -28,8 +30,9 @@ private:
   friend class boost::serialization::access;
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version){
-    //ar & map_ ...
+     ar & boost::serialization::base_object<MapType>(*this);
   }
+
   /*-----End of Boost serialization------*/
 };
 
@@ -42,12 +45,11 @@ protected:
   NDTDLMapParam();
 private:
   friend class GraphFactory;
-  /*-----Boost serialization------*/
-  friend class boost::serialization::access;
+/*  friend class boost::serialization::access;
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int version);
-  /*-----End of Boost serialization------*/
-
+  void serialize(Archive & ar, const unsigned int version){
+    ar & boost::serialization::base_object<MapParam>(*this);
+  }*/
 };
 
 

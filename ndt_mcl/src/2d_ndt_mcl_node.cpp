@@ -63,18 +63,43 @@ void sendMapToRviz(lslgeneric::NDTMap &map){
 	visualization_msgs::MarkerArray marray;
 	
 	for(unsigned int i=0;i<ndts.size();i++){
+	    if(!ndts[i]->hasGaussian_) continue;
+	    if(ndts[i]->getOccupancy() <= 0) continue;
 		Eigen::Matrix3d cov = ndts[i]->getCov();
 		Eigen::Vector3d m = ndts[i]->getMean();
 		
+		Eigen::Matrix3d evecs;
+		Eigen::Vector3d evals;
+		
+		const double d=cov.determinant();
+		if (d<=0 || d!=d) // Note: "d!=d" is a great test for invalid numbers, don't remove!
+		{
+		    continue;
+		    // All zeros:
+		    //evecs = Eigen::Matrix3d::Zero(3,3);
+		    //evals = Eigen::Vector3d::Zero(3,3);
+		}
+		else
+		{
+		    Eigen::EigenSolver<Eigen::Matrix3d> es(cov);
+
+		    evals = es.pseudoEigenvalueMatrix().diagonal();
+		    evecs = es.pseudoEigenvectors();
+		    evals = evals.cwiseSqrt();
+		}
+	/*	
 		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> Sol (cov);
 
     Eigen::Matrix3d evecs;
     Eigen::Vector3d evals;
 
     evecs = Sol.eigenvectors().real();
-    evals = Sol.eigenvalues().real();
-    
-    Eigen::Quaternion<double> q(evecs);
+    evals = Sol.eigenvalues().real().cwiseSqrt();
+    */
+		Eigen::AngleAxisd orient;
+		orient.fromRotationMatrix(evecs);
+
+		Eigen::Quaternion<double> q(orient);
 	
 		visualization_msgs::Marker marker;
 		marker.header.frame_id = "world";
@@ -92,9 +117,9 @@ void sendMapToRviz(lslgeneric::NDTMap &map){
 		marker.pose.orientation.z = q.z();
 		marker.pose.orientation.w = q.w();
 		
-		marker.scale.x = 100.0*evals(0);
-		marker.scale.y = 100.0*evals(1);
-		marker.scale.z = 100.0*evals(2);
+		marker.scale.x = 3.0*evals(0);
+		marker.scale.y = 3.0*evals(1);
+		marker.scale.z = 3.0*evals(2);
 		/*
 		marker.pose.orientation.x = 0;
 		marker.pose.orientation.y = 0;

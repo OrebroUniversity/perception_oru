@@ -353,7 +353,7 @@ public:
   void points2Callback(const sensor_msgs::PointCloud2::ConstPtr& msg_in)
   {
 
-    //ROS_INFO_STREAM("points2Callback");
+    ROS_INFO_STREAM("points2Callback");
     //ROS_INFO_STREAM("last_odom : " << last_odom);
     pcl::PointCloud<pcl::PointXYZ> cloud;
     message_m.lock();
@@ -393,7 +393,7 @@ public:
                            const nav_msgs::Odometry::ConstPtr& odo_in)
   {
 
-    //ROS_INFO("got points2OdomCallback()");
+    ROS_INFO("got points2OdomCallback()");
 
     Eigen::Quaterniond qd;
     Eigen::Affine3d Tm;

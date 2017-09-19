@@ -247,8 +247,28 @@ class particle_filter_wrap {
     initial_pose = input_init.pose.pose;
     firstLoad = true;
   }
-  void VeloCallback(const velodyne_msgs::VelodyneScan::ConstPtr& msg){}
-  void PCCallback(const sensor_msgs::PointCloud2::ConstPtr& msg){}
+  void VeloCallback(const velodyne_msgs::VelodyneScan::ConstPtr& msg){
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    for(size_t next = 0; next < msg->packets.size(); ++next){
+      velodyne_rawdata::VPointCloud pnts;
+      dataParser.unpack(msg->packets[next], pnts);
+      for(size_t i = 0; i < pnts.size(); i++){
+	pcl::PointXYZ p;
+	p.x = pnts.points[i].x;
+	p.y = pnts.points[i].y;
+	p.z = pnts.points[i].z;                                                                                                                                        
+	cloud.push_back(p);
+      }
+      pnts.clear();
+    }                                                                                                                                                             
+    this->processFrame(cloud,msg->header.stamp);
+
+
+
+    
+  }
+  void PCCallback(const sensor_msgs::PointCloud2::ConstPtr& msg){
+  }
   
   void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
     laser_geometry::LaserProjection projector_;
@@ -324,8 +344,8 @@ class particle_filter_wrap {
     cloud.clear();
     transformed_cloud->clear();
          
-    //    MCL->UpdateAndPredictEff(tMotion, localMap,fraction, cutoff);
-        MCL->UpdateAndPredict(tMotion, localMap);
+        MCL->UpdateAndPredictEff(tMotion, localMap,fraction, cutoff);
+    // MCL->UpdateAndPredict(tMotion, localMap);
         
     delete localMap;
     if(showParticles)

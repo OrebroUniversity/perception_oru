@@ -104,13 +104,13 @@ add_definitions(${EIGEN_DEFINITIONS})
  )
 
 ## Declare a cpp executable
-add_executable(velodyne_ndt_mcl_node src/velodyne_ndt_mcl_node.cpp)
+#add_executable(velodyne_ndt_mcl_node src/velodyne_ndt_mcl_node.cpp)
 #add_executable(velodyne_ndt_mcl_HMT_node src/velodyne_ndt_mcl_HMT_node.cpp)
-add_executable(ndt_mcl_node src/ndt_mcl_node.cpp)
-add_executable(ndt_mcl_2_laser_node src/ndt_mcl_2_lasers_node.cpp)
-add_executable(ndt_map_publisher src/map_publisher.cpp)
+#add_executable(ndt_mcl_node src/ndt_mcl_node.cpp)
+#add_executable(ndt_mcl_2_laser_node src/ndt_mcl_2_lasers_node.cpp)
+#add_executable(ndt_map_publisher src/map_publisher.cpp)
 add_executable(ndt_mcl_localization src/ndt_mcl_localization.cpp)
-
+add_executable(ndt_mcl_localization_filter src/ndt_mcl_localization_filter.cpp)
 
 
 ## Add cmake target dependencies of the executable/library
@@ -122,35 +122,41 @@ add_executable(ndt_mcl_localization src/ndt_mcl_localization.cpp)
    ${catkin_LIBRARIES}
  )
 
- target_link_libraries(ndt_mcl_2_laser_node
-   ${catkin_LIBRARIES}
-   ${PROJECT_NAME}
- )
+ # target_link_libraries(ndt_mcl_2_laser_node
+ #   ${catkin_LIBRARIES}
+ #   ${PROJECT_NAME}
+ # )
 
- target_link_libraries(ndt_mcl_node
-   ${catkin_LIBRARIES}
-   ${PROJECT_NAME}
- )
+ # target_link_libraries(ndt_mcl_node
+ #   ${catkin_LIBRARIES}
+ #   ${PROJECT_NAME}
+ # )
 
  target_link_libraries(ndt_mcl_localization
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
  )
 
- target_link_libraries(velodyne_ndt_mcl_node
+ target_link_libraries(ndt_mcl_localization_filter
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
  )
 
- #target_link_libraries(velodyne_ndt_mcl_HMT_node
- #  ${catkin_LIBRARIES}
- #  ${PROJECT_NAME}
- #)
 
- target_link_libraries(ndt_map_publisher
-   ${catkin_LIBRARIES}
-   ${PROJECT_NAME}
- )
+ # target_link_libraries(velodyne_ndt_mcl_node
+ #   ${catkin_LIBRARIES}
+ #   ${PROJECT_NAME}
+ # )
+
+ # #target_link_libraries(velodyne_ndt_mcl_HMT_node
+ # #  ${catkin_LIBRARIES}
+ # #  ${PROJECT_NAME}
+ # #)
+
+ # target_link_libraries(ndt_map_publisher
+ #   ${catkin_LIBRARIES}
+ #   ${PROJECT_NAME}
+ # )
 
 
 #############

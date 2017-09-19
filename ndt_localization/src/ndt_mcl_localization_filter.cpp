@@ -36,6 +36,16 @@
 #include <iostream>
 #include <chrono>
 
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <std_srvs/Empty.h>
+
+
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsOdomSync;
+typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> PointsPoseSync;
+
+
 class particle_filter_wrap {
   ros::NodeHandle nh;
   //Map parameters
@@ -111,6 +121,14 @@ class particle_filter_wrap {
   bool beLaser;
   bool beVelodyne;
   bool bePC;
+
+    message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
+  message_filters::Subscriber<sensor_msgs::LaserScan> *laser_sub_;
+  message_filters::Subscriber<nav_msgs::Odometry> *odom_sub_;
+
+  message_filters::Synchronizer< PointsOdomSync > *sync_po_;
+  message_filters::Synchronizer< PointsPoseSync > *sync_pp_;
+
   
   void Pose2DToTF(Eigen::Vector3d mean, ros::Time ts, Eigen::Affine3d Todometry){
     static tf::TransformBroadcaster br, br_mapOdom;
@@ -263,11 +281,11 @@ class particle_filter_wrap {
     }                                                                                                                                                             
     this->processFrame(cloud,msg->header.stamp);    
   }
-  void PCCallback(const sensor_msgs::PointCloud2::ConstPtr& msg){
+  void PCOdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg,const nav_msgs::Odometry::ConstPtr& odo_in){
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
         pcl::fromROSMsg (*msg, pcl_cloud);
 	          ROS_INFO("Got points");
-    this->processFrame(pcl_cloud,msg->header.stamp);
+    this->processFrame(pcl_cloud,*odo_in);
 
   }
   
@@ -296,7 +314,7 @@ class particle_filter_wrap {
 
   }
 
-  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Time ts){
+  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, const nav_msgs::Odometry::ConstPtr& odo_in){
         static tf::TransformListener tf_listener;
 
     if(!initialized){
@@ -313,7 +331,8 @@ class particle_filter_wrap {
 		       * Eigen::AngleAxisf(sensorOffsetP, Eigen::Vector3f::UnitY())
 		       * Eigen::AngleAxisf(sensorOffsetT, Eigen::Vector3f::UnitZ()));                                                                                                                  ////////////////////
     transform_2.translation() << sensorOffsetX, sensorOffsetY, sensorOffsetZ;
-
+ Eigen::Quaterniond qd;
+ 
     tf_listener.waitForTransform(odomTF, baseTF, ts, ros::Duration(0.1));
     try{
       tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/ts, transform);
@@ -325,6 +344,8 @@ class particle_filter_wrap {
       ROS_ERROR("%s", ex.what());
       return;
     }
+
+    
     Eigen::Affine3d T = getAsAffine(x, y, yaw);
     if(firstLoad){
       tOld = T;
@@ -457,8 +478,16 @@ public:
     
     if(beVelodyne)
       PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::VeloCallback, this);
-    if(bePC)
-      PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::PCCallback, this);
+    if(bePC){
+      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,inputTopicName,1);
+      odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+      sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
+      sync_po_->registerCallback(boost::bind(&NDTFuserNode::PCOdomCallback, this, _1, _2));
+
+
+
+    }
+    // PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::PCCallback, this);
     if(beLaser)
       PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::LaserCallback, this);
     
@@ -479,5 +508,3 @@ int main(int argc, char **argv){
   ros::NodeHandle parameters("~");
   particle_filter_wrap pf(parameters);
 }
-
-

@@ -4,7 +4,7 @@
 
   
   <!-- run dual-laser localisation -->
-  <node name="ndt_mcl" pkg="ndt_localization" type="ndt_mcl_localization" output="screen">
+  <node name="ndt_mcl" pkg="ndt_localization" type="ndt_mcl_localization_filter" output="screen">
     <!-- jff file with map -->
     <param name="map_file" value="$(find ndt_fuser)/maps/basement3d_map.jff" />
     <param name="sensor_pose_x" value="0.3" />

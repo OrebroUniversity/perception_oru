@@ -268,6 +268,11 @@ class particle_filter_wrap {
     
   }
   void PCCallback(const sensor_msgs::PointCloud2::ConstPtr& msg){
+    pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
+        pcl::fromROSMsg (*msg, pcl_cloud);
+	          ROS_INFO("Got laser points");
+    this->processFrame(pcl_cloud,msg->header.stamp);
+
   }
   
   void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
@@ -394,7 +399,7 @@ public:
     
     param.param<std::string>("input_topic_name", inputTopicName, "/velodyne_packets");
     param.param<bool>("Velodyne", beVelodyne, false);
-    param.param<bool>("PoinCloud", bePC, false);
+    param.param<bool>("PointCloud", bePC, false);
     param.param<bool>("Laser", beLaser, false);
     
     param.param<std::string>("root_tf", rootTF, "/map");

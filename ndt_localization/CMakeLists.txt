@@ -109,6 +109,10 @@ add_executable(velodyne_ndt_mcl_node src/velodyne_ndt_mcl_node.cpp)
 add_executable(ndt_mcl_node src/ndt_mcl_node.cpp)
 add_executable(ndt_mcl_2_laser_node src/ndt_mcl_2_lasers_node.cpp)
 add_executable(ndt_map_publisher src/map_publisher.cpp)
+add_executable(ndt_mcl_localization src/ndt_mcl_localization.cpp)
+
+
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(g_ndt_mcl_node g_ndt_mcl_generate_messages_cpp)
@@ -124,6 +128,11 @@ add_executable(ndt_map_publisher src/map_publisher.cpp)
  )
 
  target_link_libraries(ndt_mcl_node
+   ${catkin_LIBRARIES}
+   ${PROJECT_NAME}
+ )
+
+ target_link_libraries(ndt_mcl_localization
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
  )

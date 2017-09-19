@@ -294,6 +294,68 @@ class particle_filter_wrap {
   }
   
   lslgeneric::NDTMap* LaserToNDT(const sensor_msgs::LaserScan::ConstPtr& scan){
+      double cxs,cys,czs;
+    //minx=std::numeric_limits<double>::max();
+    //miny=std::numeric_limits<double>::max();
+    mapGrid->getCellSize(cxs,cys,czs);
+
+    //laserProjector.projectLaser(*msg,tempCloud);
+    //pcl::fromROSMsg(tempCloud,tempCloudPCL);
+
+	///Calculate the laser pose with respect to the base
+	float dy =sensorOffsetY;
+	float dx = sensorOffsetX;
+	float alpha = atan2(dy,dx);
+	float L = sqrt(dx*dx+dy*dy);
+
+	///Laser pose in base frame
+	float lpx = L* cos(alpha);
+	float lpy = L * sin(alpha);
+	float lpa = sensorOffsetT;
+
+	///Laser scan to PointCloud expressed in the base frame
+    int N =(scan->angle_max - scan->angle_min)/scan->angle_increment;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	for (int j=0;j<N;j++){
+      double r  = scan->ranges[j];
+      if(r>=scan->range_min && r<scan->range_max){// && r>close_cut){
+        double a  = scan->angle_min + j*scan->angle_increment;
+        pcl::PointXYZ pt;
+        pt.x = r*cos(a+lpa)+lpx;
+        pt.y = r*sin(a+lpa)+lpy;
+        pt.z = 0.02 * (double)rand()/(double)RAND_MAX;
+        cloud->push_back(pt);
+      }
+	}
+
+	
+
+
+    // if(firstLoad&&(informed||ndt)){
+    //   for(int i=0;i<cloud->points.size();i++){
+    //     if(cloud->points[i].x<minx)
+    //       minx=cloud->points[i].x;
+    //     if(cloud->points[i].y<miny)
+    //       miny=cloud->points[i].y;
+    //   }
+    // }
+	    lslgeneric::NDTMap *localMap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+    localMap->guessSize(0, 0, 0,max_range*2.0,max_range*2.0,cxs*3);
+    localMap->loadPointCloud(*cloud);
+    localMap->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
+    //    ROS_INFO_STREAM("cloud size " << cloud->size());
+    //    ROS_INFO_STREAM("map size size " << localMap->numberOfActiveCells());
+    return localMap;
+
+  }
+
+
+
+
+
+    /*
+
+    
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
     sensor_msgs::PointCloud2 pc2;
     pcl::PCLPointCloud2 pcl_pc2;
@@ -308,15 +370,29 @@ class particle_filter_wrap {
 		       * Eigen::AngleAxisf(sensorOffsetT, Eigen::Vector3f::UnitZ()));                                                                                                                  ////////////////////
     transform_2.translation() << sensorOffsetX, sensorOffsetY, sensorOffsetZ;
     pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+   
     pcl::transformPointCloud(*cloud, *transformed_cloud, transform_2);
     lslgeneric::NDTMap *localMap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
     localMap->loadPointCloud(*transformed_cloud, range);
     localMap->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
+     /////////////////////////////////
+    ROS_INFO_STREAM(cloud->size());
+    ROS_INFO_STREAM(transformed_cloud->size());
+    pcl::PointXYZ p=*(cloud->begin());
+    ROS_INFO_STREAM("cloud point"<<p.x<<" "<<p.y<<" "<<p.z);
+    p=*(transformed_cloud->begin());
+    ROS_INFO_STREAM("transformed_cloud point"<<p.x<<" "<<p.y<<" "<<p.z);
+     std::vector<lslgeneric::NDTCell*> vec_ndt;
+    vec_ndt=localMap->getAllCells();
+    ROS_INFO_STREAM("No NDT"<<vec_ndt.size());
+    ROS_INFO_STREAM("No NDT"<<);
+    ROS_INFO_STREAM("range"<<range);
+    /////////////////////////////////
     cloud->clear();
     transformed_cloud->clear();
     return localMap;
   }
-    
+    */
   void VeloCallback(const velodyne_msgs::VelodyneScan::ConstPtr& msg){
     //ROS_INFO_STREAM("VELO recived");
     sensor_msgs::PointCloud2 tempCloud;
@@ -333,7 +409,7 @@ class particle_filter_wrap {
     }
     tf_listener.waitForTransform(odomTF, baseTF, msg->header.stamp, ros::Duration(0.1));
     try{
-      tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/msg->header.stamp, transform);
+      tf_listener.lookupTransform(odomTF, baseTF,msg->header.stamp, transform);
       yaw = tf::getYaw(transform.getRotation());
       x = transform.getOrigin().x();
       y = transform.getOrigin().y();
@@ -365,13 +441,13 @@ class particle_filter_wrap {
     Pose2DToTF(mean_pose,msg->header.stamp,T);
 
     //ROS_INFO("publishing pose");
-    // MCL->GetPoseMeanAndVariance2D(mean, cov);
-    // mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
+    MCL->GetPoseMeanAndVariance2D(mean, cov);
+    mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
     //ROS_INFO_STREAM(mean);
-    //if(showPose){
-    //mcl_pose.header.stamp = msg->header.stamp;
-    //mclPosePub.publish(mcl_pose);
-    //}
+    if(showPose){
+    mcl_pose.header.stamp = msg->header.stamp;
+    mclPosePub.publish(mcl_pose);
+    }
   }
 
 
@@ -421,7 +497,14 @@ class particle_filter_wrap {
     nav_msgs::Odometry mcl_pose;
     Eigen::Vector3d mean_pose=MCL->GetMeanPose2D();
     Pose2DToTF(mean_pose,msg->header.stamp,T);
-
+    MCL->GetPoseMeanAndVariance2D(mean, cov);
+    mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
+    //ROS_INFO_STREAM(mean);
+    if(showPose){
+    mcl_pose.header.stamp = msg->header.stamp;
+    mclPosePub.publish(mcl_pose);
+    }
+    
     //ROS_INFO("publishing pose");
     // MCL->GetPoseMeanAndVariance2D(mean, cov);
     // mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
@@ -432,62 +515,165 @@ class particle_filter_wrap {
     //}
   }
 
-    void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
-    //ROS_INFO_STREAM("VELO recived");
-    sensor_msgs::PointCloud2 tempCloud;
-    pcl::PointCloud<pcl::PointXYZ> tempCloudPCL;
-    static tf::TransformListener tf_listener;
-    tf::StampedTransform transform;
-    double x, y, yaw;
-    if(!initialized){
-      initialized = true;
-      MCL->InitializeNormal(initial_pose.position.x, initial_pose.position.y, tf::getYaw(initial_pose.orientation), initVar);
-      //MCL->InitializeNormal(0, 0,0, initVar);
-      ROS_INFO("Initialized");
 
-    }
-    tf_listener.waitForTransform(odomTF, baseTF, msg->header.stamp, ros::Duration(0.1));
-    try{
-      tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/msg->header.stamp, transform);
-      yaw = tf::getYaw(transform.getRotation());
-      x = transform.getOrigin().x();
-      y = transform.getOrigin().y();
-    }
-    catch(tf::TransformException ex){
-      ROS_ERROR("%s", ex.what());
-      return;
-    }
-    Eigen::Affine3d T = getAsAffine(x, y, yaw);
-    if(firstLoad){
-      tOld = T;
-      firstLoad = false;
-    }
-    Eigen::Affine3d tMotion = tOld.inverse() * T;
+  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, 
+                    Eigen::Affine3d tMotion, ros::Time ts){
+    Eigen::Affine3d T;
+        Eigen::Affine3f transform_2 = Eigen::Affine3f::Identity();
+    transform_2.rotate(Eigen::AngleAxisf(sensorOffsetR, Eigen::Vector3f::UnitX())
+		       * Eigen::AngleAxisf(sensorOffsetP, Eigen::Vector3f::UnitY())
+		       * Eigen::AngleAxisf(sensorOffsetT, Eigen::Vector3f::UnitZ()));                                                                                                                  ////////////////////
+    transform_2.translation() << sensorOffsetX, sensorOffsetY, sensorOffsetZ;
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::transformPointCloud(cloud, *transformed_cloud, transform_2);
+    lslgeneric::NDTMap *localMap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+    localMap->loadPointCloud(*transformed_cloud, range);
+    localMap->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
+    cloud.clear();
+    transformed_cloud->clear();
 
-    tOld = T;
-    lslgeneric::NDTMap *localNDT = LaserToNDT(msg);
-    MCL->UpdateAndPredictEff(tMotion, localNDT,fraction, cutoff);
-    //ROS_INFO_STREAM(r_var_x<<" "<<r_var_y<<" "<<r_var_th);
-    //MCL->UpdateAndPredictEffRe(tMotion, localNDT,fraction, cutoff, var_x, var_y, var_th, r_var_x, r_var_y, r_var_th, tres);
-    //MCL->UpdateAndPredict(tMotion, localNDT);
-    delete localNDT;
-    if(showParticles)
+    MCL->UpdateAndPredictEff(tMotion, localMap,fraction, cutoff);
+    delete localMap;
+        if(showParticles)
       particlePub.publish(ParticlesToMsg(MCL->particleCloud));
     Eigen::Matrix3d cov;
     Eigen::Vector3d mean;
     nav_msgs::Odometry mcl_pose;
     Eigen::Vector3d mean_pose=MCL->GetMeanPose2D();
-    Pose2DToTF(mean_pose,msg->header.stamp,T);
-
-    //ROS_INFO("publishing pose");
-    // MCL->GetPoseMeanAndVariance2D(mean, cov);
-    // mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
+    Pose2DToTF(mean_pose,ts,T);
+    MCL->GetPoseMeanAndVariance2D(mean, cov);
+    mcl_pose = Pose2DToMsg(mean, cov, ts, T);
     //ROS_INFO_STREAM(mean);
-    //if(showPose){
-    //mcl_pose.header.stamp = msg->header.stamp;
-    //mclPosePub.publish(mcl_pose);
-    //}
+    if(showPose){
+    mcl_pose.header.stamp = ts;
+    mclPosePub.publish(mcl_pose);
+    }
+
+
   }
+    void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
+      laser_geometry::LaserProjection projector_;
+      sensor_msgs::PointCloud2 cloud;
+      pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
+      //      message_m.lock();
+      projector_.projectLaser(*msg, cloud);
+      //message_m.unlock();
+      pcl::fromROSMsg (cloud, pcl_cloud_unfiltered);
+      
+      pcl::PointXYZ pt;
+      //add some variance on z
+      for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
+	pt = pcl_cloud_unfiltered.points[i];
+	if(sqrt(pt.x*pt.x+pt.y*pt.y) > min_range) {
+	  pt.z += 0.1*((double)rand())/(double)INT_MAX;
+	  pcl_cloud.points.push_back(pt);
+	}
+      }
+      ROS_INFO("Got laser points");
+      
+      static tf::TransformListener tf_listener;
+      tf::StampedTransform transform;
+      double x, y, yaw;
+      if(!initialized){
+	initialized = true;
+	MCL->InitializeNormal(initial_pose.position.x, initial_pose.position.y, tf::getYaw(initial_pose.orientation), initVar);
+	//MCL->InitializeNormal(0, 0,0, initVar);
+	ROS_INFO("Initialized");
+    }
+      tf_listener.waitForTransform(odomTF, baseTF, msg->header.stamp, ros::Duration(0.1));
+      try{
+	tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/msg->header.stamp, transform);
+	yaw = tf::getYaw(transform.getRotation());
+	x = transform.getOrigin().x();
+	y = transform.getOrigin().y();
+      }
+      catch(tf::TransformException ex){
+	ROS_ERROR("%s", ex.what());
+	return;
+      }
+      Eigen::Affine3d T = getAsAffine(x, y, yaw);
+      if(firstLoad){
+	tOld = T;
+	firstLoad = false;
+      }
+      Eigen::Affine3d tMotion = tOld.inverse() * T;
+      
+      tOld = T;
+      
+      this->processFrame(pcl_cloud,tMotion,msg->header.stamp);
+
+      ///////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////
+  //   //ROS_INFO_STREAM("VELO recived");
+  //   sensor_msgs::PointCloud2 tempCloud;
+  //   pcl::PointCloud<pcl::PointXYZ> tempCloudPCL;
+  //   static tf::TransformListener tf_listener;
+  //   tf::StampedTransform transform;
+  //   double x, y, yaw;
+  //   if(!initialized){
+  //     initialized = true;
+  //     MCL->InitializeNormal(initial_pose.position.x, initial_pose.position.y, tf::getYaw(initial_pose.orientation), initVar);
+  //     //MCL->InitializeNormal(0, 0,0, initVar);
+  //     ROS_INFO("Initialized");
+
+  //   }
+  //   tf_listener.waitForTransform(odomTF, baseTF, msg->header.stamp, ros::Duration(0.1));
+  //   try{
+  //     tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/msg->header.stamp, transform);
+  //     yaw = tf::getYaw(transform.getRotation());
+  //     x = transform.getOrigin().x();
+  //     y = transform.getOrigin().y();
+  //   }
+  //   catch(tf::TransformException ex){
+  //     ROS_ERROR("%s", ex.what());
+  //     return;
+  //   }
+  //   Eigen::Affine3d T = getAsAffine(x, y, yaw);
+  //   if(firstLoad){
+  //     tOld = T;
+  //     firstLoad = false;
+  //   }
+  //   Eigen::Affine3d tMotion = tOld.inverse() * T;
+
+  //   tOld = T;
+  //   lslgeneric::NDTMap *localNDT = LaserToNDT(msg);
+   
+  //   MCL->UpdateAndPredictEff(tMotion, localNDT,fraction, cutoff);
+  //   //ROS_INFO_STREAM(r_var_x<<" "<<r_var_y<<" "<<r_var_th);
+  //   //MCL->UpdateAndPredictEffRe(tMotion, localNDT,fraction, cutoff, var_x, var_y, var_th, r_var_x, r_var_y, r_var_th, tres);
+  //   //MCL->UpdateAndPredict(tMotion, localNDT);
+  //    ///////////////////////////////////////////////////
+   
+   
+  // ROS_INFO_STREAM("local map size " << localNDT->numberOfActiveCells());
+  //   ROS_INFO_STREAM("gloabl map size " << ndtMap->numberOfActiveCells());
+  // std::vector<lslgeneric::NDTCell*> cells_local= localNDT->getAllCells();
+  //   std::vector<lslgeneric::NDTCell*> cells_global= ndtMap->getAllCells();
+  // ROS_INFO_STREAM(" local mean"<<cells_local[0]->getMean());
+  //   ROS_INFO_STREAM(" global mean"<<cells_global[0]->getMean());
+  //     //////////////////////////////////
+  //   delete localNDT;
+  //   if(showParticles)
+  //     particlePub.publish(ParticlesToMsg(MCL->particleCloud));
+  //   Eigen::Matrix3d cov;
+  //   Eigen::Vector3d mean;
+  //   nav_msgs::Odometry mcl_pose;
+  //   Eigen::Vector3d mean_pose=MCL->GetMeanPose2D();
+  //   Pose2DToTF(mean_pose,msg->header.stamp,T);
+
+  //   //ROS_INFO("publishing pose");
+  //    MCL->GetPoseMeanAndVariance2D(mean, cov);
+  //    mcl_pose = Pose2DToMsg(mean, cov, msg->header.stamp, T);
+  //    //    ROS_INFO_STREAM(mean);
+  //   if(showPose){
+  //   mcl_pose.header.stamp = msg->header.stamp;
+  //   mclPosePub.publish(mcl_pose);
+  //   }
+      ///////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////
+    }
+
 
   void initialposeCallback(geometry_msgs::PoseWithCovarianceStamped input_init){
     initialized = false;
@@ -553,8 +739,8 @@ public:
 
     param.param<int>("keep", tres, 400);
     param.param<double>("range", range, 40.0);
-    param.param<double>("fraction", fraction, 0.8);
-    param.param<double>("cutoff", cutoff, 1.5);
+    param.param<double>("fraction", fraction, 1.0);
+    param.param<double>("cutoff", cutoff, -10);
     
     param.param("min_range", min_range, 2.0);
     param.param("max_range", max_range, 100.0);

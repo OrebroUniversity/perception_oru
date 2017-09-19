@@ -1,20 +1,22 @@
+<?xml version="1.0"?>
 <launch>
     <!-- run dual-laser localisation -->
    <node name="ndt_mcl" pkg="ndt_localization" type="ndt_mcl_localization" output="screen">
       <!-- jff file with map -->
-    <param name="map_file" value="$(find ndt_fuser)/maps/basement2d_map.jff"  />
+    <param name="map_file" value="$(find ndt_fuser)/maps/basement3d_map.jff"  />
     	<param name="sensor_pose_x" value="0.695" />
 	<param name="sensor_pose_y" value="-0.01" />
+	<param name="sensor_pose_z" value="0.3" />
 	<param name="sensor_pose_t" value="-0.0069813" />
 	<param name="initial_y" value="0.0" />
 	<param name="initial_x" value="0.0" />
 	<param name="initial_t" value="0.0" />
     <!-- resolution of jff map -->
-    <param name="resolution" value="0.2" />
+    <param name="resolution" value="0.4" />
     <!-- show aprticles for debug purposes -->
     <param name="show_particles" value="true" />
     <!-- particle count for ndt-mcl -->
-    <param name="particle_count" value="300" />
+    <param name="particle_count" value="500" />
     <param name="show_pose" value="true"/>
         <param name="fraction" value="1.0"/>
     <param name="force_SIR" value="true" />

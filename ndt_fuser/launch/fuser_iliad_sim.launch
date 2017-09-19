@@ -20,7 +20,7 @@
 	
 	<param name="beHMT" value="false" />
 	<param name="match2D" value="true" />
-	<param name="useOdometry" value="false" />
+	<param name="useOdometry" value="true" />
 	<param name="odometry_topic" value="/robot1/odom" />
         <param name="visualize" value="true" />
     </node>

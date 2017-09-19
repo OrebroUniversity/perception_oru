@@ -35,7 +35,7 @@
 #include <boost/foreach.hpp>
 
 #ifndef SYNC_FRAMES
-#define SYNC_FRAMES 20
+#define SYNC_FRAMES 100
 #define MAX_TRANSLATION_DELTA 2.0
 #define MAX_ROTATION_DELTA 0.5
 #endif

@@ -16,7 +16,7 @@
 	<param name="sensor_pose_t" value="0.0" />
 	
 	<param name="map_directory" value="$(find ndt_fuser)/maps/" />	
-	<param name="map_name_prefix" value="basement3d" />
+	<param name="map_name_prefix" value="ncfm_sim_04" />
 	
 	<param name="beHMT" value="false" />
 	<param name="match2D" value="true" />

@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <!-- run dual-laser localisation -->
    <node name="ndt_mcl" pkg="ndt_localization" type="ndt_mcl_localization" output="screen">
@@ -18,7 +19,7 @@
     <!-- particle count for ndt-mcl -->
     <param name="particle_count" value="300" />
     <param name="show_pose" value="true"/>
-        <param name="fraction" value="0.6"/>
+        <param name="fraction" value="0.9"/>
     <param name="force_SIR" value="true" />
     <param name="input_topic_name" value="velodyne_packets" />
     <param name="Velodyne" value="true" />

@@ -35,7 +35,7 @@
 #include <boost/foreach.hpp>
 
 #ifndef SYNC_FRAMES
-#define SYNC_FRAMES 20
+#define SYNC_FRAMES 40
 #define MAX_TRANSLATION_DELTA 2.0
 #define MAX_ROTATION_DELTA 0.5
 #endif
@@ -216,9 +216,9 @@ public:
     fuser->setSensorPose(sensor_pose_);
     
     if(!matchLaser) {
-      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,1);
+      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,10);
       if(useOdometry) {
-        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
+        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,1);
         sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
         sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
       }

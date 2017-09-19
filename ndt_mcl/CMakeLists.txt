@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sen
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
-    CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions
+    CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions ndt_rviz
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )

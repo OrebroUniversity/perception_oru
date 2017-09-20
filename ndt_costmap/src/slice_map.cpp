@@ -81,15 +81,16 @@ private:
 		pcl::PointXYZ pt(minx+occ_resolution/2+h*occ_resolution,miny+occ_resolution/2+w*occ_resolution,sample_height);
 	if(!ndtMap->getCellAtPoint(pt,ptCell)){
 	  ROS_INFO_STREAM("no cell");
-	  maps[w][h]=0.5;
+	  maps[w][h]=1;
 	}
 	else{
+	  ROS_INFO_STREAM(ptCell->getOccupancy());
 	  if(ptCell->getLikelihood(pt)>lik_tr){
-	    maps[w][h]=1;
+	    maps[w][h]=2;
 	  }
 	  else{
 	    if(ptCell->getLikelihood(pt)<0){
-	      maps[w][h]=0.5;
+	      maps[w][h]=1;
 	    }
 	     else{
 	         maps[w][h]=0;
@@ -106,7 +107,7 @@ private:
 			if(map_file.is_open()){
 				map_file << "P2\n";
 				map_file << width << " " << height << std::endl;
-				map_file << "1\n";
+				map_file << "3\n";
 				for(int w = width - 1; w >= 0; w--){
 					for(int h = 0; h < height; h++)
 						map_file << maps[w][h] << " ";

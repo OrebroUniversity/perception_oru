@@ -574,8 +574,8 @@ int LazyGrid::loadFromJFF(FILE * jffin)
 
     this->setCenter(lazyGridData[6], lazyGridData[7], lazyGridData[8]);
 
-    //this->initializeAll();
-    this->initialize();
+    this->initializeAll();
+    //    this->initialize();
     int indX, indY, indZ;
     float r,g,b;
     double xs,ys,zs;

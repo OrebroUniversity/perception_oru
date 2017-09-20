@@ -8,7 +8,7 @@
 #include "iostream"
 #include "string"
 #include "stdio.h"
-
+#include <velodyne_pointcloud/point_types.h>
 namespace libgraphMap{
 
 class registrationParameters{
@@ -35,7 +35,8 @@ class registrationType{
 public:
 
   virtual ~registrationType()=0;
-  virtual bool Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d covar=unit_covar){}//This methods attempts to register the point cloud versus the map using the affine transformation guess "Tm"
+  virtual bool Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d covar=unit_covar){cerr<<"No registration for pcl::PointXYZ implemented"<<endl;}//This methods attempts to register the point cloud versus the map using the affine transformation guess "Tm"
+  virtual bool Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud,Matrix6d covar=unit_covar){cerr<<"No registration for velodyne_pointcloud::PointXYZIR implemented"<<endl;}
   virtual bool RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eigen::Affine3d &Tdiff,double match_score){}
   virtual std::string ToString();
   bool enableRegistration_=false;

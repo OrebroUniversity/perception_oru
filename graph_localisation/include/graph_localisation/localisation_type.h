@@ -6,6 +6,7 @@
 #include "graph_map/graph_map_navigator.h"
 #include "graph_map/graph_map.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include <velodyne_pointcloud/point_types.h>
 using namespace libgraphMap;
 namespace GraphMapLocalisation{
 class LocalisationParam{
@@ -28,6 +29,7 @@ public:
   }
   virtual void InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance)=0; //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   virtual void UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tmotion)=0;
+  virtual void UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion)=0;
   virtual ~LocalisationType()=0;
   virtual Eigen::Affine3d GetPose()=0;//return pose of robot in world frame
   virtual std::string ToString();

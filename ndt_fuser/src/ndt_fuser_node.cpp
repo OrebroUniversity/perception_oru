@@ -49,7 +49,7 @@ typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::LaserScan, 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> PointsPoseSync;
 
-class NDTFuserNode {
+class view_bag {
 
 protected:
   // Our NodeHandle
@@ -98,7 +98,7 @@ protected:
   Eigen::Affine3d last_tf_frame_;
 public:
   // Constructor
-  NDTFuserNode(ros::NodeHandle param_nh) : nb_added_clouds_(0)
+  view_bag(ros::NodeHandle param_nh) : nb_added_clouds_(0)
   {
     ///if we want to build map reading scans directly from bagfile
     param_nh.param<std::string>("bagfile_name",bag_name,"data.bag");
@@ -220,10 +220,10 @@ public:
       if(useOdometry) {
         odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,1);
         sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
-        sync_po_->registerCallback(boost::bind(&NDTFuserNode::points2OdomCallback, this, _1, _2));
+        sync_po_->registerCallback(boost::bind(&view_bag::points2OdomCallback, this, _1, _2));
       }
       else {
-        points2_sub_->registerCallback(boost::bind( &NDTFuserNode::points2Callback, this, _1));
+        points2_sub_->registerCallback(boost::bind( &view_bag::points2Callback, this, _1));
       }
     } 
     else 
@@ -232,28 +232,28 @@ public:
 	if(useOdometry && !renderGTmap) {
 	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
 	    sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-	    sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+      sync_lo_->registerCallback(boost::bind(&view_bag::laserOdomCallback, this, _1, _2));
 	} 
 	else if(!renderGTmap){
-	    laser_sub_->registerCallback(boost::bind( &NDTFuserNode::laserCallback, this, _1));
+      laser_sub_->registerCallback(boost::bind( &view_bag::laserCallback, this, _1));
 	} else {
 	    //this render map directly from GT
 	    odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,gt_topic,10);
 	    sync_lo_ = new message_filters::Synchronizer< LaserOdomSync >(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-	    sync_lo_->registerCallback(boost::bind(&NDTFuserNode::laserOdomCallback, this, _1, _2));
+      sync_lo_->registerCallback(boost::bind(&view_bag::laserOdomCallback, this, _1, _2));
 	    fuser->disableRegistration = true;
 	}
     }
-    save_map_ = param_nh.advertiseService("save_map", &NDTFuserNode::save_map_callback, this);
+    save_map_ = param_nh.advertiseService("save_map", &view_bag::save_map_callback, this);
 
     if(plotGTTrack) {
-	gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&NDTFuserNode::gt_callback, this);	
+  gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic,10,&view_bag::gt_callback, this);
     }
   
     initPoseSet = false;
   }
 
-  ~NDTFuserNode()
+  ~view_bag()
   {
     delete fuser;
   }
@@ -562,7 +562,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "ndt_fuser_node");
 
   ros::NodeHandle param("~");
-  NDTFuserNode t(param);
+  view_bag t(param);
   while(ros::ok()){
 	  ros::spinOnce();
   }

@@ -43,90 +43,60 @@ void GraphMapFuser::SaveGraphMap(const std::string &filename){
   ar << graph_map_;
   ofs.close();
 }
-
+void GraphMapFuser::SaveCurrentNodeAsJFF(const std::string &filename){
+  cout<<"-----------------------------Saving JFF---------------------------------\n"<<graph_map_->ToString()<<endl;
+  cout<<"----------------------------------------------------------------------\nTo file path:"<<filename<<endl;
+  NDTMap * map=boost::dynamic_pointer_cast<NDTMapType> (graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  std::string name=filename+std::string(".JFF");
+  map->writeToJFF(name.c_str());
+}
+void GraphMapFuser::Visualize(bool enableVisualOutput,plotmarker marker){
+  visualize_=enableVisualOutput;
+  marker_=marker;
+}
 //!
 //! \brief GraphMapFuser::KeyFrameBasedFuse
 //! \param Tnow pose of base specified in the GLOBAL world frame
 //! \return true if base has moved outside bounds and can fuse the current frame, otherwise return false. Will always return true the first frame
 //!
 bool GraphMapFuser::KeyFrameBasedFuse(const Affine3d &Tnow ){
-  if(nr_frames_==0)
+  bool ret = false;
+  if(nr_frames_==0) {
+    frame_idx_ = 0;
     return true;
+  }
   else{
     Affine3d diff=pose_last_fuse_.inverse()*Tnow;
     Eigen::Vector3d Tmotion_euler = diff.rotation().eulerAngles(0,1,2);
     ndt_generic::normalizeEulerAngles(Tmotion_euler);
     if(use_keyframe_ ){
-      if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0))
-        return true;
-      else
-        return false;
+      if(diff.translation().norm()>min_keyframe_dist_ || Tmotion_euler.norm()>(min_keyframe_rot_deg_*M_PI/180.0)) {
+        ret = true;
+      }
+      else {
+        ret = false;
+      }
     }
-    else
-      return true;
+    else {
+      ret = true;
+    }
   }
+  frame_idx_++;
+  if (ret == true) {
+    if (frame_idx_ % 4 == 0) {// Avoid that the scanner covers the same region (one scan covers ~270 degrees angle and the same area is repeaded every 4rd frame)
+      ret = false;
+    }
+    else {
+      frame_idx_ = 0;
+    }
+  }
+  return ret;
 }
 
-/*!
- * \brief graphMapFuser::ProcessFrame
- * \param cloud frame: lidar
- * \param Tnow frame: world
- */
-
-void GraphMapFuser::ProcessFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Affine3d &Tnow, const Eigen::Affine3d &Tmotion){
-  //plotGTCloud(cloud);
-  bool map_node_created,registration_succesfull=true,fuse_this_frame=false;
-  static bool map_node_changed=false;
-  if(!initialized_){
-    cerr<<"fuser not initialized"<<endl;
-    return;
-  }
-  fuse_this_frame=KeyFrameBasedFuse(Tnow);//fuse frame based on distance traveled
-  Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
-  Tnow=T_world_to_local_map*Tnow;//change frame to local map
-
-  if(fuse_this_frame)
-    cout<<"time to fuse a new frame="<<nr_frames_<<endl;
-
-  Matrix6d motion_cov=motion_model_2d_.getCovMatrix6(Tmotion, 1., 1., 1.);
-  ros::Time t1=ros::Time::now();
-  lslgeneric::transformPointCloudInPlace(sensorPose_, cloud);//Transform cloud into robot frame before registrating
-  ros::Time t2=ros::Time::now();
-  cout<<"transformation took t="<<t2-t1<<endl;
-  if(fuse_this_frame||map_node_changed){
-    registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
-  }
-
-  if(graph_map_->AutomaticMapInterchange(Tnow,motion_cov,T_world_to_local_map,map_node_changed,map_node_created) && map_node_changed)
-  {
-    //double score;
-    //Affine3d Tdiff=Graph_nav_->GetPreviousNodePose().inverse()*Graph_nav_->GetCurrentNodePose();
-    //Tdiff.translation()=Tdiff.translation()+Vector3d(0.1,0.1,0.1);
-    //cout<<"Tdiff with offset=\n"<<Tdiff.translation()<<endl;
-    //registrator_->RegisterMap2Map(Graph_nav_->GetPreviousNode()->GetMap(),Graph_nav_->GetCurrentNode()->GetMap(),Tdiff,score);
-    //Graph_nav_->AddFactor(Graph_nav_->GetPreviousNode(),Graph_nav_->GetCurrentNode(),Tdiff,unit_covar);
-  }
-  if(!registration_succesfull){
-    Tnow=T_world_to_local_map.inverse()*Tnow;//remap Tnow to global map frame
-    cerr<<"REGISTRATION ERROR"<<endl;
-    nr_frames_++;
-    return;
-  }
-  if(fuse_this_frame||map_node_changed){
-    lslgeneric::transformPointCloudInPlace(Tnow, cloud);// The cloud should now be centered around the robot pose in the map frame
-    graph_map_->GetCurrentNode()->updateMap(Tnow*sensorPose_,cloud);//Update map, provided transform is the pose of the sensor in the world which is where the scan was taken from
-  }
-
-  Tnow=T_world_to_local_map.inverse()*Tnow;//remap Tnow to global map frame
-  if(fuse_this_frame||map_node_changed)
-    pose_last_fuse_=Tnow;
-
-  nr_frames_++;
-
-}
-void GraphMapFuser::plotMap(){
-  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
-  GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());
+void GraphMapFuser::PlotMapType(){
+/*  NDTMapPtr curr_node = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+  GraphPlot::SendGlobalMapToRviz(curr_node->GetNDTMap(),1,graph_map_->GetCurrentNodePose());*/
+  GraphPlot::PlotMap(graph_map_->GetCurrentNode()->GetMap(),-1,graph_map_->GetCurrentNodePose(),marker_);
   GraphPlot::PlotPoseGraph(graph_map_);
 }
 

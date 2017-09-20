@@ -15,6 +15,7 @@ find_package(catkin REQUIRED
     ndt_map
     ndt_mcl
     ndt_localization
+    ndt_rviz
     laser_geometry
     eigen_conversions
     pcl_ros
@@ -26,6 +27,7 @@ find_package(catkin REQUIRED
     tf_conversions
     tf
     genmsg
+    tf_conversions
     )
 find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED COMPONENTS)
@@ -63,6 +65,7 @@ set (${PROJECT_NAME}_LIB_SRCS
     src/graph_map/factor.cpp
     src/ndt_dl/ndtdl_map_type.cpp
     src/ndt_dl/ndtdl_reg_type.cpp
+    src/ndt_dl/ndtdl_map_param.cpp
     )
 add_library(${PROJECT_NAME} ${${PROJECT_NAME}_LIB_SRCS})
 add_executable(test_graph test/test_graph.cpp )

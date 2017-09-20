@@ -1,17 +1,31 @@
 #include "mcl_ndt/mcl_ndt.h"
+#include <ndt_dl/point_curv.h>
 namespace GraphMapLocalisation{
 MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   if(MCLNDTParamPtr mclParam=boost::dynamic_pointer_cast<MCLNDTParam>(param)){
-    resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+
+
+//    NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
+//    if (current_map != NULL) {
+//      resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+//    }
+//    else {
+//      ROS_INFO_STREAM("Not a NDTMapType used(!)");
+//    }
+
+    resolution=mclParam->resolution;
     forceSIR=mclParam->forceSIR;
     motion_model=mclParam->motion_model;
     motion_model_offset=mclParam->motion_model_offset;
     n_particles_=mclParam->n_particles_;
+    SIR_varP_threshold=mclParam->SIR_varP_threshold;
     counter=0;
+    z_filter_min=mclParam->z_filter_min;
+    score_cell_weight=mclParam->score_cell_weight;
     initialized_ = false;
     forceSIR = false;
     resolution_sensor=resolution;
-    cout<<resolution<<endl;
+      ROS_ERROR("created MCLNDTType!");
   }
   else{
     std::cerr<<"Cannot create MCLNDType. Illegal type for parameter param"<<endl;
@@ -19,7 +33,21 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   }
 }
 
+NDTMap* MCLNDTType::GetCurrentNodeNDTMap() {
+  // Currently exist two different maps of NDT, NDT and NDTDL, find out which we have in the graph and return it...
+  {
+    NDTMapPtr p = boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap());
+    if (p != NULL) {
+      return p->GetNDTMap();
+    }
+  }
 
+  {
+    NDTDLMapPtr p = boost::dynamic_pointer_cast< NDTDLMapType >(graph_map_->GetCurrentNode()->GetMap());
+    return p->GetNDTMapFlat();
+  }
+  return NULL;
+}
 
 void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const Eigen::Affine3d &Tmotion){
   counter++;
@@ -32,7 +60,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   Eigen::Vector3d tr = Tmotion.translation();
   Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
-  cout<<"Tmotion="<<Tmotion.translation()<<endl;
+  //cout<<"Tmotion="<<Tmotion.translation()<<endl;
   double time_start = getDoubleTime();
 
   Eigen::Matrix<double, 6,6> motion_model_m(motion_model.data());
@@ -53,7 +81,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
     remap_prev_to_new_frame=(graph_map_->GetPreviousNodePose().inverse()*graph_map_->GetCurrentNodePose()).inverse();
     cout<<"change frame, transf="<<remap_prev_to_new_frame.translation().transpose()<<endl;
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5],remap_prev_to_new_frame);
-    map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+    //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+    map_ = this->GetCurrentNodeNDTMap();
   }
   else
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5]);
@@ -69,7 +98,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   double t_pred = getDoubleTime() - time_start;
 
-  std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
+  //std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
   lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
   //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
   local_map.loadPointCloud(cloud);//,30); //sensor_range);
@@ -97,7 +126,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   } else {
     ndts = ndts0;
   }
-  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
+//  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
 
   int Nn = 0;
   //		#pragma omp parallel for
@@ -117,7 +146,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
       for(int n=0;n<ndts.size();n++){
         Eigen::Vector3d m = T*ndts[n]->getMean();
-
+         if(m[2]<z_filter_min) continue;
 
         lslgeneric::NDTCell *cell;
         pcl::PointXYZ p;
@@ -136,8 +165,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
             if(!exists) continue;
             double l = (cell->getMean() - m).dot(icov*(cell->getMean() - m));
             if(l*0 != 0) continue;
-            score += 0.1 + 0.9 * exp(-0.05*l/2.0);
-          }else{
+            score += score_cell_weight + (1.0 - score_cell_weight) * exp(-0.05*l/2.0);
+            }else{
           }
         }
       }
@@ -168,9 +197,9 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
     }
     varP /= pf.size();
     varP = sqrt(varP);
-    fprintf(stderr,"Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf) itr since SIR= %d\n",varP,pf.size(), Nn, t_pred,t_pseudo,sinceSIR_);
+    //fprintf(stderr,"Var P=%lf (Npf=%d, Nm=%d) (t_pred = %.3lf t_pseudo=%.3lf) itr since SIR= %d\n",varP,pf.size(), Nn, t_pred,t_pseudo,sinceSIR_);
     if(varP > /*0.006*/SIR_varP_threshold || sinceSIR_ > /*25*/SIR_max_iters_wo_resampling_){
-      fprintf(stderr,"-SIR- ");
+      //fprintf(stderr,"-SIR- ");
       sinceSIR_ = 0;
       pf.SIRUpdate();
     }else{
@@ -179,7 +208,31 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   }
   pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
+
+  GraphPlot::PlotMap(local_map,1,pose_,plotmarker::sphere/*plotmarker::point*/, "ndtmcl");
+
 }
+
+
+void MCLNDTType::UpdateAndPredict(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, const Eigen::Affine3d &Tmotion){
+
+  // Filter out the flat parts...
+  pcl::PointCloud<pcl::PointXYZ> cornerPointsSharp;
+  pcl::PointCloud<pcl::PointXYZ> cornerPointsLessSharp;
+  pcl::PointCloud<pcl::PointXYZ> surfPointsFlat;
+  pcl::PointCloud<pcl::PointXYZ> surfPointsLessFlat;
+
+  //segmentPointCurvature(cloud, cornerPointsSharp, cornerPointsLessSharp, surfPointsFlat, surfPointsLessFlat);
+
+  //UpdateAndPredict(surfPointsLessFlat, Tmotion);
+
+  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+  pcl::copyPointCloud(cloud, cloud_xyz);
+  UpdateAndPredict(cloud_xyz, Tmotion);
+}
+
+
+
 std::string MCLNDTType::ToString(){
 
   std::stringstream ss;
@@ -190,14 +243,18 @@ std::string MCLNDTType::ToString(){
   ss<<"resolution: "<<resolution<<endl;
   ss<<"force SIR: "<<std::boolalpha<<forceSIR<<endl;
   ss<<"SIR var Probability threshold: "<<SIR_varP_threshold<<endl;
-  ss<<"resolution: "<<resolution<<endl;
+  ss<<"motion model: ";
+  for (int i = 0; i < motion_model.size(); i++) { if (i % 6 == 0) {ss << endl;} ss<<motion_model[i] << " " << endl; }
+  ss<<"motion model offset: ";
+  for (int i = 0; i < motion_model_offset.size(); i++) { if (i % 6 == 0) {ss << endl;}; ss<<motion_model_offset[i] << " " << endl; }
   return ss.str();
 }
 
 void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   pose_=pose;
   graph_map_->SwitchToClosestMapNode(pose_);//specified in local frame, should be specified in gloval
-  map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
+  map_ = this->GetCurrentNodeNDTMap();
   Eigen::Vector3d pos=pose_.translation();
   Eigen::Vector3d euler = pose_.rotation().eulerAngles(0,1,2);
   normalizeEulerAngles(euler);
@@ -272,11 +329,18 @@ MCLNDTParam::MCLNDTParam(){
   motion_model.push_back(0.01);
   motion_model.push_back(0.1);
 
-  motion_model_offset.push_back(0.002);
+  /*motion_model_offset.push_back(0.00);
   motion_model_offset.push_back(0.002);
   motion_model_offset.push_back(0.0000001);//0.002
   motion_model_offset.push_back(0.0000001);//0.001
   motion_model_offset.push_back(0.0000001);//0.001
-  motion_model_offset.push_back(0.001);
+  motion_model_offset.push_back(0.001);*/
+
+  motion_model_offset.push_back(0.005);
+  motion_model_offset.push_back(0.005);
+  motion_model_offset.push_back(0.0000001);//0.002
+  motion_model_offset.push_back(0.0000001);//0.001
+  motion_model_offset.push_back(0.0000001);//0.001
+  motion_model_offset.push_back(0.003);
 }
 }

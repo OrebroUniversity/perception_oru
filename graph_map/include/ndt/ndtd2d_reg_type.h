@@ -23,14 +23,16 @@ using namespace lslgeneric;
 class NDTD2DRegType:public registrationType{
 public:
   ~NDTD2DRegType();
+
   bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
+  bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud,Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
   bool RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eigen::Affine3d &Tdiff,double match_score);
   std::string ToString();
 protected:
   NDTD2DRegType(const Eigen::Affine3d &sensor_pose, RegParamPtr paramptr);
-  double resolution_=0,resolutionLocalFactor_=0;
   NDTMatcherD2D_2D matcher2D_;
   NDTMatcherD2D matcher3D_;
+  double resolution_=0,resolutionLocalFactor_=0;
 private:
   friend class GraphFactory;
 };
@@ -53,5 +55,7 @@ private:
 
 };
 }
+
+
 #endif // NDTD2DREGTYPE_H
 

@@ -106,4 +106,5 @@ void GraphParam::GetParametersFromRos(){
   nh.param("min_keyframe_dist",min_keyframe_dist_,0.5);
   nh.param("min_keyframe_rot_deg",min_keyframe_rot_deg_,15.0);
 }
+
 }

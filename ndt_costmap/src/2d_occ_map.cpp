@@ -98,7 +98,7 @@ private:
         pcl::PointXYZ p;
         p.x=current_x;
         p.y=current_y;
-        p.z=0.0;
+        p.z=0.3;
         if(ndtMap->getCellAtPoint(p,check_cell)){
           //std::cout<<"init"<<std::endl;
           if(check_cell->getOccupancy()<0.0){

@@ -22,7 +22,7 @@ namespace libgraphMap{
   void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     if(initialized_ && enable_mapping_){
-      Eigen::Vector3d localMapSize(max_range_,max_range_,sizez_);
+      Eigen::Vector3d localMapSize(2*max_range_,2*max_range_,sizez_);
       map_->addPointCloudMeanUpdate(Tsensor.translation(),cloud,localMapSize, 1e5, 25, 2*sizez_, 0.06);
     }
     else if(!initialized_){
@@ -30,6 +30,15 @@ namespace libgraphMap{
       initialized_ = true;
     }
   }
+
+  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+
+    cerr << "TODO: implement update for point type PointXYZIR - will convert to PointXYZ for now" << endl;
+    pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+    pcl::copyPointCloud(cloud, cloud_xyz);
+    update(Tsensor, cloud_xyz);
+  }
+
   void NDTMapType::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){
     cout<<"initialize map"<<endl;
     map_->addPointCloud(Tsensor.translation(),cloud, 0.1, 100.0, 0.1);
@@ -69,7 +78,8 @@ namespace libgraphMap{
     ss<<MapType::ToString()<<"NDT Map Type:"<<endl;
     ss<<"resolution:"<<resolution_<<endl;
     ss<<"resolution local factor:"<<resolution_local_factor_<<endl;
-    ss<<"maximum sensor range:"<<sensor_range_<<endl;
+  // TODO sensor_range_ is not used at the moment.
+    ss<<"maximum sensor range (not used):"<<sensor_range_<<endl;
     return ss.str();
   }
 

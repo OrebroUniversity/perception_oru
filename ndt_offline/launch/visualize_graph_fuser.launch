@@ -5,11 +5,13 @@
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_offline)/launch/offline_graph_vis.rviz" />
 
 <group if="$(arg oru-basement)">
-  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="0.3 0 0 0 0 -0.72429 0.6895 state_base_link velodyne" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fuser_laser_link" args="0.30 0 1.3 0 0 -0.72429 0.6895 fuser_base_link fuser_laser_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="state_laser_link" args="0.30 0 1.3 0 0 -0.72429 0.6895 state_base_link state_base_laser_link" />
 </group>
 
 <group if="$(arg arla-2012)">
-  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_scan_fuser" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 state_base_link velodyne" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fuser_last_link" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 fuser_base_link fuser_laser_link" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="state_last_link" args="1.18 -0.3 2.0 0 0 -0.7242871743701824 0.6894984329517051 state_base_link state_base_laser_link" />
 </group>
 </launch>
 

@@ -62,6 +62,7 @@
 #define JFFERR(x) std::cerr << x << std::endl; return -1;
 #define _JFFVERSION_ "#JFF V0.50"
 
+#define KEEP_POINTS
 //#define ICRA_2013_NDT_OM_SIMPLE_MODE 
 namespace lslgeneric
 {
@@ -303,7 +304,10 @@ public:
   ///use this to set the parameters for the NDTCell. \note be careful, remember that the parameters are static, thus global
   static void setParameters(double _EVAL_ROUGH_THR   =0.1,
                             double _EVEC_INCLINED_THR=8*M_PI/18,
-                            double _EVAL_FACTOR      =1000);
+                            double _EVAL_FACTOR      =1000,
+                            int _MIN_NB_POINTS_FOR_GAUSSIAN = 3,
+                            bool _CLEAR_MIN_NB_POINTS = true,
+                            bool _MIN_NB_POINTS_SET_UNIFORM = false);
   /**
     * Get likelihood for a given point
     */
@@ -442,6 +446,9 @@ private:
   static double EVAL_ROUGH_THR;		// = 0.1;								// ???
   static double EVEC_INCLINED_THR; 	// = cos(8*M_PI/18);//10 degree slope;	// ???
   static double EVAL_FACTOR;													// ???
+  static int    MIN_NB_POINTS_FOR_GAUSSIAN;
+  static bool   CLEAR_MIN_NB_POINTS;
+  static bool   MIN_NB_POINTS_SET_UNIFORM;
   double d1_,d2_;
   unsigned int N; 	///Number of points used for Normal distribution estimation so far
   int emptyval;			///The number of times a cell was observed empty (using ray casting)

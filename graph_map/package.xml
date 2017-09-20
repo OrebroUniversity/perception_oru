@@ -54,12 +54,13 @@
 <build_depend>ndt_mcl</build_depend>
 <build_depend>ndt_localization</build_depend>
 <build_depend>ndt_registration</build_depend>
+<build_depend>ndt_rviz</build_depend>
 <build_depend>eigen_conversions</build_depend>
 <build_depend>tf_conversions</build_depend>
 <build_depend>tf</build_depend>
 <build_depend>genmsg</build_depend>
 <build_depend>geometry_msgs</build_depend>
-<build_depend>gnuplot</build_depend>
+<build_depend>tf_conversions</build_depend>
 
 <run_depend>libpcl-all-dev</run_depend>
 <run_depend> pcl_conversions</run_depend>
@@ -73,13 +74,15 @@
 <run_depend>ndt_mcl</run_depend>
 <run_depend>ndt_localization</run_depend>
 <run_depend>ndt_registration</run_depend>
+<run_depend>ndt_rviz</run_depend>
 <run_depend>libpcl-all-dev</run_depend>
 <run_depend>eigen_conversions</run_depend>
 <run_depend>tf_conversions</run_depend>
 <run_depend>tf</run_depend>
 <run_depend>genmsg</run_depend>
 <run_depend>geometry_msgs</run_depend>
-<run_depend>gnuplot</run_depend>
+<run_depend>tf_conversions</run_depend>
+
 <!-- The run_depend tag contains other, unspecified, tags -->
 <export>
 <!-- Other tools can request additional information be placed here -->

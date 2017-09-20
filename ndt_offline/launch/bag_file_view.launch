@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+<!--node pkg="ndt_offline" type="bag_file_view" name="bag_file_view"  output="screen" >
+<param name="odometry_topic" type="string" value="vmc_navserver/odom" />
+<param name="gt_topic" type="string" value="vmc_navserver/state" />
+<param name="t_merge_frames" type="int" value="1" />
+</node-->
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_offline)/launch/show_bag.rviz" />
+
+<arg name="path" default="$(find ndt_offline)/bag/volvo17_bag/" />
+<arg name="file_1" default="2017-08-24-11-41-20.bag" />
+<node pkg="rosbag" type="play" name="player" output="screen" args="-r 1 $(arg path)$(arg file_1)"/>
+
+<node pkg="tf2_ros" type="static_transform_publisher" name="world_publisher" args="0 0 0 0 0 0 1.0 /world /state_base_link" />
+
+
+<node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans">
+    <param name="calibration" value="$(find ndt_fuser)/launch/64E_calibration.yaml" />
+</node>
+</launch>
+

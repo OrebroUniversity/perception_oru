@@ -85,14 +85,16 @@ private:
 	}
 	else{
 	  ROS_INFO_STREAM(ptCell->getOccupancy());
-	  if(ptCell->getLikelihood(pt)>lik_tr){
-	    maps[w][h]=2;
+	  if(ptCell->getLikelihood(pt)>=lik_tr){
+	    maps[w][h]=3;
 	  }
 	  else{
-	    if(ptCell->getLikelihood(pt)<0){
-	      maps[w][h]=1;
+	    if(ptCell->getOccupancy()<0){
+	      maps[w][h]=2;
 	    }
-	     else{
+	    else
+	      if(ptCell->getLikelihood(pt)<lik_tr)
+	      {
 	         maps[w][h]=0;
 	     }
 	  }    

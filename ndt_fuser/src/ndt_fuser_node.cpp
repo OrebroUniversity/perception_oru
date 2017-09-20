@@ -280,7 +280,7 @@ public:
 	    ROS_INFO("Init pose is (%lf,%lf,%lf) form tf", pose_.translation()(0), pose_.translation()(1), 
 		    pose_.rotation().eulerAngles(0,1,2)(0));
 
-	    perception_oru::ndt_fuser::initSensorPose(*fuser, robot_frame, sensor_frame);
+	    perception_oru::ndt_fuser::initSensorPose(*fuser, sensor_frame, robot_frame); //, sensor_frame);
 	    perception_oru::ndt_fuser::initRobotPose(*fuser, cloud, world_frame, robot_frame);
 	    // 			fuser->setSensorPose(robot_frame, sensor_frame);
 	    // 			fuser->initialize(cloud, world_frame, robot_frame);

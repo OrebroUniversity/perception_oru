@@ -37,7 +37,7 @@ catkin_package(
 #DEPENDS Eigen libpcl-all-dev gnuplot
 #   CATKIN_DEPENDS ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
     DEPENDS Eigen libpcl-all-dev
-    CATKIN_DEPENDS ndt_mcl ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros
+    CATKIN_DEPENDS ndt_mcl ndt_registration ndt_map roscpp laser_geometry sensor_msgs tf_conversions tf geometry_msgs cmake_modules eigen_conversions pcl_ros ndt_rviz
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     )

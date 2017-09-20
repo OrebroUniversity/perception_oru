@@ -126,6 +126,7 @@ add_executable(2d_occ_map src/2d_occ_map.cpp)
 add_executable(traversability_map_simple src/traversability_map_simple.cpp)
 add_executable(traversability_map_simple_HMT src/traversability_map_simple_HMT.cpp)
 add_executable(level_splitter src/level_splitter.cpp)
+add_executable(slice_map src/slice_map.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -138,6 +139,10 @@ target_link_libraries(ndt_costmap
 )
 
 target_link_libraries(2d_occ_map
+  ${catkin_LIBRARIES} ${Boost_LIBRARIES}
+)
+
+target_link_libraries(slice_map
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
 

@@ -1,0 +1,10 @@
+<launch>
+<!-- start nodelet manager and driver nodelets -->
+  <include file="$(find velodyne_driver)/launch/nodelet_manager.launch" />
+
+  <!-- start cloud nodelet -->
+  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+    <arg name="calibration"
+         value="$(find velodyne_pointcloud)/params/32db.yaml"/>
+  </include>
+</launch>

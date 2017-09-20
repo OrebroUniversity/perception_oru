@@ -80,21 +80,25 @@ private:
       for (int w=0;w<width;w++){
 		pcl::PointXYZ pt(minx+occ_resolution/2+h*occ_resolution,miny+occ_resolution/2+w*occ_resolution,sample_height);
 	if(!ndtMap->getCellAtPoint(pt,ptCell)){
-	  ROS_INFO_STREAM("no cell");
+//	  ROS_INFO_STREAM("no cell");
+	  //Cell does not exist, it's unexplored (gray)
 	  maps[w][h]=1;
 	}
 	else{
-	  ROS_INFO_STREAM(ptCell->getOccupancy());
+//	  ROS_INFO_STREAM(ptCell->getOccupancy());
 	  if(ptCell->getLikelihood(pt)>=lik_tr){
-	    maps[w][h]=3;
+	    //cell exists and the point is likely -> white
+	    maps[w][h]=2;
 	  }
 	  else{
 	    if(ptCell->getOccupancy()<0){
+	      //the point is not likely, but the cell is not occupied -> white
 	      maps[w][h]=2;
 	    }
 	    else
 	      if(ptCell->getLikelihood(pt)<lik_tr)
 	      {
+		 //occupied
 	         maps[w][h]=0;
 	     }
 	  }    

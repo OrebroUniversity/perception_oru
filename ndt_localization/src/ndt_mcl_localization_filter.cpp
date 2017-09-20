@@ -65,6 +65,7 @@ class particle_filter_wrap {
   ros::Publisher mclPosePub;
   //laser input
   std::string inputTopicName;   //std::string laserTopicName;
+  std::string odomTopicName;   
   ros::Publisher particlePub;
   ros::Subscriber initPoseSub;
   ros::Subscriber PCSub;
@@ -122,7 +123,7 @@ class particle_filter_wrap {
   bool beVelodyne;
   bool bePC;
 
-    message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
+  message_filters::Subscriber<sensor_msgs::PointCloud2> *points2_sub_;
   message_filters::Subscriber<sensor_msgs::LaserScan> *laser_sub_;
   message_filters::Subscriber<nav_msgs::Odometry> *odom_sub_;
 
@@ -265,57 +266,56 @@ class particle_filter_wrap {
     initial_pose = input_init.pose.pose;
     firstLoad = true;
   }
-  void VeloCallback(const velodyne_msgs::VelodyneScan::ConstPtr& msg){
-    pcl::PointCloud<pcl::PointXYZ> cloud;
-    for(size_t next = 0; next < msg->packets.size(); ++next){
-      velodyne_rawdata::VPointCloud pnts;
-      dataParser.unpack(msg->packets[next], pnts);
-      for(size_t i = 0; i < pnts.size(); i++){
-	pcl::PointXYZ p;
-	p.x = pnts.points[i].x;
-	p.y = pnts.points[i].y;
-	p.z = pnts.points[i].z;                                                                                                                                        
-	cloud.push_back(p);
-      }
-      pnts.clear();
-    }                                                                                                                                                             
-    this->processFrame(cloud,msg->header.stamp);    
-  }
+  // void VeloCallback(const velodyne_msgs::VelodyneScan::ConstPtr& msg){
+  //   pcl::PointCloud<pcl::PointXYZ> cloud;
+  //   for(size_t next = 0; next < msg->packets.size(); ++next){
+  //     velodyne_rawdata::VPointCloud pnts;
+  //     dataParser.unpack(msg->packets[next], pnts);
+  //     for(size_t i = 0; i < pnts.size(); i++){
+  // 	pcl::PointXYZ p;
+  // 	p.x = pnts.points[i].x;
+  // 	p.y = pnts.points[i].y;
+  // 	p.z = pnts.points[i].z;                                                                                                                                        
+  // 	cloud.push_back(p);
+  //     }
+  //     pnts.clear();
+  //   }                                                                                                                                                             
+  //   this->processFrame(cloud,msg->header.stamp);    
+  // }
   void PCOdomCallback(const sensor_msgs::PointCloud2::ConstPtr& msg,const nav_msgs::Odometry::ConstPtr& odo_in){
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
-        pcl::fromROSMsg (*msg, pcl_cloud);
-	          ROS_INFO("Got points");
-    this->processFrame(pcl_cloud,*odo_in);
+    pcl::fromROSMsg (*msg, pcl_cloud);
+    ROS_INFO("Got points");
+    this->processFrame(pcl_cloud,odo_in,msg->header.stamp );
 
   }
   
-  void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
-    laser_geometry::LaserProjection projector_;
-    sensor_msgs::PointCloud2 cloud;
-    pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
-    //      message_m.lock();
-    projector_.projectLaser(*msg, cloud);
-    //message_m.unlock();
-    pcl::fromROSMsg (cloud, pcl_cloud_unfiltered);
+  // void LaserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
+  //   laser_geometry::LaserProjection projector_;
+  //   sensor_msgs::PointCloud2 cloud;
+  //   pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
+  //   //      message_m.lock();
+  //   projector_.projectLaser(*msg, cloud);
+  //   //message_m.unlock();
+  //   pcl::fromROSMsg (cloud, pcl_cloud_unfiltered);
     
-    pcl::PointXYZ pt;
-    //add some variance on z
-    for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
-      pt = pcl_cloud_unfiltered.points[i];
-      if(sqrt(pt.x*pt.x+pt.y*pt.y) > min_range) {
-	pt.z += 0.1*((double)rand())/(double)INT_MAX;
-	pcl_cloud.points.push_back(pt);
-      }
-    }
-    ROS_INFO("Got laser points");
+  //   pcl::PointXYZ pt;
+  //   //add some variance on z
+  //   for(int i=0; i<pcl_cloud_unfiltered.points.size(); i++) {
+  //     pt = pcl_cloud_unfiltered.points[i];
+  //     if(sqrt(pt.x*pt.x+pt.y*pt.y) > min_range) {
+  // 	pt.z += 0.1*((double)rand())/(double)INT_MAX;
+  // 	pcl_cloud.points.push_back(pt);
+  //     }
+  //   }
+  //   ROS_INFO("Got laser points");
       
 
-    this->processFrame(pcl_cloud,msg->header.stamp);
+  //   this->processFrame(pcl_cloud,msg->header.stamp);
 
-  }
+  // }
 
-  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, const nav_msgs::Odometry::ConstPtr& odo_in){
-        static tf::TransformListener tf_listener;
+  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, const nav_msgs::Odometry::ConstPtr& odo_in,  ros::Time ts){
 
     if(!initialized){
       initialized = true;
@@ -331,22 +331,17 @@ class particle_filter_wrap {
 		       * Eigen::AngleAxisf(sensorOffsetP, Eigen::Vector3f::UnitY())
 		       * Eigen::AngleAxisf(sensorOffsetT, Eigen::Vector3f::UnitZ()));                                                                                                                  ////////////////////
     transform_2.translation() << sensorOffsetX, sensorOffsetY, sensorOffsetZ;
- Eigen::Quaterniond qd;
+    Eigen::Quaterniond qd;
  
-    tf_listener.waitForTransform(odomTF, baseTF, ts, ros::Duration(0.1));
-    try{
-      tf_listener.lookupTransform(odomTF, baseTF,/*ros::Time(0)*/ts, transform);
-      yaw = tf::getYaw(transform.getRotation());
-      x = transform.getOrigin().x();
-      y = transform.getOrigin().y();
-    }
-    catch(tf::TransformException ex){
-      ROS_ERROR("%s", ex.what());
-      return;
-    }
 
+    qd.x() = odo_in->pose.pose.orientation.x;
+    qd.y() = odo_in->pose.pose.orientation.y;
+    qd.z() = odo_in->pose.pose.orientation.z;
+    qd.w() = odo_in->pose.pose.orientation.w;
+
+    Eigen::Affine3d T = Eigen::Translation3d (odo_in->pose.pose.position.x,
+					      odo_in->pose.pose.position.y,odo_in->pose.pose.position.z) * qd;
     
-    Eigen::Affine3d T = getAsAffine(x, y, yaw);
     if(firstLoad){
       tOld = T;
       firstLoad = false;
@@ -366,7 +361,7 @@ class particle_filter_wrap {
     cloud.clear();
     transformed_cloud->clear();
          
-        MCL->UpdateAndPredictEff(tMotion, localMap,fraction, cutoff);
+    MCL->UpdateAndPredictEff(tMotion, localMap,fraction, cutoff);
     // MCL->UpdateAndPredict(tMotion, localMap);
         
     delete localMap;
@@ -415,6 +410,7 @@ public:
     param.param<int>("particle_count", particleCount, 500);
     
     param.param<std::string>("input_topic_name", inputTopicName, "/velodyne_packets");
+    param.param<std::string>("odom_topic_name", odomTopicName, "/odom");
     param.param<bool>("Velodyne", beVelodyne, false);
     param.param<bool>("PointCloud", bePC, false);
     param.param<bool>("Laser", beLaser, false);
@@ -476,20 +472,20 @@ public:
 
     MCL = new lslgeneric::particle_filter(ndtMap, particleCount, be2D, forceSIR);
     
-    if(beVelodyne)
-      PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::VeloCallback, this);
+    // if(beVelodyne)
+    //   PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::VeloCallback, this);
     if(bePC){
-      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,inputTopicName,1);
-      odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,10);
-      sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
-      sync_po_->registerCallback(boost::bind(&NDTFuserNode::PCOdomCallback, this, _1, _2));
+      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh,inputTopicName,1);
+      odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh,odomTopicName,10);
+      sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(20), *points2_sub_, *odom_sub_);
+      sync_po_->registerCallback(boost::bind(&particle_filter_wrap::PCOdomCallback, this, _1, _2));
 
 
 
     }
     // PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::PCCallback, this);
-    if(beLaser)
-      PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::LaserCallback, this);
+    // if(beLaser)
+    //   PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::LaserCallback, this);
     
     initPoseSub = nh.subscribe("/initialpose", 1000, &particle_filter_wrap::initialposeCallback, this);
     

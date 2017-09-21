@@ -1,4 +1,4 @@
 <launch>
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_feature)/launch/calib.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ndt_calibration)/launch/calib.rviz" />
 
 </launch>

@@ -74,7 +74,6 @@ target_link_libraries(graph_localisation_node ${PROJECT_NAME} ${catkin_LIBRARIES
 #)
 
 #
-    install(DIRECTORY include/${PROJECT_NAME}/
+    install(DIRECTORY include
       DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-      FILES_MATCHING PATTERN "*.h"
-      PATTERN ".svn" EXCLUDE)
+      )

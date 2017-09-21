@@ -73,7 +73,7 @@ protected:
   lslgeneric::NDTFuserHMT *fuser;
   std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
     world_frame, robot_frame, sensor_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
-  double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
+  double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_, sensor_min_range;
   bool visualize, match2D, matchLaser, beHMT, useOdometry, plotGTTrack, 
        initPoseFromGT, initPoseFromTF, initPoseSet, renderGTmap;
 
@@ -139,6 +139,8 @@ public:
     param_nh.param("sensor_range",sensor_range,3.);
     ///range to cutoff sensor measurements
     param_nh.param("min_laser_range",min_laser_range_,0.1);
+    ///range to cutoff sensor measurements
+    param_nh.param("sensor_min_range",sensor_min_range,0.5);
 	    
     //map resolution
     param_nh.param("resolution",resolution,0.10);
@@ -215,10 +217,12 @@ public:
     fuser->setMotionParams(motion_params);
     fuser->setSensorPose(sensor_pose_);
     
+
     if(!matchLaser) {
-      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,10);
+      points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_,points_topic,20);
       if(useOdometry) {
-        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,1);
+        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_,odometry_topic,200);
+
         sync_po_ = new message_filters::Synchronizer< PointsOdomSync >(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
         sync_po_->registerCallback(boost::bind(&view_bag::points2OdomCallback, this, _1, _2));
       }
@@ -258,10 +262,17 @@ public:
     delete fuser;
   }
 
-  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud, 
+  void processFrame(pcl::PointCloud<pcl::PointXYZ> &cloud_in, 
                     Eigen::Affine3d Tmotion) {
 	    
     m.lock();
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    for(int i=0; i<cloud_in.points.size(); i++) {
+	pcl::PointXYZ pt=cloud_in.points[i];
+	double d = sqrt(pt.x*pt.x+pt.y*pt.y+pt.z*pt.z);
+	if(d>sensor_min_range) cloud.points.push_back(pt);
+    }
+
     if (nb_added_clouds_  == 0)
     {
 	ROS_INFO("initializing fuser map. Init pose from GT? %d, TF? %d", initPoseFromGT, initPoseFromTF);

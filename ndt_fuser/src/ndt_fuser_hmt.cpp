@@ -190,7 +190,7 @@ namespace lslgeneric {
 			t4 = getDoubleTime();
 			//TSV: originally this!
 			//map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
-			map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
+			map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 5, 2*map_size_z, 0.06);
 			///////////////////FIXME: check if this works for error beams //////////////////////////
 
 			pcl::PointCloud<pcl::PointXYZ> max_beams;

@@ -10,13 +10,24 @@
 #include <string>
 #include <vector>
 #include <pcl/conversions.h>
+
+/**
+ * @brief The PoseInterpolationInteface class provides an generic interface to pose lookups
+ * This is utilized in the ndt_calibration pkg.
+ */
+class PoseInterpolationInteface {
+public:
+  virtual bool getTransformationForTime(ros::Time t0, const std::string &frame_id,Eigen::Affine3d &T) = 0;
+};
+
+
 /**
 * This makes an offline interpolation for poses using tf::transform
 *  This reads the whole file into a vector and after this you can ask poses based on timestamps
 *
 */
 
-class PoseInterpolationNavMsgsOdo{
+class PoseInterpolationNavMsgsOdo : public PoseInterpolationInteface {
 	public:
 		/**
 		* Constructor
@@ -43,7 +54,7 @@ class PoseInterpolationNavMsgsOdo{
 			first_read_tf = ros::Time(0);
 			last_read_tf = ros::Time(0);
 			std::cout << "FixedFrame " << fixedframe << " sensor " << sensor_link << " tf topic " << tftopic << std::endl; 
-			exit(0);
+      //exit(0);
 		}
 		
 		
@@ -169,7 +180,7 @@ void PoseInterpolationNavMsgsOdo::readBagFile(tf::StampedTransform *sensor_link)
 		std::cout << " [first, last] entry : [" << first_read_tf << ", " << last_read_tf << "]" << std::endl;
 		fprintf(stderr,"Cache length %lf",transformer.getCacheLength().toSec());
 		bag.close();
-		exit(0);
+    //exit(0);
 		
 }
 
@@ -302,7 +313,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const s
 		return false;
 	}
 	else{
-		std::cout<< "Is ok " << std::endl;
+    //std::cout<< "Is ok " << std::endl;
 	}
 // 	printf("found\n");
 	transformer.lookupTransform(fixed_frame_id,frame_id,t0, transform);

@@ -163,7 +163,7 @@ double NDTCalibOptimize::getScore(const Eigen::VectorXd &x) {
 void NDTCalibOptimize::interpPose(double time, Eigen::Affine3d &T) {
     ros::Time t(time);
     if (!_poseInterp.getTransformationForTime(t, _poseFrameId, T)) {
-      std::cout << "[FAIL] : couldn't find transformation for time " << time << " at frame : " << _poseFrameId << std::endl;
+      std::cout << "[FAIL] : couldn't find transformation for time " << t << " at frame : " << _poseFrameId << std::endl;
     }
 }
 

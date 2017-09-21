@@ -145,7 +145,7 @@ public:
 
     param_nh.param<int>("score_type", score_type_, 3);
     param_nh.param<int>("min_nb_calibration_pairs", min_nb_calibration_pairs_, 5);
-    param_nh.param<int>("max_nb_calibration_pairs", max_nb_calibration_pairs_, 10);
+    param_nh.param<int>("max_nb_calibration_pairs", max_nb_calibration_pairs_, 50);
 
 
     Ts =  Eigen::Translation<double,3>(sensor_pose_x,sensor_pose_y,sensor_pose_z)*
@@ -187,7 +187,7 @@ public:
 
     if (pairs_.size() > min_nb_calibration_pairs_) {
       if (pairs_.size() > max_nb_calibration_pairs_) {
-      //  pairs_.erase(pairs_.begin(), pairs_.begin()+pairs_.size() - max_nb_calibration_pairs_);
+        pairs_.erase(pairs_.begin(), pairs_.begin()+pairs_.size() - max_nb_calibration_pairs_);
       }
       this->calibrate();
     }
@@ -201,7 +201,6 @@ public:
   // Callback
   void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
   {
-    ROS_INFO_STREAM("L");
     sensor_msgs::PointCloud2 cloud;
     pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
     // TODO, check if the projector class could be used for individual interpolation of laser beams.
@@ -220,6 +219,7 @@ public:
 
     Eigen::Affine3d T;
     ros::Time t = msg->header.stamp-ros::Duration(sensor_offset_t_);
+    ROS_INFO_STREAM("L @ time:" << t);
     if (pose_interp_.getTransformationForTime(t, pose_frame_, T)) {
       this->processFrame(pcl_cloud,T, t);
     }
@@ -242,7 +242,6 @@ public:
 }
 
   void calibrate() {
-#if 0
     if (pairs_.empty()) {
       ROS_ERROR_STREAM("No calibration scan pairs");
       return;
@@ -265,7 +264,6 @@ public:
       opt.interpPairPoses(delta_sensor_time_offset);
       std::cout << " new sensor pose est : " << affine3dToString(Ts) << " dt : " << sensor_offset_t_+delta_sensor_time_offset << " error : " << opt.getScore6d(Ts) << std::endl;
     }
-#endif
   }
 
 

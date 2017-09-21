@@ -73,7 +73,7 @@ std::string velodyne_frame_id="";
 std::string map_type_name="",registration_type_name="";
 std::string tf_topic="";
 tf::Transform tf_sensor_pose;
-Eigen::Affine3d sensor_offset,fuser_pose;//Mapping from base frame to sensor frame
+Eigen::Affine3d sensor_offset,fuser_pose, odom_pose;//Mapping from base frame to sensor frame
 ros::NodeHandle *n_=NULL;
 RegParamPtr regParPtr=NULL;
 MapParamPtr mapParPtr=NULL;
@@ -94,8 +94,8 @@ double resolution=0;
 double hori_min=0, hori_max=0;
 double min_dist=0, min_rot_in_deg=0;
 unsigned int skip_frame=20;
-ros::Publisher *gt_pub,*fuser_pub,*cloud_pub;
-nav_msgs::Odometry gt_pose_msg,fuser_pose_msg;
+ros::Publisher *gt_pub,*fuser_pub,*cloud_pub,*odom_pub;
+nav_msgs::Odometry gt_pose_msg,fuser_pose_msg,odom_pose_msg;
 //VelodyneBagReader<pcl::PointXYZ> *vreader;
 //PointCloudBagReader<pcl::PointXYZ> *preader;
 //ReadBagFileGeneric<pcl::PointXYZ> *reader;
@@ -104,6 +104,7 @@ int min_nb_points_for_gaussian;
 bool keep_min_nb_points;
 bool min_nb_points_set_uniform;
 int nb_measurements=1;
+int max_nb_iters=30;
 
 template<class T> std::string toString (const T& x)
 {
@@ -266,7 +267,8 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
       ("min_nb_points_for_gaussian", po::value<int>(&min_nb_points_for_gaussian)->default_value(6), "minimum number of points per cell to compute a gaussian")
       ("keep_min_nb_points", "If the number of points stored in a NDTCell should be cleared if the number is less than min_nb_points_for_gaussian")
       ("min_nb_points_set_uniform", "If the number of points of one cell is less than min_nb_points_for_gaussian, set the distribution to a uniform one (cov = Identity)")
-      ("nb_measurements", po::value<int>(&nb_measurements)->default_value(1), "number of scans collecte at each read iteration");
+      ("nb_measurements", po::value<int>(&nb_measurements)->default_value(1), "number of scans collecte at each read iteration")
+      ("max_nb_iters", po::value<int>(&max_nb_iters)->default_value(30), "max number of iterations used in the registration");
 
   //Boolean parameres are read through notifiers
   po::variables_map vm;
@@ -316,6 +318,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   regParPtr->sensorRange_=max_range;
   regParPtr->mapSizeZ_= map_size_z;
   regParPtr->checkConsistency_=check_consistency;
+
   mapParPtr->sizez_=map_size_z;
   mapParPtr->max_range_=max_range;
   mapParPtr->min_range_=min_range;
@@ -334,6 +337,7 @@ bool ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
   if(  NDTD2DRegParamPtr ndt_reg_ptr=boost::dynamic_pointer_cast<NDTD2DRegParam>(regParPtr)){
     ndt_reg_ptr->resolution_=resolution;
     ndt_reg_ptr->resolutionLocalFactor_=resolution_local_factor;
+    ndt_reg_ptr->matcher2D_ITR_MAX = max_nb_iters;
   }
   {
    if(  NDTMapParamPtr ndt_map_ptr=boost::dynamic_pointer_cast<NDTMapParam>(mapParPtr)){
@@ -367,9 +371,11 @@ void initializeRosPublishers(){
   srand(time(NULL));
   gt_pub=new ros::Publisher();
   fuser_pub=new ros::Publisher();
+  odom_pub=new ros::Publisher();
   cloud_pub=new ros::Publisher();
   *gt_pub    =n_->advertise<nav_msgs::Odometry>("/GT", 50);
   *fuser_pub =n_->advertise<nav_msgs::Odometry>("/fuser", 50);
+  *odom_pub = n_->advertise<nav_msgs::Odometry>("/odom", 50);
   *cloud_pub = n_->advertise<pcl::PointCloud<pcl::PointXYZ>>("/points2", 1);
 }
 void printParameters(){
@@ -402,6 +408,7 @@ void processData() {
   tf::TransformBroadcaster br;
   gt_pose_msg.header.frame_id="/world";
   fuser_pose_msg.header.frame_id="/world";
+  odom_pose_msg.header.frame_id="/world";
 
   std::string tf_interp_link = base_link_id;
   if(gt_mapping)
@@ -441,7 +448,7 @@ void processData() {
                                              sensor_time_offset,
                                              nb_measurements);
 
-    pcl::PointCloud<PointT> cloud, cloud_nofilter;
+    pcl::PointCloud<PointT> cloud, cloud_nofilter, points2;
     tf::Transform tf_scan_source;
     tf::Transform tf_gt_base;
     Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
@@ -472,12 +479,13 @@ void processData() {
 
       if (cloud.size() == 0) continue; // Check that we have something to work with depending on the FOV filter here...
 
+      points2 = cloud;
+
       // reader.getPoseFor(Todom_base, base_link_id);
       //reader.getPoseFor(Tgt_base, gt_base_link_id);
       tf::Transform tf_odom_base;
       reader.getPoseFor(tf_odom_base, base_link_id);
       reader.getPoseFor(tf_gt_base, gt_base_link_id);
-
 
       //  vreader.getPoseFor(tf_odom_base, base_link_id);
       // vreader.getPoseFor(tf_gt_base, gt_base_link_id);
@@ -485,8 +493,6 @@ void processData() {
       Eigen::Affine3d Todom_base,Tgt_base;
       tf::transformTFToEigen(tf_gt_base,Tgt_base);
       tf::transformTFToEigen(tf_odom_base,Todom_base);
-
-
 
 
       if(counter == 0){
@@ -501,6 +507,7 @@ void processData() {
       }
       if(counter == 1){
         fuser_pose=Tgt_base;
+        odom_pose=fuser_pose;
         Tgt_base_prev = Tgt_base;
         Todom_base_prev = Todom_base;
         fuser_=new GraphMapFuser(regParPtr,mapParPtr,graphParPtr,Tgt_base,sensor_offset);
@@ -531,20 +538,22 @@ void processData() {
       //fuser_pose=fuser_pose*Tmotion;
       ros::Time tplot=ros::Time::now();
 
-      fuser_->ProcessFrame<PointT>(cloud,fuser_pose,Tmotion);
+      bool registration_update =fuser_->ProcessFrame<PointT>(cloud,fuser_pose,Tmotion);
       tf::Transform tf_fuser_pose;
       tf::poseEigenToTF(fuser_pose,tf_fuser_pose);
       br.sendTransform(tf::StampedTransform(tf_fuser_pose,tplot,"/world","/fuser_base_link"));
 
-      double diff = (fuser_pose.inverse() * Tgt_base).translation().norm();
-      if(visualize && counter%skip_frame==0 ){
-        fuser_->PlotMapType();
-        //cout<<"norm between estimated and actual pose="<<diff<<endl;
-      }
+      odom_pose = odom_pose*Tmotion;
+      tf::Transform tf_odom_pose;
+      tf::poseEigenToTF(odom_pose,tf_odom_pose);
+      br.sendTransform(tf::StampedTransform(tf_odom_pose,tplot,"/world","/odom_base_link"));
 
-      if(visualize){
+
+      if(visualize)
+      {
 
         br.sendTransform(tf::StampedTransform(tf_gt_base,tplot,   "/world", "/state_base_link"));
+        br.sendTransform(tf::StampedTransform(tf_sensor_pose,tplot,"/fuser_base_link","/fuser_laser_link"));
 
         if(!gt_mapping){
           fuser_pose_msg.header.stamp=tplot;
@@ -555,16 +564,20 @@ void processData() {
         tf::poseEigenToMsg(Tgt_base, gt_pose_msg.pose.pose);
         gt_pub->publish(gt_pose_msg);
 
-        if(counter%skip_frame==0){
-          cloud.header.frame_id="/fuser_base_link";
+        odom_pose_msg.header.stamp=tplot;
+        tf::poseEigenToMsg(odom_pose, odom_pose_msg.pose.pose);
+        odom_pub->publish(odom_pose_msg);
 
-          pcl_conversions::toPCL(tplot, cloud.header.stamp);
-          cloud_pub->publish(cloud);
-
-//          br.sendTransform(tf::StampedTransform(tf_sensor_pose,tplot,"/fuser_base_link","/fuser_laser_link"));
+        if (registration_update) {
+          points2.header.frame_id="/world";
+          pcl_conversions::toPCL(tplot, points2.header.stamp);
+          Eigen::Affine3d tmp = fuser_pose*sensor_offset;
+          lslgeneric::transformPointCloudInPlace(tmp, points2);
+          cloud_pub->publish(points2);
+          std::cout << "sensor_offset : " << sensor_offset.translation() << std::endl;
+          fuser_->PlotMapType();
         }
       }
-
       //sleep(1);
       Tgt_base_prev = Tgt_base;
       Todom_base_prev = Todom_base;

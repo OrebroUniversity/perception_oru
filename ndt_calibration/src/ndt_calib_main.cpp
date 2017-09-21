@@ -77,6 +77,7 @@ int main(int argc, char **argv){
         ("ct", "calibrate time offset")
 	("resolution", po::value<double>(&resolution)->default_value(2.), "NDT map resolution")
       ("index_offset", po::value<int>(&index_offset)->default_value(0), "if there is an index offset bettwen the cloudXXX.pcd and the rows in the pose files")
+    ("no_visualize", "if the output should not be visualized (visualization markers to RViz)")
         ;
 
 
@@ -95,6 +96,7 @@ int main(int argc, char **argv){
 	cout << desc << "\n";
 	return 1;
     }
+    bool visualize = !vm.count("no_visualize");
     bool calib = !vm.count("no_calib");
     bool cx = vm.count("cx");
     bool cy = vm.count("cy");
@@ -113,7 +115,7 @@ int main(int argc, char **argv){
     cout << "Ts : " << affine3dToString(Ts) << std::endl;
 
     if (pairs.empty()) {
-	std::cout << "failed in  loading / no scan pairs detected..." << std::endl;
+      std::cout << "failed in  loading / no scan pairs detected..." << std::endl;
     }
     std::cout << "got : " << pairs.size() << " scan pairs" << std::endl;
 
@@ -136,20 +138,23 @@ int main(int argc, char **argv){
 
     std::cout << " initial sensor pose est : " << affine3dToString(Ts) << " dt : " << sensor_time_offset << " error : " << opt.getScore6d(Ts) << std::endl;
     if (calib) {
-	std::cout << "starting calibration, using score type : " << score_type << std::endl;
-	opt.calibrate(Ts, sensor_time_offset);
-        opt.interpPairPoses(sensor_time_offset);
-	std::cout << "done. " << std::endl;
-	std::cout << " new sensor pose est : " << affine3dToString(Ts) << " dt : " << sensor_time_offset << " error : " << opt.getScore6d(Ts) << std::endl;
+      std::cout << "starting calibration, using score type : " << score_type << std::endl;
+      opt.calibrate(Ts, sensor_time_offset);
+      opt.interpPairPoses(sensor_time_offset);
+      std::cout << "done. " << std::endl;
+      std::cout << " new sensor pose est : " << affine3dToString(Ts) << " dt : " << sensor_time_offset << " error : " << opt.getScore6d(Ts) << std::endl;
     }
 
+
     // ROS based visualization below...
-    
+    if (!visualize) {
+      exit(0);
+    }
+
     std::cout << "Starting visualization..." << std::endl;
 
     ros::init(argc, argv, "ndt_calib");
     srand(time(NULL));
-
 
     ros::NodeHandle nh;
   
@@ -164,22 +169,21 @@ int main(int argc, char **argv){
     global_cloud.header.frame_id = "/world";
 
     ros::Publisher pointcloud_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZ> > ("global_points", 1);
-
     ros::Rate r(1);
 
-    int i = 0; 
+    int i = 0;
     while (ros::ok()) {
-	pointcloud_pub.publish(global_cloud);
 
-	// Publish the marker...
-	marker_array_pub.publish(m_array);
-	marker_array_pub.publish(m_array2);
+      pointcloud_pub.publish(global_cloud);
 
-	ros::spinOnce();
-	r.sleep();
+      // Publish the marker...
+      marker_array_pub.publish(m_array);
+      marker_array_pub.publish(m_array2);
 
-	m_array2 = ndt_visualisation::getMarkerArrayRelFromNDTCalibScanPair(pairs[i++], Ts);
-          
+      ros::spinOnce();
+      r.sleep();
+      m_array2 = ndt_visualisation::getMarkerArrayRelFromNDTCalibScanPair(pairs[i++], Ts);
+      i = i % pairs.size();
     }
     
     

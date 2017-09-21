@@ -157,8 +157,8 @@ void PoseInterpolationNavMsgsOdo::readBagFile(tf::StampedTransform *sensor_link)
 			if (transform != NULL){
 				if(m.getTopic() == topics[0]){
 					for (int i = 0; i < transform->transforms.size(); i++){
-							std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
-							std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
+              //std::cout << "frame_id : " << transform->transforms[i].header.frame_id;
+              //std::cout << " cframe_id : " << transform->transforms[i].child_frame_id << std::endl;
 							tf::StampedTransform stf;
 							transformStampedMsgToTF(transform->transforms[i], stf);
 							transformer.setTransform(stf);
@@ -273,7 +273,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const s
 }
 
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id, Eigen::Affine3d &T){
-	getTransformationForTime(t0, t1, frame_id, fixedframe, T);
+  return getTransformationForTime(t0, t1, frame_id, fixedframe, T);
 }
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id, const std::string &fixed_frame_id, Eigen::Affine3d &T){
 
@@ -290,11 +290,11 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 ////// tf wrappers ///
 //////////////////////
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const std::string &frame_id,tf::Transform &T){
-	getTransformationForTime(t0, frame_id, fixedframe, T);
+  return getTransformationForTime(t0, frame_id, fixedframe, T);
 }
 		
 bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Time t1, const std::string &frame_id,tf::Transform &T){
-		    getTransformationForTime(t0, t1, frame_id, fixedframe, T);
+        return getTransformationForTime(t0, t1, frame_id, fixedframe, T);
 		}
 
 //////////////////tf implementation ///////

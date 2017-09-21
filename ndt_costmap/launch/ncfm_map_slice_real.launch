@@ -1,8 +1,8 @@
 <launch>  
   <node name="ndt_occ_map" pkg="ndt_costmap" type="slice_map" output="screen">
-    <param name="ndt_map_name" value="$(find ndt_fuser)/maps/ncfm_sim_03_map.jff" />
+    <param name="ndt_map_name" value="$(find ndt_fuser)/maps/ncfm_real_02_map.jff" />
     <param name="ndt_resolution" value="0.2"/>
-    <param name="occ_map_name" value="$(find ndt_costmap)/maps/ncfm"/>
+    <param name="occ_map_name" value="$(find ndt_costmap)/maps/ncfm_real"/>
     <param name="occ_resolution" value="0.1"/>
     <param name="sample_height" value="0.3"/>
     <param name="floor_deviation" value="0.5"/>

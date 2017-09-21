@@ -88,7 +88,13 @@ target_link_libraries(graph_map_fuser_node ${PROJECT_NAME} ${catkin_LIBRARIES}  
 #)
 
 #
-    install(DIRECTORY include/${PROJECT_NAME}/
+    install(DIRECTORY include/
       DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-      FILES_MATCHING PATTERN "*.h"
-      PATTERN ".svn" EXCLUDE)
+      )
+    
+    install(TARGETS graph_map_fuser_node ${PROJECT_NAME}
+	    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+	    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+	    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+	   )
+

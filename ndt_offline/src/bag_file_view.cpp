@@ -3,7 +3,7 @@
 #include <ndt_map/ndt_conversions.h>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
-#include "ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
+#include "ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
 
 
 #include <ros/ros.h>

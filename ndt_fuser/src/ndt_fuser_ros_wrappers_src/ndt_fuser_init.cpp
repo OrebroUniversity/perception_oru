@@ -1,4 +1,4 @@
-#include "ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
+#include "ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
 
 
 void perception_oru::ndt_fuser::initSensorPose(lslgeneric::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame){

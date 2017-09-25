@@ -1,6 +1,6 @@
 //#include <ndt_fuser.h>
 #include <ndt_fuser/ndt_fuser_hmt.h>
-#include <ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
+#include <ndt_fuser/ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -31,7 +31,7 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
-#include "ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
+#include "ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
 
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20

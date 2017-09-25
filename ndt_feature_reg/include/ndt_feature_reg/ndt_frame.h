@@ -46,7 +46,6 @@
 #include <ndt_map/cell_vector.h>
 #include <ndt_map/ndt_map.h>
 #include <ndt_map/depth_camera.h>
-
 #include <ndt_feature_reg/ndt_frame_tools.h>
 #include <ndt_map/pointcloud_utils.h>
 

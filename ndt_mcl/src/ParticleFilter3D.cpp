@@ -108,10 +108,16 @@ void ParticleFilter3D::normalize(){
 		}
 }
 
-void ParticleFilter3D::predict(Eigen::Affine3d Tmotion, double vx, double vy, double vz, double vroll, double vpitch, double vyaw){
+void ParticleFilter3D::predict(Eigen::Affine3d Tmotion, double vx, double vy, double vz, double vroll, double vpitch, double vyaw,const Eigen::Affine3d offset){
 	Eigen::Vector3d tr = Tmotion.translation();
 	Eigen::Vector3d rot = Tmotion.rotation().eulerAngles(0,1,2);
-	
+  bool transform_cloud=false;
+  if(offset.translation().norm()>0.0001 && offset.rotation().eulerAngles(0,1,2).norm()>0.0001)
+    transform_cloud=true;
+
+  /* #pragma omp parallel num_threads(8)
+  {
+    #pragma omp for*/
 	for(unsigned int i=0;i<pcloud.size();i++){
 		double x = tr[0] + myrand.normalRandom() * vx;
 		double y = tr[1] + myrand.normalRandom() * vy;
@@ -122,7 +128,10 @@ void ParticleFilter3D::predict(Eigen::Affine3d Tmotion, double vx, double vy, do
 		double yaw 	= rot[2] + myrand.normalRandom() * vyaw;
 		
 		pcloud[i].T = pcloud[i].T *(xyzrpy2affine(x,y,z,roll,pitch,yaw));
-	}
+    if(transform_cloud)
+      pcloud[i].T = offset*pcloud[i].T ;
+  ///}
+}
 }
 
 Eigen::Affine3d ParticleFilter3D::getMean(){

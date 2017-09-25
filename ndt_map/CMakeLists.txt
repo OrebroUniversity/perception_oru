@@ -5,7 +5,7 @@ project(ndt_map)
 
 find_package(PCL 1.3 REQUIRED COMPONENTS common)
 find_package(Eigen3 REQUIRED )
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   roscpp
@@ -29,7 +29,7 @@ generate_messages(
 )
 
 catkin_package(
-    DEPENDS Eigen3 PCL OpenCV
+    DEPENDS Eigen3 PCL #OpenCV
     CATKIN_DEPENDS cv_bridge message_runtime roscpp pcl_ros pcl_conversions std_msgs nav_msgs
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}

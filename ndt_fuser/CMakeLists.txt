@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs 
   visualization_msgs 
   ndt_visualisation 
-  std_srvs 
+  std_srvs
 #  message_generation
 )
 #add_definitions(-DNO_NDT_VIZ)

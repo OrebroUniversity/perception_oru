@@ -6,7 +6,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/foreach.hpp>
-#include "gnuplot-iostream.h"
+#include <ndt_generic/gnuplot-iostream.h>
 
 using namespace std;
 

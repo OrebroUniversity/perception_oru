@@ -111,7 +111,10 @@ namespace lslgeneric{
      */
     NDTHistogram (int linear_classes = 1,
                   int flat_classes = 40,
-                  int spherical_classes = 10 );
+                  int spherical_classes = 10,
+		  double _D1 = 5.0,
+		  double _D2 = 10.0
+		 );
 
     /** 
      * Construct a histogram from an NDTMap. 
@@ -124,7 +127,10 @@ namespace lslgeneric{
     NDTHistogram (NDTMap &map,
                   int linear_classes = 1,
                   int flat_classes = 40,
-                  int spherical_classes = 10 );
+                  int spherical_classes = 10,
+		  double _D1 = 5.0,
+		  double _D2 = 10.0
+		 );
 
     /** 
      * Copy constructor.

@@ -1,0 +1,3 @@
+roslaunch ndt_offline visualize_graph_fuser.launch oru-basement:=true &
+rosrun ndt_offline graph_mcl_offline --save-results  --z-filter-height -5.0 --base-name mcl-ndt --bag-file-path ../bag/oru_bags/3d_laser_short.bag_edited.bag --reader-type pcl_reader --map-dir-path /home/daniel/.ros/maps/evaluation --velodyne_packets_topic /velodyne_packets --velodyne_frame_id /velodyne --data-set oru-basement --velodyne_config_file ../config/velo32.yaml --n-particles 60 --visualize
+

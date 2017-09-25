@@ -13,7 +13,9 @@
 #include <boost/serialization/base_object.hpp>
 #include "boost/serialization/serialization.hpp"
 #include <stdio.h>
+#include <iostream>
 #include "ros/ros.h"
+#include <velodyne_pointcloud/point_types.h>
 
 using namespace std;
 namespace libgraphMap{
@@ -40,8 +42,10 @@ public:
    */
   virtual bool Initialized() const{return initialized_;}
   virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud)=0;
+  virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud)=0;
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius=5);
   virtual string GetMapName()const{return mapName_;}
+  virtual string ToString();
   MapType();
 protected:
   MapType(MapParamPtr param);
@@ -59,7 +63,7 @@ protected:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version){
     ar & sizex_ & sizey_ & sizez_;
-    ar & max_range_ & max_range_;
+    ar & max_range_ & min_range_;
     ar & initialized_;
     ar & enable_mapping_;
     ar & mapName_;

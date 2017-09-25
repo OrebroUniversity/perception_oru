@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+     <node pkg="velodyne_pointcloud" type="cloud_node" name="convert_veloscans"> 
+ 	<param name="calibration" value="$(find ndt_fuser)/launch/vlp16.yaml" /> 
+     </node> 
+    <node pkg="ndt_fuser" type="ndt_fuser_node" name="fuser_3d" output="screen">
+	<param name="points_topic" value="/velodyne_points" />
+	<param name="matchLaser" value="false" />
+	<param name="size_x_meters" value="50" />
+	<param name="size_y_meters" value="50" />
+	<param name="size_z_meters" value="6" />
+	<param name="resolution" value="0.3" />
+	<param name="sensor_range" value="25." />
+	
+        <!-- Specific sensor offset parameters for the example file -->
+	<param name="sensor_pose_x" value="0.043" />
+	<param name="sensor_pose_z" value="0.836" />
+	<param name="sensor_pose_t" value="0" />
+	
+	<param name="map_directory" value="$(find ndt_fuser)/maps/" />	
+	<param name="map_name_prefix" value="minerva_building" />
+	
+	<param name="beHMT" value="false" />
+	<param name="match2D" value="false" />
+	<param name="useOdometry" value="false" />
+	<param name="odometry_topic" value="/pose" />
+        <param name="visualize" value="true" />
+	<param name="plotGTTrack" value="false" />
+	<param name="initPoseFromGT" value="false" />
+	<param name="gt_topic" value="/vmc_navserver/state" />
+    </node>
+</launch>

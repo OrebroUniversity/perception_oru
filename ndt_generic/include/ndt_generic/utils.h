@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef NDT_GENERIC_UTILS
+#define NDT_GENERIC_UTILS
 #include <string>
 #include <vector>
 #include <numeric>
@@ -107,3 +107,4 @@ const std::string currentDateTimeString() {
 
 
 } // namespace
+#endif

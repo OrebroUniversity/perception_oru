@@ -19,7 +19,11 @@
 namespace libgraphMap{
 
 
-
+//!
+//! \brief GraphFactory::CreateMapParam Creates parameter type based on string input
+//! \param mapname
+//! \return
+//!
 MapParamPtr GraphFactory::CreateMapParam(string mapname){
   if(mapname.compare(ndt_map_type_name)==0){
     cout<<"Graphfactory: Created parameters for map type: \""<<ndt_map_type_name<<"\""<<endl;
@@ -49,7 +53,7 @@ MapTypePtr GraphFactory::CreateMapType(MapParamPtr mapparam){
   }
   else if(  NDTDLMapParamPtr ndtdlMapParam = boost::dynamic_pointer_cast< NDTDLMapParam >(mapparam) ){ //perform typecast and check if not null conversion
     cout<<"Graphfactory: Created map of type: \""<<ndtdl_map_type_name<<"\""<<endl;
-    return  MapTypePtr(new NDTDL(ndtdlMapParam));
+    return  MapTypePtr(new NDTDLMapType(ndtdlMapParam));
   }
   else if(TemplateMapParamPtr template_par=boost::dynamic_pointer_cast<TemplateMapParam>(mapparam)){
     cerr<<"Graphfactory: no map exists for \"template\""<<endl;

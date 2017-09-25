@@ -21,11 +21,12 @@ NDTD2DRegType::NDTD2DRegType(const Affine3d &sensor_pose, RegParamPtr paramptr):
 NDTD2DRegType::~NDTD2DRegType(){}
 
 bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d cov) {
-
+cout<<" registration ndt ";
   if(!enableRegistration_||!maptype->Initialized()){
     cout<<"Registration disabled - motion based on odometry"<<endl;
     return true;
   }
+
   ///Create local map
   lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution_*resolutionLocalFactor_));
   ndlocal.guessSize(0,0,0,sensorRange_,sensorRange_,mapSizeZ_);
@@ -37,9 +38,10 @@ bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::Point
 
   //Get ndt map pointer
   NDTMapPtr MapPtr = boost::dynamic_pointer_cast< NDTMapType >(maptype);
-  NDTMap *globalMap=MapPtr->GetMap();
+  NDTMap *globalMap=MapPtr->GetNDTMap();
   // cout<<"number of cell in (global/local) map"<<globalMap->getAllCells().size()<<","<<ndlocal.getAllCells().size()<<endl;
   bool matchSuccesfull;
+  cout<<"will register ndt"<<endl;
   if(registration2d_){
     matchSuccesfull=matcher2D_.match(*globalMap, ndlocal,Tinit,true);
   }
@@ -74,12 +76,19 @@ bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::Point
     return false;
   }
 }
+bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud,Matrix6d cov) {
+  cerr << "TODO: implement update for point type PointXYZIR - will convert to PointXYZ for now" << endl;
+  pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
+  pcl::copyPointCloud(cloud, cloud_xyz);
+  Register(maptype, Tnow,cloud_xyz,cov);
+
+}
 bool NDTD2DRegType::RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eigen::Affine3d &Tdiff,double match_score){
 
   NDTMap *prev,*next;
   bool match_succesfull;
-  prev=(boost::dynamic_pointer_cast<NDTMapType>(map_prev))->GetMap();
-  next=(boost::dynamic_pointer_cast<NDTMapType>(map_next))->GetMap();
+  prev=(boost::dynamic_pointer_cast<NDTMapType>(map_prev))->GetNDTMap();
+  next=(boost::dynamic_pointer_cast<NDTMapType>(map_next))->GetNDTMap();
   if(registration2d_){
     match_succesfull=matcher2D_.match(*prev,*next,Tdiff,true);
   }
@@ -90,6 +99,16 @@ bool NDTD2DRegType::RegisterMap2Map(MapTypePtr map_prev,MapTypePtr map_next, Eig
   cout<<"diff after reg-rot=\n="<<Tdiff.linear()<<endl;
   return match_succesfull;
 }
+std::string NDTD2DRegType::ToString(){
+  std::stringstream ss;
+  ss<<registrationType::ToString();
+  if(enableRegistration_){
+    ss<<"NDT d2d registration type:"<<endl;
+    ss<<"resolution :"<< resolution_<<endl;
+    ss<<"resolutionLocalFactor :"<< resolutionLocalFactor_<<endl;
+  }
+  return ss.str();
+}
 
 /* ----------- Parameters ------------*/
 NDTD2DRegParam::~NDTD2DRegParam(){}
@@ -98,7 +117,7 @@ void NDTD2DRegParam::GetParametersFromRos(){
   registrationParameters::GetParametersFromRos();
   cout<<"derived class read from ros"<<endl;
   ros::NodeHandle nh("~");//base class parameters
-  nh.param("resolution",resolution_,1.0);
+  nh.param("resolution",resolution_,0.4);
   nh.param("resolutionLocalFactor",resolutionLocalFactor_,1.0);
 }
 

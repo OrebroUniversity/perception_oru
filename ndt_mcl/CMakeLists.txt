@@ -1,7 +1,7 @@
 # Catkin User Guide: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/user_guide.html
 # Catkin CMake Standard: http://www.ros.org/doc/groovy/api/catkin/html/user_guide/standards.html
 cmake_minimum_required(VERSION 2.8.3)
-set(CMAKE_BUILD_TYPE Release) 
+set(CMAKE_BUILD_TYPE release)
 project(ndt_mcl)
 
 # Load catkin and all dependencies required for this package
@@ -12,10 +12,11 @@ find_package(catkin REQUIRED COMPONENTS ndt_visualisation rosbag tf nav_msgs sen
 
 catkin_package(
     DEPENDS libpcl-all-dev eigen
-    CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions
+    CATKIN_DEPENDS ndt_visualisation rosbag tf nav_msgs sensor_msgs geometry_msgs message_filters ndt_map ndt_registration visualization_msgs pcl_ros velodyne_msgs velodyne_pointcloud tf_conversions eigen_conversions ndt_rviz
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
 )
+
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 #find_package(Eigen REQUIRED)
@@ -62,11 +63,13 @@ target_link_libraries(2d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catki
 add_executable(3d_ndt_mcl_node src/3d_ndt_mcl_node.cpp)
 target_link_libraries(3d_ndt_mcl_node ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OPENGL_LIBRARIES})# ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
 
-add_executable(3d_ndt_mcl_node2 src/3d_ndt_mcl_node2.cpp)
-target_link_libraries(3d_ndt_mcl_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}) # ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
+#fails on jenkons but not locally, why? ndt_rviz is in the package targets
+#add_executable(3d_ndt_ukf_node2 src/3d_ndt_ukf_node2.cpp)
+#target_link_libraries(3d_ndt_ukf_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}))
 
-add_executable(3d_ndt_ukf_node2 src/3d_ndt_ukf_node2.cpp)
-target_link_libraries(3d_ndt_ukf_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}) # ${MRPT_LIBS}${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} )
+#add_executable(3d_ndt_mcl_node2 src/3d_ndt_mcl_node2.cpp)
+#target_link_libraries(3d_ndt_mcl_node2 ${PROJECT_NAME} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${catkin_LIBRARIES}) )
+
 
 add_executable(ukf_test test/ukf_test.cpp)
 target_link_libraries(ukf_test ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})

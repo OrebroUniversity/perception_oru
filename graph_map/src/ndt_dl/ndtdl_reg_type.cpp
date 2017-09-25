@@ -26,7 +26,8 @@ NDTDLRegType::NDTDLRegType(const Affine3d &sensor_pose,RegParamPtr paramptr):reg
 
 NDTDLRegType::~NDTDLRegType(){}
 
-bool NDTDLRegType::Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<pcl::PointXYZ> &cloud, Matrix6d cov) {
+template<class PointT>
+bool NDTDLRegType::Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<PointT> &cloud, Matrix6d cov) {
 
   cout<<"registration is disabled until it is implemented for map of type: "<<maptype->GetMapName()<<endl;
   return true;//Remove when registration has been implemented
@@ -37,7 +38,7 @@ bool NDTDLRegType::Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::Poin
     return false;
   }
   else{
-    NDTDLMapTypePtr MapPtr = boost::dynamic_pointer_cast< NDTDL >(maptype);
+    NDTDLMapPtr MapPtr = boost::dynamic_pointer_cast< NDTDLMapType >(maptype);
     //Perform registration based on prediction "Tinit", your map "MapPtr" and the "cloud"
   }
 

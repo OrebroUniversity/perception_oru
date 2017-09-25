@@ -42,9 +42,13 @@ public:
         exit(0);
       }
     LoadMap();
+    //std::cout << "Map loaded.\n";
     BuildMap();
+    //std::cout << "Map built.\n";
     SaveMap();
+    //std::cout << "Map saved.\n";
     saveYAMLFile();
+    //std::cout << "Yaml created.\n";
   }
 
 private:
@@ -71,17 +75,30 @@ private:
     maxy=yc+ys/2.0;
     height = round(xs/occ_resolution);
     width = round(ys/occ_resolution);
-    std::cout<<height<<" "<<width<<std::endl;
+
+    //std::cout << "minx: " << minx << "\n";
+    //std::cout << "miny: " << miny << "\n";
+    //std::cout << "maxx: " << maxx << "\n";
+    //std::cout << "maxy: " << maxy << "\n";
+    //std::cout << "H:"<<height<< " W:"<<width<<"\n";
+    //std::cout << "occ_resolution: " << occ_resolution << "\n";
+    //std::cout << "xc: " << xc <<"yc: " << yc << "\n";
+    //std::cout << "xs: " << xs <<"ys: " << ys << "\n";
+
     int h=0;
     map.resize(width, std::vector<int>(height));
-    for(double current_x=-xs/2+occ_resolution;current_x<xs-occ_resolution;current_x+=occ_resolution){
+
+    for(double current_x=-xs/2+occ_resolution;current_x<xs/2-occ_resolution;current_x+=occ_resolution){
+
+      //std::cout << "first loop \n";
       int w=0;
-      for(double current_y=-ys/2+occ_resolution;current_y<ys-occ_resolution;current_y+=occ_resolution){
+      for(double current_y=-ys/2+occ_resolution;current_y<ys/2-occ_resolution;current_y+=occ_resolution){
+        //std::cout << "H:"<<h<< " W:"<<w<<"\n";
         lslgeneric::NDTCell *check_cell;
         pcl::PointXYZ p;
         p.x=current_x;
         p.y=current_y;
-        p.z=0.0;
+        p.z=0.3;
         if(ndtMap->getCellAtPoint(p,check_cell)){
           //std::cout<<"init"<<std::endl;
           if(check_cell->getOccupancy()<0.0){
@@ -89,25 +106,32 @@ private:
           }
           else if(check_cell->getOccupancy()>0.0){
             //std::cout<<"lik "<<check_cell->getLikelihood(p)<<std::endl;
-            if(check_cell->getLikelihood(p)<lik_tr)
+            if(check_cell->getLikelihood(p)>lik_tr){
             // Eigen::Vector3d m=check_cell->getMean();
             // Eigen::Vector3d e=check_cell->getEvals();
             // double d=sqrt((m[0]-current_x)*(m[0]-current_x)+(m[1]-current_y)*(m[1]-current_y));
             // double de=sqrt(e[0]*e[0]+e[1]*e[1]);
             // if(d<=de)
+              //std::cout << "W:"<<w<< " H:"<<h<<"\n";
               map[w][h]=1;
+            }
+            else{
+              //std::cout << "else\n";
+              map[w][h] = 0;
+            }
           }
         }
         w++;
       }
       h++;
+
     }
   }
 
   void SaveMap(){
     std::cout<<"saving map"<<std::endl;
     std::string png_map_file=occ_map_name;
-    png_map_file+=".png";
+    png_map_file+=".pgm";
     std::ofstream map_file (png_map_file.c_str());
     if (map_file.is_open())
       {
@@ -142,7 +166,7 @@ private:
     yaml_map_file+=".yaml";
     std::ofstream map_file (yaml_map_file.c_str());
     if (map_file.is_open()){
-      map_file<<"image: "<<occ_map_name<<".png\n";
+      map_file<<"image: "<<occ_map_name<<".pgm\n";
       map_file<<"resolution: "<<occ_resolution<<std::endl;
       map_file<<"origin: ["<<cenx<<", "<<ceny<<", 0.0]\n";
       map_file<<"occupied_thresh: 0.5\n";

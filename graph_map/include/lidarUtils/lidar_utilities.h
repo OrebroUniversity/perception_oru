@@ -7,7 +7,6 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/LaserScan.h"
 #include "strings.h"
-
 using namespace std;
 namespace libgraphMap {
 

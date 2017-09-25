@@ -32,7 +32,7 @@ private:
 class NDTDLRegType:public registrationType{
 public:
   ~NDTDLRegType();
-  bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<pcl::PointXYZ> &cloud, Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
+  template<class PointT> bool Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::PointCloud<PointT> &cloud, Matrix6d covar=unit_covar);//This methods attempts to register the point cloud versus the map using Tmotion as a first guess
 protected:
   string super_important_parameter_;
   NDTDLRegType(const Affine3d &sensor_pose,RegParamPtr paramptr);

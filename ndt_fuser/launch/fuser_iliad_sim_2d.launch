@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="ndt_fuser" type="ndt_fuser_node" name="laser_fuser_2d" output="screen">
+	<param name="laser_topic" value="/robot1/nav_laser" />
+	<param name="matchLaser" value="true" />
+	
+	<param name="size_x_meters" value="60" />
+	<param name="size_y_meters" value="60" />
+	<param name="size_z_meters" value="3" />
+	<param name="resolution" value="1.0" />
+	<param name="sensor_range" value="40." />
+	<param name="laser_variance_z" value="0.2" />
+	<param name="min_laser_range" value="0.8" />
+	
+	<!-- Specific sensor offset parameters for the example file -->
+	<param name="sensor_pose_x" value="0.8" />
+	<param name="sensor_pose_z" value="0.9" />
+	<param name="sensor_pose_t" value="0.0" />
+
+	<param name="map_directory" value="$(find ndt_fuser)/maps/" />	
+	<param name="map_name_prefix" value="ncfm2d_sim_02" />
+
+	<param name="beHMT" value="false" />
+	<param name="match2D" value="true" />
+	<param name="useOdometry" value="true" />
+	<param name="odometry_topic" value="/robot1/odom" />
+	
+	<param name="initPoseFromTF" value="true" />
+	<param name="tf_pose_frame" value="/robot1/base_footprint" />
+	<param name="robot_frame" value="/robot1/base_footprint" />
+	<param name="sensor_frame" value="/robot1/nav_laser_link" />
+	
+	<param name="do_soft_constraints" value="false" />
+	<param name="visualize" value="false"/>
+    </node>
+</launch>

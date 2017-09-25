@@ -16,7 +16,6 @@
 #include <ndt_generic/eigen_utils.h>
 #include <ndt_generic/io.h>
 #include <ndt_generic/utils.h>
-
 template<class T> std::string toString (const T& x)
 {
     std::ostringstream o;
@@ -37,8 +36,8 @@ public:
   Eigen::Affine3d originalPose;  // estimated pose in global frame (preferably from a GT system)...
   Eigen::Affine3d estSensorPose; // estimated sensor pose in global frame (typically from a SLAM / registration system)
   double stamp;  // timestamp of originalPose
-  lslgeneric::NDTMap* ndtmap;
-  
+  boost::shared_ptr<lslgeneric::NDTMap> ndtmap;
+  boost::shared_ptr<lslgeneric::LazyGrid> lazygrid;
   
 
   NDTCalibScan() : ndtmap(NULL) {
@@ -50,21 +49,23 @@ public:
   }
   
  NDTCalibScan(const pcl::PointCloud<pcl::PointXYZ> &_cloud, const Eigen::Affine3d &_pose, double _stamp) : cloud(_cloud), pose(_pose), originalPose(_pose), stamp(_stamp), ndtmap(NULL) {
-  }
+
+ }
 
  NDTCalibScan(const pcl::PointCloud<pcl::PointXYZ> &_cloud, const Eigen::Affine3d &_pose, const Eigen::Affine3d &_estSensorPose, double _stamp)  : cloud(_cloud), pose(_pose), originalPose(_pose), estSensorPose(_estSensorPose), stamp(_stamp), ndtmap(NULL)
   {
-    
+
   }
   
   ~NDTCalibScan() {
-    if (ndtmap != NULL) {
-      delete &ndtmap;
-    }
+
   }
     
+ const Eigen::Affine3d& getOriginalPose() const { return originalPose; }
+
   void computeNDTMap(double resolution) {
-    ndtmap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution), true);
+    lazygrid = boost::shared_ptr<lslgeneric::LazyGrid>(new lslgeneric::LazyGrid(resolution));
+    ndtmap = boost::shared_ptr<lslgeneric::NDTMap>(new lslgeneric::NDTMap(lazygrid.get(), false));
     ndtmap->loadPointCloud(this->cloud);
     ndtmap->computeNDTCellsSimple();
   }
@@ -258,15 +259,24 @@ public:
     // Helper class to determine what parameters should be optimized.
     class ObjectiveType : public std::vector<bool> {
     public:
+        ObjectiveType() {
+          this->resize(7);
+          this->setObjective(false, false, false, false, false, false, false);
+        }
+
         ObjectiveType(bool x, bool y, bool z, bool roll, bool pitch, bool yaw, bool dt) {
             this->resize(7);
-            (*this)[0] = x;
-            (*this)[1] = y;
-            (*this)[2] = z;
-            (*this)[3] = roll;
-            (*this)[4] = pitch;
-            (*this)[5] = yaw;
-            (*this)[6] = dt;
+            this->setObjective(x,y,z,roll,pitch,yaw,dt);
+        }
+
+        void setObjective(bool x, bool y, bool z, bool roll, bool pitch, bool yaw, bool dt) {
+          (*this)[0] = x;
+          (*this)[1] = y;
+          (*this)[2] = z;
+          (*this)[3] = roll;
+          (*this)[4] = pitch;
+          (*this)[5] = yaw;
+          (*this)[6] = dt;
         }
 
         // Return if time should be optimized
@@ -314,7 +324,7 @@ public:
         }
     };
 
- NDTCalibOptimize(NDTCalibScanPairs &pairs, int scoreType, ObjectiveType objectiveType, PoseInterpolationNavMsgsOdo &poseInterp, const std::string &poseFrameId) : _pairs(pairs), _scoreType(scoreType), _objectiveType(objectiveType), _poseInterp(poseInterp), _poseFrameId(poseFrameId) { }
+ NDTCalibOptimize(NDTCalibScanPairs &pairs, int scoreType, ObjectiveType objectiveType, PoseInterpolationInteface/*PoseInterpolationNavMsgsOdo*/ &poseInterp, const std::string &poseFrameId) : _pairs(pairs), _scoreType(scoreType), _objectiveType(objectiveType), _poseInterp(poseInterp), _poseFrameId(poseFrameId) { }
   
     // Main function to call. Provide the initial sensor pose and time offset. These will be updated with the calibrated results.
   bool calibrate(Eigen::Affine3d &initT, double &sensorTimeOffset);
@@ -342,7 +352,7 @@ private:
   void interpPose(double time, Eigen::Affine3d &T);
   double getScoreTime(double sensorTimeOffset);
   
-  PoseInterpolationNavMsgsOdo &_poseInterp;
+  PoseInterpolationInteface/*PoseInterpolationNavMsgsOdo*/ &_poseInterp;
   NDTCalibScanPairs &_pairs;
   int _scoreType;
   ObjectiveType _objectiveType;

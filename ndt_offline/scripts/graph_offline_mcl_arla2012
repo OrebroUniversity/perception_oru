@@ -1,0 +1,4 @@
+#FILENAME=off_fuser_arla-2012__Sub=0_sizexy=500_Z=10_intrchR=15_compR=2_res=0.8_maxSensd=130_keyF=1_d=0.5_deg=5.map
+roslaunch ndt_offline visualize_graph_fuser.launch arla-2012:=true &
+rosrun ndt_offline graph_mcl_offline ~/.ros/maps --skip-frame 50 --z-filter-height 2.0 --base-name mcl-ndt --bag-file-path ../bag/arla_bags/2012-09-05-09-44-50_0.bagfix.bag --reader-type velodyne_reader --map-dir-path /home/daniel/.ros/maps --velodyne_packets_topic /velodyne_packets --velodyne_frame_id /velodyne --data-set arla-2012 --velodyne_config_file ../config/velo32.yaml --output-dir-name /home/daniel/.ros/maps/evaluation --n-particles 30 --visualize
+

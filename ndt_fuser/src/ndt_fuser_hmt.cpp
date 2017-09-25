@@ -62,7 +62,7 @@ namespace lslgeneric {
      */
     Eigen::Affine3d NDTFuserHMT::update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud)
     {
-		std::cout << "UPDATE" << std::endl;
+		//std::cout << "UPDATE" << std::endl;
 	if(!isInit){
 	    fprintf(stderr,"NDT-FuserHMT: Call Initialize first!!\n");
 	    return Tnow;
@@ -167,10 +167,10 @@ namespace lslgeneric {
 	}
 
 	if(be2D) {
-		std::cout << "BE 2d" << std::endl;
+	    //std::cout << "BE 2d" << std::endl;
 	    t2 = getDoubleTime();
 	    if(matcher2D.match( *map, ndlocal,Tinit,true) || fuseIncomplete){
-			std::cout << "Match" << std::endl;
+		//std::cout << "Match" << std::endl;
 		t3 = getDoubleTime();
 		Eigen::Affine3d diff = (Tnow * Tmotion).inverse() * Tinit;
 		if((diff.translation().norm() > max_translation_norm || 
@@ -178,7 +178,7 @@ namespace lslgeneric {
 		    fprintf(stderr,"****  NDTFuserHMT -- ALMOST DEFINATELY A REGISTRATION FAILURE *****\n");
 		    Tnow = Tnow * Tmotion;
 		}else{
-			std::cout << "Good" << std::endl;
+		    //std::cout << "Good" << std::endl;
 		    Tnow = Tinit;
 		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
@@ -190,7 +190,19 @@ namespace lslgeneric {
 			t4 = getDoubleTime();
 			//TSV: originally this!
 			//map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
-			map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
+			map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 5, 2*map_size_z, 0.06);
+			///////////////////FIXME: check if this works for error beams //////////////////////////
+
+			pcl::PointCloud<pcl::PointXYZ> max_beams;
+			for (int i=0; i<cloud.points.size(); i++) {
+			    pcl::PointXYZ pt = cloud.points[i];
+			    double d = sqrt(pt.x*pt.x+pt.y*pt.y+pt.z*pt.z);
+			    if(d >= sensor_range) max_beams.points.push_back(pt);
+			}
+			std::cerr<<"error beams are "<<max_beams.points.size()<<std::endl;
+			map->addPointCloud(spose.translation(),max_beams,0.06,100,0.25);
+
+			///////////////////////////////////////////////////////////////////////////////////////
 			t5 = getDoubleTime();
 			//map->addPointCloud(spose.translation(),cloud, 0.06, 25);
 			//map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, spose.translation(), 0.1);
@@ -287,6 +299,18 @@ namespace lslgeneric {
 			t4 = getDoubleTime();
 			map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 1250, map_size_z/2, 0.06);
 			t5 = getDoubleTime();
+			///////////////////FIXME: check if this works for error beams //////////////////////////
+
+			pcl::PointCloud<pcl::PointXYZ> max_beams;
+			for (int i=0; i<cloud.points.size(); i++) {
+			    pcl::PointXYZ pt = cloud.points[i];
+			    double d = sqrt(pt.x*pt.x+pt.y*pt.y+pt.z*pt.z);
+			    if(d >= sensor_range) max_beams.points.push_back(pt);
+			}
+			std::cerr<<"error beams are "<<max_beams.points.size()<<std::endl;
+			map->addPointCloud(spose.translation(),max_beams,0.06,100,0.25);
+
+			///////////////////////////////////////////////////////////////////////////////////////
 			//map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
 			//map->addPointCloud(spose.translation(),cloud, 0.06, 25);
 			//map->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, spose.translation(), 0.1);

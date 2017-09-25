@@ -28,7 +28,7 @@
 	<param name="match2D" value="true" />
 	<param name="useOdometry" value="true" />
 	<param name="odometry_topic" value="/vmc_navserver/odom" />
-	<param name="visualize" value="true" />
+        <param name="visualize" value="true" />
 	<param name="plotGTTrack" value="false" />
 	<param name="initPoseFromGT" value="false" />
 	<param name="gt_topic" value="/vmc_navserver/state" />

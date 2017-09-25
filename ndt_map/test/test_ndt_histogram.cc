@@ -27,7 +27,7 @@ int main (int argc, char** argv) {
     // lslgeneric::OctTree<pcl::PointXYZ> tr;
     // tr.BIG_CELL_SIZE = 2;
     // tr.SMALL_CELL_SIZE = 0.2;
-    lslgeneric::LazyGrid tr(0.5);
+    lslgeneric::LazyGrid tr(0.1);
 
 #ifdef FULLTESTER
     // std::string fname_str = argv[1];
@@ -71,6 +71,7 @@ int main (int argc, char** argv) {
     // logger<<"];\n";
 #else
 
+#if 0
     pcl::io::loadPCDFile<pcl::PointXYZ> (argv[1], cloud);
     pcl::io::loadPCDFile<pcl::PointXYZ> (argv[2], cloud2);
     //lslgeneric::NDTMap nd(new lslgeneric::LazzyGrid(5));
@@ -81,10 +82,12 @@ int main (int argc, char** argv) {
     nd2.loadPointCloud(cloud2);
 
     nd.computeNDTCells();
+    nd.writeToJFF("test1.nd");
     nd2.computeNDTCells();
+    nd2.writeToJFF("test2.nd");
 
-    lslgeneric::NDTHistogram nh(nd);
-    lslgeneric::NDTHistogram nh2(nd2);
+    lslgeneric::NDTHistogram nh(nd, 1, 40, 10, 2, 5);
+    lslgeneric::NDTHistogram nh2(nd2, 1, 40, 10, 2, 5);
     cout<<"1 =========== \n";
     nh.printHistogram(false);
     cout<<"2 =========== \n";
@@ -102,7 +105,7 @@ int main (int argc, char** argv) {
     nd3.loadPointCloud(cloud3);
     nd3.computeNDTCells();
 
-    lslgeneric::NDTHistogram nh3(nd3);
+    lslgeneric::NDTHistogram nh3(nd3, 1, 40, 10, 2, 5);
     cout<<"3 =========== \n";
     nh3.printHistogram(true);
 
@@ -116,6 +119,27 @@ int main (int argc, char** argv) {
         cout<<directions[i].transpose()<<";";
     }
     cout<<"];\n";
+#endif
+
+    pcl::io::loadPCDFile<pcl::PointXYZ> (argv[1], cloud);
+    pcl::io::loadPCDFile<pcl::PointXYZ> (argv[2], cloud2);
+    lslgeneric::NDTMap nd(&tr);
+    nd.loadPointCloud(cloud);
+    lslgeneric::NDTMap nd2(&tr);
+    nd2.loadPointCloud(cloud2);
+
+    nd.computeNDTCells();
+    nd2.computeNDTCells();
+
+    lslgeneric::NDTHistogram nh(nd, 1, 40, 10, 2, 5);
+    lslgeneric::NDTHistogram nh2(nd2, 1, 40, 10, 2, 5);
+
+    Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
+
+    nh2.bestFitToHistogram(nh,T,true);
+
+    cout<<nh2.getSimilarity(nh)<<endl;
+
 #endif
 
 

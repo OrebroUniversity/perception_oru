@@ -1,0 +1,6 @@
+roslaunch ndt_offline visualize_graph_fuser.launch oru-basement:=true &
+rosrun ndt_offline graph_fuser3d_offline --sensor_time_offset 0.025 --base-name off --dir-name ../bag/oru_bags --use-odometry --map_type_name ndt_map --data-set oru-basement --velodyne_config_file ../config/velo32.yaml --save-map --interchange-radius 50.0 --compound-radius 0.0 --resolution 0.5 --visualize registration_type_name ndt_d2d_reg --skip-frame 1   --gt-mapping # --disable-keyframe-update
+#rosrun ndt_offline graph_fuser3d_offline --base-name off --dir-name ../bag/oru_bags --use-odometry --map_type_name ndt_map --data-set oru-basement --velodyne_config_file ../config/velo32.yaml --save-map --interchange-radius 7.0 --compound-radius 0.0 --resolution 0.5 --gt-mapping #--visualize --disable-keyframe-update registration_type_name ndt_d2d_reg
+#rosrun ndt_offline graph_fuser3d_offline --base-name off --dir-name ../bag/oru_bags --use-odometry --map_type_name ndt_map --data-set oru-basement --velodyne_config_file ../config/velo32.yaml --save-map --interchange-radius 7.0 --compound-radius 0.0 --resolution 0.6 --gt-mapping #--visualize --disable-keyframe-update registration_type_name ndt_d2d_reg
+
+

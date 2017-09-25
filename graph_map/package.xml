@@ -7,7 +7,7 @@
 <!-- One maintainer tag required, multiple allowed, one person per tag -->
 <!-- Example:  -->
 <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-<maintainer email="daniel@todo.todo">daniel</maintainer>
+<maintainer email="daniel.adolfsson@oru.se">Daniel Adolfsson</maintainer>
 
 
 <!-- One license tag required, multiple allowed, one license per tag -->
@@ -41,8 +41,8 @@
 <!--   <run_depend>message_runtime</run_depend> -->
 <!-- Use test_depend for packages you need only for testing: -->
 <!--   <test_depend>gtest</test_depend> -->
-<build_depend>cmake_modules</build_depend>
 <buildtool_depend>catkin</buildtool_depend>
+<build_depend>cmake_modules</build_depend>
 <build_depend>libpcl-all-dev</build_depend>
 <build_depend>roscpp</build_depend>
 <build_depend> pcl_conversions</build_depend>
@@ -51,13 +51,16 @@
 <build_depend>sensor_msgs</build_depend>
 <build_depend>laser_geometry</build_depend>
 <build_depend>ndt_map</build_depend>
+<build_depend>ndt_mcl</build_depend>
+<build_depend>ndt_localization</build_depend>
 <build_depend>ndt_registration</build_depend>
+<build_depend>ndt_rviz</build_depend>
 <build_depend>eigen_conversions</build_depend>
 <build_depend>tf_conversions</build_depend>
 <build_depend>tf</build_depend>
 <build_depend>genmsg</build_depend>
 <build_depend>geometry_msgs</build_depend>
-
+<build_depend>tf_conversions</build_depend>
 
 <run_depend>libpcl-all-dev</run_depend>
 <run_depend> pcl_conversions</run_depend>
@@ -68,13 +71,18 @@
 <run_depend>cmake_modules</run_depend>
 <run_depend>roscpp</run_depend>
 <run_depend>ndt_map</run_depend>
+<run_depend>ndt_mcl</run_depend>
+<run_depend>ndt_localization</run_depend>
 <run_depend>ndt_registration</run_depend>
+<run_depend>ndt_rviz</run_depend>
 <run_depend>libpcl-all-dev</run_depend>
 <run_depend>eigen_conversions</run_depend>
 <run_depend>tf_conversions</run_depend>
 <run_depend>tf</run_depend>
 <run_depend>genmsg</run_depend>
 <run_depend>geometry_msgs</run_depend>
+<run_depend>tf_conversions</run_depend>
+
 <!-- The run_depend tag contains other, unspecified, tags -->
 <export>
 <!-- Other tools can request additional information be placed here -->

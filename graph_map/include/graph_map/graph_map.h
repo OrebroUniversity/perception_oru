@@ -43,6 +43,8 @@ public:
   virtual Eigen::Affine3d GetCurrentNodePose();
   virtual Eigen::Affine3d GetPreviousNodePose();
   virtual void AddFactor(MapNodePtr prev, MapNodePtr next, Affine3d Tdiff, Matrix6d cov);
+
+
   //virtual std::vector<FactorPtr> GetFactors(NodePtr node);//Get all factors for current node
   GraphMap();
 protected:
@@ -54,6 +56,9 @@ protected:
   bool use_submap_=false;
   double interchange_radius_=0;
   double compound_radius_=0;
+  double min_keyframe_dist_=0.5;
+  double min_keyframe_rot_deg_=15;
+  bool use_keyframe_=true;
 private:
   friend class GraphFactory;
   friend class boost::serialization::access;
@@ -70,7 +75,6 @@ private:
   }
 
 };
-
 
 
 class GraphParam{

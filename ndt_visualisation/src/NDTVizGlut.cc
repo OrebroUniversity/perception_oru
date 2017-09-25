@@ -67,7 +67,7 @@ void * glthread(void * pParam)
      glutCloseFunc(win_close_);
     /* Thread will loop here */
 
-     glClearColor(0.0, 0.0, 0.0, 0.0);
+     glClearColor(0.5, 0.5, 0.5, 1.0);
      /* Thread will loop here */
      int f = 0;
      int n = glut3d_ptr->getMotionBlurFrames();

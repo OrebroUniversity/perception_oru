@@ -428,6 +428,21 @@ int main(int argc, char **argv){
 
 		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
 			std::cout << "Reading and counter " << counter << std::endl;
+			
+			if (counter == 689) {
+				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
+				if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+					ndtslammer.map->writeToJFF("map_middle.jff");
+					std::cout << "Done." << std::endl;
+					
+					
+				}
+				else {
+					std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+				}
+			}
+			
+			
 
 			ros::spinOnce();
 			sensor_msgs::PointCloud2 mesg;
@@ -465,7 +480,7 @@ int main(int argc, char **argv){
 // 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-				double roll =  0, pitch = 0, yaw = 3.14159;
+				double roll =  3.14159, pitch = 0, yaw = 0;
 				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
@@ -515,7 +530,7 @@ int main(int argc, char **argv){
 						
 					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
 // 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud, vreader.getTimeStampOfLastSensorMsg());
+						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud, vreader.getTimeStampOfLastMsg());
 						
 						added_motion.setIdentity();
 						
@@ -549,7 +564,7 @@ int main(int argc, char **argv){
 							mesg.header.frame_id = "/velodyne";
 							mesg.header.stamp = ros::Time::now();
 							laserpub.publish<sensor_msgs::PointCloud2>(mesg);
-							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastMsgScan();
+							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastMsg();
 							sensor_msgs::LaserScan mes_laser_tmp = *mesg_laser;
 // 							mes_laser_tmp.header.stamp = ros::Time::now();
 							laserpub_real.publish<sensor_msgs::LaserScan>(mes_laser_tmp);

@@ -71,3 +71,6 @@ target_link_libraries(ndt_offline_laser_noodom ${LIBXML2_LIBRARIES} ${GLUT_LIBRA
 add_executable(ndt_offline_pointcloud src/ndt_offline_pointcloud.cpp)
 target_link_libraries(ndt_offline_pointcloud ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
 
+add_executable(ndt_offline_gt src/ndt_offline_gt.cpp)
+target_link_libraries(ndt_offline_gt ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} )
+

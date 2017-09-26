@@ -428,6 +428,23 @@ int main(int argc, char **argv){
 
 		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
 			std::cout << "Reading and counter " << counter << std::endl;
+			
+			
+			if (counter == 689) {
+				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
+				if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+					ndtslammer.map->writeToJFF("map_middle.jff");
+					std::cout << "Done." << std::endl;
+					
+					
+				}
+				else {
+					std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+				}
+			}
+			
+			
+			
 
 			ros::spinOnce();
 			sensor_msgs::PointCloud2 mesg;

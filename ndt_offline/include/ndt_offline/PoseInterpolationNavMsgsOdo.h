@@ -344,7 +344,7 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0,ros::Tim
 		return false;
 	}
 	else{
-		std::cout << "Return true" << std::endl;
+  //	std::cout << "Return true" << std::endl;
 	}
 
 	//transformer.lookupTransform(frame_id,t0, frame_id, t1, fixedframe, transform);

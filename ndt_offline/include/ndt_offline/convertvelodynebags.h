@@ -65,7 +65,10 @@ int setupOffline(std::string calibration_file, double max_range_, double min_ran
 #include <ndt_offline/PoseInterpolationNavMsgsOdo.h>
 #include <iostream>
 #include <pcl_ros/impl/transforms.hpp>
-
+#include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <angles/angles.h>
 
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
@@ -93,7 +96,9 @@ public:
                            tf::StampedTransform *sensor_link=NULL,
                            double velodyne_max_range=130.0,
                            double velodyne_min_range=2.0,
-                           double sensor_time_offset=0.0
+                           double sensor_time_offset=0.0,
+                           int height = 64,
+                           int width = 1000
       )
 
   {
@@ -141,7 +146,15 @@ public:
 
     odosync = new PoseInterpolationNavMsgsOdo(view,tftopic, fixed_frame_id,dur, sensor_link);
 
-    //odosync = NULL;
+    //odosync = NULL;2
+    view_width_ = view_width;
+    velodyne_max_range_ = velodyne_max_range;
+    velodyne_min_range_ = velodyne_min_range;
+    image_clean_ = true;
+    depth_img_ = cv::Mat(height, width, CV_32FC1, 0.);
+    intensity_img_ = cv::Mat(height, width, CV_32FC1, 0.);
+    width_ = width;
+    height_ = height;
   }
 
   /**
@@ -219,6 +232,223 @@ public:
     I++;
     return true;
   }
+
+
+  bool getNextScanMsg(){
+    if(I == view->end()){
+      fprintf(stderr,"End of measurement file Reached!!\n");
+      return false;
+    }
+    bool done = false;
+    while(!done){
+      rosbag::MessageInstance const m = *I;
+
+      {
+        outbag.write(m.getTopic(),m.getTime(),  m);
+      }
+      global_scan = m.instantiate<velodyne_msgs::VelodyneScan>();
+
+
+      I++;
+      if(I == view->end()) done = true;
+      if(global_scan != NULL){
+        //                        fprintf(stderr,"GOT %s \n",m.getTopic().c_str());
+        done = true;
+      }
+    }
+
+    if(I == view->end()) {
+      return false;
+    }
+    return true;
+  }
+
+
+  int addToImages(const velodyne_rawdata::VPointCloud &pnts, int width, int height, int startpixelx, int startpixely, const tf::Transform &T) {
+
+    double resolution_factor = width / view_width_;
+    for(size_t i = 0;i<pnts.size();i++){
+      int y = height-pnts.points[i].ring-1;
+      tf::Point pt;
+pt.setValue(pnts.points[i].x - T.getOrigin()[0], pnts.points[i].y - T.getOrigin()[1], pnts.points[i].z - T.getOrigin()[2]);
+
+      double th = atan2(pt.y(), pt.x());
+      th = angles::normalize_angle_positive(th);
+      int x = static_cast<int>(resolution_factor*th);
+
+      float depth = sqrt(pt.x()*pt.x() + pt.y()*pt.y() + pt.z()*pt.z() );
+      bool scale_depth = false;
+      if (scale_depth) {
+          if (depth < 0. || depth > 1.) {
+            depth = 1.;
+          }
+          depth = (depth - velodyne_min_range_)/velodyne_max_range_;
+      }
+      depth_img_.at<float>(y,x) = depth;
+
+      float intensity = pnts[i].intensity;
+      bool scale_intensity = false;
+      if (scale_intensity)
+        intensity = intensity/255.;
+      intensity_img_.at<float>(y,x) = intensity;
+    }
+
+    return 0;
+  }
+
+  bool ConvertToCompleteImages(tf::Transform &sensor_pose) {
+
+    if (image_clean_) {
+      getNextScanMsg();
+      depth_img_ = cv::Scalar::all(0);
+      intensity_img_ = cv::Scalar::all(0);
+
+      tf::Transform T;
+      ros::Time t0=global_scan->header.stamp + sensor_time_offset_;
+      timestamp_of_last_sensor_message=t0;
+      velodyne_rawdata::VPointCloud pnts,conv_points;
+
+      if(odosync->getTransformationForTime(t0, tf_pose_id_, sensor_pose)){
+      for (size_t next = 0; next < global_scan->packets.size(); ++next){
+         dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
+         ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
+
+         if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
+           pcl_ros::transformPointCloud(pnts,conv_points,T);
+           this->addToImages(conv_points, width_, height_, 0, 0, T);
+         }
+         else{
+              fprintf(stderr,"No transformation (velodyne images complete #1)\n");
+         }
+         pnts.clear();
+       }
+      }
+      else {
+        fprintf(stderr,"No transformation (velodyne images complete #00)\n");
+
+      }
+
+      image_clean_ = false;
+      return true; // Return true if there is more to process...
+    }
+    else {
+      getNextScanMsg();
+
+      tf::Transform T;
+      velodyne_rawdata::VPointCloud pnts,conv_points;
+
+      for (size_t next = 0; next < global_scan->packets.size(); ++next){
+         dataParser.unpack(global_scan->packets[next], pnts); // unpack the raw data
+         ros::Time t1=global_scan->packets[next].stamp + sensor_time_offset_;
+
+         if(odosync->getTransformationForTime(timestamp_of_last_sensor_message,t1,tf_pose_id_,T)){
+           pcl_ros::transformPointCloud(pnts,conv_points,T);
+           this->addToImages(conv_points, width_, height_, 0, 0, T);
+         }
+         else{
+              fprintf(stderr,"No transformation (velodyne images complete #2)\n");
+         }
+         pnts.clear();
+       }
+      image_clean_ = true;
+    }
+
+    std::cout<<"Frame (images):"<<++counter<<std::endl;
+
+    cv_bridge::CvImage out_msg;
+    out_msg.header.stamp = timestamp_of_last_sensor_message;
+    out_msg.header.frame_id = global_scan->header.frame_id;
+    out_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+
+   {
+      cv::Mat dst;
+      cv::normalize(depth_img_, dst, 0, 1, cv::NORM_MINMAX);
+      cv::imshow("depth_img", dst);
+    }
+    {
+      cv::Mat dst;
+      cv::normalize(intensity_img_, dst, 0, 1, cv::NORM_MINMAX);
+      cv::imshow("intensity_img", dst);
+    }
+    cv::waitKey(1);
+    out_msg.image = depth_img_;
+    outbag.write("/velodyne_depth_img",timestamp_of_last_sensor_message,out_msg);
+
+    out_msg.image = intensity_img_;
+    outbag.write("/velodyne_intensity_img",timestamp_of_last_sensor_message,out_msg);
+    return true;
+
+  }
+
+  // Take one set of packages and create one image (will not be complete)
+  bool ConvertToImages(tf::Transform &sensor_pose){
+
+    double resolution_factor = width_ / view_width_;
+    depth_img_ = cv::Scalar::all(0);
+    intensity_img_ = cv::Scalar::all(0);
+
+    sensor_msgs::Image depth_img_msg, intensity_img_msg;
+
+    //if(odosync == NULL) return true;
+    rosbag::MessageInstance const m = *I;
+    if(m.getTopic()==velodynetopic_){
+      velodyne_msgs::VelodyneScan::ConstPtr scan = m.instantiate<velodyne_msgs::VelodyneScan>();
+      if (scan != NULL){
+        velodyne_rawdata::VPointCloud pnts,conv_points;
+        // process each packet provided by the driver
+        tf::Transform T;
+        ros::Time t0=scan->header.stamp + sensor_time_offset_;
+        timestamp_of_last_sensor_message=t0;
+        if(odosync->getTransformationForTime(t0, tf_pose_id_, sensor_pose)){
+          for (size_t next = 0; next < scan->packets.size(); ++next){
+            dataParser.unpack(scan->packets[next], pnts); // unpack the raw data
+            ros::Time t1=scan->packets[next].stamp + sensor_time_offset_;
+
+            if(odosync->getTransformationForTime(t0,t1,tf_pose_id_,T)){
+              pcl_ros::transformPointCloud(pnts,conv_points,T);
+              this->addToImages(conv_points, width_, height_, 0, 0, T);
+
+            }else{
+              fprintf(stderr,"No transformation (velodyne images)\n");
+            }
+            pnts.clear();
+          }
+
+
+        }else{
+          fprintf(stderr,"No transformation\n");
+        }
+
+        std::cout<<"Frame (images):"<<++counter<<std::endl;
+
+        cv_bridge::CvImage out_msg;
+        out_msg.header.stamp = t0;
+        out_msg.header.frame_id = scan->header.frame_id;
+        out_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+
+
+        cv::imshow("depth_img", depth_img_);
+        cv::imshow("intensity_img", intensity_img_);
+        cv::waitKey(1);
+        out_msg.image = depth_img_;
+        outbag.write("/velodyne_depth_img",timestamp_of_last_sensor_message,out_msg);
+
+        out_msg.image = intensity_img_;
+        outbag.write("/velodyne_intensity_img",timestamp_of_last_sensor_message,out_msg);
+      }
+    }
+
+    {
+      outbag.write(m.getTopic(),m.getTime(),  m);
+    }
+
+
+    I++;
+
+    return true;
+  }
+
+
   void CloseOutputBag(){
     outbag.close();
   }
@@ -254,7 +484,15 @@ private:
   velodyne_msgs::VelodyneScan::ConstPtr global_scan;
   ros::Time timestamp_of_last_sensor_message;
   ros::Duration sensor_time_offset_;
-
+  double view_width_;
+  double velodyne_max_range_;
+  double velodyne_min_range_;
+  ros::Time image_start_time_;
+  cv::Mat depth_img_;
+  cv::Mat intensity_img_;
+  bool image_clean_;
+  int width_;
+  int height_;
 };
 
 #endif // CONVERTVELODYNEBAGS_H

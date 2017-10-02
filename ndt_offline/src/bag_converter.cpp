@@ -21,6 +21,7 @@
 using namespace std;
 namespace po = boost::program_options;
 bool create_odom=true,create_tf=true;
+bool interactive;
 // This will underestimate the yaw.
 double getYawFromXY(const geometry_msgs::Pose &prev,
                     const geometry_msgs::Pose &curr) {
@@ -150,13 +151,15 @@ void GetSensorPose(const std::string &dataset,  Eigen::Vector3d & transl,  Eigen
   if(found_sensor_pose)
     cout<<"Sensor settings for dataset : \""<<dataset<<"\" is used"<<endl;
   cout<<"Sensor offset (x,y,z)=("<<transl(0)<<","<<transl(1)<<","<<transl(2)<<")"<<endl<<"Sensor angles (r,p,y)=("<<euler(0)<<","<<euler(1)<<","<<euler(2)<<")"<<endl;
+  if (interactive) {
   cout<<"Are these the correct settings? y/n"<<endl;
+
   char c=getchar();
   getchar();
   if(!( c=='y'||c=='Y'))
     exit(0);
 }
-
+}
 void update_roll_pitch(Eigen::Affine3d &t, Eigen::Vector3d euler, double yaw) {
 
   // Set yaw from the current odometry... the current EKF pose utilize the GPS heading for the yaw, the roll and pitch are directly taken from the IMU.
@@ -197,6 +200,8 @@ int main(int argc, char **argv){
       ("ey", po::value<double>(&euler[1])->default_value(0.), "sensor pose - euler angle vector y")
       ("ez", po::value<double>(&euler[2])->default_value(0.), "sensor pose - euler angle vector z")
       ("data-set", po::value<string>(&dataset)->default_value(std::string("arla-2012")), "choose which dataset that is currently used, this option will assist with assigning the sensor pose")
+      ("create_images", "create depth and intensity images instead of point clouds")
+      ("interactive", "interactive mode")
       ;
 
   po::variables_map vm;
@@ -207,17 +212,24 @@ int main(int argc, char **argv){
     cout << desc << "\n";
     return 1;
   }
-  cout<<"Point cloud will be filtered according to:\n min="<<min_range<<" < range < max="<<max_range<<endl<<"Continue? y/n";
-  {char c=getchar();
+  interactive = vm.count("interactive");
+
+  cout<<"Point cloud will be filtered according to:\n min="<<min_range<<" < range < max="<<max_range<<endl;
+  if (interactive) { std::cout <<"Continue? y/n";
+    char c=getchar();
     getchar();
     if(!( c=='y'||c=='Y')){
       cout << desc << "\n";
       exit(0);
     }
+    std::cout << "here..." << std::endl;
   }
   cout<<"Never run SLAM with data interpolated in GT frame."<<endl;
-  cout<<"Data will be interpolated in link: "<<interpolation_link_id<<"\n is this the correct link id? y/n"<<endl;
-  {char c=getchar();
+  cout<<"Data will be interpolated in link: "<<interpolation_link_id<< std::endl;
+  if (interactive)
+  {
+    std::cout << "\n is this the correct link id? y/n"<<endl;
+    char c=getchar();
     getchar();
     if(!( c=='y'||c=='Y')){
       cout << desc << "\n";
@@ -225,7 +237,7 @@ int main(int argc, char **argv){
     }
   }
 
-  po::notify(vm);
+  bool create_images = vm.count("create_images");
 
   rosbag::Bag outbag;
   //bag.open(inbag_name, rosbag::bagmode::Read);
@@ -253,8 +265,14 @@ int main(int argc, char **argv){
   tf::Transform tf_scan_source;
   tf::Transform tf_gt_base;
   Eigen::Affine3d Todom_base_prev,Tgt_base_prev;
-  while(reader.ConvertToPclBag(tf_scan_source));
+  bool run = true;
+  while (run) {
 
+    if (create_images)
+      run = reader.ConvertToCompleteImages(tf_scan_source);
+    else
+      run = reader.ConvertToPclBag(tf_scan_source);
+  }
 
   // while(reader.readMultipleMeasurements(1,cloud,tf_scan_source,tf_gt_base,base_link_id)){
 

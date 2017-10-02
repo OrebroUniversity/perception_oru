@@ -33,6 +33,7 @@ catkin_package(
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS signals)
 include_directories(${LIBXML2_INCLUDE_DIR})

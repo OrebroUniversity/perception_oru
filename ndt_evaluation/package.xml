@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>ndt_evaluation</name>
+  <version>0.0.0</version>
+  <description>The ndt_evaluation package</description>
+
+  <maintainer email="henrik.andreasson@oru.se">Henrik Andreasson</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <export>
+
+  </export>
+</package>

@@ -308,8 +308,8 @@ bool PoseInterpolationNavMsgsOdo::getTransformationForTime(ros::Time t0, const s
 	readUntilTime(t0+ros::Duration(1.0));
 // 	printf("looking up tf from %s to %s\n",frame_id.c_str(),fixedframe.c_str());
 	if(!transformer.canTransform(fixed_frame_id , frame_id, t0, &schaiba)){
-		std::cout << "Not found " << std::endl;
-		exit(0);
+    std::cout << "Can't transform : " << fixed_frame_id << " <-> " << frame_id << " at time : " << t0 << std::endl; // Not found " << std::endl;
+    //exit(0);
 		return false;
 	}
 	else{

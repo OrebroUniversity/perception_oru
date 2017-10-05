@@ -389,7 +389,7 @@ int main(int argc, char **argv){
     }
     if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
     {
-      ROS_ERROR_STREAM("Failed to open : " << gt_file << " || " << est_file << " || " << odom_file); 
+//       ROS_ERROR_STREAM("Failed to open : " << gt_file << " || " << est_file << " || " << odom_file); 
     }
 
 

@@ -22,9 +22,7 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
   Matrix6d motion_cov=motion_model_2d_.getCovMatrix6(Tmotion, 1., 1., 1.);
   lslgeneric::transformPointCloudInPlace(sensorPose_, cloud);//Transform cloud into robot frame before registrating
   if(fuse_this_frame||map_node_changed){
-    cout<<"call for registration of ndt"<<endl;
     registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
-   cout<<"registration, status"<<registration_succesfull<<endl;
   }
   else {
     cout<<"no registration"<<endl;

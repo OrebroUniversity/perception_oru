@@ -23,6 +23,7 @@ protected:
   NDTMap* GetCurrentNodeNDTMap();
   ParticleFilter3D pf; 						///<This is the particle filter
   NDTMap * map_;
+  Eigen::Affine3d pose_last_update_;
   double resolution=0.5;
   double resolution_sensor=0.5;//ok
   int counter=0;//ok

@@ -21,7 +21,7 @@ NDTD2DRegType::NDTD2DRegType(const Affine3d &sensor_pose, RegParamPtr paramptr):
 NDTD2DRegType::~NDTD2DRegType(){}
 
 bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d cov) {
-cout<<" registration ndt ";
+cout<<" Registration:NDT ";
   if(!enableRegistration_||!maptype->Initialized()){
     cout<<"Registration disabled - motion based on odometry"<<endl;
     return true;

@@ -86,7 +86,10 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   }
   else
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5]);
+    pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
 
+    if((pose_.translation()-pose_last_update_.translation()).norm()<0.01 && (pose_last_update_.inverse()*pose_).rotation().eulerAngles(0,1,2).norm()<0.005 )
+      return;
 
   // if(rot[2]<(0.5 * M_PI/180.0) && tr[0]>=0){
   //     pf.predict(Tmotion, tr[0]*pos_factor[0] + pos_offset, tr[1]*pos_scale[1] + pos_offset[1], tr[2]*pos_factor[2]/2.+pos_offset[2] ,rot[0]*rot_factor[0]+rot_offset[0],rot[1]*rot_factor[1]+rot_offset[1], rot[2]*rot_factor[2]+rot_offset[2]);
@@ -208,6 +211,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   }
   pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
+  pose_last_update_=pose_;
 
   GraphPlot::PlotMap(local_map,1,pose_,plotmarker::sphere/*plotmarker::point*/, "ndtmcl");
 
@@ -252,6 +256,7 @@ std::string MCLNDTType::ToString(){
 
 void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   pose_=pose;
+  pose_last_update_=pose_;
   graph_map_->SwitchToClosestMapNode(pose_);//specified in local frame, should be specified in gloval
   //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
   map_ = this->GetCurrentNodeNDTMap();

@@ -37,6 +37,7 @@
 #include "mcl_ndt/mcl_ndt.h"
 #include "graph_map/graph_map_navigator.h"
 #include "ndt_offline/readbagfilegeneric.h"
+#include "ndt_generic/motionmodels.h"
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
@@ -305,63 +306,8 @@ void ReadAllParameters(po::options_description &desc,int &argc, char ***argv){
     parPtr->score_cell_weight=score_cell_weight;
     parPtr->SIR_varP_threshold=SIR_varP_threshold;
 
-    if (dataset == "hx") {
-      parPtr->motion_model[0] = 0.01;
-      parPtr->motion_model[1] = 0.002;
-      parPtr->motion_model[2] = 0.001;
-      parPtr->motion_model[3] = 0.001;
-      parPtr->motion_model[4] = 0.001;
-      parPtr->motion_model[5] = 0.005;
+    GetMotionModel(dataset,parPtr->motion_model,parPtr->motion_model_offset);
 
-      parPtr->motion_model[6] = 0.002;
-      parPtr->motion_model[7] = 0.005;
-      parPtr->motion_model[8] = 0.001;
-      parPtr->motion_model[9] = 0.001;
-      parPtr->motion_model[10] = 0.001;
-      parPtr->motion_model[11] = 0.005;
-
-      parPtr->motion_model[12] = 0.005;
-      parPtr->motion_model[13] = 0.001;
-      parPtr->motion_model[14] = 0.01;
-      parPtr->motion_model[15] = 0.0001;
-      parPtr->motion_model[16] = 0.0001;
-      parPtr->motion_model[17] = 0.005;
-
-      parPtr->motion_model[18] = 0.002;
-      parPtr->motion_model[19] = 0.001;
-      parPtr->motion_model[20] = 0.001;
-      parPtr->motion_model[21] = 0.01;
-      parPtr->motion_model[22] = 0.001;
-      parPtr->motion_model[23] = 0.001;
-
-      //      parPtr->motion_model[24] = 0.002;
-      //      parPtr->motion_model[25] = 0.0001;
-      //      parPtr->motion_model[26] = 0.001;
-      //      parPtr->motion_model[27] = 0.001;
-      //      parPtr->motion_model[28] = 0.01;
-      //      parPtr->motion_model[29] = 0.001;
-      parPtr->motion_model[25] = 0.005;
-      parPtr->motion_model[26] = 0.002;
-      parPtr->motion_model[24] = 0.0001;
-      parPtr->motion_model[27] = 0.001;
-      parPtr->motion_model[28] = 0.04;
-      parPtr->motion_model[29] = 0.001;
-
-      parPtr->motion_model[30] = 0.005;
-      parPtr->motion_model[31] = 0.002;
-      parPtr->motion_model[32] = 0.0001;
-      parPtr->motion_model[33] = 0.001;
-      parPtr->motion_model[34] = 0.001;
-      parPtr->motion_model[35] = 0.01;
-
-      parPtr->motion_model_offset[0] = 0.02;
-
-      parPtr->motion_model_offset[1] = 0.00002;
-      parPtr->motion_model_offset[2] = 0.002;
-      parPtr->motion_model_offset[3] = 0.000002;
-      parPtr->motion_model_offset[4] = 0.02;//0.000002;
-      parPtr->motion_model_offset[5] = 0.000002;
-    }
   }
 
   cout<<"sensor pose"<<endl;
@@ -476,6 +422,7 @@ for (std::vector<string>::iterator it = map_file_path.begin() ; it != map_file_p
   Eigen::Affine3d Tgt_base,Tgt_base_prev,Tgt_init;//Tgt_base=current GT pose,Tgt_base_prev=previous GT pose, Tgt_init=first gt pose in dataset;
   ros::Time t0,t1,t2,t3,t4,t5;
   t5=ros::Time::now();
+  bool no_update=false;
   cout<<"Read scans from bag."<<endl;
   while(reader.ReadNextMeasurement(cloud_nofilter)){
 cout<<"just read first scan"<<endl;
@@ -538,6 +485,7 @@ cout<<"just read first scan"<<endl;
     t1=ros::Time::now();
     lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
     localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
+
     t2=ros::Time::now();
 
 
@@ -581,6 +529,7 @@ cout<<"just read first scan"<<endl;
     t3=ros::Time::now();
     double diff = (fuser_pose.translation() - Tgt_base.translation()).norm();
     //cout<<"norm between estimated and actual pose="<<diff<<endl;
+
     Tgt_base_prev = Tgt_base;
     Todom_base_prev = Todom_base;
     cloud.clear();

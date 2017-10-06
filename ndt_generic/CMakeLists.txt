@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ndt_generic)
 
 find_package(catkin REQUIRED COMPONENTS cmake_modules angles)
-find_package(Boost REQUIRED COMPONENTS serialization)
+find_package(Boost REQUIRED COMPONENTS serialization filesystem)
 
 find_package(Eigen3)
 if(NOT EIGEN3_FOUND)

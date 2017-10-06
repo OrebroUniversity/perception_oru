@@ -115,7 +115,7 @@ int main(int argc, char **argv){
     int itrs;
     int nb_neighbours;
     int nb_scan_msgs;
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame, tf_sensor_link;
     std::string velodyne_config_file;
     std::string velodyne_packets_topic;

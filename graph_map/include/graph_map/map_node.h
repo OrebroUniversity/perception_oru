@@ -12,7 +12,7 @@
 #include "boost/serialization/shared_ptr.hpp"
 #include "ndt_generic/serialization.h"
 #include <velodyne_pointcloud/point_types.h>
-
+namespace perception_oru{
 namespace libgraphMap{
 /*!
 * ... Class to represent a node ...
@@ -67,7 +67,7 @@ private:
 
 
 };
-
+}
 
 }
 #endif // MAP_NODE_H

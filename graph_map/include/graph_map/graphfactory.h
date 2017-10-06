@@ -6,6 +6,7 @@
 #include "Eigen/Dense"
 #include "boost/shared_ptr.hpp"
 using namespace  std;
+namespace perception_oru{
 namespace libgraphMap{
 
 using Eigen::Vector3d;
@@ -149,7 +150,7 @@ private:
 
 
 
-
+}
 
 }
 #endif // GRAPHFACTORY_H

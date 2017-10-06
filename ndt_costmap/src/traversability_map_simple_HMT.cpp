@@ -22,8 +22,8 @@ class map_converter {
 	double v_size_z;
 	double max_range;
 	int width, height;
-	lslgeneric::NDTMapHMT *ndtMap;
-	lslgeneric::LazyGrid *mapGrid;
+	perception_oru::NDTMapHMT *ndtMap;
+	perception_oru::LazyGrid *mapGrid;
 	bool floor_only;
 	std::vector<double> floor_levels;
 	std::vector<int> floor_count;
@@ -55,14 +55,14 @@ public:
 private:
 	int LoadMap(){
 
-		ndtMap = new lslgeneric::NDTMapHMT(ndt_resolution, 0, 0, 0, v_size_x, v_size_y, v_size_z, max_range, ndt_map_directory);
+		ndtMap = new perception_oru::NDTMapHMT(ndt_resolution, 0, 0, 0, v_size_x, v_size_y, v_size_z, max_range, ndt_map_directory);
 		Eigen::Vector3d newPos;
 		newPos << 0, 0, 0;
 		ndtMap->setInsertPosition(newPos);
 		return 0;
 	}
 
-	double getAverageLevel(std::vector<lslgeneric::NDTCell*> floors){
+	double getAverageLevel(std::vector<perception_oru::NDTCell*> floors){
 		double aver = 0;
 
 		for(size_t i = 0; i < floors.size(); i++)
@@ -100,7 +100,7 @@ private:
 						Eigen::Vector3d newPos;
 						pcl::PointXYZ pt(X_min + i_x * step, Y_min + i_y * step, Z_min +i_z*step);
 						ROS_INFO_STREAM(pt);
-						lslgeneric::NDTCell *cell;
+						perception_oru::NDTCell *cell;
 						if(ndtMap->getCellForPoint(pt, cell)){
 							if (cell==NULL) {
 								traversable = false;

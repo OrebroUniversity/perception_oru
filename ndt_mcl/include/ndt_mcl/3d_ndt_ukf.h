@@ -159,7 +159,7 @@ public:
  */
 class NDTUKF3D{
 public:
-    lslgeneric::NDTMap map;
+    perception_oru::NDTMap map;
     double resolution;
     double resolution_sensor;
     int counter;
@@ -168,8 +168,8 @@ public:
     /**
      * Constructor
      */
-    NDTUKF3D(double map_resolution, lslgeneric::NDTMap &nd_map):
-        map(new lslgeneric::LazyGrid(map_resolution))
+    NDTUKF3D(double map_resolution, perception_oru::NDTMap &nd_map):
+        map(new perception_oru::LazyGrid(map_resolution))
     {
         isInit = false;
         resolution=map_resolution;
@@ -197,7 +197,7 @@ public:
 
         map.initialize(cx,cy,cz,wx,wy,wz);
 
-        std::vector<lslgeneric::NDTCell*> ndts;
+        std::vector<perception_oru::NDTCell*> ndts;
         ndts = nd_map.getAllCells();
         fprintf(stderr,"NDT MAP with %d components",(int)ndts.size());
         for(unsigned int i=0;i<ndts.size();i++){

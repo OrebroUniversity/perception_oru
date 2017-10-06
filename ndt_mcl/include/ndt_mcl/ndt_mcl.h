@@ -21,7 +21,7 @@
 */
 class NDTMCL{
     public:
-	lslgeneric::NDTMap map; 		///<This is my map 
+	perception_oru::NDTMap map; 		///<This is my map 
 	mcl::CParticleFilter pf; 						///<This is the particle filter
 	double resolution;
 	int counter;
@@ -30,8 +30,8 @@ class NDTMCL{
 	/**
 	 * Constructor
 	 */
-	NDTMCL(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
-	    map(new lslgeneric::LazyGrid(map_resolution))
+	NDTMCL(double map_resolution, perception_oru::NDTMap &nd_map, double zfilter):
+	    map(new perception_oru::LazyGrid(map_resolution))
 	{
 	    isInit = false;
 	    forceSIR = false;
@@ -60,7 +60,7 @@ class NDTMCL{
 
 	    map.initialize(cx,cy,cz,wx,wy,wz);
 
-	    std::vector<lslgeneric::NDTCell*> ndts;
+	    std::vector<perception_oru::NDTCell*> ndts;
 	    ndts = nd_map.getAllCells();
 	    fprintf(stderr,"NDT MAP with %zu components",ndts.size());
 	    for(unsigned int i=0;i<ndts.size();i++){

@@ -11,8 +11,8 @@ int main(int argc, char **argv)
 	std::string file = "/home/malcolm/Documents/mapping0.jff";
 // 	map.loadFromJFF(file.c_str());
 	double resolution = 0.2;
-	auto mapGrid = new lslgeneric::LazyGrid(resolution);
-	lslgeneric::NDTMap map(mapGrid);
+	auto mapGrid = new perception_oru::LazyGrid(resolution);
+	perception_oru::NDTMap map(mapGrid);
 	if(map.loadFromJFF(file.c_str()) < 0)
 		std::cout << "File didn't load" << std::endl;
 	std::cout << "File loaded" << std::endl;
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	for(size_t i = 0 ; i < cells.size() ; ++i){
 // 		std::cout << "Classifying" << std::endl;
 		cells[i]->classify();
-		lslgeneric::NDTCell cell;
+		perception_oru::NDTCell cell;
 		assert(cells[i]->getClass() != cells[i]->UNKNOWN);
 	}
 	
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 	visu.rvizPrintAccurateCorners(corners, origins_accurate, "/world");
 	
 	ndt_map::NDTMapMsg mapmsg;
-	bool good = lslgeneric::toMessage(&map, mapmsg, "/world");
+	bool good = perception_oru::toMessage(&map, mapmsg, "/world");
 	
 	while (ros::ok()){
 		visualization_msgs::Marker origins_sec;

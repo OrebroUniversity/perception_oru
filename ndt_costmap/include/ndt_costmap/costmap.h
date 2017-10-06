@@ -10,7 +10,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 
 
-namespace lslgeneric {
+namespace perception_oru {
   struct LevelSet {
 	std::vector<double> clear_levels;
 	std::vector<int> map_ids;

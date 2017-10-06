@@ -243,7 +243,7 @@ public:
 
         fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
 	    
-        lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+        perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
         ndmap.loadFromJFF(mapName.c_str());
         ROS_INFO_STREAM("Loaded map: " << mapName << " containing " << ndmap.getAllCells().size() << " cells");
             
@@ -745,18 +745,18 @@ public:
         br.sendTransform(tf::StampedTransform(transform, ts, "world", "ukf_pose"));
 
         if (est_file_.is_open()) {
-            est_file_ << ts << " " << lslgeneric::transformToEvalString(mean);
+            est_file_ << ts << " " << perception_oru::transformToEvalString(mean);
         }
         if (est2d_file_.is_open()) {
-            est2d_file_ << ts << " " << lslgeneric::transformToEval2dString(mean);
+            est2d_file_ << ts << " " << perception_oru::transformToEval2dString(mean);
         }
         if (gt_file_.is_open() && tf_gt_link != std::string("")) {
             Eigen::Affine3d T_gt;
             if (getTransformationAffine3d(ts, tf_gt_link, T_gt)) {
-                gt_file_ << ts << " " << lslgeneric::transformToEvalString(T_gt);
+                gt_file_ << ts << " " << perception_oru::transformToEvalString(T_gt);
             }
             if (gt2d_file_.is_open()) {
-                gt2d_file_ << ts << " " << lslgeneric::transformToEval2dString(T_gt);
+                gt2d_file_ << ts << " " << perception_oru::transformToEval2dString(T_gt);
             }
         }
 

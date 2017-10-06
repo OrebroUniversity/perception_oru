@@ -10,7 +10,7 @@
 #include "ndt_mcl/particle.hpp"
 #include "ndt_map/ndt_map_hmt.h"
 //
-namespace lslgeneric{
+namespace perception_oru{
   // enum init_type{
   //   uniform_map,
   //   normal_guess,
@@ -36,7 +36,7 @@ namespace lslgeneric{
     int sinceSIR;
     std::vector<particle> tmp;
 
-    lslgeneric::NDTMapHMT* ndt_ISSMap;
+    perception_oru::NDTMapHMT* ndt_ISSMap;
     double sx,sy;
     void SIRUpdate();
     void Normalize();
@@ -44,13 +44,13 @@ namespace lslgeneric{
     void Predict2D(double x, double y, double th, double sx, double sy, double sth);
     void to2PI(double &a);
     void toPI(double &a);
-    void GetRandomPoint(lslgeneric::NDTCell* cell,double &x, double &y, double &th);
+    void GetRandomPoint(perception_oru::NDTCell* cell,double &x, double &y, double &th);
   public:
     particle_filter_HMT(std::string mapFile_, int particleCount_/*, init_type initializationType_*/);
-    particle_filter_HMT(lslgeneric::NDTMapHMT *ndtMap_, int particleCount_/*, init_type initializationType_*/, bool be2D_=true, bool forceSIR_=true,double varLimit_=0, int sirCount_=0);
-    void UpdateAndPredict(Eigen::Affine3d tMotion,lslgeneric::NDTMap* ndtLocalMap_);
-    void UpdateAndPredictEff(Eigen::Affine3d tMotion, lslgeneric::NDTMap* ndtLocalMap_, double subsample_level, double z_cut);
-    void UpdateAndPredict(Eigen::Affine3d tMotion,lslgeneric::NDTMap ndtLocalMap_);
+    particle_filter_HMT(perception_oru::NDTMapHMT *ndtMap_, int particleCount_/*, init_type initializationType_*/, bool be2D_=true, bool forceSIR_=true,double varLimit_=0, int sirCount_=0);
+    void UpdateAndPredict(Eigen::Affine3d tMotion,perception_oru::NDTMap* ndtLocalMap_);
+    void UpdateAndPredictEff(Eigen::Affine3d tMotion, perception_oru::NDTMap* ndtLocalMap_, double subsample_level, double z_cut);
+    void UpdateAndPredict(Eigen::Affine3d tMotion,perception_oru::NDTMap ndtLocalMap_);
     void GetPoseMeanAndVariance2D(Eigen::Vector3d &mean, Eigen::Matrix3d &cov);
     Eigen::Vector3d GetMeanPose2D();
     void Reset();

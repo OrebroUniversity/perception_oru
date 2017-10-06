@@ -2,11 +2,11 @@
 #include <string>
 #include <ndt_map/ndt_map.h>
 #include <boost/program_options.hpp>
-namespace lslgeneric {
+namespace perception_oru {
 	class LevelSplit {
 		std::string mapFile;
-		lslgeneric::NDTMap* ndtMap;
-		lslgeneric::LazyGrid* mapGrid;
+		perception_oru::NDTMap* ndtMap;
+		perception_oru::LazyGrid* mapGrid;
 		std::string map_prefix;
 		std::string map_file_name;
 		int x_or;                                                            //*< number of cells along x axis
@@ -20,8 +20,8 @@ namespace lslgeneric {
 			FILE * jffin;
 
 			jffin = fopen(map_file_name.c_str(), "r+b");
-			mapGrid = new lslgeneric::LazyGrid(resolution);
-			ndtMap = new lslgeneric::NDTMap(mapGrid);
+			mapGrid = new perception_oru::LazyGrid(resolution);
+			ndtMap = new perception_oru::NDTMap(mapGrid);
 			if(ndtMap->loadFromJFF(jffin) < 0)
 				return -1;
 			return 0;
@@ -37,13 +37,13 @@ namespace lslgeneric {
 			ndtMap->getCentroid(cx, cy, cz);
 			for(int z = 0; z < z_or; ++z){
 
-				NDTCell *prototype = new lslgeneric::NDTCell();
-				lslgeneric::LazyGrid* localMapGrid = new lslgeneric::LazyGrid(gsx, gsy, 3 * resolution,                        //gsz,
+				NDTCell *prototype = new perception_oru::NDTCell();
+				perception_oru::LazyGrid* localMapGrid = new perception_oru::LazyGrid(gsx, gsy, 3 * resolution,                        //gsz,
 				                                                              resolution, resolution, resolution,
 				                                                              cx, cy, 0.0,
 				                                                              prototype);
 				//localMapGrid->initializeAll();
-				lslgeneric::NDTMap* localNdtMap = new lslgeneric::NDTMap(localMapGrid);
+				perception_oru::NDTMap* localNdtMap = new perception_oru::NDTMap(localMapGrid);
 				for(int y = 0; y < y_or; ++y){
 					for(int x = 0; x < x_or; ++x){
 						NDTCell* cell = ndtMap->getCellAtID(x, y, z);
@@ -89,6 +89,6 @@ int main(int argc, char **argv){
 		std::cout << desc << "\n";
 		return 1;
 	}
-	lslgeneric::LevelSplit ls(map_file_name_, map_prefix_, resolution_);
+	perception_oru::LevelSplit ls(map_file_name_, map_prefix_, resolution_);
 
 }

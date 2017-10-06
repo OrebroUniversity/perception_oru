@@ -28,7 +28,7 @@
 namespace perception_oru{
 	namespace ndt_offline{
 		template<typename PointT>
-		class LaserBagReader : public BagReaderInterface<PointT>{
+		class LaserBagReader : public BagRangeReaderInterface<sensor_msgs::LaserScan, sensor_msgs::LaserScan::ConstPtr>{
 			
 		private:
 // 			PoseInterpolationNavMsgsOdo *odosync;
@@ -67,12 +67,14 @@ namespace perception_oru{
 				std::string tftopic="/tf", 
 				ros::Duration dur = ros::Duration(3600),
 				tf::StampedTransform *sensor_link=NULL,
-				double velodyne_max_range=130.0, 
-				double velodyne_min_range=2.0,
+// 				double velodyne_max_range=130.0, 
+// 				double velodyne_min_range=2.0,
 				double sensor_time_offset=0.0,
 				double lvariance = 0.02,
-				double min_laser_range = 0.5
-  						) : BagReaderInterface<PointT>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, velodyne_max_range, velodyne_min_range, sensor_time_offset), _laser_variance(lvariance), _min_laser_range(min_laser_range){}
+				double min_laser_range = 0.5,
+				bool use_odo = true,
+				bool use_sensor_pose = true
+  						) : BagRangeReaderInterface<sensor_msgs::LaserScan, sensor_msgs::LaserScan::ConstPtr>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, sensor_time_offset, use_odo, use_sensor_pose), _laser_variance(lvariance), _min_laser_range(min_laser_range){}
 			
 			void setLaserVariance(double var){_laser_variance = var;}
 			double getLaserVariance(){return _laser_variance;}
@@ -117,7 +119,7 @@ namespace perception_oru{
 
 				if(!this->getNextScanMsg()) return false;
 				t0 = this->global_scan->header.stamp + this->sensor_time_offset_ ;
-				this->timestamp_of_last_sensor_message = t0;
+				this->timestamp_of_last_message = t0;
 				
 				ros::Time t1=this->global_scan->header.stamp + this->sensor_time_offset_;
 				

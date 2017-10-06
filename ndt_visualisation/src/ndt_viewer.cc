@@ -47,7 +47,7 @@ int main(int argc, char **argv){
     printUsage();
     
     //load NDT map. Only Lazy grid supported!
-    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
     ndmap.loadFromJFF(base_name.c_str());
     //create visualizer
     NDTViz *viewer = new NDTViz(true);

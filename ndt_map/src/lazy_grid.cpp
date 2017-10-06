@@ -4,7 +4,7 @@
 
 #define JFFERR(x) std::cerr << x << std::endl; return -1;
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 LazyGrid::LazyGrid(double cellSize)  : protoType(NULL)

@@ -31,7 +31,7 @@ void ndtCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
     ROS_INFO ("Received %d data points with the following fields: %s", (int)(msg->width * msg->height),
               pcl::getFieldsList (*msg).c_str ());
 
-    lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(2));
+    perception_oru::NDTMap nd(new perception_oru::LazyGrid(2));
 
     Eigen::Affine3d T;
     T.setIdentity();

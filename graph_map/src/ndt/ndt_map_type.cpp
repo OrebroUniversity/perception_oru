@@ -1,16 +1,17 @@
-#include "ndt/ndt_map_type.h"
+#include "graph_map/ndt/ndt_map_type.h"
 #include <boost/serialization/export.hpp>
-BOOST_CLASS_EXPORT(libgraphMap::NDTMapType)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::NDTMapType)
+namespace perception_oru{
 namespace libgraphMap{
   using namespace std;
 
-  using namespace lslgeneric;
+  using namespace perception_oru;
 
   NDTMapType::NDTMapType( MapParamPtr paramptr) : MapType(paramptr){
     NDTMapParamPtr param = boost::dynamic_pointer_cast< NDTMapParam >(paramptr);//Should not be NULL
     if(param!=NULL){
       resolution_=param ->resolution_;
-      map_ = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution_));
+      map_ = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution_));
       map_->initialize(0.0,0.0,0.0,param->sizex_,param->sizey_,param->sizez_);
       cout<<"created ndt2dmap"<<endl;
     }
@@ -97,4 +98,5 @@ namespace libgraphMap{
     return ss.str();
   }
 
+}
 }

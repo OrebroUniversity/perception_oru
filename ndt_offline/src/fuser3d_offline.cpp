@@ -91,7 +91,7 @@ int main(int argc, char **argv){
     int itrs;
     int nb_neighbours;
     int nb_scan_msgs;
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame;
     std::string velodyne_config_file;
     std::string velodyne_packets_topic;
@@ -222,7 +222,7 @@ int main(int argc, char **argv){
 //                                       fuse_incomplete << " " << itrs << " " << base_name  << " " <<  beHMT  << " " <<  map_dirname << " " << step_control << " " << do_soft_constraints << " " << nb_neighbours << " " << resolution_local_factor << std::endl;
 
 
-    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z,
+    perception_oru::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z,
                                        max_range, visualize, match2d, use_multires,
                                        fuse_incomplete, itrs, base_name,beHMT,map_dirname,step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
     ros::Time::init();

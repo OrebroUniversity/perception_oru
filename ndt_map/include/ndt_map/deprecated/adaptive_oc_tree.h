@@ -39,7 +39,7 @@
 #include <ndt_map/ndt_cell.h>
 #include <vector>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief Implements an OctTree with adaptive leaf splitting as a post process step

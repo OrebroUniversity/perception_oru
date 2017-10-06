@@ -19,10 +19,11 @@
 #include <dirent.h>
 #include <algorithm>
 #include <boost/program_options.hpp>
-#include "graph_map_fuser.h"
-#include "ndt/ndt_map_param.h"
-#include "ndt/ndtd2d_reg_type.h"
-#include "ndt/ndt_map_type.h"
+#include "graph_map/graph_map_fuser.h"
+#include "graph_map/ndt/ndt_map_param.h"
+#include "graph_map/ndt/ndtd2d_reg_type.h"
+#include "graph_map/ndt/ndt_map_type.h"
+#include "graph_map/graphfactory.h"
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/publisher.h"
@@ -32,10 +33,12 @@
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include "ndt_generic/io.h"
 
+using namespace perception_oru;
 using namespace libgraphMap;
+
 namespace po = boost::program_options;
 using namespace std;
-using namespace lslgeneric;
+
 
 
 std::string map_dir_name="";
@@ -53,7 +56,7 @@ bool step_control=false;
 bool registration2d=true;
 bool alive=false;
 bool disable_reg=false, do_soft_constraints=false;
-lslgeneric::MotionModel2d::Params motion_params;
+perception_oru::MotionModel2d::Params motion_params;
 std::string base_link_id="", gt_base_link_id="", tf_world_frame="";
 std::string velodyne_config_file="";
 std::string velodyne_packets_topic="";
@@ -63,6 +66,7 @@ std::string tf_topic="";
 tf::Transform tf_sensor_pose;
 Eigen::Affine3d sensor_offset,fuser_pose;//Mapping from base frame to sensor frame
 ros::NodeHandle *n_=NULL;
+
 MapParamPtr mapParPtr=NULL;
 GraphParamPtr graphParPtr=NULL;
 double sensor_time_offset=0;
@@ -397,7 +401,7 @@ int main(int argc, char **argv){
           GraphPlot::plotParticleCloud(graph_map->GetCurrentNodePose(),mcl->pf.pcloud);
         }
       }
-        lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
+        perception_oru::transformPointCloudInPlace(sensor_offset, cloud);
         mcl->updateAndPredictEff(Tmotion,cloud,1.0);
         fuser_pose=graph_map->GetCurrentNodePose()*mcl->getMean();
         cout<<"mean="<<mcl->getMean().translation().transpose()<<endl;
@@ -440,3 +444,5 @@ int main(int argc, char **argv){
     usleep(1000*1000);
     std::cout << "Done." << std::endl;
   }
+
+

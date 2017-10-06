@@ -266,7 +266,7 @@ bool do_pub_ndt_markers_;
 
             fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
 	    
-	    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+	    perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
 	    ndmap.loadFromJFF(mapName.c_str());
             ROS_INFO_STREAM("Loaded map: " << mapName << " containing " << ndmap.getAllCells().size() << " cells");
             
@@ -817,7 +817,7 @@ bool do_pub_ndt_markers_;
 	    //transform point cloud from sensor pose into base pose
     
 	    ///Set the cloud to sensor frame with respect to base
-	    lslgeneric::transformPointCloudInPlace(sensorPoseT, cloud);
+	    perception_oru::transformPointCloudInPlace(sensorPoseT, cloud);
 	    //cloudT = lslgeneric::transformPointCloud(Tcum, cloud);
 
 	    //update filter -> + add parameter to subsample ndt map in filter step
@@ -865,18 +865,18 @@ bool do_pub_ndt_markers_;
 	    br.sendTransform(tf::StampedTransform(transform, ts, "world", "mcl_pose"));
 
             if (est_file_.is_open()) {
-              est_file_ << ts << " " << lslgeneric::transformToEvalString(mean);
+              est_file_ << ts << " " << perception_oru::transformToEvalString(mean);
             }
             if (est2d_file_.is_open()) {
-              est2d_file_ << ts << " " << lslgeneric::transformToEval2dString(mean);
+              est2d_file_ << ts << " " << perception_oru::transformToEval2dString(mean);
             }
             if (gt_file_.is_open() && tf_gt_link != std::string("")) {
                 Eigen::Affine3d T_gt;
                 if (getTransformationAffine3d(ts, tf_gt_link, T_gt)) {
-                    gt_file_ << ts << " " << lslgeneric::transformToEvalString(T_gt);
+                    gt_file_ << ts << " " << perception_oru::transformToEvalString(T_gt);
                 }
                 if (gt2d_file_.is_open()) {
-                    gt2d_file_ << ts << " " << lslgeneric::transformToEval2dString(T_gt);
+                    gt2d_file_ << ts << " " << perception_oru::transformToEval2dString(T_gt);
                 }
             }
 

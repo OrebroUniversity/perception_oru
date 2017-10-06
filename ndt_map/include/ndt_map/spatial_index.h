@@ -40,7 +40,7 @@
 
 #include <ndt_map/ndt_cell.h>
 #include "boost/serialization/serialization.hpp"
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief Base class for all spatial indexing structures

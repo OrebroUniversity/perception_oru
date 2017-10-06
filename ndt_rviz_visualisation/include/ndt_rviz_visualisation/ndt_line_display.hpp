@@ -19,7 +19,7 @@ namespace rviz
   class BoolProperty;
 }
 
-namespace lslgeneric{
+namespace perception_oru{
 
   class NDTLineVisual;
 

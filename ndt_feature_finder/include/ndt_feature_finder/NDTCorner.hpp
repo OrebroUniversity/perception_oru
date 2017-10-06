@@ -16,7 +16,7 @@ namespace perception_oru{
 			
 		protected:
 			double _x_cell_size, _y_cell_size, _z_cell_size;
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > _corners;
+			std::vector< boost::shared_ptr< perception_oru::NDTCell > > _corners;
 			std::vector< Eigen::Vector3d > _corners_position;
 			std::vector< cv::Point2d > _opencv_corners;
 			std::vector< cv::Point2d > _opencv_corners_position;
@@ -37,17 +37,17 @@ namespace perception_oru{
 			/**
 			 * @brief return true if the cell correspond to a corner
 			 */
-			bool cellIsCorner(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& allCells, Eigen::Vector3d& corner) ;
+			bool cellIsCorner(const perception_oru::NDTMap& map, const perception_oru::NDTCell& cell, const std::vector< boost::shared_ptr< perception_oru::NDTCell > >& allCells, Eigen::Vector3d& corner) ;
 			
 			/**
 			 * @brief calculate and return a vector of all corners in ndt_map
 			 */
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > getAllCorners(const lslgeneric::NDTMap& map) ;
+			std::vector< boost::shared_ptr< perception_oru::NDTCell > > getAllCorners(const perception_oru::NDTMap& map) ;
 			
 			/**
 			 * @brief return all the cells around cell that possess a gaussian and are maximum the resolution of the map away.
 			 */
-			std::vector< lslgeneric::NDTCell* > getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size) const ;
+			std::vector< perception_oru::NDTCell* > getClosestCells(const perception_oru::NDTMap& map, const perception_oru::NDTCell& cell, int neig_size) const ;
 			
 			/**
 			 * @brief return the angle between two Vectors.
@@ -57,7 +57,7 @@ namespace perception_oru{
 			/**
 			 * @brief return the index of the biggest eigen vector in the 2D plane xy
 			 */
-			int getBiggestEigenVector2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const;
+			int getBiggestEigenVector2D(const perception_oru::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const;
 			
 			/**
 			 * @brief return the angle width and direction of all corner detected by it
@@ -76,8 +76,8 @@ namespace perception_oru{
 			}
 			
 			size_t size() const {return _corners.size();}
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& getCorners(){return _corners;}
-			const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& getCorners() const {return _corners;}
+			std::vector< boost::shared_ptr< perception_oru::NDTCell > >& getCorners(){return _corners;}
+			const std::vector< boost::shared_ptr< perception_oru::NDTCell > >& getCorners() const {return _corners;}
 			std::vector< cv::Point2d >& getCvCorners(){return _opencv_corners;}
 			const std::vector< cv::Point2d >& getCvCorners() const {return _opencv_corners;}
 			std::vector< Eigen::Vector3d >& getAccurateCorners(){return _corners_position;}
@@ -133,8 +133,8 @@ namespace perception_oru{
 			
 		private:
 			
-			std::vector< lslgeneric::NDTCell* > getCellsPointingToward(std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell) const;
-			bool gotAngledNDT(const lslgeneric::NDTMap& map, std::vector< lslgeneric::NDTCell* >& neighbor, Eigen::Vector3d& corner) ;
+			std::vector< perception_oru::NDTCell* > getCellsPointingToward(std::vector< perception_oru::NDTCell* >& neighbor, const perception_oru::NDTCell& cell) const;
+			bool gotAngledNDT(const perception_oru::NDTMap& map, std::vector< perception_oru::NDTCell* >& neighbor, Eigen::Vector3d& corner) ;
 			/**
 			 * @brief remove doubles of corners. ATTENTION : it does not update the openCV corners
 			 */
@@ -146,10 +146,10 @@ namespace perception_oru{
 			/**
 			 * @brief calculate the angles of each corners
 			 */
-			void calculateAngles(const lslgeneric::NDTMap& map);
+			void calculateAngles(const perception_oru::NDTMap& map);
 			
 			
-			bool AlignedNDT(const std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell);
+			bool AlignedNDT(const std::vector< perception_oru::NDTCell* >& neighbor, const perception_oru::NDTCell& cell);
 		};
 		
 	}

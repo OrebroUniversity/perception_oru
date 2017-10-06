@@ -3,6 +3,7 @@
 #include "mcl_ndt/mcl_ndt.h"
 string ndt_mcl_name="mcl_ndt";
 using namespace std;
+namespace perception_oru{
 namespace GraphMapLocalisation{
 LocalisationParamPtr LocalisationFactory::CreateLocalisationParam(string localisationType){
 
@@ -24,5 +25,6 @@ LocalisationTypePtr  LocalisationFactory::CreateLocalisationType(LocalisationPar
     std::cerr<<"LocalisationFactory: No localisation type exists for parameters"<<endl;
     return NULL;
   }
+}
 }
 }

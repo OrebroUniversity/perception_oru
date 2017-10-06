@@ -10,7 +10,7 @@
 #include <sys/time.h>
 
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 // inline void convertAffine3dToMatrix61(const Eigen::Affine3d &T, Eigen::Matrix<double,6,1> &v) {

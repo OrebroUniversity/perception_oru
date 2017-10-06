@@ -20,7 +20,7 @@
 
 class NDTMCL3D{
     public:
-  lslgeneric::NDTMap map; 		///<This is my map
+  perception_oru::NDTMap map; 		///<This is my map
 	ParticleFilter3D pf; 						///<This is the particle filter
 	double resolution;
 	double resolution_sensor;
@@ -34,7 +34,7 @@ class NDTMCL3D{
         /**
 	 * Constructor
 	 */
-  NDTMCL3D(double map_resolution, lslgeneric::NDTMap &nd_map, double zfilter):
+  NDTMCL3D(double map_resolution, perception_oru::NDTMap &nd_map, double zfilter):
           SIR_varP_threshold(0.006), SIR_max_iters_wo_resampling(25)
   {
             isInit = false;

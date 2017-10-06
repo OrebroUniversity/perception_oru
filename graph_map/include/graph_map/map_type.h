@@ -18,6 +18,7 @@
 #include <velodyne_pointcloud/point_types.h>
 
 using namespace std;
+namespace perception_oru{
 namespace libgraphMap{
 
 /*!
@@ -97,5 +98,6 @@ protected:
     ar & enable_mapping_;
   }
 };
+}
 }
 #endif // MAPTYPE_H

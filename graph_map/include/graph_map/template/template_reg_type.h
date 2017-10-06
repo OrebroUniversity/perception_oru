@@ -1,10 +1,10 @@
 #ifndef TEMPLATE_REG_TYPE_H
 #define TEMPLATE_REG_TYPE_H
 
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "graph_map/reg_type.h"
 #include "graph_map/map_type.h"
-#include "template/template_map_type.h"
+#include "graph_map/template/template_map_type.h"
 #include "pcl/io/pcd_io.h"
 #include <pcl/point_cloud.h>
 #include "Eigen/Dense"
@@ -14,6 +14,7 @@
 
 
 #define ndt_d2d_reg_type_name "ndt_d2d_reg"
+namespace perception_oru{
 namespace libgraphMap{
 class TemplateRegType:public registrationType{
 public:
@@ -41,7 +42,7 @@ private:
 };
 }
 
-
+}
 
 
 

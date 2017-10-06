@@ -103,7 +103,7 @@ inline geometry_msgs::Point toPointFromEigen( const Eigen::Affine3d &T)
   /* } */
 
   // Visualize the ndt cells as a set of 3 lines drawn along the eigen vectors.
-  inline visualization_msgs::Marker markerNDTCells (std::vector<lslgeneric::NDTCell*> cells/*, tf::Pose& pose*/, const visualization_msgs::Marker &marker)
+  inline visualization_msgs::Marker markerNDTCells (std::vector<perception_oru::NDTCell*> cells/*, tf::Pose& pose*/, const visualization_msgs::Marker &marker)
     {
       visualization_msgs::Marker m = marker;
       m.type = visualization_msgs::Marker::LINE_LIST;
@@ -140,7 +140,7 @@ inline geometry_msgs::Point toPointFromEigen( const Eigen::Affine3d &T)
     }
 
  // Visualize the ndt cells as a set of 3 lines drawn along the eigen vectors.
-inline visualization_msgs::Marker markerNDTCells (std::vector<lslgeneric::NDTCell*> cells, const Eigen::Affine3d &pose, const visualization_msgs::Marker &marker)
+inline visualization_msgs::Marker markerNDTCells (std::vector<perception_oru::NDTCell*> cells, const Eigen::Affine3d &pose, const visualization_msgs::Marker &marker)
     {
       visualization_msgs::Marker m = marker;
       m.type = visualization_msgs::Marker::LINE_LIST;
@@ -168,7 +168,7 @@ inline visualization_msgs::Marker markerNDTCells (std::vector<lslgeneric::NDTCel
       
     }
 
-   inline visualization_msgs::Marker markerNDTCells (std::vector<lslgeneric::NDTCell*> cells) 
+   inline visualization_msgs::Marker markerNDTCells (std::vector<perception_oru::NDTCell*> cells) 
     {
       visualization_msgs::Marker m;
       assignDefault(m);
@@ -176,42 +176,42 @@ inline visualization_msgs::Marker markerNDTCells (std::vector<lslgeneric::NDTCel
       return markerNDTCells(cells, m);
     }
 
-inline visualization_msgs::Marker markerNDTCells( lslgeneric::NDTMap &map, int id, const std::string &name) {
+inline visualization_msgs::Marker markerNDTCells( perception_oru::NDTMap &map, int id, const std::string &name) {
     visualization_msgs::Marker m;
     assignDefault(m);
     assignColor(m, id);
     m.id = id;
     m.ns = name;
-    std::vector<lslgeneric::NDTCell*> cells = map.getAllCells();
+    std::vector<perception_oru::NDTCell*> cells = map.getAllCells();
     visualization_msgs::Marker ret = markerNDTCells(cells, m);
-    for (std::vector<lslgeneric::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
+    for (std::vector<perception_oru::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
       delete *it;
     }
     return  ret;
 }
 
-inline visualization_msgs::Marker markerNDTCells( lslgeneric::NDTMap &map, const Eigen::Affine3d &pose, int id, const std::string &name) {
+inline visualization_msgs::Marker markerNDTCells( perception_oru::NDTMap &map, const Eigen::Affine3d &pose, int id, const std::string &name) {
     visualization_msgs::Marker m;
     assignDefault(m);
     assignColor(m, id);
     m.id = id;
     m.ns = name;
-    std::vector<lslgeneric::NDTCell*> cells = map.getAllCells();
+    std::vector<perception_oru::NDTCell*> cells = map.getAllCells();
     visualization_msgs::Marker ret = markerNDTCells(cells, pose, m);
-    for (std::vector<lslgeneric::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
+    for (std::vector<perception_oru::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
       delete *it;
     }
     return  ret;
 }
 
-  inline visualization_msgs::Marker markerNDTCells (lslgeneric::NDTMap &map, int id) 
+  inline visualization_msgs::Marker markerNDTCells (perception_oru::NDTMap &map, int id) 
   {
     return  markerNDTCells(map, id, std::string("NDTMap"));
   }
 
                                                   
  // Visualize the ndt cells as a set of 3 lines drawn along the eigen vectors.
-void markerNDTCells2 (std::vector<lslgeneric::NDTCell*> cells, const Eigen::Affine3d &pose, visualization_msgs::Marker &m)
+void markerNDTCells2 (std::vector<perception_oru::NDTCell*> cells, const Eigen::Affine3d &pose, visualization_msgs::Marker &m)
     {
       m.type = visualization_msgs::Marker::LINE_LIST;
       m.scale.x = 0.02;
@@ -236,20 +236,20 @@ void markerNDTCells2 (std::vector<lslgeneric::NDTCell*> cells, const Eigen::Affi
       }
     }
 
-void markerNDTCells2( lslgeneric::NDTMap &map, const Eigen::Affine3d &pose, int id, const std::string &name, visualization_msgs::Marker &m) {
+void markerNDTCells2( perception_oru::NDTMap &map, const Eigen::Affine3d &pose, int id, const std::string &name, visualization_msgs::Marker &m) {
     assignDefault(m);
     assignColor(m, id);
     m.id = id;
     m.ns = name;
-    std::vector<lslgeneric::NDTCell*> cells = map.getAllCells();
+    std::vector<perception_oru::NDTCell*> cells = map.getAllCells();
     markerNDTCells2(cells, pose, m);
-    for (std::vector<lslgeneric::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
+    for (std::vector<perception_oru::NDTCell*>::const_iterator it = cells.begin(); it != cells.end(); it++) {
       delete *it;
     }
 }
 
   //! Draw correspondance lines between the NDTCells
-  inline visualization_msgs::Marker markerCellVectorCorrespondances (lslgeneric::NDTMap &map1, lslgeneric::NDTMap &map2, const std::vector<std::pair<int, int> > &corr) 
+  inline visualization_msgs::Marker markerCellVectorCorrespondances (perception_oru::NDTMap &map1, perception_oru::NDTMap &map2, const std::vector<std::pair<int, int> > &corr) 
     {
       visualization_msgs::Marker m;
       assignDefault(m);
@@ -262,8 +262,8 @@ void markerNDTCells2( lslgeneric::NDTMap &map, const Eigen::Affine3d &pose, int 
 
       for (size_t i = 0; i < corr.size(); i++) {
 	
-	lslgeneric::NDTCell* cell1 = map1.getCellIdx(corr[i].first);
-	lslgeneric::NDTCell* cell2 = map2.getCellIdx(corr[i].second);
+	perception_oru::NDTCell* cell1 = map1.getCellIdx(corr[i].first);
+	perception_oru::NDTCell* cell2 = map2.getCellIdx(corr[i].second);
 	if (cell1 == NULL || cell2 == NULL) {
 	  ROS_WARN("Failed to get cells using NDTMap::getCellIdx()!");
 	  continue;

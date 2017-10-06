@@ -20,10 +20,10 @@
 #include <dirent.h>
 #include <algorithm>
 #include <boost/program_options.hpp>
-#include "graph_map_fuser.h"
-#include "ndt/ndt_map_param.h"
-#include "ndt/ndtd2d_reg_type.h"
-#include "ndt/ndt_map_type.h"
+#include "graph_map/graph_map_fuser.h"
+#include "graph_map/ndt/ndt_map_param.h"
+#include "graph_map/ndt/ndtd2d_reg_type.h"
+#include "graph_map/ndt/ndt_map_type.h"
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/publisher.h"
@@ -34,10 +34,11 @@
 #include "ndt_offline/readbagfilegeneric.h"
 #include <unistd.h>
 #include "tf_conversions/tf_eigen.h"
+using namespace perception_oru;
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
-using namespace lslgeneric;
+
 
 std::string map_dir_name="";
 std::string output_dir_name="";
@@ -65,7 +66,7 @@ bool save_map=true;
 bool gt_mapping=false;
 bool disable_reg=false, do_soft_constraints=false;
 bool pcl_reader=true;
-lslgeneric::MotionModel2d::Params motion_params;
+perception_oru::MotionModel2d::Params motion_params;
 std::string base_link_id="", gt_base_link_id="", tf_world_frame="";
 std::string velodyne_config_file="";
 std::string velodyne_packets_topic="";
@@ -572,7 +573,7 @@ void processData() {
           points2.header.frame_id="/world";
           pcl_conversions::toPCL(tplot, points2.header.stamp);
           Eigen::Affine3d tmp = fuser_pose*sensor_offset;
-          lslgeneric::transformPointCloudInPlace(tmp, points2);
+          perception_oru::transformPointCloudInPlace(tmp, points2);
           cloud_pub->publish(points2);
           std::cout << "sensor_offset : " << sensor_offset.translation() << std::endl;
           fuser_->PlotMapType();

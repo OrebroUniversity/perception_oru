@@ -1,6 +1,7 @@
 #include "graph_map/graph_map.h"
 
 using namespace std;
+namespace perception_oru{
 namespace libgraphMap{
 
 GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const GraphParamPtr graphparam){
@@ -106,5 +107,5 @@ void GraphParam::GetParametersFromRos(){
   nh.param("min_keyframe_dist",min_keyframe_dist_,0.5);
   nh.param("min_keyframe_rot_deg",min_keyframe_rot_deg_,15.0);
 }
-
+}
 }

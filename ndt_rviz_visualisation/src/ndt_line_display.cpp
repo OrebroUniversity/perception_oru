@@ -13,7 +13,7 @@
 
 #include "ndt_rviz_visualisation/ndt_line_display.hpp"
 
-namespace lslgeneric{
+namespace perception_oru{
   
   NDTLineDisplay::NDTLineDisplay(){
     ROS_ERROR("BUILDING OBJECT");
@@ -84,5 +84,5 @@ namespace lslgeneric{
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(lslgeneric::NDTLineDisplay,rviz::Display)
+PLUGINLIB_EXPORT_CLASS(perception_oru::NDTLineDisplay,rviz::Display)
 

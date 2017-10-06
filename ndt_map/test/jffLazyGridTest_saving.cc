@@ -35,7 +35,7 @@ int main (int argc, char** argv)
 
     //cloud = lslgeneric::readVRML<pcl::PointXYZ>(argv[1]);
 
-    lslgeneric::NDTMap<pcl::PointXYZ> nd(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.2));
+    perception_oru::NDTMap<pcl::PointXYZ> nd(new perception_oru::LazyGrid<pcl::PointXYZ>(0.2));
 
     nd.loadPointCloud(cloud);
     nd.computeNDTCells();

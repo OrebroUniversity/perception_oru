@@ -108,7 +108,7 @@ int main(int argc, char **argv){
     int itrs;
     int nb_neighbours;
     int nb_scan_msgs;
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame, tf_sensor_link;
     std::string velodyne_config_file;
     std::string velodyne_packets_topic;
@@ -283,7 +283,7 @@ int main(int argc, char **argv){
 
 // 	exit(0);
 	
-    lslgeneric::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
+    perception_oru::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
                                        sensor_cutoff, visualize, match2d, use_multires, 
                                        fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
 //     ros::Time::init();
@@ -396,7 +396,7 @@ int main(int argc, char **argv){
     if (use_gt_as_interp_link) {
       tf_interp_link = tf_gt_link;
     }
-
+    
     for(int i=0; i<scanfiles.size(); i++) {
 		
 		std::string bagfilename = scanfiles[i];
@@ -409,7 +409,7 @@ int main(int argc, char **argv){
 							tf_world_frame,
 							tf_topic,
 							ros::Duration(3600),
-							&sensor_link, max_range, min_range,
+							&sensor_link,
 							sensor_time_offset);  
 
 		pcl::PointCloud<pcl::PointXYZ> cloud;	
@@ -453,9 +453,24 @@ int main(int argc, char **argv){
 				
 				added_motion.setIdentity();
 				
+				/******************************/
+				/******************************/
+				
+				///GOOD ONE FROM THE BAG
 				Eigen::Affine3d sens = vreader.getSensorPose();
-				sens(2,3) = -0.505
-;				ndtslammer.setSensorPose(sens);
+				sens(2,3) = -0.505;
+				
+				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
+// 				double roll = 0, pitch = 0, yaw = 0;
+// 				Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(0,0,0)*
+// 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
+// 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
+// 					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
+					
+				/******************************/
+				/******************************/
+	
+				ndtslammer.setSensorPose(sens);
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
 				
@@ -530,7 +545,7 @@ int main(int argc, char **argv){
 							mesg.header.frame_id = "/velodyne";
 							mesg.header.stamp = ros::Time::now();
 							laserpub.publish<sensor_msgs::PointCloud2>(mesg);
-							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastLaserScan();
+							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastMsg();
 							sensor_msgs::LaserScan mes_laser_tmp = *mesg_laser;
 // 							mes_laser_tmp.header.stamp = ros::Time::now();
 							laserpub_real.publish<sensor_msgs::LaserScan>(mes_laser_tmp);
@@ -585,7 +600,7 @@ int main(int argc, char **argv){
 				while(ros::ok()){
 					ros::spinOnce();
 					ndt_map::NDTMapMsg mapmsg;
-					lslgeneric::toMessage(ndtslammer.map, mapmsg, "velodyne");
+					perception_oru::toMessage(ndtslammer.map, mapmsg, "velodyne");
 					ndt_map_pubb.publish<ndt_map::NDTMapMsg>(mapmsg);
 				}
 				

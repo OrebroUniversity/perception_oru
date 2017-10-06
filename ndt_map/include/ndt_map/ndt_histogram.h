@@ -38,7 +38,7 @@
 #include <ndt_map/ndt_map.h>
 #include <vector>
 
-namespace lslgeneric{
+namespace perception_oru{
 
   /**
    * \short

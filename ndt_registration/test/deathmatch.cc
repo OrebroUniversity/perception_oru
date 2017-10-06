@@ -75,7 +75,7 @@ main (int argc, char** argv)
 #endif
 
     double tnow, tend;
-    lslgeneric::transformPointCloudInPlace(Tinit,cloud_offset);
+    perception_oru::transformPointCloudInPlace(Tinit,cloud_offset);
 
     tnow = getDoubleTime();
     double res_max = atof(argv[19]);
@@ -86,7 +86,7 @@ main (int argc, char** argv)
     std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
     resolutions.push_back(res_max);
 
-    lslgeneric::NDTMatcherD2D matcherD2D(false, false, resolutions);
+    perception_oru::NDTMatcherD2D matcherD2D(false, false, resolutions);
     matcherD2D.ITR_MAX = itr_max;
     matcherD2D.n_neighbours = n_neigh;
     bool ret = matcherD2D.match(cloud_fixed,cloud_offset,Tout,false);

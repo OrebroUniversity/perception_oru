@@ -1,6 +1,6 @@
 #include "ndt_mcl/particle_filter_HMT.hpp"
 #include "ros/ros.h"
-lslgeneric::particle_filter_HMT::particle_filter_HMT(lslgeneric::NDTMapHMT *ndtMap_, int particleCount_ /*, init_type initializationType_*/, bool be2D_, bool forceSIR_, double varLimit_, int sirCount_){
+perception_oru::particle_filter_HMT::particle_filter_HMT(perception_oru::NDTMapHMT *ndtMap_, int particleCount_ /*, init_type initializationType_*/, bool be2D_, bool forceSIR_, double varLimit_, int sirCount_){
 	be2D = be2D_;
 	ndtMap = ndtMap_;
 	// initializationType=initializationType_;
@@ -10,13 +10,13 @@ lslgeneric::particle_filter_HMT::particle_filter_HMT(lslgeneric::NDTMapHMT *ndtM
 	sirCount = sirCount_;
 }
 
-void lslgeneric::particle_filter_HMT::Reset(){
+void perception_oru::particle_filter_HMT::Reset(){
 	tmp.clear();
 	delete ndt_ISSMap;
 	particleCloud.clear();
 }
 
-void lslgeneric::particle_filter_HMT::InitializeNormal(double x, double y, double th, double var){
+void perception_oru::particle_filter_HMT::InitializeNormal(double x, double y, double th, double var){
 
 	if(particleCloud.size() > 0){
 		particleCloud.clear();
@@ -32,7 +32,7 @@ void lslgeneric::particle_filter_HMT::InitializeNormal(double x, double y, doubl
 	}
 }
 
-void lslgeneric::particle_filter_HMT::InitializeNormal(double x, double y, double var){
+void perception_oru::particle_filter_HMT::InitializeNormal(double x, double y, double var){
 
 	if(particleCloud.size() > 0){
 		particleCloud.clear();
@@ -49,7 +49,7 @@ void lslgeneric::particle_filter_HMT::InitializeNormal(double x, double y, doubl
 }
 
 
-Eigen::Vector3d lslgeneric::particle_filter_HMT::GetMeanPose2D(){
+Eigen::Vector3d perception_oru::particle_filter_HMT::GetMeanPose2D(){
 	double sumX = 0, sumY = 0;
 	Eigen::Vector3d pos;
 	double sumW = 0;
@@ -70,7 +70,7 @@ Eigen::Vector3d lslgeneric::particle_filter_HMT::GetMeanPose2D(){
 }
 
 
-void lslgeneric::particle_filter_HMT::GetPoseMeanAndVariance2D(Eigen::Vector3d &mean, Eigen::Matrix3d &cov){
+void perception_oru::particle_filter_HMT::GetPoseMeanAndVariance2D(Eigen::Vector3d &mean, Eigen::Matrix3d &cov){
 	double sumX = 0, sumY = 0;
 	double sumW = 0;
 	double ax = 0, ay = 0;
@@ -115,11 +115,11 @@ void lslgeneric::particle_filter_HMT::GetPoseMeanAndVariance2D(Eigen::Vector3d &
 	0, 0, atan2(wc * aay, wc * aax);
 }
 
-void lslgeneric::particle_filter_HMT::InitializeUniformMap(){
+void perception_oru::particle_filter_HMT::InitializeUniformMap(){
 	int pCount_ = particleCount;
 
-	std::vector<lslgeneric::NDTCell*> allCells = ndtMap->getAllInitializedCells();
-	std::vector<lslgeneric::NDTCell*> cells;
+	std::vector<perception_oru::NDTCell*> allCells = ndtMap->getAllInitializedCells();
+	std::vector<perception_oru::NDTCell*> cells;
 	for(int cInd = 0; cInd < allCells.size(); cInd++)
 		if(allCells[cInd]->getOccupancy() < 0.0)
 			cells.push_back(allCells[cInd]);
@@ -142,7 +142,7 @@ void lslgeneric::particle_filter_HMT::InitializeUniformMap(){
 	}
 }
 
-void lslgeneric::particle_filter_HMT::InitializeFilter(){
+void perception_oru::particle_filter_HMT::InitializeFilter(){
 	// switch(initializationType){
 	//case uniform_map:
 	InitializeUniformMap();
@@ -151,7 +151,7 @@ void lslgeneric::particle_filter_HMT::InitializeFilter(){
 	//}
 }
 
-void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, lslgeneric::NDTMap ndtLocalMap_){
+void perception_oru::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, perception_oru::NDTMap ndtLocalMap_){
 	Eigen::Vector3d tr = tMotion.translation();
 	Eigen::Vector3d rot = tMotion.rotation().eulerAngles(0, 1, 2);
 
@@ -160,13 +160,13 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, 
 				#pragma omp parallel for
 		for(int i = 0; i < particleCloud.size(); i++){
 			Eigen::Affine3d T = particleCloud[i].GetAsAffine();
-			std::vector<lslgeneric::NDTCell*> ndts;
+			std::vector<perception_oru::NDTCell*> ndts;
 			ndts = ndtLocalMap_.pseudoTransformNDT(T);
 			double score = 1;
 			if(ndts.size() == 0) fprintf(stderr, "ERROR no gaussians in measurement!!!\n");
 			for(int n = 0; n < ndts.size(); n++){
 				Eigen::Vector3d m = ndts[n]->getMean();
-				lslgeneric::NDTCell *cell;
+				perception_oru::NDTCell *cell;
 				pcl::PointXYZ p;
 				p.x = m[0]; p.y = m[1]; p.z = m[2];
 				if(ndtMap->getCellForPoint(p, cell)){
@@ -208,7 +208,7 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, 
 		}
 	}
 }
-void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, lslgeneric::NDTMap* ndtLocalMap_){
+void perception_oru::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, perception_oru::NDTMap* ndtLocalMap_){
 	Eigen::Vector3d tr = tMotion.translation();
 	Eigen::Vector3d rot = tMotion.rotation().eulerAngles(0, 1, 2);
 
@@ -217,13 +217,13 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, 
 				#pragma omp parallel for
 		for(int i = 0; i < particleCloud.size(); i++){
 			Eigen::Affine3d T = particleCloud[i].GetAsAffine();
-			std::vector<lslgeneric::NDTCell*> ndts;
+			std::vector<perception_oru::NDTCell*> ndts;
 			ndts = ndtLocalMap_->pseudoTransformNDT(T);
 			double score = 1;
 			if(ndts.size() == 0) fprintf(stderr, "ERROR no gaussians in measurement!!!\n");
 			for(int n = 0; n < ndts.size(); n++){
 				Eigen::Vector3d m = ndts[n]->getMean();
-				lslgeneric::NDTCell *cell;
+				perception_oru::NDTCell *cell;
 				//pcl::PointXYZ p;
 				//p.x = m[0];p.y=m[1];p.z=m[2];
 				pcl::PointXYZ p(m[0], m[1], m[2]);
@@ -268,15 +268,15 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredict(Eigen::Affine3d tMotion, 
 }
 
 
-void lslgeneric::particle_filter_HMT::UpdateAndPredictEff(Eigen::Affine3d tMotion, lslgeneric::NDTMap* ndtLocalMap_, double subsample_level, double z_cut){ //you may add z cut here if necessarry
+void perception_oru::particle_filter_HMT::UpdateAndPredictEff(Eigen::Affine3d tMotion, perception_oru::NDTMap* ndtLocalMap_, double subsample_level, double z_cut){ //you may add z cut here if necessarry
 	if(subsample_level < 0 || subsample_level > 1) subsample_level = 1;
 
 	Eigen::Vector3d tr = tMotion.translation();
 	Eigen::Vector3d rot = tMotion.rotation().eulerAngles(0, 1, 2);
 	if(tr[0] != 0.0 && tr[1] != 0.0 && rot[2] != 0){
 		Predict2D(tr[0], tr[1], rot[2], tr[0] * 0.05 + 0.005, tr[1] * 0.05 + 0.005, rot[2] * 0.05 + 0.001);
-		std::vector<lslgeneric::NDTCell*> ndts0 = ndtLocalMap_->getAllCells();
-		std::vector<lslgeneric::NDTCell*> ndts;
+		std::vector<perception_oru::NDTCell*> ndts0 = ndtLocalMap_->getAllCells();
+		std::vector<perception_oru::NDTCell*> ndts;
 
 		if(subsample_level != 1){
 			srand(time(NULL));
@@ -300,7 +300,7 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredictEff(Eigen::Affine3d tMotio
 			for(int n = 0; n < ndts.size(); n++){
 				Eigen::Vector3d m = T * ndts[n]->getMean();
 				//if(m[2] < zfilt_min) continue;
-				lslgeneric::NDTCell *cell = NULL;
+				perception_oru::NDTCell *cell = NULL;
 				pcl::PointXYZ p;
 				p.x = m[0]; p.y = m[1]; p.z = m[2];
 				//ROS_INFO_STREAM(p);
@@ -347,7 +347,7 @@ void lslgeneric::particle_filter_HMT::UpdateAndPredictEff(Eigen::Affine3d tMotio
 	}
 }
 
-void lslgeneric::particle_filter_HMT::Predict2D(double x, double y, double th, double sx, double sy, double sth){
+void perception_oru::particle_filter_HMT::Predict2D(double x, double y, double th, double sx, double sy, double sth){
 	float dx = 0.0, dy = 0.0, dl = 0.0;
 	float t = 0.0;
 	float dxe, dye; ///<estimates
@@ -379,11 +379,11 @@ void lslgeneric::particle_filter_HMT::Predict2D(double x, double y, double th, d
 	}
 	//    isAvgSet = false;
 }
-void lslgeneric::particle_filter_HMT::to2PI(double &a){
+void perception_oru::particle_filter_HMT::to2PI(double &a){
 	a = (double)fmod((double)(a), (double)( 2 * M_PI));
 	if(a < 0) a += 2 * (double)M_PI;
 }
-void lslgeneric::particle_filter_HMT::toPI(double &a){
+void perception_oru::particle_filter_HMT::toPI(double &a){
 	if(a > M_PI)
 		while(a > M_PI) a -= 2.0 * M_PI;
 	else
@@ -391,7 +391,7 @@ void lslgeneric::particle_filter_HMT::toPI(double &a){
 		while(a < -M_PI) a += 2.0 * M_PI;
 }
 
-void lslgeneric::particle_filter_HMT::Normalize(){
+void perception_oru::particle_filter_HMT::Normalize(){
 	int i;
 	double summ = 0;
 
@@ -407,7 +407,7 @@ void lslgeneric::particle_filter_HMT::Normalize(){
 		for(i = 0; i < particleCloud.size(); i++)
 			particleCloud[i].SetProbability(1.0 / particleCloud.size());
 }
-void lslgeneric::particle_filter_HMT::SIRUpdate(){
+void perception_oru::particle_filter_HMT::SIRUpdate(){
 	std::vector<particle> tmp2;
 	std::default_random_engine generator;
 	std::uniform_real_distribution<double> dist(0, 1);
@@ -476,7 +476,7 @@ void lslgeneric::particle_filter_HMT::SIRUpdate(){
 	tmp = tmp2;
 }
 
-void lslgeneric::particle_filter_HMT::GetRandomPoint(lslgeneric::NDTCell* cell, double &x, double &y, double &th){
+void perception_oru::particle_filter_HMT::GetRandomPoint(perception_oru::NDTCell* cell, double &x, double &y, double &th){
 	Eigen::Vector3d mean = cell->getMean();
 	Eigen::Matrix3d cov = cell->getCov();
 	double mX = mean[0], mY = mean[1], mTh = mean[2];
@@ -491,7 +491,7 @@ void lslgeneric::particle_filter_HMT::GetRandomPoint(lslgeneric::NDTCell* cell, 
 	th = distribution_th(generator);
 }
 
-void lslgeneric::particle_filter_HMT::EigenSort( Eigen::Vector3d &eigenvalues, Eigen::Matrix3d &eigenvectors ){
+void perception_oru::particle_filter_HMT::EigenSort( Eigen::Vector3d &eigenvalues, Eigen::Matrix3d &eigenvectors ){
 	int k, j, i;
 	double p;
 
@@ -507,7 +507,7 @@ void lslgeneric::particle_filter_HMT::EigenSort( Eigen::Vector3d &eigenvalues, E
 	}
 }
 
-Eigen::Affine3d lslgeneric::particle_filter_HMT::getAsAffine(float x, float y, float yaw ){
+Eigen::Affine3d perception_oru::particle_filter_HMT::getAsAffine(float x, float y, float yaw ){
 	Eigen::Matrix3d m;
 
 	m = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX())

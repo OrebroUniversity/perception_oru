@@ -16,7 +16,7 @@
   odometry pose between t0 and t1 (for example using the tf ROS package).
   This relative incremental pose can then directly be used to get the incremental motion (need to adjust it with the current heading), and to get the covariance of the motion.
 */
-namespace lslgeneric
+namespace perception_oru
 {
 class MotionModel3d
 {

@@ -1,7 +1,7 @@
 #include "ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp"
 
 
-void perception_oru::ndt_fuser::initSensorPose(lslgeneric::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame){
+void perception_oru::ndt_fuser::initSensorPose(perception_oru::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame){
 	tf::TransformListener listener;
 	tf::StampedTransform transform;
 	try {
@@ -29,7 +29,7 @@ void perception_oru::ndt_fuser::initSensorPose(lslgeneric::NDTFuserHMT& fuser, c
 
 }
 
-void perception_oru::ndt_fuser::initRobotPose(lslgeneric::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad)
+void perception_oru::ndt_fuser::initRobotPose(perception_oru::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad)
 {
 	tf::TransformListener listener;
 	tf::StampedTransform transform;
@@ -55,7 +55,7 @@ void perception_oru::ndt_fuser::initRobotPose(lslgeneric::NDTFuserHMT& fuser, pc
 	fuser.initialize(pose, cloud, preLoad);
 }
 
-void perception_oru::ndt_fuser::initSensorPose2D(lslgeneric::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame){
+void perception_oru::ndt_fuser::initSensorPose2D(perception_oru::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame){
 	tf::TransformListener listener;
 	tf::StampedTransform transform;
 	try {
@@ -83,7 +83,7 @@ void perception_oru::ndt_fuser::initSensorPose2D(lslgeneric::NDTFuserHMT& fuser,
 
 }
 
-void perception_oru::ndt_fuser::initRobotPose2D(lslgeneric::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad)
+void perception_oru::ndt_fuser::initRobotPose2D(perception_oru::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad)
 {
 	tf::TransformListener listener;
 	tf::StampedTransform transform;

@@ -18,10 +18,10 @@
 
 void mapCallback(const ndt_map::NDTMapMsg::ConstPtr& msg)
 {
-  lslgeneric::NDTMap *nd;
-  lslgeneric::LazyGrid *idx;
+  perception_oru::NDTMap *nd;
+  perception_oru::LazyGrid *idx;
   std::string f;
-  lslgeneric::fromMessage(idx,nd,*msg,f);
+  perception_oru::fromMessage(idx,nd,*msg,f);
   ros::shutdown();
   if (nd->writeToJFF("transported.jff") < 0)
     ROS_INFO("writing to jff failed\n");

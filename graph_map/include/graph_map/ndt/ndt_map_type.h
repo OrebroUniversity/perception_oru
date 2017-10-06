@@ -1,8 +1,8 @@
 #ifndef NDT2DMAP_TYPE_H
 #define NDT2DMAP_TYPE_H
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include <graph_map/map_type.h>
-#include <ndt/ndt_map_param.h>
+#include <graph_map/ndt/ndt_map_param.h>
 #include <ndt_map/ndt_map_hmt.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -16,8 +16,9 @@
 #include "sstream"
 
 #define ndt_map_type_name "ndt_map"
+namespace perception_oru{
 namespace libgraphMap{
-using namespace lslgeneric;
+using namespace perception_oru;
 
 class NDTMapType:public MapType{
 public:
@@ -57,5 +58,6 @@ protected:
 };
 
 
+}
 }
 #endif // NDTMAP_TYPE_H

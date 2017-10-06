@@ -1,6 +1,6 @@
 #ifndef NDTD2DREGTYPE_H
 #define NDTD2DREGTYPE_H
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "graph_map/reg_type.h"
 #include "graph_map/map_type.h"
 #include "pcl/io/pcd_io.h"
@@ -14,12 +14,13 @@
 #include <ndt_registration/ndt_matcher_d2d_2d.h>
 #include <ndt_registration/ndt_matcher_d2d.h>
 #include <ndt_registration/ndt_matcher_d2d_sc.h>
-#include "ndt/ndt_map_type.h"
+#include "graph_map/ndt/ndt_map_type.h"
 #include "visualization/graph_plot.h"
 
 #define ndt_d2d_reg_type_name "ndt_d2d_reg"
+namespace perception_oru{
 namespace libgraphMap{
-using namespace lslgeneric;
+using namespace perception_oru;
 class NDTD2DRegType:public registrationType{
 public:
   ~NDTD2DRegType();
@@ -54,6 +55,7 @@ private:
   friend class GraphFactory;
 
 };
+}
 }
 
 

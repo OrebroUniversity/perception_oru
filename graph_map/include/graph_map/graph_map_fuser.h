@@ -19,11 +19,11 @@
 #include <boost/archive/text_oarchive.hpp>
 #include "boost/serialization/shared_ptr.hpp"
 
-
+namespace perception_oru{
 namespace libgraphMap{
 using namespace std;
-using namespace lslgeneric;
-using lslgeneric::MotionModel2d;
+using namespace perception_oru;
+using perception_oru::MotionModel2d;
 using Eigen::Affine3d;
 class GraphMapFuser{
 public:
@@ -64,6 +64,7 @@ protected:
 };
 
 }
-#include <graph_map_fuser_impl.h>
+}
+#include <graph_map/graph_map_fuser_impl.h>
 
 #endif // GRAPH_MAP_FUSER_H

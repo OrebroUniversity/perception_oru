@@ -1,6 +1,6 @@
-#include "ndt_dl/ndtdl_reg_type.h"
+#include "graph_map/ndt_dl/ndtdl_reg_type.h"
 
-
+namespace perception_oru{
 namespace libgraphMap{
 
 /* ----------- Parameters ------------*/
@@ -43,7 +43,7 @@ bool NDTDLRegType::Register(MapTypePtr maptype, Eigen::Affine3d &Tnow, pcl::Poin
   }
 
 }
-
+}
 
 
 

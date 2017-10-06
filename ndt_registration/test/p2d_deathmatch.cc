@@ -75,7 +75,7 @@ main (int argc, char** argv)
 #endif
 
     double tnow, tend;
-    lslgeneric::transformPointCloudInPlace(Tinit,cloud_offset);
+    perception_oru::transformPointCloudInPlace(Tinit,cloud_offset);
 
     tnow = getDoubleTime();
     double res_max = atof(argv[19]);
@@ -86,7 +86,7 @@ main (int argc, char** argv)
     std::vector<double> resolutions (__res, __res+sizeof(__res)/sizeof(double));
     resolutions.push_back(res_max);
 
-    lslgeneric::NDTMatcherP2D matcherP2D(resolutions);
+    perception_oru::NDTMatcherP2D matcherP2D(resolutions);
     matcherP2D.ITR_MAX = itr_max;
     matcherP2D.subsample_size = subsample;
     bool ret = matcherP2D.match(cloud_fixed,cloud_offset,Tout);
@@ -104,7 +104,7 @@ main (int argc, char** argv)
     std::cerr<<"Time: "<<tend-tnow<<std::endl;
     //rgb point clouds
     //pcl::PointCloud<pcl::PointXYZ> cloud_trans = cloud_offset;
-    lslgeneric::transformPointCloudInPlace(Tout,cloud_trans);
+    perception_oru::transformPointCloudInPlace(Tout,cloud_trans);
     pcl::PointCloud<pcl::PointXYZRGB> cloud_comb;
     pcl::PointXYZRGB red(255,0,0);
     for(int i=0; i<cloud_fixed.points.size(); ++i ) {

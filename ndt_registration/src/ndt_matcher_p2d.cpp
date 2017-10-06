@@ -5,7 +5,7 @@
 #include <ndt_map/lazy_grid.h>
 #include <ndt_registration/ndt_matcher_p2d.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 //#define DO_DEBUG_PROC
@@ -94,7 +94,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
             T = Eigen::Translation<double,3>(x,0,0);
             //T = Eigen::Transform<double,3>(x,0,0);
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
 
             S(0,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -105,7 +105,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
             T = Eigen::Translation<double,3>(0,x,0);
             //T = Eigen::Transform<double,3>(0,x,0);
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
 
             S(1,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -116,7 +116,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
             T = Eigen::Translation<double,3>(0.,0.,x);
             //T = Eigen::Transform<double,3>(0.,0.,x);
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
 
             S(2,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -129,7 +129,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitZ()) ;
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
             S(3,k) = scorePointCloud(cloud,ndt);
             k++;
         }
@@ -140,7 +140,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
                 Eigen::AngleAxis<double>(r,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitZ()) ;
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
 
             S(4,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -152,7 +152,7 @@ void NDTMatcherP2D::generateScoreDebug(const char* out, pcl::PointCloud<pcl::Poi
                 Eigen::AngleAxis<double>(0,Eigen::Vector3d::UnitY()) *
                 Eigen::AngleAxis<double>(r,Eigen::Vector3d::UnitZ()) ;
             pcl::PointCloud<pcl::PointXYZ> cloud = moving;
-            lslgeneric::transformPointCloudInPlace(T,cloud);
+            perception_oru::transformPointCloudInPlace(T,cloud);
 
             S(5,k) = scorePointCloud(cloud,ndt);
             k++;
@@ -194,7 +194,7 @@ bool NDTMatcherP2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
 	ret = this->match( ndt, moving, Temp );
 	T = Temp*T;
 	//transform moving
-	lslgeneric::transformPointCloudInPlace(Temp,moving);
+	perception_oru::transformPointCloudInPlace(Temp,moving);
 #ifdef DO_DEBUG_PROC
 	Eigen::Vector3d out = Temp.rotation().eulerAngles(0,1,2);
 	std::cout<<"OUT: "<<out.transpose()<<std::endl;
@@ -215,7 +215,7 @@ bool NDTMatcherP2D::covariance( pcl::PointCloud<pcl::PointXYZ>& target,
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> TR;
     pcl::PointCloud<pcl::PointXYZ> cloud = source;
-    lslgeneric::transformPointCloudInPlace(T,cloud);
+    perception_oru::transformPointCloudInPlace(T,cloud);
 
     LazyGrid prototype(current_resolution);
     NDTMap ndt( &prototype );
@@ -400,7 +400,7 @@ bool NDTMatcherP2D::match( NDTMap& targetNDT,
         //eulerAngles<<pose_increment_v(3),pose_increment_v(4),pose_increment_v(5);
         //eulerAngles = T.rotation().eulerAngles(0,1,2);
 
-        prevCloud = lslgeneric::transformPointCloud<pcl::PointXYZ>(T,source);
+        prevCloud = perception_oru::transformPointCloud<pcl::PointXYZ>(T,source);
         scoreP = score;
         score = scorePointCloud(prevCloud,targetNDT);
 	if(score < score_best) 
@@ -902,7 +902,7 @@ double NDTMatcherP2D::lineSearchMT(  Eigen::Matrix<double,6,1> &score_gradient_i
         //eulerAngles = ps2.rotation().eulerAngles(0,1,2);
 
         //eulerAngles<<pincr(3),pincr(4),pincr(5);
-        cloudHere = lslgeneric::transformPointCloud(ps,sourceCloud);
+        cloudHere = perception_oru::transformPointCloud(ps,sourceCloud);
 
         double f = 0.0;
         f = scorePointCloud(cloudHere,targetNDT);

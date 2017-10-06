@@ -1,6 +1,6 @@
 #include "visualization/graph_plot.h"
 #include <ndt_rviz/ndt_rviz.h>
-
+namespace perception_oru{
 namespace libgraphMap{
 bool GraphPlot::initialized_=false;
 ros::NodeHandle* GraphPlot::nh_=NULL;
@@ -375,7 +375,7 @@ void GraphPlot::sendMapToRviz(mean_vector &mean, cov_vector &cov, ros::Publisher
   mapPublisher->publish(marray);
 
 }
-void GraphPlot::SendLocalMapToRviz(lslgeneric::NDTMap *mapPtr,int color,const Affine3d &offset){
+void GraphPlot::SendLocalMapToRviz(perception_oru::NDTMap *mapPtr,int color,const Affine3d &offset){
   cov_vector cov;
   mean_vector mean;
   if(!initialized_)
@@ -383,10 +383,10 @@ void GraphPlot::SendLocalMapToRviz(lslgeneric::NDTMap *mapPtr,int color,const Af
   GetAllCellsMeanCov(mapPtr,cov,mean);
   sendMapToRviz(mean,cov,localMapPublisher_,"/velodyne",color,offset,"local");
 }
-void GraphPlot::GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr,cov_vector &cov,mean_vector &mean){
+void GraphPlot::GetAllCellsMeanCov(const perception_oru::NDTMap *mapPtr,cov_vector &cov,mean_vector &mean){
   cov.clear();
   mean.clear();
-  std::vector<lslgeneric::NDTCell*>cells=mapPtr->getAllCells();
+  std::vector<perception_oru::NDTCell*>cells=mapPtr->getAllCells();
   NDTCell *cell;
   for(int i=0;i<cells.size();i++){
     cov.push_back(cells[i]->getCov());
@@ -394,7 +394,7 @@ void GraphPlot::GetAllCellsMeanCov(const lslgeneric::NDTMap *mapPtr,cov_vector &
     delete cells[i];
   }
 }
-void GraphPlot::GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_vector &cov,mean_vector &mean){
+void GraphPlot::GetAllCellsMeanCov( std::vector<perception_oru::NDTCell*>cells,cov_vector &cov,mean_vector &mean){
   cov.clear();
   mean.clear();
   for(int i=0;i<cells.size();i++){
@@ -403,7 +403,7 @@ void GraphPlot::GetAllCellsMeanCov( std::vector<lslgeneric::NDTCell*>cells,cov_v
   }
 }
 
-void GraphPlot::SendGlobalMapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset){
+void GraphPlot::SendGlobalMapToRviz(perception_oru::NDTMap *mapPtr, int color,const Affine3d &offset){
   cov_vector cov;
   mean_vector mean;
   if(!initialized_)
@@ -412,15 +412,15 @@ void GraphPlot::SendGlobalMapToRviz(lslgeneric::NDTMap *mapPtr, int color,const 
   GetAllCellsMeanCov(mapPtr,cov,mean);
   sendMapToRviz(mean,cov,globalMapPublisher_,"world",color,offset,"current");
 }
-void GraphPlot::SendGlobal2MapToRviz(lslgeneric::NDTMap *mapPtr, int color,const Affine3d &offset){
-  cov_vector cov;
+void GraphPlot::SendGlobal2MapToRviz(perception_oru::NDTMap *mapPtr, int color,const Affine3d &offset){
+  cov_vector cov;//end namespacev;
   mean_vector mean;
   if(!initialized_)
     Initialize();
   GetAllCellsMeanCov(mapPtr,cov,mean);
   sendMapToRviz(mean,cov,globalMapPublisher_,"world",color,offset,"prev",visualization_msgs::Marker::CUBE);
 }
-void GraphPlot::SendGlobal2MapToRviz(  std::vector<lslgeneric::NDTCell*>cells, int color,const Affine3d &offset){
+void GraphPlot::SendGlobal2MapToRviz(  std::vector<perception_oru::NDTCell*>cells, int color,const Affine3d &offset){
   cov_vector cov;
   mean_vector mean;
 
@@ -431,4 +431,5 @@ void GraphPlot::SendGlobal2MapToRviz(  std::vector<lslgeneric::NDTCell*>cells, i
 }
 
 
+}
 }

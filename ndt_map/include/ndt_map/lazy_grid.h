@@ -47,7 +47,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/split_member.hpp>
-namespace lslgeneric
+namespace perception_oru
 {
 class CellVector3d {
 public:

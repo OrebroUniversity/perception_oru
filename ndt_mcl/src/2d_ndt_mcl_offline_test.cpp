@@ -265,7 +265,7 @@ int main(int argc, char **argv){
 	//////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////
 	fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
-	lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+	perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
 
 	ndmap.setMapSize(80.0, 80.0, 1.0);
 	

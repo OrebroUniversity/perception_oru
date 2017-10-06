@@ -7,7 +7,7 @@
 #include <ndt_map/lazy_grid.h>
 #include <ndt_map/pointcloud_utils.h>
 
-namespace lslgeneric {
+namespace perception_oru {
 
 
 
@@ -57,7 +57,7 @@ inline Eigen::Affine2d getAffine2d(double x, double y, double th) {
     Eigen::Rotation2D<double>(th);
 }
 
-Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> ICPwithCorrMatch(lslgeneric::NDTMap &targetNDT, lslgeneric::NDTMap &sourceNDT, const std::vector<std::pair<int,int> > &corresp) {
+Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> ICPwithCorrMatch(perception_oru::NDTMap &targetNDT, perception_oru::NDTMap &sourceNDT, const std::vector<std::pair<int,int> > &corresp) {
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
     T.setIdentity();
 
@@ -138,7 +138,7 @@ void printTransf2d(const Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor
   std::cout << "["<<T.translation()[0] << "," 
             << T.translation()[1] << "]("
     //<< T.rotation().eulerAngles(0,1,2)[2] << ")" << std::endl;
-            << lslgeneric::getRobustYawFromAffine3d(T) << ")" << std::endl;
+            << perception_oru::getRobustYawFromAffine3d(T) << ")" << std::endl;
     }
 
 

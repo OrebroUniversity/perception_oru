@@ -7,8 +7,10 @@
 #include "graph_map/graph_map.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include <velodyne_pointcloud/point_types.h>
-using namespace libgraphMap;
+namespace perception_oru{
 namespace GraphMapLocalisation{
+using namespace libgraphMap;
+
 class LocalisationParam{
 public:
   LocalisationParam();
@@ -41,7 +43,7 @@ public:
 private:
     friend class LocalisationFactory;
 };
-
+}
 
 }
 #endif // LOCALISATIONTYPE_H

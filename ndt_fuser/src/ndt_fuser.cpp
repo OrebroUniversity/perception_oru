@@ -1,12 +1,12 @@
 #include <ndt_fuser/ndt_fuser.h>
 
-namespace lslgeneric {
+namespace perception_oru {
     void NDTFuser::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::PointXYZ> &cloud)
     {
 	std::cout<<"Initializing NDT FUSER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 	///Set the cloud to sensor frame with respect to base
-	lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
-	lslgeneric::transformPointCloudInPlace(initPos, cloud);
+	perception_oru::transformPointCloudInPlace(sensor_pose, cloud);
+	perception_oru::transformPointCloudInPlace(initPos, cloud);
 	Tnow = initPos;
 	map->initialize(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),map_size_x,map_size_y,map_size_z);
 	map->addPointCloud(Tnow.translation(),cloud, 0.1, 100.0, 0.1);
@@ -28,10 +28,10 @@ namespace lslgeneric {
 	}
 	double t1,t2,t3,t4;
 	///Set the cloud to sensor frame with respect to base
-	lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
+	perception_oru::transformPointCloudInPlace(sensor_pose, cloud);
 	t1 = getDoubleTime();
 	///Create local map
-	lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+	perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution));
 	//ndlocal.guessSize(Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),sensor_range,sensor_range,sensor_range);
 	ndlocal.addPointCloudSimple(cloud);
 	ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -48,7 +48,7 @@ namespace lslgeneric {
 		    Tnow = Tnow * Tmotion;
 		}else{
 		    Tnow = Tinit;
-		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+		    perception_oru::transformPointCloudInPlace(Tnow, cloud);
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
 		    Eigen::Affine3d diff_fuse = Tlast_fuse.inverse()*Tnow;
 
@@ -92,7 +92,7 @@ namespace lslgeneric {
 		    //ndlocal.writeToJFF("local.jff");
 		}else{
 		    Tnow = Tinit;
-		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+		    perception_oru::transformPointCloudInPlace(Tnow, cloud);
 		    std::cout<<"Tnow :" << Tnow.matrix()<<std::endl;
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
 		    Eigen::Affine3d diff_fuse = Tlast_fuse.inverse()*Tnow;

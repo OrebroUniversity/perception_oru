@@ -6,7 +6,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include "ndt_rviz_visualisation/ndt_visual.hpp"
 
-namespace lslgeneric{
+namespace perception_oru{
   NDTVisual::NDTVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node ){
     scene_manager_ = scene_manager;
     frame_node_ = parent_node->createChildSceneNode();

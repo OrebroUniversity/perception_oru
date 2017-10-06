@@ -12,7 +12,7 @@
 #include <pcl/point_cloud.h>
 #include <sys/time.h>
 
-namespace lslgeneric {
+namespace perception_oru {
 /**
   * \brief This class fuses new point clouds into a common ndt map reference, keeping tack of the 
   * camera postion.
@@ -21,7 +21,7 @@ namespace lslgeneric {
 class NDTFuser{
     public:
 	Eigen::Affine3d Tnow, Tlast_fuse; ///< current pose
-	lslgeneric::NDTMap *map;  ///< da map
+	perception_oru::NDTMap *map;  ///< da map
 	bool checkConsistency; ///perform a check for consistency against initial estimate
 	double max_translation_norm, max_rotation_norm;
 	double sensor_range;
@@ -49,7 +49,7 @@ class NDTFuser{
 	    viewer = new NDTViz(visualize);
 #endif
 	    std::cout<<"MAP: resolution: "<<resolution<<" size "<<map_size_x<<" "<<map_size_y<<" "<<map_size_z<<std::endl;
-	    map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+	    map = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution));
 	}
 	~NDTFuser()
 	{
@@ -97,8 +97,8 @@ class NDTFuser{
 	bool visualize;
 
 	Eigen::Affine3d sensor_pose;
-	lslgeneric::NDTMatcherD2D matcher;
-	lslgeneric::NDTMatcherD2D_2D matcher2D;
+	perception_oru::NDTMatcherD2D matcher;
+	perception_oru::NDTMatcherD2D_2D matcher2D;
 
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

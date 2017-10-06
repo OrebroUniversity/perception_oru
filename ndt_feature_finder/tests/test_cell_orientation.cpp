@@ -2,7 +2,7 @@
 
 
 double compareCell(const Eigen::Matrix3d& eigen){
-	lslgeneric::NDTCell cell;
+	perception_oru::NDTCell cell;
 	Eigen::Vector3d eval;
 	eval(0) = 0.01 ;
 	eval(1) = 0.01 ;
@@ -17,7 +17,7 @@ double compareCell(const Eigen::Matrix3d& eigen){
 
 int main(){
 	
-	lslgeneric::NDTMap map;
+	perception_oru::NDTMap map;
 	
 	std::string filename = "map.jff";
 	map.loadFromJFF(filename.c_str());

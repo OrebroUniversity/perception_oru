@@ -146,7 +146,7 @@ class NDTMCL3DNode {
 
 	    fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
 	    
-	    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+	    perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
 	    ndmap.loadFromJFF(mapName.c_str());
 
 	    //////////////////////////////////////////////////////////
@@ -248,7 +248,7 @@ class NDTMCL3DNode {
 	    //transform point cloud from sensor pose into base pose
     
 	    ///Set the cloud to sensor frame with respect to base
-	    lslgeneric::transformPointCloudInPlace(sensorPoseT, cloud);
+	    perception_oru::transformPointCloudInPlace(sensorPoseT, cloud);
 	    //cloudT = lslgeneric::transformPointCloud(Tcum, cloud);
 
 	    //update filter -> + add parameter to subsample ndt map in filter step

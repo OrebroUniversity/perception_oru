@@ -5,7 +5,7 @@
 //using boost::math::chi_squared;
 //using boost::math::cdf;
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 template <typename PointT>

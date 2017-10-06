@@ -1,4 +1,5 @@
-#include "ndt/ndtd2d_reg_type.h"
+#include "graph_map/ndt/ndtd2d_reg_type.h"
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -21,14 +22,14 @@ NDTD2DRegType::NDTD2DRegType(const Affine3d &sensor_pose, RegParamPtr paramptr):
 NDTD2DRegType::~NDTD2DRegType(){}
 
 bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d cov) {
-cout<<" registration ndt ";
+cout<<" Registration:NDT ";
   if(!enableRegistration_||!maptype->Initialized()){
     cout<<"Registration disabled - motion based on odometry"<<endl;
     return true;
   }
 
   ///Create local map
-  lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution_*resolutionLocalFactor_));
+  perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution_*resolutionLocalFactor_));
   ndlocal.guessSize(0,0,0,sensorRange_,sensorRange_,mapSizeZ_);
   ndlocal.loadPointCloud(cloud,sensorRange_);
   ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -121,7 +122,7 @@ void NDTD2DRegParam::GetParametersFromRos(){
   nh.param("resolutionLocalFactor",resolutionLocalFactor_,1.0);
 }
 
-
+}
 
 }//end namespace
 

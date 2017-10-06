@@ -1,13 +1,13 @@
 #include "ndt_mcl/particle.hpp"
 #include <iostream>
-lslgeneric::particle::particle(){
+perception_oru::particle::particle(){
   probability=0;
   likelihood=0;
   pose=Eigen::Affine3d::Identity();
 }
 
 
-lslgeneric::particle::particle(double roll,double pitch,double yaw,double x, double y, double z){
+perception_oru::particle::particle(double roll,double pitch,double yaw,double x, double y, double z){
    this->Set(roll,pitch,yaw,x,y,z);
    //r_=roll;
   // p_=pitch;
@@ -18,14 +18,14 @@ lslgeneric::particle::particle(double roll,double pitch,double yaw,double x, dou
   probability=0;
   likelihood=0;
 }
-lslgeneric::particle::particle(Eigen::Affine3d pose_){
+perception_oru::particle::particle(Eigen::Affine3d pose_){
   pose=pose_;
  probability=0;
   likelihood=0;
 }
 
 
-void lslgeneric::particle::Set(double roll,double pitch,double yaw,double x, double y, double z){
+void perception_oru::particle::Set(double roll,double pitch,double yaw,double x, double y, double z){
   // r_=roll;
   // p_=pitch;
   // t_=yaw;
@@ -45,7 +45,7 @@ void lslgeneric::particle::Set(double roll,double pitch,double yaw,double x, dou
      pose.translation()<<x,y,z;
 }
 
-void lslgeneric::particle::GetXYZ(double &x, double &y, double &z){
+void perception_oru::particle::GetXYZ(double &x, double &y, double &z){
 
    Eigen::Vector3d tr = pose.translation();
    x = tr[0];
@@ -56,7 +56,7 @@ void lslgeneric::particle::GetXYZ(double &x, double &y, double &z){
   //z=z_;
 }
 
-void lslgeneric::particle::GetRPY(double &r,double &p,double &y){
+void perception_oru::particle::GetRPY(double &r,double &p,double &y){
   //r=r_;
   //p=p_;
   //y=t_;
@@ -66,22 +66,22 @@ void lslgeneric::particle::GetRPY(double &r,double &p,double &y){
    y=rot[2];
 }
 
-Eigen::Affine3d lslgeneric::particle::GetAsAffine(){
+Eigen::Affine3d perception_oru::particle::GetAsAffine(){
   return pose;
 }
 
-void lslgeneric::particle::SetLikelihood(double l_){
+void perception_oru::particle::SetLikelihood(double l_){
   likelihood=l_;
 }
 
-void lslgeneric::particle::SetProbability(double p_){
+void perception_oru::particle::SetProbability(double p_){
   probability=p_;
 }
 
-double lslgeneric::particle::GetLikelihood(){
+double perception_oru::particle::GetLikelihood(){
   return likelihood;
 }
 
-double lslgeneric::particle::GetProbability(){
+double perception_oru::particle::GetProbability(){
   return probability;
 }

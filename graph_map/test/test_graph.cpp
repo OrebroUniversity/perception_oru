@@ -3,13 +3,17 @@
 #include "graph_map/graph_map.h"
 #include <pcl/point_cloud.h>
 #include "pcl/io/pcd_io.h"
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "ros/ros.h"
 #include "Eigen/Geometry"
 #include "visualization/graph_plot.h"
-using namespace libgraphMap;
+
 using namespace std;
 using namespace Eigen;
+
+using namespace perception_oru;
+using namespace libgraphMap;
+
 int main(int argc, char **argv){
   ros::init(argc, argv, "testGraphLib");
   ros::NodeHandle n;
@@ -47,4 +51,6 @@ int main(int argc, char **argv){
   pcl::PointCloud<pcl::PointXYZ> cloud;
 
 }
+
+
 

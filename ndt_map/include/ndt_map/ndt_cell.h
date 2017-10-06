@@ -64,7 +64,7 @@
 
 #define KEEP_POINTS
 //#define ICRA_2013_NDT_OM_SIMPLE_MODE 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief implements a normal distibution cell

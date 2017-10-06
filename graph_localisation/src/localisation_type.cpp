@@ -1,4 +1,5 @@
 #include "graph_localisation/localisation_type.h"
+namespace perception_oru{
 namespace  GraphMapLocalisation {
 LocalisationType::~LocalisationType(){}
 std::string LocalisationType::ToString(){
@@ -14,5 +15,6 @@ LocalisationParam::LocalisationParam(){
 
 }
 
+}
 }
 

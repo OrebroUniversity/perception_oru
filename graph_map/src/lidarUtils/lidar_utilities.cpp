@@ -1,5 +1,5 @@
-#include "lidarUtils/lidar_utilities.h"
-
+#include "graph_map/lidarUtils/lidar_utilities.h"
+namespace perception_oru{
 namespace libgraphMap {
 
 /*
@@ -93,4 +93,5 @@ void ScanPlot::derivative(pair_vector_double &data_in, pair_vector_double &deriv
   derivative.insert(derivative.begin(),sample);
 }
 
+}
 }

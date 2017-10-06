@@ -39,7 +39,7 @@
 #include <cstdio>
 #include <cmath>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief Base class for a rectangular 3D cell

@@ -12,7 +12,7 @@
 #include <cstring>
 #include <cstdio>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 void NDTMapHMT::initializeGrids() {
@@ -489,12 +489,12 @@ void NDTMapHMT::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     old_centroid(2) = centerZ;
 
     ///Lets first create a local ndmap (this really works only if we have lazy grid as well)
-    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution));
     ndlocal.loadPointCloudCentroid(pc,origin, old_centroid, localmapsize, max_range_); 
     ndlocal.computeNDTCells();
 
     ///TODO: This returns now copies --- should be pointers?
-    std::vector<lslgeneric::NDTCell*> ndts;
+    std::vector<perception_oru::NDTCell*> ndts;
     ndts = ndlocal.getAllCells();
 
     NDTCell* ptCell = NULL; 
@@ -1178,7 +1178,7 @@ std::vector<NDTCell*> NDTMapHMT::pseudoTransformNDT(Eigen::Transform<double,3,Ei
     return ret;
 }
 
-std::vector<lslgeneric::NDTCell*> NDTMapHMT::getAllCells() const
+std::vector<perception_oru::NDTCell*> NDTMapHMT::getAllCells() const
 {
 
     std::vector<NDTCell*> ret;
@@ -1207,7 +1207,7 @@ std::vector<lslgeneric::NDTCell*> NDTMapHMT::getAllCells() const
     return ret;
 }
 
-std::vector<lslgeneric::NDTCell*> NDTMapHMT::getAllInitializedCells()
+std::vector<perception_oru::NDTCell*> NDTMapHMT::getAllInitializedCells()
 {
 
     std::vector<NDTCell*> ret;

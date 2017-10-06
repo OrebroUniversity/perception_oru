@@ -1,5 +1,5 @@
 
-#include "graph_map_fuser.h"
+#include "graph_map/graph_map_fuser.h"
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -33,9 +33,9 @@
 
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
-//<<<<<<< HEAD
+
 //#include <ndt_generic/gnuplot-iostream.h>
-#include "lidarUtils/lidar_utilities.h"
+#include "graph_map/lidarUtils/lidar_utilities.h"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -45,13 +45,17 @@
 #include "ros/publisher.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/PoseStamped.h"
+
+
 namespace po = boost::program_options;
+using namespace perception_oru;
+using namespace libgraphMap;
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
  * \author Daniel adolfsson based on code from Todor Stoyanov
  *
  */
 
-using namespace libgraphMap;
+
 class OpenGraphMap {
 
 protected:
@@ -161,4 +165,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
+
+
 

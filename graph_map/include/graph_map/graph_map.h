@@ -17,12 +17,13 @@
 #include "ros/node_handle.h"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/vector.hpp"
-#include "g2o/examples/interactive_slam/g2o_incremental/g2o_incremental_api.h"
 
+namespace perception_oru{
 namespace libgraphMap{
-using namespace lslgeneric;
+using namespace perception_oru;
 typedef std::vector<Eigen::Affine3d,Eigen::aligned_allocator<Eigen::Affine3d> > EigenAffineVector;
 class GraphMap{
+    
 public:
   /*!
    * \brief UpdateGraph is  high level interface to graph class. It allows for automatic selection and creation of mapnodes.
@@ -96,5 +97,6 @@ private:
   {
   }*/
 };
+}
 }
 #endif // GRAPH_H

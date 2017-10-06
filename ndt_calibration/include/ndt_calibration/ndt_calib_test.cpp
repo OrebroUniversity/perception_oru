@@ -70,7 +70,7 @@ public:
     
     pcl::PointCloud<pcl::PointXYZ> c =cloud;
     Eigen::Affine3d T = pose * Ts;
-    lslgeneric::transformPointCloudInPlace(T, c);
+    perception_oru::transformPointCloudInPlace(T, c);
     p += c;
   }
 
@@ -167,11 +167,11 @@ public:
   double scoreICP(const Eigen::Affine3d &Ts) const {
     pcl::PointCloud<pcl::PointXYZ> c1=this->first.cloud;
     Eigen::Affine3d p1 = this->first.pose * Ts;
-    lslgeneric::transformPointCloudInPlace(p1, c1);
+    perception_oru::transformPointCloudInPlace(p1, c1);
     
     pcl::PointCloud<pcl::PointXYZ> c2=this->second.cloud;
     Eigen::Affine3d p2 = this->second.pose * Ts;
-    lslgeneric::transformPointCloudInPlace(p2, c2);
+    perception_oru::transformPointCloudInPlace(p2, c2);
     
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     typename pcl::KdTree<pcl::PointXYZ>::PointCloudPtr mp (new pcl::PointCloud<pcl::PointXYZ>);

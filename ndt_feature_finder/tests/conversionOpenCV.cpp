@@ -7,8 +7,8 @@ int main(){
 	std::string file = "/home/malcolm/Documents/basement2d_map.jff";
 // 	map.loadFromJFF(file.c_str());
 	double resolution = 0.2;
-	auto mapGrid = new lslgeneric::LazyGrid(resolution);
-	lslgeneric::NDTMap map(mapGrid);
+	auto mapGrid = new perception_oru::LazyGrid(resolution);
+	perception_oru::NDTMap map(mapGrid);
 	if(map.loadFromJFF(file.c_str()) < 0)
 		std::cout << "File didn't load" << std::endl;
 	std::cout << "File loaded" << std::endl;
@@ -25,7 +25,7 @@ int main(){
 	for(size_t i = 0 ; i < cells.size() ; ++i){
 // 		std::cout << "Classifying" << std::endl;
 		cells[i]->classify();
-		lslgeneric::NDTCell cell;
+		perception_oru::NDTCell cell;
 		assert(cells[i]->getClass() != cells[i]->UNKNOWN);
 	}
 	

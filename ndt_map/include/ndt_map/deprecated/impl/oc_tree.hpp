@@ -1,6 +1,6 @@
 #include<pointcloud_vrml/pointcloud_utils.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 template <typename PointT>
@@ -593,7 +593,7 @@ NDTCell<PointT>* OctTree<PointT>::getClosestNDTCell(const PointT &point)
             {
                 if(temp->hasGaussian_)
                 {
-                    dist = lslgeneric::geomDist<PointT>(temp->getCenter(),point);
+                    dist = perception_oru::geomDist<PointT>(temp->getCenter(),point);
                     if(dist < minDist)
                     {
                         minDist = dist;

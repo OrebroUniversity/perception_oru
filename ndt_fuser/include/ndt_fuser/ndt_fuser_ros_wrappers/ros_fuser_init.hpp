@@ -12,22 +12,22 @@ namespace ndt_fuser{
 	* @brief Initialise the sensor pose use tf frame
 	* @param[in] fuser : the fuser to intialise
 	*/
-	void initSensorPose(lslgeneric::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame);
+	void initSensorPose(perception_oru::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame);
 	
 	/**
 	* @brief Initialise the robot pose use tf frame
 	*/
-	void initRobotPose(lslgeneric::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad=false);
+	void initRobotPose(perception_oru::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad=false);
 
 	/**
 	* @brief Initialise the sensor pose use tf frame. Any information on the z axis is discarded
 	*/
-	void initSensorPose2D(lslgeneric::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame);
+	void initSensorPose2D(perception_oru::NDTFuserHMT& fuser, const std::string& robot_frame, const std::string& sensor_frame);
 	
 	/**
 	* @brief Initialise the robot pose use tf frame. Any information on the z axis is discarded
 	*/
-	void initRobotPose2D(lslgeneric::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad=false);
+	void initRobotPose2D(perception_oru::NDTFuserHMT& fuser, pcl::PointCloud< pcl::PointXYZ >& cloud, std::string& world_frame, std::string& robot_frame, bool preLoad=false);
 }	
 	
 }

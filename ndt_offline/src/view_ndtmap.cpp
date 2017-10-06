@@ -41,7 +41,7 @@ int main(int argc, char **argv){
 	return 1;
     }
 
-    lslgeneric::NDTMap map(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap map(new perception_oru::LazyGrid(resolution));
     map.loadFromJFF(filename.c_str());
     ROS_INFO_STREAM("Loaded map: " << filename << " containing " << map.getAllCells().size() << " cells");
 

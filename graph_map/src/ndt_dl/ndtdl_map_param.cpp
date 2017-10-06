@@ -1,7 +1,8 @@
-#include "ndt_dl/ndtdl_map_param.h"
+#include "graph_map/ndt_dl/ndtdl_map_param.h"
 #include <boost/serialization/export.hpp>
-BOOST_CLASS_EXPORT(libgraphMap::NDTDLMapParam)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::NDTDLMapParam)
 using namespace std;
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -14,7 +15,7 @@ void NDTDLMapParam::GetParametersFromRos(){
 }
 
 
-
+}
 
 
 }

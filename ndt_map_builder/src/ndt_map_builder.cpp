@@ -8,7 +8,7 @@
 #include "pcl/registration/icp.h"
 #include "pcl/filters/voxel_grid.h"
 
-namespace lslgeneric{
+namespace perception_oru{
 
   //ICP wrapper
   // bool NDTMapBuilder::matchICP(pcl::PointCloud<pcl::PointXYZ> &target,  pcl::PointCloud<pcl::PointXYZ> &source,
@@ -95,16 +95,16 @@ namespace lslgeneric{
     Tout.setIdentity();
 
 
-    lslgeneric::NDTMap fixed(&tr);
+    perception_oru::NDTMap fixed(&tr);
     fixed.loadPointCloud(vertices.back().scan);
-    lslgeneric::NDTMap moving(&tr);
+    perception_oru::NDTMap moving(&tr);
     moving.loadPointCloud(scan);
 
     moving.computeNDTCells();
     fixed.computeNDTCells();
 
-    lslgeneric::NDTHistogram fixedH(fixed);
-    lslgeneric::NDTHistogram movingH(moving);
+    perception_oru::NDTHistogram fixedH(fixed);
+    perception_oru::NDTHistogram movingH(moving);
 
     movingH.bestFitToHistogram(fixedH,T);
     pcl::PointCloud<pcl::PointXYZ> cloud3;
@@ -124,7 +124,7 @@ namespace lslgeneric{
           }
         //	cout<<"T init "<<T.translation().transpose()<<" r "<<T.rotation().eulerAngles(0,1,2).transpose()<<endl;
         Tndt.setIdentity();
-        cloud3 = lslgeneric::transformPointCloud(T,scan);
+        cloud3 = perception_oru::transformPointCloud(T,scan);
 
         bool ret;
         gettimeofday(&tv_start,NULL);

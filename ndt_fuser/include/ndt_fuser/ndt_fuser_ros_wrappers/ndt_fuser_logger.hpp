@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 
 #include "ros/time.h"
 
@@ -18,7 +19,7 @@ namespace perception_oru {
 		* camera postion. It also log the position and orientation of each pose along with a time stamp a file
 		* \author Malcolm
 		*/
-		class NDTFuserHMTLogger : public lslgeneric::NDTFuserHMT{
+		class NDTFuserHMTLogger : public perception_oru::NDTFuserHMT{
 			
 		protected:
 			std::string _file_out_logger;
@@ -32,16 +33,16 @@ namespace perception_oru {
 			*
 			*
 			*/
-			Eigen::Affine3d update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
+			Eigen::Affine3d update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud, ros::Time time = ros::Time::now()){
 				std::cout << "Update in the logger" << std::endl;
-				Eigen::Affine3d Tnow_out = lslgeneric::NDTFuserHMT::update(Tmotion, cloud);
+				Eigen::Affine3d Tnow_out = perception_oru::NDTFuserHMT::update(Tmotion, cloud);
 				
-				logT(Tnow_out);
+				logT(Tnow_out, time);
 				return Tnow_out;
 				
 			}
 			
-			void logT(const Eigen::Affine3d& T_out){
+			void logT(const Eigen::Affine3d& T_out, ros::Time time = ros::Time::now()){
 				std::cout <<"Log in " << _file_out_logger << std::endl;
 				Eigen::Affine2d T2d = eigenAffine3dTo2d(T_out);
 				
@@ -49,14 +50,22 @@ namespace perception_oru {
 				Eigen::Vector2d t(T2d.translation());
 				R.fromRotationMatrix(T2d.linear());
 				
-				std::ofstream out(_file_out_logger.c_str(), std::ios::in | std::ios::out | std::ios::ate);
-// 				out.open (_file_out_logger.c_str());
 				
-				std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << std::endl;
-				out << t(0) << " " << t(1) << " " << R.angle() << " " << ros::Time::now() << "\n";
-				out.close();
+				std::ofstream myfile;
+				if(!exists_test3(_file_out_logger)){
+					myfile.open (_file_out_logger.c_str());
+				}
+				else{
+					myfile.open (_file_out_logger.c_str(), std::ios::out | std::ios::app);
+				}
 				
-// 				exit(0);
+				if (myfile.is_open())
+				{
+					std::cout << t(0) << " " << t(1) << " " << R.angle() << " " << time << std::endl;
+					myfile << t(0) << " " << t(1) << " " << R.angle() << " " << time << "\n";
+					myfile.close();
+				}
+				else std::cout << "Unable to open file";
 				
 			}
 			
@@ -76,6 +85,11 @@ namespace perception_oru {
 				if (v1(0)*v2(1)-v1(1)*v2(0) > 0)
 					return angle;
 				return -angle;
+			}
+			
+			inline bool exists_test3 (const std::string& name) {
+				struct stat buffer;   
+				return (stat (name.c_str(), &buffer) == 0); 
 			}
 			
 			

@@ -166,9 +166,9 @@ class NDTViz {
 	  win3D->addObject(&gl_pointcloud);
 	}
 
-	void plotNDTMap(lslgeneric::NDTMap *map, double R=1.0,double G=1.0,double B=1.0, bool heightCoding=false, bool setCameraPos = true ){
+	void plotNDTMap(perception_oru::NDTMap *map, double R=1.0,double G=1.0,double B=1.0, bool heightCoding=false, bool setCameraPos = true ){
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    std::vector<perception_oru::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    
 	    win3D->clearScene();
@@ -210,10 +210,10 @@ class NDTViz {
 
 	}
 
-	void plotNDTSAccordingToCost(float occupancy, double MAX_COST, lslgeneric::NDTMap *map){
+	void plotNDTSAccordingToCost(float occupancy, double MAX_COST, perception_oru::NDTMap *map){
 
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    std::vector<perception_oru::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
@@ -251,11 +251,11 @@ class NDTViz {
 
 	}
 	/* /\** plots ndts according to the cell class, with an occupancy cutoff *\/ */
-	void plotNDTSAccordingToClass(float occupancy, lslgeneric::NDTMap *map){
+	void plotNDTSAccordingToClass(float occupancy, perception_oru::NDTMap *map){
 	  
 	  std::cout << "PLOT CLASS" << std::endl;
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    std::vector<perception_oru::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
@@ -284,16 +284,16 @@ class NDTViz {
 		    objEllip.setCovMatrix(cov);
 		    objEllip.setLocation(m[0], m[1], m[2]);
 		    switch(global_ndts[i]->getClass()) {
-			case lslgeneric::NDTCell::HORIZONTAL :
+			case perception_oru::NDTCell::HORIZONTAL :
 			    color = cFlat;
 			    break;
-			case lslgeneric::NDTCell::VERTICAL :
+			case perception_oru::NDTCell::VERTICAL :
 			    color = cVert;
 			    break;
-			case lslgeneric::NDTCell::INCLINED :
+			case perception_oru::NDTCell::INCLINED :
 			    color = cInclined;
 			    break;
-			case lslgeneric::NDTCell::ROUGH :
+			case perception_oru::NDTCell::ROUGH :
 			    color = cRough;
 			    break;
 			default:
@@ -316,9 +316,9 @@ class NDTViz {
 
 	}
 
-	void plotNDTSAccordingToOccupancy(float occupancy, lslgeneric::NDTMap *map){
+	void plotNDTSAccordingToOccupancy(float occupancy, perception_oru::NDTMap *map){
 	  if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    std::vector<perception_oru::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 	    //	    fprintf(stderr," NUM NDT: %u ", global_ndts.size());
 
@@ -358,11 +358,11 @@ class NDTViz {
 	void plotLocalNDTMap(pcl::PointCloud<pcl::PointXYZ> &cloud, double resolution, double R=0, double G=1, double B=0, bool heightCoding=true){
 	    if(win3D == NULL) return;
 
-	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+	    perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution));
 	    ndlocal.addPointCloudSimple(cloud);
 	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	    std::vector<lslgeneric::NDTCell*> ndts;
+	    std::vector<perception_oru::NDTCell*> ndts;
 	    ndts = ndlocal.getAllCells();
 	    std::cout<<"LOCAL: "<<ndts.size()<<std::endl;
 
@@ -390,16 +390,16 @@ class NDTViz {
 
 	}
 
-	void plotLocalConflictNDTMap(lslgeneric::NDTMap *map, pcl::PointCloud<pcl::PointXYZ> &cloud,
+	void plotLocalConflictNDTMap(perception_oru::NDTMap *map, pcl::PointCloud<pcl::PointXYZ> &cloud,
 		double resolution, double R=1, double G=0, double B=0, bool heightCoding=false, double maxz=0){
 	    if(win3D == NULL) return;
 
-	    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+	    perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution));
 
 	    ndlocal.addPointCloudSimple(cloud);
 	    ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	    std::vector<lslgeneric::NDTCell*> ndts;
+	    std::vector<perception_oru::NDTCell*> ndts;
 	    ndts = ndlocal.getAllCells();
 	    gl_ellipsoids.clear();
 	    win3D->clearScene();
@@ -413,7 +413,7 @@ class NDTViz {
 		if(m[2]>maxz) continue;
 		pcl::PointXYZ p;
 		p.x = m[0]; p.y=m[1]; p.z = m[2];
-		lslgeneric::NDTCell *map_cell=NULL;
+		perception_oru::NDTCell *map_cell=NULL;
 		map->getCellAtPoint(p, map_cell);
 		if(map_cell == NULL) continue;
 
@@ -440,9 +440,9 @@ class NDTViz {
 
 	}
 
-	void plotNDTTraversabilityMap(lslgeneric::NDTMap *map){
+	void plotNDTTraversabilityMap(perception_oru::NDTMap *map){
 	    if(win3D == NULL) return;
-	    std::vector<lslgeneric::NDTCell*> global_ndts;
+	    std::vector<perception_oru::NDTCell*> global_ndts;
 	    global_ndts = map->getAllCells();
 
 	    gl_ellipsoids.clear();
@@ -462,13 +462,13 @@ class NDTViz {
 
 		//CC = global_ndts[i]->getClass();
 		// {HORIZONTAL=0, VERTICAL, INCLINED, ROUGH, UNKNOWN};
-		if(global_ndts[i]->getClass() == lslgeneric::NDTCell::HORIZONTAL){
+		if(global_ndts[i]->getClass() == perception_oru::NDTCell::HORIZONTAL){
 		    objEllip.setColor(0,1.0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::VERTICAL){
+		}else if(global_ndts[i]->getClass() == perception_oru::NDTCell::VERTICAL){
 		    objEllip.setColor(1.0,0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::INCLINED){
+		}else if(global_ndts[i]->getClass() == perception_oru::NDTCell::INCLINED){
 		    objEllip.setColor(1.0,1.0,0,1.0);
-		}else if(global_ndts[i]->getClass() == lslgeneric::NDTCell::ROUGH){
+		}else if(global_ndts[i]->getClass() == perception_oru::NDTCell::ROUGH){
 		    objEllip.setColor(0,0,1.0,1.0);
 		}else{
 		    objEllip.setColor(1.0,1.0,1.0,1.0);

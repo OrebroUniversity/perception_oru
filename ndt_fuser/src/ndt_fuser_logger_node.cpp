@@ -182,7 +182,7 @@ public:
 
     param_nh.param<std::string>("tf_pose_frame", tf_pose_frame_, std::string(""));
 
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     param_nh.param<double>("motion_params_Cd", motion_params.Cd, 0.005);
     param_nh.param<double>("motion_params_Ct", motion_params.Ct, 0.01);
     param_nh.param<double>("motion_params_Dd", motion_params.Dd, 0.001);
@@ -565,7 +565,7 @@ public:
   bool publish_map(){
 // #if 0
     ndt_map::NDTMapMsg map_msg;
-    lslgeneric::toMessage(fuser->map, map_msg,world_frame);
+    perception_oru::toMessage(fuser->map, map_msg,world_frame);
     map_publisher_.publish(map_msg);
 // #endif    
 return true;

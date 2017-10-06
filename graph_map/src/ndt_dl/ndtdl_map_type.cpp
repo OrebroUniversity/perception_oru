@@ -1,8 +1,9 @@
-#include "ndt_dl/ndtdl_map_type.h"
+#include "graph_map/ndt_dl/ndtdl_map_type.h"
 #include <boost/serialization/export.hpp>
-#include <ndt_dl/point_curv.h>
+#include <graph_map/ndt_dl/point_curv.h>
 
-BOOST_CLASS_EXPORT(libgraphMap::NDTDLMapType)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::NDTDLMapType)
+namespace perception_oru{
 namespace libgraphMap{
   using namespace std;
 
@@ -11,9 +12,9 @@ namespace libgraphMap{
     NDTDLMapParamPtr param = boost::dynamic_pointer_cast< NDTDLMapParam >(paramptr);//Should not be NULL
     if(param!=NULL){
       resolution_=param ->resolution_;
-      map_flat_ = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution_));
+      map_flat_ = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution_));
       map_flat_->initialize(0.0,0.0,0.0,param->sizex_,param->sizey_,param->sizez_);
-      map_edge_ = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution_));
+      map_edge_ = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution_));
       map_edge_->initialize(0.0,0.0,0.0,param->sizex_,param->sizey_,param->sizez_);
       cout<<"created ndtdlmap"<<endl;
     }
@@ -83,6 +84,6 @@ namespace libgraphMap{
 
 
 
-
+}
 }
 

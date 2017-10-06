@@ -11,6 +11,7 @@
 
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 using namespace  std;
+namespace perception_oru{
 namespace GraphMapLocalisation{
 
 
@@ -52,5 +53,6 @@ public:
 private:
   LocalisationFactory(){}
 };
+}
 }
 #endif // LOCALISATIONFACTORY_H

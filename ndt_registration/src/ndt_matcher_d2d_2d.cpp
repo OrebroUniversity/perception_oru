@@ -6,7 +6,7 @@
 #include <fstream>
 #include <omp.h>
 #include <sys/time.h>
-namespace lslgeneric
+namespace perception_oru
 {
 
 //#define DO_DEBUG_PROC
@@ -61,7 +61,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
     Tinit.setIdentity();
     if(useInitialGuess)
     {
-        lslgeneric::transformPointCloudInPlace(T,sourceCloud);
+        perception_oru::transformPointCloudInPlace(T,sourceCloud);
 	Tinit = T;
     }
 
@@ -113,7 +113,7 @@ bool NDTMatcherD2D_2D::match( pcl::PointCloud<pcl::PointXYZ>& target,
 
             gettimeofday(&tv_start,NULL);
             ret = this->match( targetNDT, sourceNDT, Temp );
-            lslgeneric::transformPointCloudInPlace(Temp,sourceCloud);
+            perception_oru::transformPointCloudInPlace(Temp,sourceCloud);
             gettimeofday(&tv_end,NULL);
 
             time_match += (tv_end.tv_sec-tv_start.tv_sec)*1000.+(tv_end.tv_usec-tv_start.tv_usec)/1000.;

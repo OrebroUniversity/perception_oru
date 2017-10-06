@@ -1,17 +1,18 @@
 #include "mcl_ndt/mcl_ndt.h"
-#include <ndt_dl/point_curv.h>
+#include <graph_map/ndt_dl/point_curv.h>
+namespace perception_oru{
 namespace GraphMapLocalisation{
 MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   if(MCLNDTParamPtr mclParam=boost::dynamic_pointer_cast<MCLNDTParam>(param)){
 
 
-//    NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
-//    if (current_map != NULL) {
-//      resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
-//    }
-//    else {
-//      ROS_INFO_STREAM("Not a NDTMapType used(!)");
-//    }
+    //    NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
+    //    if (current_map != NULL) {
+    //      resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+    //    }
+    //    else {
+    //      ROS_INFO_STREAM("Not a NDTMapType used(!)");
+    //    }
 
     resolution=mclParam->resolution;
     forceSIR=mclParam->forceSIR;
@@ -25,7 +26,7 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
     initialized_ = false;
     forceSIR = false;
     resolution_sensor=resolution;
-      ROS_ERROR("created MCLNDTType!");
+    ROS_ERROR("created MCLNDTType!");
   }
   else{
     std::cerr<<"Cannot create MCLNDType. Illegal type for parameter param"<<endl;
@@ -86,7 +87,10 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   }
   else
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5]);
+  pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
 
+  if((pose_.translation()-pose_last_update_.translation()).norm()<0.01 && (pose_last_update_.inverse()*pose_).rotation().eulerAngles(0,1,2).norm()<0.005 )
+    return;
 
   // if(rot[2]<(0.5 * M_PI/180.0) && tr[0]>=0){
   //     pf.predict(Tmotion, tr[0]*pos_factor[0] + pos_offset, tr[1]*pos_scale[1] + pos_offset[1], tr[2]*pos_factor[2]/2.+pos_offset[2] ,rot[0]*rot_factor[0]+rot_offset[0],rot[1]*rot_factor[1]+rot_offset[1], rot[2]*rot_factor[2]+rot_offset[2]);
@@ -99,7 +103,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   double t_pred = getDoubleTime() - time_start;
 
   //std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
-  lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
+  perception_oru::NDTMap local_map(new perception_oru::LazyGrid(resolution_sensor));
   //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
   local_map.loadPointCloud(cloud);//,30); //sensor_range);
   local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -109,8 +113,8 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
       //local_map.computeNDTCells();
       local_map.computeNDTCellsSimple();
        */
-  std::vector<lslgeneric::NDTCell*> ndts0 = local_map.getAllCells();
-  std::vector<lslgeneric::NDTCell*> ndts;
+  std::vector<perception_oru::NDTCell*> ndts0 = local_map.getAllCells();
+  std::vector<perception_oru::NDTCell*> ndts;
   std::cerr<<"ndts: "<<ndts0.size()<<std::endl;
 
   if(subsample_level_ != 1) {
@@ -126,7 +130,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   } else {
     ndts = ndts0;
   }
-//  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
+  //  std::cerr<<"resampled ndts: "<<ndts.size()<<std::endl;
 
   int Nn = 0;
   //		#pragma omp parallel for
@@ -146,9 +150,9 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
       for(int n=0;n<ndts.size();n++){
         Eigen::Vector3d m = T*ndts[n]->getMean();
-         if(m[2]<z_filter_min) continue;
+        if(m[2]<z_filter_min) continue;
 
-        lslgeneric::NDTCell *cell;
+        perception_oru::NDTCell *cell;
         pcl::PointXYZ p;
         p.x = m[0];p.y=m[1];p.z=m[2];
 
@@ -166,7 +170,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
             double l = (cell->getMean() - m).dot(icov*(cell->getMean() - m));
             if(l*0 != 0) continue;
             score += score_cell_weight + (1.0 - score_cell_weight) * exp(-0.05*l/2.0);
-            }else{
+          }else{
           }
         }
       }
@@ -208,6 +212,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
 
   }
   pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
+  pose_last_update_=pose_;
 
   GraphPlot::PlotMap(local_map,1,pose_,plotmarker::sphere/*plotmarker::point*/, "ndtmcl");
 
@@ -252,6 +257,7 @@ std::string MCLNDTType::ToString(){
 
 void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
   pose_=pose;
+  pose_last_update_=pose_;
   graph_map_->SwitchToClosestMapNode(pose_);//specified in local frame, should be specified in gloval
   //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
   map_ = this->GetCurrentNodeNDTMap();
@@ -342,5 +348,6 @@ MCLNDTParam::MCLNDTParam(){
   motion_model_offset.push_back(0.0000001);//0.001
   motion_model_offset.push_back(0.0000001);//0.001
   motion_model_offset.push_back(0.003);
+}
 }
 }

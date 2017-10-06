@@ -3,7 +3,7 @@
 #include <boost/bind.hpp>
 #include <sys/time.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 bool

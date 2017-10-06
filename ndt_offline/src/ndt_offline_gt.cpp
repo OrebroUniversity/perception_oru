@@ -20,13 +20,20 @@
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
 #include <ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
+#include <ndt_fuser/ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
 
+#include "nav_msgs/Odometry.h"
 
-#include "ndt_offline/LaserBagReader.hpp"
+#include "ndt_offline/BagReaderInterface.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 using namespace std;
+
+inline bool exists_test3 (const std::string& name) {
+				struct stat buffer;   
+				return (stat (name.c_str(), &buffer) == 0); 
+			}
 
 inline void normalizeEulerAngles(Eigen::Vector3d &euler) {
   if (fabs(euler[0]) > M_PI/2) {
@@ -108,7 +115,7 @@ int main(int argc, char **argv){
     int itrs;
     int nb_neighbours;
     int nb_scan_msgs;
-    perception_oru::MotionModel2d::Params motion_params;
+    lslgeneric::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame, tf_sensor_link;
     std::string velodyne_config_file;
     std::string velodyne_packets_topic;
@@ -242,9 +249,12 @@ int main(int argc, char **argv){
 
     base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(sensor_cutoff) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 	
+	
 	std::cout << resolution << " " << size_xy << " " << size_xy << " " << size_z << " " << 
                                        sensor_cutoff << " " << visualize << " match2d " << match2d << " " << use_multires << " " << 
-                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << std::endl;
+                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << " min range " << min_range << std::endl;
+									   
+// 									   exit(0);
 									   
 // 	//PARAMETERS for ransac
 // 	//Same as for logger test
@@ -266,7 +276,7 @@ int main(int argc, char **argv){
 	use_odometry = true;
 	use_multires = 0;
 	resolution = 1;
-	sensor_cutoff = 30;
+	sensor_cutoff = 20;
 	step_control = true;
 	motion_params.Dd = 1;
 	motion_params.Dt = 1;
@@ -282,21 +292,12 @@ int main(int argc, char **argv){
 									   
 
 // 	exit(0);
-	
-    perception_oru::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
-                                       sensor_cutoff, visualize, match2d, use_multires, 
-                                       fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
+	std::string file_to_log("/home/malcolm/Documents/log_fuser/log_fuser_vmc.txt");
+
 //     ros::Time::init();
 // 	if(!ros::isInitialized()){
 // 		ros::Time::init();
 // 	}
-	
-	ndtslammer.print();
-// 	exit(0);
-		srand(time(NULL));
-    bool noOdometry = false;
-	
-    ndtslammer.disableRegistration = disable_reg;
 
     /// Set up the sensor link
     tf::StampedTransform sensor_link; ///Link from /odom_base_link -> velodyne
@@ -396,21 +397,15 @@ int main(int argc, char **argv){
     if (use_gt_as_interp_link) {
       tf_interp_link = tf_gt_link;
     }
-    
+
     for(int i=0; i<scanfiles.size(); i++) {
 		
 		std::string bagfilename = scanfiles[i];
 		fprintf(stderr,"Opening %s\n",bagfilename.c_str());
-		perception_oru::ndt_offline::LaserBagReader<pcl::PointXYZ> vreader(velodyne_config_file, 
+		perception_oru::ndt_offline::BagReaderInterface<nav_msgs::Odometry, nav_msgs::Odometry::ConstPtr> vreader( 
 							bagfilename,
-							velodyne_packets_topic,  //"/velodyne_packets"
-							tf_base_link,
-							tf_sensor_link, 
-							tf_world_frame,
-							tf_topic,
-							ros::Duration(3600),
-							&sensor_link,
-							sensor_time_offset);  
+							velodyne_packets_topic  //"/velodyne_packets"
+							);  
 
 		pcl::PointCloud<pcl::PointXYZ> cloud;	
 		tf::Transform sensor_pose;
@@ -422,168 +417,35 @@ int main(int argc, char **argv){
 		
 		Eigen::Affine3d added_motion;
 
-		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
-			std::cout << "Reading and counter " << counter << std::endl;
+		while(vreader.getNextScanMsg()){
+			
+			
+			nav_msgs::Odometry::ConstPtr od = vreader.getLastMsg();
+			ros::Time ttime = vreader.getTimeStampOfLastMsg();
+			
+			double roll, pitch, yaw;
+			tf::Quaternion qq;
+			tf::quaternionMsgToTF(od->pose.pose.orientation, qq);
+			tf::Matrix3x3(qq).getRPY(roll, pitch, yaw);
+			
+			std::cout << "Reading and counter " << roll << " "  << pitch << " " << yaw  << std::endl;
 
-			ros::spinOnce();
-			sensor_msgs::PointCloud2 mesg;
-// 							mesg.header.frame_id = "/velodyne";
-// 							mesg.header.stamp = ros::Time::now();
 			
-			pcl::toROSMsg (cloud, mesg);
-			
-			std::cout << "FRAME " << mesg.header.frame_id << std::endl;
-			
-// 			mesg = vreader.last_pointcloud;
-// 							
-			mesg.header.frame_id = "/velodyne";
-			mesg.header.stamp = ros::Time::now();
-			laserpub.publish<sensor_msgs::PointCloud2>(mesg);
-			
-			
-			
-			if(counter == 0){
-				counter ++;
-				cloud.clear();	
-				continue;
-			}
-			else if(counter == 1){
-				
-				std::cout << "initializing ..." << vreader.getLastPose().matrix() << " sensor " << vreader.getSensorPose().matrix() << "cloud " << cloud.size() << std::endl;
-				
-				added_motion.setIdentity();
-				
-				/******************************/
-				/******************************/
-				
-				///GOOD ONE FROM THE BAG
-				Eigen::Affine3d sens = vreader.getSensorPose();
-				sens(2,3) = -0.505;
-				
-				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-// 				double roll = 0, pitch = 0, yaw = 0;
-// 				Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(0,0,0)*
-// 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
-// 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
-// 					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
-					
-				/******************************/
-				/******************************/
-	
-				ndtslammer.setSensorPose(sens);
-				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
-				ndtslammer.setMotionParams(motion_params);
-				
-				ndtslammer.initialize(vreader.getLastPose(), cloud);
-				std::cout << std::endl <<"Robot pose " << vreader.getLastPose().matrix() << std::endl;
-
-// 				ndtslammer.initialize(Tgt,cloud,preload);
-				std::cout << "initializing done" << std::endl;
-// 				exit(0);
-				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << " with cloud " << cloud.size() << std::endl;
-				ndtslammer.print();
-// 				exit(0);
-				//Told = Tgt;//for gt
-
-				if (save_clouds) {
-					saveCloud(counter-1, cloud);
-				}
-
-				counter ++;
-				cloud.clear();	
-				continue;
+			std::ofstream myfile;
+			if(!exists_test3(file_to_log)){
+				myfile.open (file_to_log.c_str());
 			}
 			else{
-
-	// 	    Eigen::Affine3d Tmotion = Told.inverse()*Tbase;
-				Eigen::Affine3d Tmotion;
-				if(!use_odometry) {
-					std::cout << "No odom" << std::endl;
-					Tmotion.setIdentity();
-				} else {
-
-					Tmotion = vreader.getMotion();
-					added_motion = added_motion * Tmotion;
-					
-// 					std::cout << std::endl << std::endl << "Tmotion " << Tmotion.matrix() << std::endl << std::endl;
-// 					std::cout <<  std::endl << std::endl << "Added motion " << added_motion.matrix() << std::endl << std::endl;
-					Eigen::Vector3d added_motion_euler = added_motion.rotation().eulerAngles(0,1,2);
-						
-					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
-// 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud);
-						
-						added_motion.setIdentity();
-						
-						std::cout << std::endl << "Updated " << cloud.size() << " motion " << Tmotion.matrix() << " counter " << counter << std::endl;
-						std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-						if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-							ndtslammer.map->writeToJFF("map.jff");
-							std::cout << "Done." << std::endl;
-						}
-						else {
-							std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
-						}
-						
-						std::cout << "pub" << std::endl;
-// 						while(ros::ok()){
-							
-							//Tested and working !
-							
-// 							std::cout << "pub" << std::endl;
-							ros::spinOnce();
-							sensor_msgs::PointCloud2 mesg;
-// 							mesg.header.frame_id = "/velodyne";
-// 							mesg.header.stamp = ros::Time::now();
-							
-							pcl::toROSMsg (cloud, mesg);
-							
-							std::cout << "FRAME " << mesg.header.frame_id << std::endl;
-// 							exit(0);
-							mesg = vreader.last_pointcloud;
-// 							
-							mesg.header.frame_id = "/velodyne";
-							mesg.header.stamp = ros::Time::now();
-							laserpub.publish<sensor_msgs::PointCloud2>(mesg);
-							sensor_msgs::LaserScan::ConstPtr mesg_laser = vreader.getLastMsg();
-							sensor_msgs::LaserScan mes_laser_tmp = *mesg_laser;
-// 							mes_laser_tmp.header.stamp = ros::Time::now();
-							laserpub_real.publish<sensor_msgs::LaserScan>(mes_laser_tmp);
-// 						}
-// 						exit(0);
-						
-					}
-					else{
-// 						std::cout << "NO UPDATE :(" << std::endl;
-					}
-					counter++;
-				}
-				if (save_clouds) {
-					saveCloud(counter-1, cloud);
-				}
-				
-// 				if(counter == 15){
-// 					std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-// 					if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-// 						ndtslammer.map->writeToJFF("map.jff");
-// 						std::cout << "Done." << std::endl;
-// 					}
-// 					else {
-// 						std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
-// 					}
-// 					exit(0);
-// 				}
-				
-				cloud.clear();	
-				numclouds++;
-
-				// Evaluation 
-	// 			ros::Time frame_time = vreader.getTimeStampOfLastSensorMsg();
-	// 			gt_file << frame_time << " " << transformToEvalString(Tgt);
-	// 			odom_file << frame_time << " " << transformToEvalString(Tbase);
-	// 			est_file << frame_time << " " << transformToEvalString(Todo);
-	// 			sensorpose_est_file << frame_time << " " << transformToEvalString(Todo * Ts); 
+				myfile.open (file_to_log.c_str(), std::ios::out | std::ios::app);
 			}
+			
+			if (myfile.is_open())
+			{
+				myfile << od->pose.pose.position.x << " " << od->pose.pose.position.y << " " << yaw << " " << ttime << "\n";
+				myfile.close();
+			}
+			
+			
 		}
 
 		gt_file.close();
@@ -591,25 +453,7 @@ int main(int argc, char **argv){
 		est_file.close();
 		sensorpose_est_file.close();
 
-		if (save_map) {
-			std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
-			if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
-				ndtslammer.map->writeToJFF("map.jff");
-				std::cout << "Done." << std::endl;
-				
-				while(ros::ok()){
-					ros::spinOnce();
-					ndt_map::NDTMapMsg mapmsg;
-					perception_oru::toMessage(ndtslammer.map, mapmsg, "velodyne");
-					ndt_map_pubb.publish<ndt_map::NDTMapMsg>(mapmsg);
-				}
-				
-				
-			}
-			else {
-				std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
-			}
-		}
+		
 
 		if (alive) {
 		while (1) {

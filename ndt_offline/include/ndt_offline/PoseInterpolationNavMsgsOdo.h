@@ -79,7 +79,7 @@ class PoseInterpolationNavMsgsOdo : public PoseInterpolationInteface {
 			sensor_link_ = sensor_link;
 			viewer = view;
 			I = viewer->begin();
-			std::cout << "FixedFrame " << fixedframe << " sensor " << sensor_link << " tf topic " << tftopic << std::endl; 
+			std::cout << " here FixedFrame " << fixedframe << " sensor " << sensor_link << " tf topic " << tftopic << std::endl; 
 // 			exit(0);
 		}
 		

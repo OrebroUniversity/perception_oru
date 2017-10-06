@@ -28,7 +28,7 @@
 namespace perception_oru{
 	namespace ndt_offline{
 		template<typename PointT>
-		class LaserBagReader : public BagRangeReaderInterface<sensor_msgs::LaserScan, sensor_msgs::LaserScan::ConstPtr>{
+		class PointCloudBagReader : public BagRangeReaderInterface<sensor_msgs::PointCloud2, sensor_msgs::PointCloud2::ConstPtr>{
 			
 		private:
 // 			PoseInterpolationNavMsgsOdo *odosync;
@@ -58,7 +58,7 @@ namespace perception_oru{
 			* @param dur The buffer size (must be larger than the length of the bag file gives) default = 3600s
 			* @param sensor_link An optional static link that takes e.g. your /odom to the sensor frame 
 			*/
-			LaserBagReader(std::string calibration_file, 
+			PointCloudBagReader(std::string calibration_file, 
 				std::string bagfilename,
 				std::string velodynetopic,
 				std::string tf_base_link, 
@@ -74,15 +74,15 @@ namespace perception_oru{
 				double min_laser_range = 0.5,
 				bool use_odo = true,
 				bool use_sensor_pose = true
-  						) : BagRangeReaderInterface<sensor_msgs::LaserScan, sensor_msgs::LaserScan::ConstPtr>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, sensor_time_offset, use_odo, use_sensor_pose), _laser_variance(lvariance), _min_laser_range(min_laser_range){}
+  						) : BagRangeReaderInterface<sensor_msgs::PointCloud2, sensor_msgs::PointCloud2::ConstPtr>(calibration_file, bagfilename,velodynetopic, tf_base_link, tf_sensor_link, fixed_frame_id, tftopic, dur, sensor_link, sensor_time_offset, use_odo, use_sensor_pose), _laser_variance(lvariance), _min_laser_range(min_laser_range){}
 			
 			void setLaserVariance(double var){_laser_variance = var;}
 			double getLaserVariance(){return _laser_variance;}
 			
-			void convertLaser(const sensor_msgs::LaserScan::ConstPtr laser, sensor_msgs::PointCloud2& cloud){
-				laser_geometry::LaserProjection projector;
-				projector.projectLaser(*laser, cloud);
-			}
+// 			void convertLaser(const sensor_msgs::LaserScan::ConstPtr laser, sensor_msgs::PointCloud2& cloud){
+// 				laser_geometry::LaserProjection projector;
+// 				projector.projectLaser(*laser, cloud);
+// 			}
 			
 // 			/**
 // 			* @param[in] NMeas : number of point cloud to stack
@@ -142,9 +142,10 @@ namespace perception_oru{
 				
 				
 // 				sensor_msgs::PointCloud2 cloud_msg;
-				convertLaser(this->global_scan, last_pointcloud);
+// 				convertLaser(this->global_scan, last_pointcloud);
+				
 				pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered;
-				pcl::fromROSMsg (last_pointcloud, pcl_cloud_unfiltered);
+				pcl::fromROSMsg (*(this->global_scan), pcl_cloud_unfiltered);
 				
 				assert(_laser_variance == 0.02);
 				

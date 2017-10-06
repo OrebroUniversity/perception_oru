@@ -20,6 +20,7 @@
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
 #include <ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
+#include <ndt_fuser/ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
 
 
 #include "ndt_offline/LaserBagReader.hpp"
@@ -108,7 +109,7 @@ int main(int argc, char **argv){
     int itrs;
     int nb_neighbours;
     int nb_scan_msgs;
-    perception_oru::MotionModel2d::Params motion_params;
+    lslgeneric::MotionModel2d::Params motion_params;
     std::string tf_base_link, tf_gt_link, tf_world_frame, tf_sensor_link;
     std::string velodyne_config_file;
     std::string velodyne_packets_topic;
@@ -242,9 +243,12 @@ int main(int argc, char **argv){
 
     base_name += motion_params.getDescString() + std::string("_res") + toString(resolution) + std::string("_SC") + toString(do_soft_constraints) + std::string("_mindist") + toString(min_dist) + std::string("_sensorcutoff") + toString(sensor_cutoff) + std::string("_stepcontrol") + toString(step_control) + std::string("_neighbours") + toString(nb_neighbours) + std::string("_rlf") + toString(resolution_local_factor);
 	
+	
 	std::cout << resolution << " " << size_xy << " " << size_xy << " " << size_z << " " << 
                                        sensor_cutoff << " " << visualize << " match2d " << match2d << " " << use_multires << " " << 
-                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << std::endl;
+                                       fuse_incomplete << " itrs " << itrs << " " << base_name  << " beHMT " <<  beHMT  << " " <<  map_dirname << " step_control " << step_control << " " << do_soft_constraints << " nb_neighb " << nb_neighbours << " " << resolution_local_factor << " min range " << min_range << std::endl;
+									   
+// 									   exit(0);
 									   
 // 	//PARAMETERS for ransac
 // 	//Same as for logger test
@@ -282,8 +286,8 @@ int main(int argc, char **argv){
 									   
 
 // 	exit(0);
-	
-    perception_oru::NDTFuserHMT ndtslammer(resolution, size_xy, size_xy, size_z, 
+	std::string file_to_log("/home/malcolm/Documents/log_fuser/log_fuser_mpr_offline.txt");
+    perception_oru::ndt_fuser::NDTFuserHMTLogger ndtslammer(file_to_log, resolution, size_xy, size_xy, size_z, 
                                        sensor_cutoff, visualize, match2d, use_multires, 
                                        fuse_incomplete, itrs, base_name, beHMT, map_dirname, step_control, do_soft_constraints, nb_neighbours, resolution_local_factor);
 //     ros::Time::init();
@@ -396,7 +400,7 @@ int main(int argc, char **argv){
     if (use_gt_as_interp_link) {
       tf_interp_link = tf_gt_link;
     }
-    
+
     for(int i=0; i<scanfiles.size(); i++) {
 		
 		std::string bagfilename = scanfiles[i];
@@ -410,7 +414,7 @@ int main(int argc, char **argv){
 							tf_topic,
 							ros::Duration(3600),
 							&sensor_link,
-							sensor_time_offset);  
+							sensor_time_offset, 0.02, min_range, true, false);  
 
 		pcl::PointCloud<pcl::PointXYZ> cloud;	
 		tf::Transform sensor_pose;
@@ -424,6 +428,21 @@ int main(int argc, char **argv){
 
 		while(vreader.readMultipleMeasurements(nb_scan_msgs, cloud)){
 			std::cout << "Reading and counter " << counter << std::endl;
+			
+			if (counter == 689) {
+				std::cout << "Saving map of cell : " << ndtslammer.map->getAllCells().size() << std::endl;
+				if (ndtslammer.wasInit() && ndtslammer.map != NULL) {
+					ndtslammer.map->writeToJFF("map_middle.jff");
+					std::cout << "Done." << std::endl;
+					
+					
+				}
+				else {
+					std::cout << "Failed to save map, ndtslammer was not initiated(!)" << std::endl;
+				}
+			}
+			
+			
 
 			ros::spinOnce();
 			sensor_msgs::PointCloud2 mesg;
@@ -457,19 +476,19 @@ int main(int argc, char **argv){
 				/******************************/
 				
 				///GOOD ONE FROM THE BAG
-				Eigen::Affine3d sens = vreader.getSensorPose();
-				sens(2,3) = -0.505;
+// 				Eigen::Affine3d sens = vreader.getSensorPose();
+// 				sens(2,3) = -0.505;
 				
 				/// HANDYCRAFTED ONE FOR TESTING PURPOSE
-// 				double roll = 0, pitch = 0, yaw = 0;
-// 				Eigen::Affine3d pose_sensor = Eigen::Translation<double,3>(0,0,0)*
-// 					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
-// 					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
-// 					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
+				double roll =  3.14159, pitch = 0, yaw = 0;
+				Eigen::Affine3d sens = Eigen::Translation<double,3>(0,0,0)*
+					Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX()) *
+					Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
+					Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) ;
 					
 				/******************************/
 				/******************************/
-	
+				
 				ndtslammer.setSensorPose(sens);
 				std::cout << std::endl <<"Sernsort pose " << sens.matrix() << std::endl;
 				ndtslammer.setMotionParams(motion_params);
@@ -511,7 +530,7 @@ int main(int argc, char **argv){
 						
 					if(added_motion.translation().norm() > min_dist || fabs(added_motion_euler[2]) > (min_rot_in_deg*M_PI/180.0)) {
 // 						laserpub.publish<sensor_msgs::LaserScan>(*(vreader.getLastLaserScan()));
-						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud);
+						Eigen::Affine3d Todo = ndtslammer.update(added_motion, cloud, vreader.getTimeStampOfLastMsg());
 						
 						added_motion.setIdentity();
 						
@@ -600,7 +619,7 @@ int main(int argc, char **argv){
 				while(ros::ok()){
 					ros::spinOnce();
 					ndt_map::NDTMapMsg mapmsg;
-					perception_oru::toMessage(ndtslammer.map, mapmsg, "velodyne");
+					lslgeneric::toMessage(ndtslammer.map, mapmsg, "velodyne");
 					ndt_map_pubb.publish<ndt_map::NDTMapMsg>(mapmsg);
 				}
 				

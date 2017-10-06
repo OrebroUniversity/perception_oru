@@ -1,5 +1,5 @@
 
-#include "graph_map_fuser.h"
+#include "graph_map/graph_map_fuser.h"
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -35,14 +35,15 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 //#include "gnuplot-iostream.h"
-#include "lidarUtils/lidar_utilities.h"
-
+#include "graph_map/lidarUtils/lidar_utilities.h"
+#include "graph_localisation/localisation_factory.h"
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <time.h>
 #include <fstream>
 #include <cstdio>
 #include "tf_conversions/tf_eigen.h"
+
 #ifndef SYNC_FRAMES
 #define SYNC_FRAMES 20
 #define MAX_TRANSLATION_DELTA 2.0
@@ -52,12 +53,17 @@
  * \author Daniel adolfsson based on code from Todor Stoyanov
  *
  */
+
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::LaserScan, nav_msgs::Odometry> LaserOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::LaserScan, geometry_msgs::PoseStamped> LaserPoseSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsGTOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> PointsPoseSync;
+
+using namespace perception_oru;
 using namespace libgraphMap;
+using namespace GraphMapLocalisation;
+
 class GraphLocalisatonNode {
 
 protected:
@@ -95,4 +101,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
+
+
 

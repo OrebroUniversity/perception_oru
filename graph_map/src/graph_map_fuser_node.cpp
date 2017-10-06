@@ -1,5 +1,5 @@
 
-#include "graph_map_fuser.h"
+#include "graph_map/graph_map_fuser.h"
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -35,7 +35,7 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 
-#include "lidarUtils/lidar_utilities.h"
+#include "graph_map/lidarUtils/lidar_utilities.h"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -52,12 +52,15 @@
  * \author Daniel adolfsson based on code from Todor Stoyanov
  *
  */
+using namespace perception_oru;
+using namespace libgraphMap;
+
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::LaserScan, nav_msgs::Odometry> LaserOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::LaserScan, geometry_msgs::PoseStamped> LaserPoseSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> PointsGTOdomSync;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, geometry_msgs::PoseStamped> PointsPoseSync;
-using namespace libgraphMap;
+
 class GraphMapFuserNode {
 
 protected:
@@ -112,7 +115,7 @@ protected:
 
   bool use_tf_listener_;
   Eigen::Affine3d last_tf_frame_;
-  lslgeneric::MotionModel2d::Params motion_params;
+  perception_oru::MotionModel2d::Params motion_params;
   boost::mutex m;
 public:
   // Constructor
@@ -368,9 +371,9 @@ public:
       snprintf(path,999,"%s/%s_.MAP",map_dir.c_str(),time.c_str());
       m.lock();
       if(file_format_map.compare(".JFF")==0)
-      fuser_->SaveCurrentNodeAsJFF(path);
-        else
-      fuser_->SaveGraphMap(path);
+        fuser_->SaveCurrentNodeAsJFF(path);
+      else
+        fuser_->SaveGraphMap(path);
 
       m.unlock();
       ROS_INFO("Current map was saved to path= %s", path);
@@ -585,4 +588,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
+
+
 

@@ -9,7 +9,7 @@
 #include<ndt_map/lazy_grid.h>
 #include<ndt_map/cell_vector.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** Main implemented method for now. Loads a single point cloud into an NDTOccupancyMap.
@@ -826,7 +826,7 @@ void NDTOccupancyMap<PointT>::debugToVRML(const char* fname, pcl::PointCloud<Poi
 
     fprintf(fout,"#VRML V2.0 utf8\n");
     this->writeToVRML(fout);
-    lslgeneric::writeToVRML(fout,pc,Eigen::Vector3d(1,0,0));
+    perception_oru::writeToVRML(fout,pc,Eigen::Vector3d(1,0,0));
 
     fprintf(fout,"Shape {\n\tgeometry IndexedLineSet {\n\tcoord Coordinate {\n\t point [\n\t");
 
@@ -912,7 +912,7 @@ NDTOccupancyMap<PointT>::getCellIdx(unsigned int idx)
 * Returns dynamic cells from the map
  */
 template<typename PointT>
-std::vector<lslgeneric::NDTCell<PointT>*>  NDTOccupancyMap<PointT>::getDynamicCells(unsigned int Timescale, float threshold)
+std::vector<perception_oru::NDTCell<PointT>*>  NDTOccupancyMap<PointT>::getDynamicCells(unsigned int Timescale, float threshold)
 {
     std::vector<NDTCell<PointT>*> ret;
     typename SpatialIndex<PointT>::CellVectorItr it = index_->begin();
@@ -939,7 +939,7 @@ std::vector<lslgeneric::NDTCell<PointT>*>  NDTOccupancyMap<PointT>::getDynamicCe
 
 template<typename PointT>
 //std::vector<lslgeneric::NDTCell<pcl::PointXYZ>*> NDTOccupancyMap<PointT>::getAllCells(){
-std::vector<lslgeneric::NDTCell<PointT>*> NDTOccupancyMap<PointT>::getAllCells()
+std::vector<perception_oru::NDTCell<PointT>*> NDTOccupancyMap<PointT>::getAllCells()
 {
 
     std::vector<NDTCell<PointT>*> ret;

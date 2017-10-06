@@ -2,7 +2,7 @@
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <ndt_map/ndt_histogram.h>
 
-namespace lslgeneric{
+namespace perception_oru{
 
   NDTHistogram::NDTHistogram (int linear_classes,
                               int flat_classes,

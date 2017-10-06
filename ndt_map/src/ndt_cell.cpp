@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cstdio>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 

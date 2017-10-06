@@ -21,12 +21,12 @@ int main(int argc, char** argv){
   ros::Rate loop_rate(1);
   ndt_map::NDTMapMsg msg;
 
-  lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
+  perception_oru::NDTMap nd(new perception_oru::LazyGrid(0.4));
   ROS_INFO("loading from jff...\n");
   if (nd.loadFromJFF("basement_04m.1.jff") < 0)
     ROS_INFO("loading from jff failed\n");
   
-  lslgeneric::toMessage(&nd,msg,"base");
+  perception_oru::toMessage(&nd,msg,"base");
   while (ros::ok()){
     map_pub.publish(msg);
     ros::spinOnce();

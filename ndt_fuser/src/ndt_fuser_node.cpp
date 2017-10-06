@@ -70,7 +70,7 @@ protected:
   double varz;
 	
   boost::mutex m, message_m;
-  lslgeneric::NDTFuserHMT *fuser;
+  perception_oru::NDTFuserHMT *fuser;
   std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
     world_frame, robot_frame, sensor_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
   double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_, sensor_min_range;
@@ -182,7 +182,7 @@ public:
 
     param_nh.param<std::string>("tf_pose_frame", tf_pose_frame_, std::string(""));
 
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     param_nh.param<double>("motion_params_Cd", motion_params.Cd, 0.005);
     param_nh.param<double>("motion_params_Ct", motion_params.Ct, 0.01);
     param_nh.param<double>("motion_params_Dd", motion_params.Dd, 0.001);
@@ -211,7 +211,7 @@ public:
     map_publisher_=nh_.advertise<ndt_map::NDTMapMsg>("ndt_map",1000);
     
     if(matchLaser) match2D=true;
-    fuser = new lslgeneric::NDTFuserHMT(resolution,size_x,size_y,size_z,
+    fuser = new perception_oru::NDTFuserHMT(resolution,size_x,size_y,size_z,
                                         sensor_range, visualize,match2D, false, false, 30, map_name, beHMT, map_dir, true, do_soft_constraints);
 
     fuser->setMotionParams(motion_params);

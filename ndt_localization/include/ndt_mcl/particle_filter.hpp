@@ -10,7 +10,7 @@
 #include "ndt_mcl/particle.hpp"
 #include "ndt_map/ndt_map.h"
 //
-namespace lslgeneric{
+namespace perception_oru{
   // enum init_type{
   //   uniform_map,
   //   normal_guess,
@@ -39,7 +39,7 @@ namespace lslgeneric{
     std::vector<particle> tmp;
     std::vector<double> weights;
 
-    lslgeneric::NDTMap* ndt_ISSMap;
+    perception_oru::NDTMap* ndt_ISSMap;
     double sx,sy;
     void SIRUpdate();
     void Normalize();
@@ -47,14 +47,14 @@ namespace lslgeneric{
     void Predict2D(double x, double y, double th, double sx, double sy, double sth);
     void to2PI(double &a);
     void toPI(double &a);
-    void GetRandomPoint(lslgeneric::NDTCell* cell,double &x, double &y, double &th);
+    void GetRandomPoint(perception_oru::NDTCell* cell,double &x, double &y, double &th);
   public:
     particle_filter(std::string mapFile_, int particleCount_/*, init_type initializationType_*/);
-    particle_filter(lslgeneric::NDTMap *ndtMap_, int particleCount_/*, init_type initializationType_*/, bool be2D_=true, bool forceSIR_=true,double varLimit_=0, int sirCount_=0);
-    void UpdateAndPredict(Eigen::Affine3d tMotion,lslgeneric::NDTMap* ndtLocalMap_);
-    void UpdateAndPredictEff(Eigen::Affine3d tMotion, lslgeneric::NDTMap* ndtLocalMap_, double subsample_level, double z_cut);
-    void UpdateAndPredictEffRe(Eigen::Affine3d tMotion, lslgeneric::NDTMap* ndtLocalMap_, double subsample_level, double z_cut, double x_var, double y_var, double th_var, double r_x_var, double r_y_var, double r_th_var, int tres);
-    void UpdateAndPredict(Eigen::Affine3d tMotion,lslgeneric::NDTMap ndtLocalMap_);
+    particle_filter(perception_oru::NDTMap *ndtMap_, int particleCount_/*, init_type initializationType_*/, bool be2D_=true, bool forceSIR_=true,double varLimit_=0, int sirCount_=0);
+    void UpdateAndPredict(Eigen::Affine3d tMotion,perception_oru::NDTMap* ndtLocalMap_);
+    void UpdateAndPredictEff(Eigen::Affine3d tMotion, perception_oru::NDTMap* ndtLocalMap_, double subsample_level, double z_cut);
+    void UpdateAndPredictEffRe(Eigen::Affine3d tMotion, perception_oru::NDTMap* ndtLocalMap_, double subsample_level, double z_cut, double x_var, double y_var, double th_var, double r_x_var, double r_y_var, double r_th_var, int tres);
+    void UpdateAndPredict(Eigen::Affine3d tMotion,perception_oru::NDTMap ndtLocalMap_);
     void GetPoseMeanAndVariance2D(Eigen::Vector3d &mean, Eigen::Matrix3d &cov);
     Eigen::Vector3d GetMeanPose2D();
     void Reset();

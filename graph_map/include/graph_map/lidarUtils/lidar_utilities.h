@@ -8,6 +8,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include "strings.h"
 using namespace std;
+namespace perception_oru{
 namespace libgraphMap {
 
 typedef std::vector<std::pair<double, double> > pair_vector_double;
@@ -30,5 +31,6 @@ private:
 
 
 };
+}
 }
 #endif // LIDAR_UTILITIES_H

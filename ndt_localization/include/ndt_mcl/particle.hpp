@@ -3,7 +3,7 @@
 //Eigen
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-namespace lslgeneric{
+namespace perception_oru{
   class particle{
   
     Eigen::Affine3d pose;

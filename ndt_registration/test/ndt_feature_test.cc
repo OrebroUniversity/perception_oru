@@ -14,7 +14,7 @@
 #include <pointcloud_vrml/pointcloud_utils.h>
 
 using namespace std;
-using namespace lslgeneric;
+using namespace perception_oru;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv)

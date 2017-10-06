@@ -17,7 +17,7 @@
 
 //#define BASELINE
 
-namespace lslgeneric {
+namespace perception_oru {
 /**
   * \brief This class fuses new point clouds into a common ndt map reference, keeping tack of the 
   * camera postion.
@@ -26,7 +26,7 @@ namespace lslgeneric {
 class NDTFuserHMT{
     public:
 	Eigen::Affine3d Tnow, Tlast_fuse, Todom; ///< current pose
-	lslgeneric::NDTMap *map;		 ///< da map
+	perception_oru::NDTMap *map;		 ///< da map
 	bool checkConsistency;			 ///perform a check for consistency against initial estimate
 	double max_translation_norm, max_rotation_norm;
 	double sensor_range;
@@ -150,7 +150,7 @@ class NDTFuserHMT{
 	}
 	
 	
-  void setMotionParams(const lslgeneric::MotionModel2d::Params &p) {
+  void setMotionParams(const perception_oru::MotionModel2d::Params &p) {
     motionModel2D.setParams(p);
   }
 
@@ -163,7 +163,7 @@ class NDTFuserHMT{
 	    if(!isInit) return false;
 	    if(map == NULL) return false;
 	    if(beHMT) {
-		lslgeneric::NDTMapHMT *map_hmt = dynamic_cast<lslgeneric::NDTMapHMT*> (map);
+		perception_oru::NDTMapHMT *map_hmt = dynamic_cast<perception_oru::NDTMapHMT*> (map);
 		if(map_hmt==NULL) return false;
 		return (map_hmt->writeTo()==0);
 	    } else {
@@ -202,12 +202,12 @@ class NDTFuserHMT{
 	bool visualize;
 
 	Eigen::Affine3d sensor_pose;
-	lslgeneric::NDTMatcherD2D matcher;
-	lslgeneric::NDTMatcherD2D_2D matcher2D;
-        lslgeneric::NDTMatcherD2DSC matcherSC;
+	perception_oru::NDTMatcherD2D matcher;
+	perception_oru::NDTMatcherD2D_2D matcher2D;
+        perception_oru::NDTMatcherD2DSC matcherSC;
 	Eigen::Vector3d localMapSize;
 
-        lslgeneric::MotionModel2d motionModel2D;
+        perception_oru::MotionModel2d motionModel2D;
         double resolution_local_factor;
 
     public:

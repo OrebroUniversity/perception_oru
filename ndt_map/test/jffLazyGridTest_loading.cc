@@ -32,7 +32,7 @@ int main (int argc, char** argv)
 
     char fname[] = "test_jff.wrl";
 
-    lslgeneric::NDTMap<pcl::PointXYZ> nd(new lslgeneric::LazyGrid<pcl::PointXYZ>(0.2));
+    perception_oru::NDTMap<pcl::PointXYZ> nd(new perception_oru::LazyGrid<pcl::PointXYZ>(0.2));
     if (nd.loadFromJFF("LazyGrid.jff") < 0)
         cout << "loading from jff failed\n";
     //nd.writeToVRML(fname);

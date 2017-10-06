@@ -36,8 +36,8 @@ public:
   Eigen::Affine3d originalPose;  // estimated pose in global frame (preferably from a GT system)...
   Eigen::Affine3d estSensorPose; // estimated sensor pose in global frame (typically from a SLAM / registration system)
   double stamp;  // timestamp of originalPose
-  boost::shared_ptr<lslgeneric::NDTMap> ndtmap;
-  boost::shared_ptr<lslgeneric::LazyGrid> lazygrid;
+  boost::shared_ptr<perception_oru::NDTMap> ndtmap;
+  boost::shared_ptr<perception_oru::LazyGrid> lazygrid;
   
 
   NDTCalibScan() : ndtmap(NULL) {
@@ -64,8 +64,8 @@ public:
  const Eigen::Affine3d& getOriginalPose() const { return originalPose; }
 
   void computeNDTMap(double resolution) {
-    lazygrid = boost::shared_ptr<lslgeneric::LazyGrid>(new lslgeneric::LazyGrid(resolution));
-    ndtmap = boost::shared_ptr<lslgeneric::NDTMap>(new lslgeneric::NDTMap(lazygrid.get(), false));
+    lazygrid = boost::shared_ptr<perception_oru::LazyGrid>(new perception_oru::LazyGrid(resolution));
+    ndtmap = boost::shared_ptr<perception_oru::NDTMap>(new perception_oru::NDTMap(lazygrid.get(), false));
     ndtmap->loadPointCloud(this->cloud);
     ndtmap->computeNDTCellsSimple();
   }
@@ -74,7 +74,7 @@ public:
     
     pcl::PointCloud<pcl::PointXYZ> c =cloud;
     Eigen::Affine3d T = pose * Ts;
-    lslgeneric::transformPointCloudInPlace(T, c);
+    perception_oru::transformPointCloudInPlace(T, c);
     p += c;
   }
 
@@ -169,7 +169,7 @@ public:
     // Enough to transform one map
     pcl::PointCloud<pcl::PointXYZ> c2=this->second.cloud;
     Eigen::Affine3d p2 = Tsecond;
-    lslgeneric::transformPointCloudInPlace(p2, c2);
+    perception_oru::transformPointCloudInPlace(p2, c2);
     
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree; // TODO, compute the KD-tree once to gain some more speed.
     typename pcl::KdTree<pcl::PointXYZ>::PointCloudPtr mp (new pcl::PointCloud<pcl::PointXYZ>);
@@ -212,11 +212,11 @@ public:
       return -1;
     }
 	
-    lslgeneric::NDTMatcherD2D matcher;
+    perception_oru::NDTMatcherD2D matcher;
     // Enough to transform one map.
     Eigen::Affine3d Tsecond = getPredictedRelativeEstSensorPose(Ts);
     
-    std::vector<lslgeneric::NDTCell*> m2 = second.ndtmap->pseudoTransformNDT(Tsecond);
+    std::vector<perception_oru::NDTCell*> m2 = second.ndtmap->pseudoTransformNDT(Tsecond);
     double score = matcher.scoreNDT(m2, *first.ndtmap);
     for (size_t i = 0; i < m2.size(); i++) {
       delete m2[i];

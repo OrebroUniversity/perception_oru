@@ -12,7 +12,7 @@
 #include <string>
 
 
-namespace lslgeneric{
+namespace perception_oru{
   /** 
    *
    * \brief Message building fucntion
@@ -24,7 +24,7 @@ namespace lslgeneric{
    *   
    */
   inline bool toMessage(NDTMap *map, ndt_map::NDTMapMsg &msg,std::string frame_name){
-    std::vector<lslgeneric::NDTCell*> map_vector=map->getAllInitializedCells();
+    std::vector<perception_oru::NDTCell*> map_vector=map->getAllInitializedCells();
     msg.header.stamp=ros::Time::now();
     msg.header.frame_id=frame_name;//is it in *map?    
     if(!map->getGridSizeInMeters(msg.x_size,msg.y_size,msg.z_size)){
@@ -132,7 +132,7 @@ namespace lslgeneric{
         double py = orig_y + resolution*iy + resolution*0.5;
 
         pcl::PointXYZ pt(px,py,0);
-        lslgeneric::NDTCell *cell;
+        perception_oru::NDTCell *cell;
         if(!ndt_map->getCellAtPoint(pt, cell)){
           occ_grid.data.push_back(-1);
         }
@@ -176,7 +176,7 @@ namespace lslgeneric{
    * @param[in] name of cooridnation frame for the map (same as the NDT map has)
    * 
    */
-  inline bool toOccupancyGrid(const boost::shared_ptr<lslgeneric::NDTMap>& ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
+  inline bool toOccupancyGrid(const boost::shared_ptr<perception_oru::NDTMap>& ndt_map, nav_msgs::OccupancyGrid &occ_grid, double resolution,std::string frame_id){//works only for 2D case
     double size_x, size_y, size_z;
     int size_x_cell_count, size_y_cell_count;
     double cen_x, cen_y, cen_z;
@@ -203,7 +203,7 @@ namespace lslgeneric{
         double py = orig_y + resolution*iy + resolution*0.5;
 
         pcl::PointXYZ pt(px,py,0);
-        lslgeneric::NDTCell *cell;
+        perception_oru::NDTCell *cell;
         if(!ndt_map->getCellAtPoint(pt, cell)){
           occ_grid.data.push_back(-1);
         }

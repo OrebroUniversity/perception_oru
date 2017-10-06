@@ -50,12 +50,12 @@ main (int argc, char** argv)
 
     gettimeofday(&tv_start,NULL);
     //we do a single scan to scan registration
-    lslgeneric::NDTMap<pcl::PointXYZI> ndmap(new lslgeneric::LazyGrid<pcl::PointXYZI>(0.4)), local_map(new lslgeneric::LazyGrid<pcl::PointXYZI>(0.4));
+    perception_oru::NDTMap<pcl::PointXYZI> ndmap(new perception_oru::LazyGrid<pcl::PointXYZI>(0.4)), local_map(new perception_oru::LazyGrid<pcl::PointXYZI>(0.4));
     ndmap.loadFromJFF(argv[7]);
     local_map.loadFromJFF(argv[8]);
 
     //lslgeneric::NDTMatcherD2D_2D<pcl::PointXYZI,pcl::PointXYZI> matcherD2D(false, false, resolutions);
-    lslgeneric::NDTMatcherD2D<pcl::PointXYZI,pcl::PointXYZI> matcherD2D(false, false, resolutions);
+    perception_oru::NDTMatcherD2D<pcl::PointXYZI,pcl::PointXYZI> matcherD2D(false, false, resolutions);
     bool ret = matcherD2D.match(ndmap,local_map,Tout,true);
 
     std::cout<<"Transform: \n"<<Tout.matrix()<<std::endl;

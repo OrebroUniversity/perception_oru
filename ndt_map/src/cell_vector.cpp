@@ -2,7 +2,7 @@
 #include <pcl/common/distances.h>
 #include <ndt_map/cell_vector.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 CellVector::CellVector():mp(new pcl::PointCloud<pcl::PointXYZ>())
@@ -248,11 +248,11 @@ void CellVector::cleanCellsAboveSize(double size)
 {
     //clean cells with variance more then x meters in any direction
     Eigen::Vector3d evals;
-    lslgeneric::SpatialIndex::CellVectorItr it = this->begin();
-    lslgeneric::SpatialIndex::CellVectorItr it_tmp;
+    perception_oru::SpatialIndex::CellVectorItr it = this->begin();
+    perception_oru::SpatialIndex::CellVectorItr it_tmp;
     while(it!=this->end())
     {
-        lslgeneric::NDTCell *ndcell = (*it);
+        perception_oru::NDTCell *ndcell = (*it);
         if(ndcell != NULL)
         {
             if(ndcell->hasGaussian_)

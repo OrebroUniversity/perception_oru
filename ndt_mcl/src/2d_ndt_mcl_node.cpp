@@ -55,9 +55,9 @@ ros::Publisher ndtmap_pub;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// RVIZ NDT-MAP Visualization stuff
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-void sendMapToRviz(lslgeneric::NDTMap &map){
+void sendMapToRviz(perception_oru::NDTMap &map){
 
-	std::vector<lslgeneric::NDTCell*> ndts;
+	std::vector<perception_oru::NDTCell*> ndts;
 	ndts = map.getAllCells();
 	fprintf(stderr,"SENDING MARKER ARRAY MESSAGE (%zu components)\n",ndts.size());
 	visualization_msgs::MarkerArray marray;
@@ -551,7 +551,7 @@ int main(int argc, char **argv){
 	//////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////
 	fprintf(stderr,"USING RESOLUTION %lf\n",resolution);
-	lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+	perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
 
 	ndmap.setMapSize(80.0, 80.0, 1.0);
 	

@@ -4,7 +4,7 @@
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace lslgeneric;
+using namespace perception_oru;
   
 int main(int argc, char **argv){
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv){
     std::cout<<"loading "<<base_name<<" at resolution "<<resolution<<std::endl;
 
     //load NDT map. Only Lazy grid supported!
-    lslgeneric::NDTMap ndmap(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap ndmap(new perception_oru::LazyGrid(resolution));
     ndmap.loadFromJFF(base_name.c_str());
     
     NDTCostmap cmap(&ndmap);

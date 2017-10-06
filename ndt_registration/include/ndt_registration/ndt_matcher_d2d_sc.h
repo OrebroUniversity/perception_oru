@@ -36,12 +36,12 @@
 #define NDTMATCHERD2DSC_HH
 
 #include <ndt_registration/ndt_matcher_d2d.h>
-namespace lslgeneric
+namespace perception_oru
 {
 /**
  * This class extends the NDT / NDT registration to also incorporate a soft constraint using an egomotion estimate
  */
-class NDTMatcherD2DSC : public lslgeneric::NDTMatcherD2D
+class NDTMatcherD2DSC : public perception_oru::NDTMatcherD2D
 {
 public:
     NDTMatcherD2DSC() : NDTMatcherD2D() 

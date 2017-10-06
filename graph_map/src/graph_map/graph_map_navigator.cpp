@@ -1,6 +1,7 @@
 #include "graph_map/graph_map_navigator.h"
 #include <boost/serialization/export.hpp>
-BOOST_CLASS_EXPORT(libgraphMap::GraphMapNavigator)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::GraphMapNavigator)
+namespace perception_oru{
 namespace libgraphMap{
   GraphMapNavigator::GraphMapNavigator(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam): GraphMap(nodepose, mapparam ,graphparam){}
 
@@ -103,4 +104,5 @@ namespace libgraphMap{
     ia & ptr;
   }
 
+}
 }

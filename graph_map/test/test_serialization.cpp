@@ -15,16 +15,20 @@
 
 #include <stdlib.h>
 #include <time.h>
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "graph_map/graph_map.h"
 #include "graph_map/graph_map_navigator.h"
 
 //#define BOOST_SERIALIZATION_DYN_LINK 1
+
 using namespace std;
 using namespace Eigen;
-using namespace lslgeneric;
-using namespace libgraphMap;
 using namespace boost::archive;
+
+using namespace perception_oru;
+using namespace libgraphMap;
+
+
 string filename="ndtmap_Serialization.dat";
 
 
@@ -58,7 +62,7 @@ private:
 
 
 
-    (*map)= new lslgeneric::NDTMap((new lslgeneric::LazyGrid(1.0)));
+    (*map)= new perception_oru::NDTMap((new perception_oru::LazyGrid(1.0)));
     (*map)->initialize(0,0,0,100,100,10);
     cout<<"init lazy map"<<endl;
     cout<<"add pointcloud with a size of ="<<cloud.size()<<endl;
@@ -70,7 +74,7 @@ private:
     // (*map)->computeNDTCells();
     cout<<"Number of cells generated="<<(*map)->getAllCells().size()<<endl;
     cout<<(*map)->ToString()<<endl;
-    std::vector<lslgeneric::NDTCell*> cells=(*map)->getAllCells();
+    std::vector<perception_oru::NDTCell*> cells=(*map)->getAllCells();
 
     //   cout<< (*map)->ToString()<<endl;;
   }
@@ -313,10 +317,8 @@ int main(int argc, char **argv){
   //CreateAndSaveLazyGrid();
   // LoadLazyGrid();
   //TestNdtCell();
-
-
-
-
 }
+
+
 
 

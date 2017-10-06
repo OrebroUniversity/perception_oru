@@ -29,7 +29,7 @@ public:
                       const std::string &odom_file,
                       const std::string &base_name_pcd,
                       const Eigen::Affine3d &sensor_pose,
-                      const lslgeneric::MotionModel3d::Params &motion_params) : base_name_pcd_(base_name_pcd), sensor_pose_(sensor_pose) {
+                      const perception_oru::MotionModel3d::Params &motion_params) : base_name_pcd_(base_name_pcd), sensor_pose_(sensor_pose) {
         
         
         std::cout << "loading: " << gt_file << std::endl;
@@ -126,15 +126,15 @@ public:
         std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRotMat(sensor_pose_);
 
         // Work in the vehicle frame... move the points
-        lslgeneric::transformPointCloudInPlace(sensor_pose_, pc1);
-        lslgeneric::transformPointCloudInPlace(sensor_pose_, pc2);
+        perception_oru::transformPointCloudInPlace(sensor_pose_, pc1);
+        perception_oru::transformPointCloudInPlace(sensor_pose_, pc2);
 
         // Compute the ndtmap
-        lslgeneric::NDTMap nd1(new lslgeneric::LazyGrid(resolution), true);
+        perception_oru::NDTMap nd1(new perception_oru::LazyGrid(resolution), true);
         nd1.loadPointCloud(pc1);
         nd1.computeNDTCellsSimple();
 
-        lslgeneric::NDTMap nd2(new lslgeneric::LazyGrid(resolution), true);
+        perception_oru::NDTMap nd2(new perception_oru::LazyGrid(resolution), true);
         nd2.loadPointCloud(pc2);
         nd2.computeNDTCellsSimple();
 
@@ -148,8 +148,8 @@ public:
        
         
         // Compute matches
-        lslgeneric::NDTMatcherD2D matcher_d2d;
-        lslgeneric::NDTMatcherD2DSC matcher_d2d_sc;
+        perception_oru::NDTMatcherD2D matcher_d2d;
+        perception_oru::NDTMatcherD2DSC matcher_d2d_sc;
         T_d2d_ = T_rel_odom_;
         T_d2d_sc_ = T_rel_odom_;
 
@@ -228,11 +228,11 @@ public:
         T_rel_gt_ = Tgt[idx1].inverse() * Tgt[idx2];
 
         // Store the transformed pcd
-        pc_odom_ = lslgeneric::transformPointCloud(T_rel_odom_, pc2);
-        pc_gt_ = lslgeneric::transformPointCloud(T_rel_gt_, pc2);
-        pc_d2d_ = lslgeneric::transformPointCloud(T_d2d_, pc2);
-        pc_d2d_sc_ = lslgeneric::transformPointCloud(T_d2d_sc_, pc2);
-        pc_icp_ = lslgeneric::transformPointCloud(T_icp_, pc2);
+        pc_odom_ = perception_oru::transformPointCloud(T_rel_odom_, pc2);
+        pc_gt_ = perception_oru::transformPointCloud(T_rel_gt_, pc2);
+        pc_d2d_ = perception_oru::transformPointCloud(T_d2d_, pc2);
+        pc_d2d_sc_ = perception_oru::transformPointCloud(T_d2d_sc_, pc2);
+        pc_icp_ = perception_oru::transformPointCloud(T_icp_, pc2);
         pc1_ = pc1;
 
         // Update the global transf (using odom and gt as well here incase the idx changes)
@@ -441,7 +441,7 @@ private:
     std::string base_name_pcd_;
     Eigen::Affine3d sensor_pose_;
 
-    lslgeneric::MotionModel3d motion_model;
+    perception_oru::MotionModel3d motion_model;
     
     
     std::vector<NDTD2DSCScore> results;
@@ -503,7 +503,7 @@ int main(int argc, char** argv)
     double incr_ang;
     std::string out_file;
     // Simply to make it transparant to the fuser node.
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     int iter_step;
     int iters;
 
@@ -580,7 +580,7 @@ int main(int argc, char** argv)
     Eigen::Affine3d sensor_pose = ndt_generic::vectorsToAffine3d(transl,euler);
     std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRPY(sensor_pose) << std::endl;
 
-    lslgeneric::MotionModel3d::Params motion_params3d(motion_params);
+    perception_oru::MotionModel3d::Params motion_params3d(motion_params);
 
     std::cout << "Motion params used : " << motion_params3d << std::endl;
 

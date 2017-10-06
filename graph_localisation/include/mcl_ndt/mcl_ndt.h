@@ -7,7 +7,7 @@
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include <angles/angles.h>
 #include <velodyne_pointcloud/point_types.h>
-
+namespace perception_oru{
 namespace GraphMapLocalisation{
 
 class MCLNDTType:public LocalisationType{
@@ -60,5 +60,5 @@ private:
   friend class LocalisationFactory;
 };
 }
-
+}
 #endif // MCL_NDT_H

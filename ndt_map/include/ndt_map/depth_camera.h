@@ -39,7 +39,7 @@
 #include <pcl/point_cloud.h>
 #include <iostream>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 template <typename PointT>

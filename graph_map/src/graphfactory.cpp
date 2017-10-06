@@ -1,21 +1,21 @@
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "graph_map/factor.h"
 #include "graph_map/map_type.h"
-#include "ndt/ndt_map_param.h"
-#include "ndt/ndt_map_type.h"
+#include "graph_map/ndt/ndt_map_param.h"
+#include "graph_map/ndt/ndt_map_type.h"
 #include "graph_map/map_node.h"
 #include "graph_map/graph_map.h"
 #include "graph_map/graph_map_navigator.h"
 #include "graph_map/reg_type.h"
-#include "ndt_dl/ndtdl_reg_type.h"
-#include "ndt/ndtd2d_reg_type.h"
+#include "graph_map/ndt_dl/ndtdl_reg_type.h"
+#include "graph_map/ndt/ndtd2d_reg_type.h"
 #include "Eigen/Geometry"
-#include "template/template_map_type.h"
-#include "template/template_reg_type.h"
-#include "ndt_dl/ndtdl_map_type.h"
+#include "graph_map/template/template_map_type.h"
+#include "graph_map/template/template_reg_type.h"
+#include "graph_map/ndt_dl/ndtdl_map_type.h"
 
 
-
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -137,4 +137,5 @@ FactorPtr GraphFactory::CreateMapNodeFactor(MapNodePtr prevMapPose, MapNodePtr n
   return factorptr;
 }
 
+}
 }

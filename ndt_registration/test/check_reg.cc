@@ -19,7 +19,7 @@
 
 
 using namespace std;
-using namespace lslgeneric;
+using namespace perception_oru;
 
 int main( int argc, char** argv )
 {
@@ -58,7 +58,7 @@ int main( int argc, char** argv )
     return 1;
   }
 
-  lslgeneric::transformPointCloudInPlace( T, cloud_offset );
+  perception_oru::transformPointCloudInPlace( T, cloud_offset );
   
   std::vector<double> resolutions;
   resolutions.push_back( 1 );

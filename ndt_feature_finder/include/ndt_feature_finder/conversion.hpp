@@ -44,7 +44,7 @@ namespace perception_oru{
 		}
 		
 		
-		inline void drawCell(const lslgeneric::NDTCell& cell, cv::Mat& dst, int scale = 50){
+		inline void drawCell(const perception_oru::NDTCell& cell, cv::Mat& dst, int scale = 50){
 			Eigen::Vector3d mean = cell.getMean();
 			Eigen::Vector3d evals = cell.getEvals();
 			Eigen::Matrix3d evecs = cell.getEvecs();
@@ -82,7 +82,7 @@ namespace perception_oru{
 			
 		}
 		
-		inline void drawCell(const lslgeneric::NDTCell& cell, cv::Mat& dst, double max , double min, double size_image_max){
+		inline void drawCell(const perception_oru::NDTCell& cell, cv::Mat& dst, double max , double min, double size_image_max){
 			Eigen::Vector3d mean = cell.getMean();
 			Eigen::Vector3d evals = cell.getEvals();
 			Eigen::Matrix3d evecs = cell.getEvecs();
@@ -163,9 +163,9 @@ namespace perception_oru{
 		 * @param[out] max max value of mean in cells
 		 * @param[out] min min value of mean in cells
 		 */
-		inline void toCvMat(const lslgeneric::NDTMap& map, cv::Mat& dst, double size_image_max, double& max, double& min){
+		inline void toCvMat(const perception_oru::NDTMap& map, cv::Mat& dst, double size_image_max, double& max, double& min){
 			
-			std::vector<lslgeneric::NDTCell*> cells = map.getAllCells();
+			std::vector<perception_oru::NDTCell*> cells = map.getAllCells();
 			Eigen::Vector3d mean = (*cells[1]).getMean();
 			max = mean(0), min = mean(1);
 			for(size_t i = 0 ; i < cells.size() ; ++i){
@@ -226,7 +226,7 @@ namespace perception_oru{
 		 * @param[out] dst Cv::Mat out
 		 * @param[in] size_image_max size of cv::math
 		 */
-		inline void toCvMat(const lslgeneric::NDTMap& map, cv::Mat& dst, double size_image_max){
+		inline void toCvMat(const perception_oru::NDTMap& map, cv::Mat& dst, double size_image_max){
 			double max, min;
 			toCvMat(map, dst, size_image_max, max, min);
 		}

@@ -2,7 +2,7 @@
 #define MOTIONMODELS_H
 #include "ndt_generic/motion_model_3d.h"
 //Until ported this to YAML file
-namespace lslgeneric
+namespace perception_oru
 {
 bool GetMotionModel(const std::string &dataset, std::vector<double> &motion_model, std::vector<double> &motion_model_offset){
 

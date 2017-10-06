@@ -6,7 +6,7 @@
 #include "Eigen/Dense"
 #include "boost/serialization/serialization.hpp"
 #include "ndt_generic/serialization.h"
-
+namespace perception_oru{
 namespace libgraphMap{
 typedef enum factoryype{observationFactor=0,poseFactor=1}factorType;
 class factor{
@@ -35,7 +35,7 @@ private:
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version)
   {
-   // ar & factortype_;
+  //ar & factortype_;
     ar & diff_;
     ar & prev_;
     ar & next_;
@@ -44,6 +44,7 @@ private:
 
 
 };
+}
 }
 
 #endif // FACTOR_H

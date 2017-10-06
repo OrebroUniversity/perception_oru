@@ -1,7 +1,7 @@
 #include "ndt_feature_finder/NDTCorner.hpp"
 
 
-std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const lslgeneric::NDTMap& map)
+std::vector< boost::shared_ptr< perception_oru::NDTCell > > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const perception_oru::NDTMap& map)
 {
 	
 	clear();
@@ -14,7 +14,7 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 // 	std::cout << "vector" << std::endl;
 	assert(allCells.size() == map.numberOfActiveCells());
 // 	std::cout << "vector" << std::endl;
-	std::vector< boost::shared_ptr< lslgeneric::NDTCell > > out;
+	std::vector< boost::shared_ptr< perception_oru::NDTCell > > out;
 // 	std::cout << "vector" << std::endl;
 	for(size_t i = 0 ; i < allCells.size() ; ++i){
 // 		std::cout << "Searching cell nb " << i << std::endl;
@@ -42,7 +42,7 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 
 }
 
-bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& allCells, Eigen::Vector3d& corner)
+bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const perception_oru::NDTMap& map, const perception_oru::NDTCell& cell, const std::vector< boost::shared_ptr< perception_oru::NDTCell > >& allCells, Eigen::Vector3d& corner)
 {
 // 	std::cout << "is it a corner?" << std::endl;
 	double angle;
@@ -145,7 +145,7 @@ bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const lslgeneri
 // 	}
 // }
 
-std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorner::getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size) const{
+std::vector< perception_oru::NDTCell* > perception_oru::ndt_feature_finder::NDTCorner::getClosestCells(const perception_oru::NDTMap& map, const perception_oru::NDTCell& cell, int neig_size) const{
 	double max = _x_cell_size;
 	if(max < _y_cell_size){
 		max = _y_cell_size;
@@ -154,15 +154,15 @@ std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorne
 		max = _z_cell_size;
 	}
 	
-	auto lazygrid = dynamic_cast<lslgeneric::LazyGrid*>(map.getMyIndex());
+	auto lazygrid = dynamic_cast<perception_oru::LazyGrid*>(map.getMyIndex());
 	pcl::PointXYZ point = cell.getCenter();
 	double radius = max;
-	std::vector<lslgeneric::NDTCell*> cells;
+	std::vector<perception_oru::NDTCell*> cells;
 	lazygrid->getNeighbors(point, radius * neig_size, cells);
 	
 // 	std::cout << "OUT /*SIZE*/ " << cells.size() << " " << max <<std::endl;
 	
-	std::vector<lslgeneric::NDTCell*> cells_out;
+	std::vector<perception_oru::NDTCell*> cells_out;
 	for(size_t j = 0 ; j < cells.size() ; ++j){
 // 		std::cout << "Celly " << cells[j]->getMean() << std::endl;
 		if(cells[j]->hasGaussian_ == true){
@@ -253,7 +253,7 @@ std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorne
 // 
 // }
 
-int perception_oru::ndt_feature_finder::NDTCorner::getBiggestEigenVector2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const
+int perception_oru::ndt_feature_finder::NDTCorner::getBiggestEigenVector2D(const perception_oru::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const
 {
 	
 	eigenval = cell.getEvals();
@@ -288,11 +288,11 @@ int perception_oru::ndt_feature_finder::NDTCorner::getBiggestEigenVector2D(const
 }
 
 
-std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorner::getCellsPointingToward(std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell) const
+std::vector< perception_oru::NDTCell* > perception_oru::ndt_feature_finder::NDTCorner::getCellsPointingToward(std::vector< perception_oru::NDTCell* >& neighbor, const perception_oru::NDTCell& cell) const
 {
 //Check if the angle between the center and the neighbor is going toward the center == Angle of the vector mean|mean to reference is the same as neighbor variance to reference
 	
-	std::vector< lslgeneric::NDTCell* > possible_neighbor;
+	std::vector< perception_oru::NDTCell* > possible_neighbor;
 	auto mean_cell = cell.getMean();
 	
 	for(size_t j = 0 ; j < neighbor.size() ; ++j){
@@ -325,7 +325,7 @@ std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorne
 	return possible_neighbor;
 }
 
-bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneric::NDTMap& map,std::vector< lslgeneric::NDTCell* >& neighbor, Eigen::Vector3d& corner) {
+bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const perception_oru::NDTMap& map,std::vector< perception_oru::NDTCell* >& neighbor, Eigen::Vector3d& corner) {
 	
 	for(size_t j = 0 ; j < neighbor.size() ; ++j){
 		//Get orientation of neighbor 
@@ -528,7 +528,7 @@ void perception_oru::ndt_feature_finder::NDTCorner::toOpenCV()
 }
 
 
-void perception_oru::ndt_feature_finder::NDTCorner::calculateAngles(const lslgeneric::NDTMap& map)
+void perception_oru::ndt_feature_finder::NDTCorner::calculateAngles(const perception_oru::NDTMap& map)
 {
 
 }
@@ -536,7 +536,7 @@ void perception_oru::ndt_feature_finder::NDTCorner::calculateAngles(const lslgen
 /**
  * return true if at least one ndt in the neighbor is aligned with the given cell
  */
-bool perception_oru::ndt_feature_finder::NDTCorner::AlignedNDT(const std::vector <lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell)
+bool perception_oru::ndt_feature_finder::NDTCorner::AlignedNDT(const std::vector <perception_oru::NDTCell* >& neighbor, const perception_oru::NDTCell& cell)
 {
 	Eigen::Vector3d eigenval; 
 	Eigen::Matrix3d eigenvec;

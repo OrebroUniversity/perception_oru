@@ -1,6 +1,5 @@
-#include "template/template_reg_type.h"
-
-
+#include "graph_map/template/template_reg_type.h"
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -49,7 +48,7 @@ void TemplateRegTypeParam::GetParametersFromRos(){
 
 }
 
-
+}
 
 }//end namespace
 

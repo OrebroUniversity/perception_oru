@@ -51,7 +51,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief Implements an NDT based spatial index
@@ -151,12 +151,12 @@ public:
     /**
     * Returns all computed cells from the map
     */
-    std::vector<lslgeneric::NDTCell<PointT>*> getAllCells();
+    std::vector<perception_oru::NDTCell<PointT>*> getAllCells();
 
     /**
     * Returns all computed cells from the map
     */
-    std::vector<lslgeneric::NDTCell<PointT>*> getDynamicCells(unsigned int Timescale, float threshold);
+    std::vector<perception_oru::NDTCell<PointT>*> getDynamicCells(unsigned int Timescale, float threshold);
 
 
     int numberOfActiveCells();

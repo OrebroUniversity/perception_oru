@@ -2,7 +2,7 @@
 #include <ndt_registration/ndt_matcher_d2d.h>
 #include <ndt_map/ndt_histogram.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
   class MapVertex{
@@ -57,7 +57,7 @@ namespace lslgeneric
     void saveDatlogFile(const char* fname);
     void printNodePositions();
 
-    lslgeneric::LazyGrid tr;
+    perception_oru::LazyGrid tr;
 
   private:
     NDTMatcherP2D *matcherP2F;

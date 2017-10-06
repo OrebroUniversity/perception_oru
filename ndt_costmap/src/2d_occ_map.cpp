@@ -12,8 +12,8 @@ class map_converter{
   double occ_resolution;
   double lik_tr;
   int width, height;
-  lslgeneric::NDTMap *ndtMap;
-  lslgeneric::LazyGrid *mapGrid;
+  perception_oru::NDTMap *ndtMap;
+  perception_oru::LazyGrid *mapGrid;
   std::vector<std::vector<int> > map;
 public:
   map_converter(int argc, char **argv){
@@ -55,8 +55,8 @@ private:
   int LoadMap(){
     FILE * jffin;
     jffin = fopen(ndt_map_name.c_str(),"r+b");
-    mapGrid=new lslgeneric::LazyGrid(ndt_resolution);
-    ndtMap=new lslgeneric::NDTMap(mapGrid);
+    mapGrid=new perception_oru::LazyGrid(ndt_resolution);
+    ndtMap=new perception_oru::NDTMap(mapGrid);
     if (ndtMap->loadFromJFF(jffin)<0){
       return -1;
     }
@@ -94,7 +94,7 @@ private:
       int w=0;
       for(double current_y=-ys/2+occ_resolution;current_y<ys/2-occ_resolution;current_y+=occ_resolution){
         //std::cout << "H:"<<h<< " W:"<<w<<"\n";
-        lslgeneric::NDTCell *check_cell;
+        perception_oru::NDTCell *check_cell;
         pcl::PointXYZ p;
         p.x=current_x;
         p.y=current_y;

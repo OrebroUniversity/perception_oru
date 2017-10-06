@@ -40,7 +40,7 @@
 #include <pcl/kdtree/impl/kdtree_flann.hpp>
 #include <pcl/console/print.h>
 
-namespace lslgeneric
+namespace perception_oru
 {
 
 /** \brief A spatial index represented as a grid map

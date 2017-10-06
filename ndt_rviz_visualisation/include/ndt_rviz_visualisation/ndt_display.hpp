@@ -18,7 +18,7 @@ namespace rviz
   class IntProperty;
 }
 
-namespace lslgeneric{
+namespace perception_oru{
 
   class NDTVisual;
 

@@ -1,7 +1,9 @@
-#include "template/template_map_type.h"
+#include "graph_map/template/template_map_type.h"
 #include <boost/serialization/export.hpp>
-BOOST_CLASS_EXPORT(libgraphMap::TemplateMapType)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::TemplateMapType)
+namespace perception_oru{
 namespace libgraphMap{
+
 using namespace std;
 
 
@@ -48,7 +50,7 @@ void TemplateMapParam::GetParametersFromRos(){
   cout<<"reading parameters from ros inside GetRosParamNDT2D"<<endl;
   nh.param<std::string>("Super_important_map_parameter",SuperImportantMapParameter,"parhaps not so important...");
 }
-
+}
 
 
 }

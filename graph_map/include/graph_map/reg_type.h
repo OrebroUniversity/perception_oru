@@ -9,6 +9,7 @@
 #include "string"
 #include "stdio.h"
 #include <velodyne_pointcloud/point_types.h>
+namespace perception_oru{
 namespace libgraphMap{
 
 class registrationParameters{
@@ -58,7 +59,7 @@ private:
 
 
 
-
+}
 
 }
 #endif // REGISTRATIONTYPE_H

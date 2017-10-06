@@ -12,7 +12,7 @@ namespace Ogre{
 namespace rviz{
   class Shape;
 }
-namespace lslgeneric{
+namespace perception_oru{
 
   class NDTVisual{
   public:

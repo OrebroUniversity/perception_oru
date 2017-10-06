@@ -10,7 +10,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
 
     //pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.1 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.1+0.001));
 
-    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
+    perception_oru::NDTMap local_map(new perception_oru::LazyGrid(resolution_sensor));
     std::cerr<<"cloud points "<<cloud.points.size()<<std::endl;
     local_map.addPointCloudSimple(cloud);
     local_map.computeNDTCells();
@@ -22,7 +22,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
     for(int i=0;i<pf.size();i++){
 	Eigen::Affine3d T = pf.pcloud[i].T;
 
-	std::vector<lslgeneric::NDTCell*> ndts;
+	std::vector<perception_oru::NDTCell*> ndts;
 	double tictime = getDoubleTime();
 	ndts = local_map.pseudoTransformNDT(T);
 	t_pseudo += getDoubleTime()-tictime;
@@ -35,7 +35,7 @@ void NDTMCL3D::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Po
 	    Eigen::Vector3d m = ndts[n]->getMean();	
 	    if(m[2]<zfilt_min) continue;
 
-	    lslgeneric::NDTCell *cell;
+	    perception_oru::NDTCell *cell;
 	    pcl::PointXYZ p;
 	    p.x = m[0];p.y=m[1];p.z=m[2];
 
@@ -162,7 +162,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     double t_pred = getDoubleTime() - time_start;	
 
     std::cerr<<"cloud points "<<cloud.points.size()<<" res :"<<resolution<<" sres: "<<resolution_sensor<<std::endl;
-    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution_sensor));
+    perception_oru::NDTMap local_map(new perception_oru::LazyGrid(resolution_sensor));
     //local_map.guessSize(0,0,0,30,30,10); //sensor_range,sensor_range,map_size_z);
     local_map.loadPointCloud(cloud);//,30); //sensor_range);
     local_map.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -172,8 +172,8 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
     //local_map.computeNDTCells();
     local_map.computeNDTCellsSimple();
      */
-    std::vector<lslgeneric::NDTCell*> ndts0 = local_map.getAllCells();
-    std::vector<lslgeneric::NDTCell*> ndts;
+    std::vector<perception_oru::NDTCell*> ndts0 = local_map.getAllCells();
+    std::vector<perception_oru::NDTCell*> ndts;
     std::cerr<<"ndts: "<<ndts0.size()<<std::endl;
 
     if(subsample_level != 1) {
@@ -212,7 +212,7 @@ void NDTMCL3D::updateAndPredictEff(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl:
 
 		if(m[2]<zfilt_min) continue;
 
-		lslgeneric::NDTCell *cell;
+		perception_oru::NDTCell *cell;
 		pcl::PointXYZ p;
 		p.x = m[0];p.y=m[1];p.z=m[2];
 

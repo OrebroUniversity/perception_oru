@@ -1,3 +1,4 @@
+namespace perception_oru{
 namespace libgraphMap{
 
 /*!
@@ -20,7 +21,7 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
   Tnow=T_world_to_local_map*Tnow;//change frame to local map
 
   Matrix6d motion_cov=motion_model_2d_.getCovMatrix6(Tmotion, 1., 1., 1.);
-  lslgeneric::transformPointCloudInPlace(sensorPose_, cloud);//Transform cloud into robot frame before registrating
+  transformPointCloudInPlace(sensorPose_, cloud);//Transform cloud into robot frame before registrating
   if(fuse_this_frame||map_node_changed){
     registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
   }
@@ -43,7 +44,7 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     return registration_succesfull;
   }
   if(fuse_this_frame||map_node_changed){
-    lslgeneric::transformPointCloudInPlace(Tnow, cloud);// The cloud should now be centered around the robot pose in the map frame
+    transformPointCloudInPlace(Tnow, cloud);// The cloud should now be centered around the robot pose in the map frame
     graph_map_->GetCurrentNode()->updateMap/*<PointT>*/(Tnow*sensorPose_,cloud);//Update map, provided transform is the pose of the sensor in the world which is where the scan was taken from
   }
 
@@ -55,4 +56,5 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
   return registration_succesfull;
 }
 
+}
 }

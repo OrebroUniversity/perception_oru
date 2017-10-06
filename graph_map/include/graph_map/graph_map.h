@@ -18,8 +18,9 @@
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/vector.hpp"
 
+namespace perception_oru{
 namespace libgraphMap{
-using namespace lslgeneric;
+using namespace perception_oru;
 typedef std::vector<Eigen::Affine3d,Eigen::aligned_allocator<Eigen::Affine3d> > EigenAffineVector;
 class GraphMap{
     
@@ -96,5 +97,6 @@ private:
   {
   }*/
 };
+}
 }
 #endif // GRAPH_H

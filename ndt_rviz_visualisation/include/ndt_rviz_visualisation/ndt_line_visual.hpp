@@ -12,7 +12,7 @@ namespace Ogre{
 namespace rviz{
   class Line;
 }
-namespace lslgeneric{
+namespace perception_oru{
 
   class NDTLineVisual{
   public:

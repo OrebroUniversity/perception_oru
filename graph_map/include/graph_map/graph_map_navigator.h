@@ -13,10 +13,10 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
-
+namespace perception_oru{
 namespace libgraphMap{
 
-using namespace lslgeneric;
+using namespace perception_oru;
 class GraphMapNavigator:public GraphMap{
 public:
   GraphMapNavigator(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam);
@@ -59,5 +59,5 @@ void LoadGraphMap(const string &file_name,  GraphMapNavigatorPtr ptr);
 
 
 }
-
+}
 #endif // GRAPH_NAVIGATOR_INTERFACE_H

@@ -15,7 +15,7 @@
 using namespace pcl;
 using namespace cv;
 using namespace std;
-using namespace lslgeneric;
+using namespace perception_oru;
 
 namespace po = boost::program_options;
 
@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 
     double t1, t2;
 
-    lslgeneric::DepthCamera cameraparams(fx,fy,cx,cy,dist,ds*scale,false);
+    perception_oru::DepthCamera cameraparams(fx,fy,cx,cy,dist,ds*scale,false);
 
     typedef Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> EigenTransform;
     std::vector<EigenTransform, Eigen::aligned_allocator<EigenTransform> > transformVector;

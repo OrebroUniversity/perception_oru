@@ -16,7 +16,7 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
      **/
     pf.predict(mcl::pose(tr[0],tr[1],rot[2]), mcl::pose(tr[0]*0.1 + 0.005,tr[1]*0.1+ 0.005,rot[2]*0.1+0.001));
 
-    lslgeneric::NDTMap local_map(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap local_map(new perception_oru::LazyGrid(resolution));
 
     /*
        pcl::PointCloud<PointT> cl_f;
@@ -39,7 +39,7 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
     for(int i=0;i<pf.NumOfParticles;i++){
 	Eigen::Affine3d T = getAsAffine(i);
 
-	std::vector<lslgeneric::NDTCell*> ndts;
+	std::vector<perception_oru::NDTCell*> ndts;
 	ndts = local_map.pseudoTransformNDT(T);
 	double score=1;
 
@@ -49,7 +49,7 @@ void NDTMCL::updateAndPredict(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::Poin
 	    Eigen::Vector3d m = ndts[n]->getMean();	
 	    if(m[2]<zfilt_min) continue;
 
-	    lslgeneric::NDTCell *cell;
+	    perception_oru::NDTCell *cell;
 	    pcl::PointXYZ p;
 	    p.x = m[0];p.y=m[1];p.z=m[2];
 

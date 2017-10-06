@@ -5,7 +5,7 @@
 #include <pcl/io/pcd_io.h>
 
 using namespace std;
-using namespace lslgeneric;
+using namespace perception_oru;
 
 int main(int argc, char**argv)
 {
@@ -43,8 +43,8 @@ int main(int argc, char**argv)
         res=0.5;
     }
 
-    lslgeneric::NDTMatcherD2D matcherF2F(false, false, resolutions);
-    lslgeneric::NDTMatcherP2D matcherP2F(resolutions);
+    perception_oru::NDTMatcherD2D matcherF2F(false, false, resolutions);
+    perception_oru::NDTMatcherP2D matcherP2F(resolutions);
 
     NDTMapBuilder mapper(res,doHistogram);
     if(bD2D)

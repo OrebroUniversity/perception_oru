@@ -1,4 +1,5 @@
 #include "graph_map/map_type.h"
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -61,5 +62,6 @@ string MapParam::ToString(){
   ss<<"Range(max/min)=("<<max_range_<<"/"<<min_range_<<endl;
   ss<<"size(x,y,z)=("<<sizex_<<","<<sizey_<<","<<sizez_<<")";
   return ss.str();
+}
 }
 }

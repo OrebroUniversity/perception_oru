@@ -36,12 +36,12 @@
 #define NDTMATCHERFEATUREF2F_HH
 
 #include <ndt_registration/ndt_matcher_d2d.h>
-namespace lslgeneric
+namespace perception_oru
 {
 /**
  * This class implements NDT / NDT registration with a priory known correspondances.
  */
-class NDTMatcherFeatureD2D : public lslgeneric::NDTMatcherD2D
+class NDTMatcherFeatureD2D : public perception_oru::NDTMatcherD2D
 {
 public:
     NDTMatcherFeatureD2D(const std::vector<std::pair<int, int> > &corr, double trimFactor = 1.) : _corr(corr), _trimFactor(trimFactor)
@@ -68,15 +68,15 @@ public:
      * computes the covariance of the match between moving and fixed, at T.
      * result is returned in cov
      */
-    bool covariance( lslgeneric::NDTMap& target,
-                     lslgeneric::NDTMap& source,
+    bool covariance( perception_oru::NDTMap& target,
+                     perception_oru::NDTMap& source,
                      Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T,
                      Eigen::Matrix<double,6,6> &cov
                    );
 
     //compute the score of a point cloud to an NDT
-    virtual double scoreNDT(std::vector<lslgeneric::NDTCell*> &source,
-                            lslgeneric::NDTMap &target,
+    virtual double scoreNDT(std::vector<perception_oru::NDTCell*> &source,
+                            perception_oru::NDTMap &target,
                             Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor>& T);
 
     //compute the score gradient & hessian of a point cloud + transformation to an NDT

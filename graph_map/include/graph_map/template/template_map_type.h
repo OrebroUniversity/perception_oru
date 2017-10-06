@@ -1,7 +1,7 @@
 #ifndef TEMPLATE_MAP_TYPE_H
 #define TEMPLATE_MAP_TYPE_H
 
-#include "graphfactory.h" //includes the full list of forward declarations
+#include "graph_map/graphfactory.h" //includes the full list of forward declarations
 #include <graph_map/map_type.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -11,6 +11,7 @@
 
 
 #define template_map_name "template"
+namespace perception_oru{
 namespace libgraphMap{
 
 class TemplateMapType:public MapType{
@@ -52,6 +53,7 @@ private:
 
 };
 
+}
 }
 
 #endif // TEMPLATE_MAP_TYPE_H

@@ -40,8 +40,8 @@ class particle_filter_wrap {
   ros::NodeHandle nh;
   //Map parameters
   std::string mapFile;
-  lslgeneric::NDTMap* ndtMap;
-  lslgeneric::LazyGrid* mapGrid;
+  perception_oru::NDTMap* ndtMap;
+  perception_oru::LazyGrid* mapGrid;
   //MCL
   bool be2D;
   bool forceSIR;
@@ -50,7 +50,7 @@ class particle_filter_wrap {
   double resolution;
   // std::map<std::string,lslgeneric::init_type> inits;
   std::string initType;
-  lslgeneric::particle_filter* MCL;
+  perception_oru::particle_filter* MCL;
   int particleCount;
   ros::Publisher mclPosePub;
   //laser input
@@ -215,7 +215,7 @@ class particle_filter_wrap {
     return O;
   }
 
-  geometry_msgs::PoseArray ParticlesToMsg(std::vector<lslgeneric::particle> particles){
+  geometry_msgs::PoseArray ParticlesToMsg(std::vector<perception_oru::particle> particles){
     //ROS_INFO("publishing particles");
     geometry_msgs::PoseArray ret;
     for(int i = 0; i < particles.size(); i++){
@@ -236,8 +236,8 @@ class particle_filter_wrap {
   int LoadMap(){
     //FILE * jffin;
     //jffin = fopen(mapFile.c_str(),"r+b");
-    mapGrid = new lslgeneric::LazyGrid(resolution);
-    ndtMap = new lslgeneric::NDTMap(mapGrid);
+    mapGrid = new perception_oru::LazyGrid(resolution);
+    ndtMap = new perception_oru::NDTMap(mapGrid);
     if(ndtMap->loadFromJFF(mapFile.c_str()) < 0)
       return -1;
     return 0;
@@ -339,7 +339,7 @@ class particle_filter_wrap {
     
     pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::transformPointCloud(cloud, *transformed_cloud, transform_2);
-    lslgeneric::NDTMap *localMap = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap *localMap = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution));
     localMap->loadPointCloud(*transformed_cloud, range);
     localMap->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
     cloud.clear();
@@ -453,7 +453,7 @@ public:
     initial_pose.position.x = initY;
     initial_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, initY);
 
-    MCL = new lslgeneric::particle_filter(ndtMap, particleCount, be2D, forceSIR);
+    MCL = new perception_oru::particle_filter(ndtMap, particleCount, be2D, forceSIR);
     
     if(beVelodyne)
       PCSub = nh.subscribe(inputTopicName, 1, &particle_filter_wrap::VeloCallback, this);

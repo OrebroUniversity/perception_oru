@@ -1,4 +1,5 @@
-#include "graph_map_fuser.h"
+#include "graph_map/graph_map_fuser.h"
+namespace perception_oru{
 namespace libgraphMap{
 using namespace std;
 GraphMapFuser::GraphMapFuser(string maptype, string registratorType, const Eigen::Affine3d &init_pose, const Eigen::Affine3d &sensorPose){
@@ -101,7 +102,7 @@ void GraphMapFuser::PlotMapType(){
 }
 
 void GraphMapFuser::plotGTCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud){
-  lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(0.4));
+  perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(0.4));
   // for(int i=0;i<cloud.size();i+=500){
   // cout<<cloud[i].x<<","<<cloud[i].y<<","<<cloud[i].z<<endl;
   // }
@@ -135,5 +136,6 @@ std::string GraphMapFuser::ToString(){
   ss<<registrator_->ToString();
   ss<<graph_map_->ToString();
   return ss.str();
+}
 }
 }

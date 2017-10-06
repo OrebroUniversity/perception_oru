@@ -3,14 +3,19 @@
 #include "graph_map/graph_map.h"
 #include <pcl/point_cloud.h>
 #include "pcl/io/pcd_io.h"
-#include "graphfactory.h"
+#include "graph_map/graphfactory.h"
 #include "ros/ros.h"
 #include "Eigen/Geometry"
 #include "visualization/graph_plot.h"
 #include "ndt_mcl/3d_ndt_mcl.h"
-using namespace libgraphMap;
+
+
 using namespace std;
 using namespace Eigen;
+
+using namespace perception_oru;
+using namespace libgraphMap;
+
 int main(int argc, char **argv){
   ros::init(argc, argv, "test_particle_filter");
   ros::NodeHandle n;
@@ -29,4 +34,6 @@ cout<<"created pfilter instance"<<endl;
     cout<<"position of mean"<<filter.getMean().translation().transpose()<<endl;
   }
 }
+
+
 

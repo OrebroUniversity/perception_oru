@@ -17,8 +17,8 @@ class map_converter {
 	double floor_deviation;
 	double robot_height;
 	int width, height;
-	lslgeneric::NDTMap *ndtMap;
-	lslgeneric::LazyGrid *mapGrid;
+	perception_oru::NDTMap *ndtMap;
+	perception_oru::LazyGrid *mapGrid;
 	bool floor_only;
 public:
 	map_converter(ros::NodeHandle private_nh){
@@ -42,14 +42,14 @@ private:
 		FILE * jffin;
 
 		jffin = fopen(ndt_map_name.c_str(), "r+b");
-		mapGrid = new lslgeneric::LazyGrid(ndt_resolution);
-		ndtMap = new lslgeneric::NDTMap(mapGrid);
+		mapGrid = new perception_oru::LazyGrid(ndt_resolution);
+		ndtMap = new perception_oru::NDTMap(mapGrid);
 		if(ndtMap->loadFromJFF(jffin) < 0)
 			return -1;
 		return 0;
 	}
 
-	double getAverageLevel(std::vector<lslgeneric::NDTCell*> floors){
+	double getAverageLevel(std::vector<perception_oru::NDTCell*> floors){
 		double aver = 0;
 
 		for(size_t i = 0; i < floors.size(); i++)
@@ -59,8 +59,8 @@ private:
 
 	void BuildMap(){
 
-		std::vector<lslgeneric::NDTCell*> ndts = ndtMap->getAllCells();
-		std::vector<lslgeneric::NDTCell*> floors;
+		std::vector<perception_oru::NDTCell*> ndts = ndtMap->getAllCells();
+		std::vector<perception_oru::NDTCell*> floors;
 		std::vector<float> av_level;
 		double sx, sy, sz;
 		ndtMap->getCellSizeInMeters(sx, sy, sz);
@@ -123,7 +123,7 @@ private:
 								while(lccz + 0.5 * sz - floor_height < robot_height){
 									lccz += sz;
 
-									lslgeneric::NDTCell *cell;
+									perception_oru::NDTCell *cell;
 									pcl::PointXYZ refPoint(lx, ly, lccz);
 
 									if(lccz + 0.5 * sz - floor_height < robot_height){

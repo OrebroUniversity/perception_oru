@@ -20,10 +20,10 @@
 #include <dirent.h>
 #include <algorithm>
 #include <boost/program_options.hpp>
-#include "graph_map_fuser.h"
-#include "ndt/ndt_map_param.h"
-#include "ndt/ndtd2d_reg_type.h"
-#include "ndt/ndt_map_type.h"
+#include "graph_map/graph_map_fuser.h"
+#include "graph_map/ndt/ndt_map_param.h"
+#include "graph_map/ndt/ndtd2d_reg_type.h"
+#include "graph_map/ndt/ndt_map_type.h"
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/publisher.h"
@@ -38,11 +38,13 @@
 #include "graph_map/graph_map_navigator.h"
 #include "ndt_offline/readbagfilegeneric.h"
 #include "ndt_generic/motionmodels.h"
+using namespace perception_oru;
+using namespace GraphMapLocalisation;
 using namespace libgraphMap;
 namespace po = boost::program_options;
 using namespace std;
-using namespace lslgeneric;
-using namespace GraphMapLocalisation;
+
+
 std::string map_dir_name="";
 std::string output_dir_name="";
 std::string base_name="";
@@ -60,7 +62,7 @@ bool registration2d=true;
 bool alive=false;
 bool disable_reg=false, do_soft_constraints=false;
 bool save_eval_results=false;
-lslgeneric::MotionModel2d::Params motion_params;
+perception_oru::MotionModel2d::Params motion_params;
 std::string base_link_id="", gt_base_link_id="", tf_world_frame="", tf_fuser_frame="fuser";
 std::string velodyne_config_file="";
 std::string velodyne_packets_topic="";
@@ -483,7 +485,7 @@ cout<<"just read first scan"<<endl;
     Eigen::Affine3d Tmotion = Todom_base_prev.inverse()*Todom_base;
 
     t1=ros::Time::now();
-    lslgeneric::transformPointCloudInPlace(sensor_offset, cloud);
+    perception_oru::transformPointCloudInPlace(sensor_offset, cloud);
     localisation_type_ptr->UpdateAndPredict(cloud,Tmotion);
 
     t2=ros::Time::now();
@@ -573,3 +575,5 @@ int main(int argc, char **argv){
   cout<<"end of program"<<endl;
 
 }
+
+

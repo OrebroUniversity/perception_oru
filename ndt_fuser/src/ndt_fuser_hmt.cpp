@@ -1,25 +1,25 @@
 #include <ndt_fuser/ndt_fuser_hmt.h>
 
-namespace lslgeneric {
+namespace perception_oru {
     void NDTFuserHMT::initialize(Eigen::Affine3d initPos, pcl::PointCloud<pcl::PointXYZ> &cloud, bool preLoad)
     {
 	///Set the cloud to sensor frame with respect to base
-	lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
-	lslgeneric::transformPointCloudInPlace(initPos, cloud);
+	perception_oru::transformPointCloudInPlace(sensor_pose, cloud);
+	perception_oru::transformPointCloudInPlace(initPos, cloud);
 	Tnow = initPos;
 	//#ifdef BASELINE
 	//#else
 	if(beHMT) {
-	    map = new lslgeneric::NDTMapHMT(resolution,
+	    map = new perception_oru::NDTMapHMT(resolution,
 		    Tnow.translation()(0),Tnow.translation()(1),Tnow.translation()(2),
 		    map_size_x,map_size_y,map_size_z,sensor_range,hmt_map_dir,true);
 	    if(preLoad) {
-		lslgeneric::NDTMapHMT *map_hmt = dynamic_cast<lslgeneric::NDTMapHMT*> (map);
+		perception_oru::NDTMapHMT *map_hmt = dynamic_cast<perception_oru::NDTMapHMT*> (map);
 		std::cout<<"Trying to pre-load maps at "<<initPos.translation()<<std::endl;
 		map_hmt->tryLoadPosition(initPos.translation());
 	    }
 	} else {
-	    map = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(resolution));
+	    map = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution));
 	    if(preLoad) {
 		char fname[1000];
 		snprintf(fname,999,"%s/%s_map.jff",hmt_map_dir.c_str(),prefix.c_str());
@@ -70,10 +70,10 @@ namespace lslgeneric {
 	Todom = Todom * Tmotion; //we track this only for display purposes!
 	double t0=0,t1=0,t2=0,t3=0,t4=0,t5=0,t6=0;
 	///Set the cloud to sensor frame with respect to base
-	lslgeneric::transformPointCloudInPlace(sensor_pose, cloud);
+	perception_oru::transformPointCloudInPlace(sensor_pose, cloud);
 	t0 = getDoubleTime();
 	///Create local map
-	lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution*resolution_local_factor));
+	perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution*resolution_local_factor));
 	ndlocal.guessSize(0,0,0,sensor_range,sensor_range,map_size_z);
 	ndlocal.loadPointCloud(cloud,sensor_range);
 	ndlocal.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
@@ -100,7 +100,7 @@ namespace lslgeneric {
 	if(disableRegistration) {
 		std::cout << "DISREG" << std::endl;
 	    Tnow = Tinit;
-	    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+	    perception_oru::transformPointCloudInPlace(Tnow, cloud);
 	    Eigen::Affine3d spose = Tnow*sensor_pose;
 	    map->addPointCloudMeanUpdate(spose.translation(),cloud,localMapSize, 1e5, 25, 2*map_size_z, 0.06);
 	    if(visualize) //&&ctr%20==0) 
@@ -125,12 +125,12 @@ namespace lslgeneric {
 	if(doMultires) {
 		std::cout << "MULTI" << std::endl;
 	    //create two ndt maps with resolution = 3*resolution (or 5?)
-	    lslgeneric::NDTMap ndlocalLow(new lslgeneric::LazyGrid(3*resolution));
+	    perception_oru::NDTMap ndlocalLow(new perception_oru::LazyGrid(3*resolution));
 	    ndlocalLow.guessSize(0,0,0,sensor_range,sensor_range,map_size_z);
 	    ndlocalLow.loadPointCloud(cloud,sensor_range);
 	    ndlocalLow.computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
 
-	    lslgeneric::NDTMap mapLow(new lslgeneric::LazyGrid(3*resolution));
+	    perception_oru::NDTMap mapLow(new perception_oru::LazyGrid(3*resolution));
 	    //add distros
 	    double cx,cy,cz;
 	    if(!map->getCentroid(cx, cy, cz)){
@@ -138,7 +138,7 @@ namespace lslgeneric {
 	    }
 	    mapLow.initialize(cx,cy,cz,3*map_size_x,3*map_size_y,map_size_z);
 
-	    std::vector<lslgeneric::NDTCell*> ndts;
+	    std::vector<perception_oru::NDTCell*> ndts;
 	    ndts = map->getAllCells(); //this copies cells?
 
 	    for(int i=0; i<ndts.size(); i++)	
@@ -180,7 +180,7 @@ namespace lslgeneric {
 		}else{
 		    //std::cout << "Good" << std::endl;
 		    Tnow = Tinit;
-		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+		    perception_oru::transformPointCloudInPlace(Tnow, cloud);
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
 		    Eigen::Affine3d diff_fuse = Tlast_fuse.inverse()*Tnow;
 		    if(diff_fuse.translation().norm() > translation_fuse_delta ||
@@ -289,7 +289,7 @@ namespace lslgeneric {
 		}else{
 		    Tnow = Tinit;
 		    //Tnow = Tnow * Tmotion;
-		    lslgeneric::transformPointCloudInPlace(Tnow, cloud);
+		    perception_oru::transformPointCloudInPlace(Tnow, cloud);
 		    Eigen::Affine3d spose = Tnow*sensor_pose;
 		    Eigen::Affine3d diff_fuse = Tlast_fuse.inverse()*Tnow;
 		    if(diff_fuse.translation().norm() > translation_fuse_delta ||

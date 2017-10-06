@@ -18,7 +18,7 @@ namespace perception_oru {
 		* camera postion. It also log the position and orientation of each pose along with a time stamp a file
 		* \author Malcolm
 		*/
-		class NDTFuserHMTLogger : public lslgeneric::NDTFuserHMT{
+		class NDTFuserHMTLogger : public perception_oru::NDTFuserHMT{
 			
 		protected:
 			std::string _file_out_logger;
@@ -34,7 +34,7 @@ namespace perception_oru {
 			*/
 			Eigen::Affine3d update(Eigen::Affine3d Tmotion, pcl::PointCloud<pcl::PointXYZ> &cloud){
 				std::cout << "Update in the logger" << std::endl;
-				Eigen::Affine3d Tnow_out = lslgeneric::NDTFuserHMT::update(Tmotion, cloud);
+				Eigen::Affine3d Tnow_out = perception_oru::NDTFuserHMT::update(Tmotion, cloud);
 				
 				logT(Tnow_out);
 				return Tnow_out;

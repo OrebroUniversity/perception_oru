@@ -1,10 +1,10 @@
 #ifndef NDTDL_MAP_TYPE_H
 #define NDTDL_MAP_TYPE_H
 
-#include "graphfactory.h" //includes the full list of forward declarations
+#include "graph_map/graphfactory.h" //includes the full list of forward declarations
 #include <graph_map/map_type.h>
 #include <ndt_map/ndt_map_hmt.h>
-#include <ndt_dl/ndtdl_map_param.h>
+#include <graph_map/ndt_dl/ndtdl_map_param.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/base_object.hpp>
@@ -17,8 +17,9 @@
 #include "sstream"
 
 #define ndtdl_map_type_name "ndt_dl_map"
+namespace perception_oru{
 namespace libgraphMap{
-using namespace lslgeneric;
+using namespace perception_oru;
 
 class NDTDLMapType:public MapType{
 public:
@@ -55,7 +56,8 @@ protected:
 };
 
 
-}
+
+}}
 
 
 #endif // NDTDL_MAP_TYPE_H

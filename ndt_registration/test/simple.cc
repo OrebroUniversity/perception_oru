@@ -67,13 +67,13 @@ main (int argc, char** argv)
             Eigen::AngleAxis<double>(yaw,Eigen::Vector3d::UnitZ()) ;
         
 	//lslgeneric::NDTMatcherD2D_2D<pcl::PointXYZ,pcl::PointXYZ> matcherD2D(false, false, resolutions);
-	lslgeneric::NDTMatcherD2D matcherD2D(false, false, resolutions);
+	perception_oru::NDTMatcherD2D matcherD2D(false, false, resolutions);
 	cloud_trans = cloud_offset;
         bool ret = matcherD2D.match(cloud,cloud_offset,Tout,true);
 
 	std::cout<<"Transform: \n"<<Tout.matrix()<<std::endl;
 
-	lslgeneric::transformPointCloudInPlace(Tout,cloud_trans);
+	perception_oru::transformPointCloudInPlace(Tout,cloud_trans);
 	pcl::PointCloud<pcl::PointXYZRGB> cloud_comb;
 	pcl::PointXYZRGB red(255,0,0);
 	for(int i=0; i<cloud.points.size(); ++i ) {

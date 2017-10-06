@@ -27,7 +27,7 @@ int main (int argc, char** argv) {
     // lslgeneric::OctTree<pcl::PointXYZ> tr;
     // tr.BIG_CELL_SIZE = 2;
     // tr.SMALL_CELL_SIZE = 0.2;
-    lslgeneric::LazyGrid tr(0.1);
+    perception_oru::LazyGrid tr(0.1);
 
 #ifdef FULLTESTER
     // std::string fname_str = argv[1];
@@ -123,16 +123,16 @@ int main (int argc, char** argv) {
 
     pcl::io::loadPCDFile<pcl::PointXYZ> (argv[1], cloud);
     pcl::io::loadPCDFile<pcl::PointXYZ> (argv[2], cloud2);
-    lslgeneric::NDTMap nd(&tr);
+    perception_oru::NDTMap nd(&tr);
     nd.loadPointCloud(cloud);
-    lslgeneric::NDTMap nd2(&tr);
+    perception_oru::NDTMap nd2(&tr);
     nd2.loadPointCloud(cloud2);
 
     nd.computeNDTCells();
     nd2.computeNDTCells();
 
-    lslgeneric::NDTHistogram nh(nd, 1, 40, 10, 2, 5);
-    lslgeneric::NDTHistogram nh2(nd2, 1, 40, 10, 2, 5);
+    perception_oru::NDTHistogram nh(nd, 1, 40, 10, 2, 5);
+    perception_oru::NDTHistogram nh2(nd2, 1, 40, 10, 2, 5);
 
     Eigen::Transform<double,3,Eigen::Affine,Eigen::ColMajor> T;
 

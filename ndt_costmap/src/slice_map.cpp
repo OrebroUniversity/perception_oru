@@ -16,8 +16,8 @@ class map_converter {
   double floor_deviation;
   double robot_height;
   int width, height, breadth;
-  lslgeneric::NDTMap *ndtMap;
-  lslgeneric::LazyGrid *mapGrid;
+  perception_oru::NDTMap *ndtMap;
+  perception_oru::LazyGrid *mapGrid;
   bool floor_only;
 public:
   map_converter(ros::NodeHandle private_nh){
@@ -38,14 +38,14 @@ private:
   int LoadMap(){
     FILE * jffin;
     jffin = fopen(ndt_map_name.c_str(), "r+b");
-    mapGrid = new lslgeneric::LazyGrid(ndt_resolution);
-    ndtMap = new lslgeneric::NDTMap(mapGrid);
+    mapGrid = new perception_oru::LazyGrid(ndt_resolution);
+    ndtMap = new perception_oru::NDTMap(mapGrid);
     if(ndtMap->loadFromJFF(jffin) < 0)
       return -1;
     return 0;
   }
 
-  double getAverageLevel(std::vector<lslgeneric::NDTCell*> floors){
+  double getAverageLevel(std::vector<perception_oru::NDTCell*> floors){
     double aver = 0;
 
     for(size_t i = 0; i < floors.size(); i++)
@@ -75,7 +75,7 @@ private:
     ROS_INFO_STREAM(minx<<" "<<miny<<" "<<minz);
     ROS_INFO_STREAM(height<<" "<<width);
 
-    lslgeneric::NDTCell* ptCell = NULL;
+    perception_oru::NDTCell* ptCell = NULL;
     for (int h=0;h<height;h++){
       for (int w=0;w<width;w++){
 		pcl::PointXYZ pt(minx+occ_resolution/2+h*occ_resolution,miny+occ_resolution/2+w*occ_resolution,sample_height);

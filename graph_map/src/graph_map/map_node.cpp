@@ -1,6 +1,7 @@
 #include "graph_map/map_node.h"
 #include <boost/serialization/export.hpp>
-BOOST_CLASS_EXPORT(libgraphMap::MapNode)
+BOOST_CLASS_EXPORT(perception_oru::libgraphMap::MapNode)
+namespace perception_oru{
 namespace libgraphMap{
 Node::Node(){
   static unsigned int num_nodes=0;
@@ -56,5 +57,5 @@ void MapNode::updateMap(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_poi
 
 
 }
-
+}
 //#include <graph_map/map_node_impl.h>

@@ -21,12 +21,12 @@ int main(int argc, char** argv){
   ros::Rate loop_rate(1);
   nav_msgs::OccupancyGrid msg;
 
-  lslgeneric::NDTMap nd(new lslgeneric::LazyGrid(0.4));
+  perception_oru::NDTMap nd(new perception_oru::LazyGrid(0.4));
   ROS_INFO("loading from jff...\n");
   if (nd.loadFromJFF("basement2d_map.jff") < 0)
     ROS_INFO("loading from jff failed\n");
 
-  lslgeneric::toOccupancyGrid(&nd,msg,0.05,"/base");
+  perception_oru::toOccupancyGrid(&nd,msg,0.05,"/base");
   while (ros::ok()){
     map_pub.publish(msg);
     ros::spinOnce();

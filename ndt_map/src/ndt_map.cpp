@@ -14,7 +14,7 @@
 #include <cstring>
 #include <cstdio>
 
-namespace lslgeneric
+namespace perception_oru
 {
 /**
 * loadPointCloud - You can call this if you are only interested in dealing with one scan
@@ -688,7 +688,7 @@ void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     double resolution = std::min(min1,min2); ///Select the smallest resolution
 		//fprintf(stderr,"1:");
     ///Lets first create a local ndmap (this really works only if we have lazy grid as well)
-    lslgeneric::NDTMap ndlocal(new lslgeneric::LazyGrid(resolution));
+    perception_oru::NDTMap ndlocal(new perception_oru::LazyGrid(resolution));
     ndlocal.loadPointCloudCentroid(pc,origin, old_centroid, localmapsize, /*70.0*/-1.); // No range limit used here, assume that the point cloud is already filtered.
     
     ///Use Student-T
@@ -698,7 +698,7 @@ void  NDTMap::addPointCloudMeanUpdate(const Eigen::Vector3d &origin,
     ndlocal.computeNDTCells();
 		
     ///TODO: This returns now copies --- should be pointers?
-    std::vector<lslgeneric::NDTCell*> ndts;
+    std::vector<perception_oru::NDTCell*> ndts;
     ndts = ndlocal.getAllCells();
 		//fprintf(stderr,"2(%u):",ndts.size());
     NDTCell *ptCell=NULL;
@@ -2408,7 +2408,7 @@ NDTCell* NDTMap::getCellIdx(unsigned int idx) const
     return NULL;
 }
 
-std::vector<lslgeneric::NDTCell*> NDTMap::getAllCells() const
+std::vector<perception_oru::NDTCell*> NDTMap::getAllCells() const
 {
 
     std::vector<NDTCell*> ret;
@@ -2426,7 +2426,7 @@ std::vector<lslgeneric::NDTCell*> NDTMap::getAllCells() const
     return ret;
 }
 
-std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllCellsShared() const
+std::vector< boost::shared_ptr<perception_oru::NDTCell> > NDTMap::getAllCellsShared() const
 {
 
     std::vector< boost::shared_ptr< NDTCell > > ret;
@@ -2449,7 +2449,7 @@ std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllCellsShared(
     return ret;
 }
 
-std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells() const
+std::vector<perception_oru::NDTCell*> NDTMap::getAllInitializedCells() const
 {
     std::vector<NDTCell*> ret;
     typename SpatialIndex::CellVectorItr it = index_->begin();
@@ -2462,7 +2462,7 @@ std::vector<lslgeneric::NDTCell*> NDTMap::getAllInitializedCells() const
     return ret;
 }
 
-std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllInitializedCellsShared() const
+std::vector< boost::shared_ptr<perception_oru::NDTCell> > NDTMap::getAllInitializedCellsShared() const
 {
     std::vector<boost::shared_ptr<NDTCell> > ret;
     typename SpatialIndex::CellVectorItr it = index_->begin();

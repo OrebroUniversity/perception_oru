@@ -4,8 +4,8 @@
 #include <pcl/point_cloud.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <angles/angles.h>
-
-namespace libgraphMap {
+namespace perception_oru{
+namespace libgraphMap{
 
 typedef velodyne_pointcloud::PointXYZIR PointType;
 
@@ -333,6 +333,7 @@ void segmentPointCurvature(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR
 
 }
 
+}
 }
 
 #endif

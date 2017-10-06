@@ -1,4 +1,5 @@
 #include "graph_map/reg_type.h"
+namespace perception_oru{
 namespace libgraphMap{
 
 
@@ -74,5 +75,5 @@ void registrationParameters::GetParametersFromRos(){
 }
 
 }
-
+}
 

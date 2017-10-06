@@ -22,7 +22,7 @@ namespace libgraphMap{
   }
   NDTDLMapType::~NDTDLMapType(){}
 
-  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     cout<<"The NDT-DL update with PointXYZ is please implement map update for NDT-DL"<<endl;
     if(initialized_){
@@ -33,7 +33,7 @@ namespace libgraphMap{
     }
   }
 
-  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTDLMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, bool simple){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
 
     // Segment the point based on curvature

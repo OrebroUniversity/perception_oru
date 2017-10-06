@@ -22,8 +22,8 @@ using namespace lslgeneric;
 class NDTMapType:public MapType{
 public:
   ~NDTMapType();
-  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);
-  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple = false);
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, bool simple = false);
   virtual NDTMap* GetNDTMap() { return map_;}
   //Advanced
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius);
@@ -39,7 +39,7 @@ protected:
   double sensor_range_=30;
 
   friend class GraphFactory;
-  void InitializeMap(const Eigen::Affine3d &Td,pcl::PointCloud<pcl::PointXYZ> &cloud);
+  void InitializeMap(const Eigen::Affine3d &Td,pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple = false);
 
   /*-----Boost serialization------*/
   friend class boost::serialization::access;

@@ -24,8 +24,8 @@ class NDTDLMapType:public MapType{
 public:
   //Mandatory
   ~NDTDLMapType();
-  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud);//Mandatory, base method implemented as pure virtual
-  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud);//Mandatory, base method implemented as pure virtual
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple = false);//Mandatory, base method implemented as pure virtual
+  virtual void update(const Eigen::Affine3d &Tsensor, pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, bool simple = false);//Mandatory, base method implemented as pure virtual
   //Optional
   NDTMap* GetNDTMapFlat() { return map_flat_; }
   NDTMap* GetNDTMapEdge() { return map_edge_; }

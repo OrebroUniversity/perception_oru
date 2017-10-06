@@ -41,8 +41,8 @@ public:
    * \param cloud data to update map with
    */
   virtual bool Initialized() const{return initialized_;}
-  virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud)=0;
-  virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud)=0;
+  virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple = false)=0;
+  virtual void update(const Eigen::Affine3d &Tnow,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, bool simple = false)=0;
   virtual bool CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius=5);
   virtual string GetMapName()const{return mapName_;}
   virtual string ToString();

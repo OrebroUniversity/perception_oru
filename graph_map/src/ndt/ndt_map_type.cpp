@@ -19,30 +19,42 @@ namespace libgraphMap{
   }
   NDTMapType::~NDTMapType(){}
 
-  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     if(initialized_ && enable_mapping_){
       Eigen::Vector3d localMapSize(2*max_range_,2*max_range_,sizez_);
-      map_->addPointCloudMeanUpdate(Tsensor.translation(),cloud,localMapSize, 1e5, 25, 2*sizez_, 0.06);
+      if (!simple) {
+        map_->addPointCloudMeanUpdate(Tsensor.translation(),cloud,localMapSize, 1e5, 25, sizez_, 0.06);
+      }
+      else {
+        map_->addPointCloudSimple(cloud, sizez_);
+        map_->computeNDTCells();
+      }
     }
     else if(!initialized_){
-      InitializeMap(Tsensor,cloud);
+      InitializeMap(Tsensor,cloud, simple);
       initialized_ = true;
     }
   }
 
-  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
+  void NDTMapType::update(const Eigen::Affine3d &Tsensor,pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &cloud, bool simple){//update map, cloud is the scan, Tsensor is the pose where the scan was aquired.
 
     cerr << "TODO: implement update for point type PointXYZIR - will convert to PointXYZ for now" << endl;
     pcl::PointCloud<pcl::PointXYZ> cloud_xyz;
     pcl::copyPointCloud(cloud, cloud_xyz);
-    update(Tsensor, cloud_xyz);
+    update(Tsensor, cloud_xyz, simple);
   }
 
-  void NDTMapType::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud){
+  void NDTMapType::InitializeMap(const Eigen::Affine3d &Tsensor,pcl::PointCloud<pcl::PointXYZ> &cloud, bool simple){
     cout<<"initialize map"<<endl;
-    map_->addPointCloud(Tsensor.translation(),cloud, 0.1, 100.0, 0.1);
-    map_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tsensor.translation(), 0.1);
+    if (!simple) {
+      map_->addPointCloud(Tsensor.translation(),cloud, 0.1, 100.0, 0.1);
+      map_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Tsensor.translation(), 0.1);
+    }
+    else {
+      map_->addPointCloudSimple(cloud, sizez_);
+      map_->computeNDTCells();
+    }
   }
   bool NDTMapType::CompoundMapsByRadius(MapTypePtr target,const Affine3d &T_source,const Affine3d &T_target, double radius){
 
@@ -80,6 +92,8 @@ namespace libgraphMap{
     ss<<"resolution local factor:"<<resolution_local_factor_<<endl;
   // TODO sensor_range_ is not used at the moment.
     ss<<"maximum sensor range (not used):"<<sensor_range_<<endl;
+    ss<<"nb active cells:"<<map_->numberOfActiveCells() << endl;
+    //ss<<"NDTMap:"<<map_->ToString()<<endl;
     return ss.str();
   }
 

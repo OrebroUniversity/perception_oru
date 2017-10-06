@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/common.h>
 #include <Eigen/Core>
 
 namespace ndt_generic {
@@ -37,6 +38,10 @@ pcl::PointXYZ eigenToPCLPoint(const Eigen::Vector3d &pt) {
     return p;
 }
 
+Eigen::Vector3d PCLPointToEigen(const pcl::PointXYZ &pt) {
+  return Eigen::Vector3d(pt.x, pt.y, pt.z);
+}
+
 template<class PointT>
 void filter_fov_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &cloud_nofilter, double hori_min, double hori_max) {
   for(int i=0; i<cloud_nofilter.points.size(); ++i) {
@@ -48,5 +53,12 @@ void filter_fov_fun(pcl::PointCloud<PointT> &cloud, pcl::PointCloud<PointT> &clo
   cloud.height = 1;
 }
 
+template<typename PointT>
+void getMinMax3DPointCloud(const pcl::PointCloud<PointT> &cloud, Eigen::Vector3d &minP, Eigen::Vector3d &maxP) {
+  pcl::PointXYZ minPt, maxPt;
+  pcl::getMinMax3D (cloud, minPt, maxPt);
+  minP = PCLPointToEigen(minPt);
+  maxP = PCLPointToEigen(maxPt);
+}
 
 } // namespace

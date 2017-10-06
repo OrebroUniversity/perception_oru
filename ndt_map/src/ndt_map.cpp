@@ -437,7 +437,7 @@ void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<
 
 			if(l>max_range)
 			{
-					fprintf(stderr,"Very long distance (%lf) :( \n",l);
+          fprintf(stderr,"addPointCloud::Very long distance (%lf) :( \n",l);
 					it++;
 					continue;
 			}
@@ -527,7 +527,7 @@ void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<
 
         if(l>200)
         {
-            fprintf(stderr,"Very long distance (%lf) :( \n",l);
+            fprintf(stderr,"addPointCloud::Very long distance (%lf) :( \n",l);
             it++;
             continue;
         }
@@ -890,7 +890,7 @@ bool NDTMap::addMeasurement(const Eigen::Vector3d &origin, pcl::PointXYZ endpoin
     double l = diff.norm();
     if(l>200)
     {
-        fprintf(stderr,"Very long distance (%lf) :( \n",l);
+        fprintf(stderr,"addMeasurement::Very long distance (%lf) :( \n",l);
         return false;
     }
     if(resolution<0.01)
@@ -1639,7 +1639,7 @@ typename SpatialIndex::CellVectorItr it = index_->begin();
 /** 
 * Computes the normaldistribution parameters and leaves the points a
 */
-void NDTMap::computeNDTCellsSimple()
+void NDTMap::computeNDTCellsSimple(bool keepPoints)
 {
     CellVector *cv = dynamic_cast<CellVector*>(index_);
 
@@ -1664,6 +1664,9 @@ void NDTMap::computeNDTCellsSimple()
                 pt.z = mean[2];
 
                 cell->setCenter(pt);
+            }
+            if (!keepPoints) {
+              cell->points_.clear();
             }
         }
         else

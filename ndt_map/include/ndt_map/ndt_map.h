@@ -382,9 +382,10 @@ public:
   virtual void computeNDTCells(int cellupdatemode = CELL_UPDATE_MODE_SAMPLE_VARIANCE, unsigned int maxnumpoints = 1e9, float occupancy_limit=255, Eigen::Vector3d origin = Eigen::Vector3d(0,0,0), double sensor_noise=0.1);
 
   /**
-     * Computes the Normaldistribution parameters without erasing the points
+     * Computes the Normaldistribution parameters
+     * @param keepPoints If the points should be keept or not
      */
-  void computeNDTCellsSimple();
+  void computeNDTCellsSimple(bool keepPoints = true);
   /**
     * Stuff for saving things
     */

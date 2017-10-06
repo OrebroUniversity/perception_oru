@@ -1,5 +1,5 @@
-#ifndef SERIALIZATION_H
-#define SERIALIZATION_H
+#ifndef NDT_GENERIC_SERIALIZATION_H
+#define NDT_GENERIC_SERIALIZATION_H
 
 
 #include <boost/serialization/split_free.hpp>

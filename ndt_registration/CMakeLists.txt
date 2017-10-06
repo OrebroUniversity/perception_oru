@@ -53,9 +53,6 @@ target_link_libraries(d2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin
 add_executable(p2d_deathmatch test/p2d_deathmatch.cc)
 target_link_libraries(p2d_deathmatch ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 
-add_executable(d2d_sc_score_evaluate test/d2d_sc_score_evaluate.cc)
-target_link_libraries(d2d_sc_score_evaluate ${PROJECT_NAME} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
-
 #add_executable(convert_logs test/convert.cc)
 #target_link_libraries(convert_logs ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 

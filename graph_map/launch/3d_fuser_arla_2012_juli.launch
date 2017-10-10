@@ -7,7 +7,7 @@
 
 <node pkg="graph_map" type="graph_map_fuser_node" name="graph_node" output="screen">
 
-<param name="renderGTmap" value="true" />
+<param name="renderGTmap" value="false" />
 <param name="gt_topic" value="/vmc_navserver/state" />
 <param name="initPoseFromGT" value="true" />
 
@@ -40,7 +40,7 @@
 <param name="size_y_meters" value="300" />
 <param name="size_z_meters" value="6" />
 
-<param name="resolution" value="0.2" />
+<param name="resolution" value="0.5" />
 <!--<param name="laser_variance_z" value="0.02" /> -->
 <param name="sensor_range" value="100." />
 <param name="min_laser_range" value="1.0" />
@@ -62,8 +62,8 @@
 <param name="plot_marker" value="point" />
 
 <param name="use_keyframe" value="true" />
-<param name="min_keyframe_dist" value="0.5" />
-<param name="min_keyframe_rot_deg" value="15.0" />
+<param name="min_keyframe_dist" value="0.2" />
+<param name="min_keyframe_rot_deg" value="5.0" />
 
 </node>
 

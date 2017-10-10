@@ -29,7 +29,7 @@ public:
                         const std::string &odom_file,
                         const std::string &base_name_pcd,
                         const Eigen::Affine3d &sensor_pose,
-                        const lslgeneric::MotionModel3d::Params &motion_params);
+                        const perception_oru::MotionModel3d::Params &motion_params);
 
   bool setGlobalMap(const std::string &file_name, const Eigen::Affine3d &T);
   bool setGlobalGraphMap(const std::string &file_name, int node_idx);
@@ -80,7 +80,7 @@ private:
   std::string base_name_pcd_;
   Eigen::Affine3d sensor_pose_;
 
-  lslgeneric::MotionModel3d motion_model;
+  perception_oru::MotionModel3d motion_model;
 
 
   std::vector<RegistrationScore> results;
@@ -116,6 +116,6 @@ private:
   std::vector<double> time_d2d_sc_;
 
   pcl::PointCloud<pcl::PointXYZ> pc_odom_, pc_d2d_, pc_d2d_sc_, pc_icp_, pc_gt_, pc1_, pc_icp_final_;
-  lslgeneric::NDTMap global_ndtmap_;
+  perception_oru::NDTMap global_ndtmap_;
   Eigen::Affine3d global_ndtmap_T_;
 };

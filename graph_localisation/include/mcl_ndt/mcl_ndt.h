@@ -7,6 +7,8 @@
 #include "ndt_mcl/3d_ndt_mcl.h"
 #include <angles/angles.h>
 #include <velodyne_pointcloud/point_types.h>
+#include "stdio.h"
+#include "vector"
 namespace perception_oru{
 namespace GraphMapLocalisation{
 
@@ -54,7 +56,6 @@ public:
   int SIR_max_iters_wo_resampling=25;
   double z_filter_min=-10000.0;
   double score_cell_weight=0.1;
-  double resolution=0;
   std::vector<double> motion_model, motion_model_offset;
 private:
   friend class LocalisationFactory;

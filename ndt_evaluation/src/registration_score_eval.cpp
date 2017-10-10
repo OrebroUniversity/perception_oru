@@ -7,7 +7,7 @@ RegistrationScoreEval::RegistrationScoreEval(const std::string &gt_file,
                                              const std::string &odom_file,
                                              const std::string &base_name_pcd,
                                              const Eigen::Affine3d &sensor_pose,
-                                             const lslgeneric::MotionModel3d::Params &motion_params) : base_name_pcd_(base_name_pcd), sensor_pose_(sensor_pose) {
+                                             const perception_oru::MotionModel3d::Params &motion_params) : base_name_pcd_(base_name_pcd), sensor_pose_(sensor_pose) {
 
 
   std::cout << "loading: " << gt_file << std::endl;
@@ -139,10 +139,10 @@ void RegistrationScoreEval::computeScoreSetsGlobalMap(int idx2, int dimidx1, int
   std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRotMat(sensor_pose_);
 
   // Work in the vehicle frame... move the points
-  lslgeneric::transformPointCloudInPlace(sensor_pose_, pc2);
+  perception_oru::transformPointCloudInPlace(sensor_pose_, pc2);
 
   // Compute the ndtmap
-  lslgeneric::NDTMap nd2(new lslgeneric::LazyGrid(resolution), true);
+  perception_oru::NDTMap nd2(new perception_oru::LazyGrid(resolution), true);
   nd2.loadPointCloud(pc2);
   nd2.computeNDTCellsSimple();
 
@@ -155,7 +155,7 @@ void RegistrationScoreEval::computeScoreSetsGlobalMap(int idx2, int dimidx1, int
   Eigen::MatrixXd Tcov = motion_model.getCovMatrix(T_rel_odom_);
 
   // Compute matches - currently we're only using the D2D.
-  lslgeneric::NDTMatcherD2D matcher_d2d;
+  perception_oru::NDTMatcherD2D matcher_d2d;
 
   //matcher_d2d.ITR_MAX = 1000;
   //matcher_d2d.DELTA_SCORE = 0.00001;
@@ -170,7 +170,7 @@ void RegistrationScoreEval::computeScoreSetsGlobalMap(int idx2, int dimidx1, int
   for (int i = 0; i < Ts.size(); i++) {
     double score_d2d;
     std::cout << "." << std::flush;
-    std::vector<lslgeneric::NDTCell*> nextNDT = nd2.pseudoTransformNDT(T_rel_*Ts[i]);
+    std::vector<perception_oru::NDTCell*> nextNDT = nd2.pseudoTransformNDT(T_rel_*Ts[i]);
     score_d2d = matcher_d2d.scoreNDT(nextNDT, global_ndtmap_);
     for(unsigned int j=0; j<nextNDT.size(); j++)
     {
@@ -185,9 +185,9 @@ void RegistrationScoreEval::computeScoreSetsGlobalMap(int idx2, int dimidx1, int
   T_rel_gt_ = global_ndtmap_T_.inverse() * Tgt[idx2];
 
   // Store the transformed pcd
-  pc_odom_ = lslgeneric::transformPointCloud(T_rel_odom_, pc2);
-  pc_gt_ = lslgeneric::transformPointCloud(T_rel_gt_, pc2);
-  pc_d2d_ = lslgeneric::transformPointCloud(T_d2d_, pc2);
+  pc_odom_ = perception_oru::transformPointCloud(T_rel_odom_, pc2);
+  pc_gt_ = perception_oru::transformPointCloud(T_rel_gt_, pc2);
+  pc_d2d_ = perception_oru::transformPointCloud(T_d2d_, pc2);
 
   // Update the global transf (using odom and gt as well here incase the idx changes)
   T_glb_d2d_ = T_glb_d2d_ * T_d2d_;
@@ -216,15 +216,15 @@ void RegistrationScoreEval::computeScoreSets(int idx1, int idx2, int dimidx1, in
   std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRotMat(sensor_pose_);
 
   // Work in the vehicle frame... move the points
-  lslgeneric::transformPointCloudInPlace(sensor_pose_, pc1);
-  lslgeneric::transformPointCloudInPlace(sensor_pose_, pc2);
+  perception_oru::transformPointCloudInPlace(sensor_pose_, pc1);
+  perception_oru::transformPointCloudInPlace(sensor_pose_, pc2);
 
   // Compute the ndtmap
-  lslgeneric::NDTMap nd1(new lslgeneric::LazyGrid(resolution), true);
+  perception_oru::NDTMap nd1(new perception_oru::LazyGrid(resolution), true);
   nd1.loadPointCloud(pc1);
   nd1.computeNDTCellsSimple();
 
-  lslgeneric::NDTMap nd2(new lslgeneric::LazyGrid(resolution), true);
+  perception_oru::NDTMap nd2(new perception_oru::LazyGrid(resolution), true);
   nd2.loadPointCloud(pc2);
   nd2.computeNDTCellsSimple();
 
@@ -238,8 +238,8 @@ void RegistrationScoreEval::computeScoreSets(int idx1, int idx2, int dimidx1, in
 
 
   // Compute matches
-  lslgeneric::NDTMatcherD2D matcher_d2d;
-  lslgeneric::NDTMatcherD2DSC matcher_d2d_sc;
+  perception_oru::NDTMatcherD2D matcher_d2d;
+  perception_oru::NDTMatcherD2DSC matcher_d2d_sc;
   T_d2d_ = T_rel_odom_;
   T_d2d_sc_ = T_rel_odom_;
 
@@ -318,11 +318,11 @@ void RegistrationScoreEval::computeScoreSets(int idx1, int idx2, int dimidx1, in
   T_rel_gt_ = Tgt[idx1].inverse() * Tgt[idx2];
 
   // Store the transformed pcd
-  pc_odom_ = lslgeneric::transformPointCloud(T_rel_odom_, pc2);
-  pc_gt_ = lslgeneric::transformPointCloud(T_rel_gt_, pc2);
-  pc_d2d_ = lslgeneric::transformPointCloud(T_d2d_, pc2);
-  pc_d2d_sc_ = lslgeneric::transformPointCloud(T_d2d_sc_, pc2);
-  pc_icp_ = lslgeneric::transformPointCloud(T_icp_, pc2);
+  pc_odom_ = perception_oru::transformPointCloud(T_rel_odom_, pc2);
+  pc_gt_ = perception_oru::transformPointCloud(T_rel_gt_, pc2);
+  pc_d2d_ = perception_oru::transformPointCloud(T_d2d_, pc2);
+  pc_d2d_sc_ = perception_oru::transformPointCloud(T_d2d_sc_, pc2);
+  pc_icp_ = perception_oru::transformPointCloud(T_icp_, pc2);
   pc1_ = pc1;
 
   // Update the global transf (using odom and gt as well here incase the idx changes)

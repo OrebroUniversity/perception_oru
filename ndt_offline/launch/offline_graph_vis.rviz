@@ -298,6 +298,22 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: state_base_link
       Value: false
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.300000012
+      Axes Radius: 0.00999999978
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: PoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Arrow (Flat)
+      Topic: /graphMap
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -322,25 +338,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 17.619545
+      Distance: 70
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 121.49456
-        Y: 134.449036
-        Z: 2.1239498e-06
-      Focal Shape Fixed Size: true
+        X: 120.732147
+        Y: 137.953064
+        Z: 1.99997532
+      Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.884796381
+      Pitch: 1.14539778
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.55858088
+      Yaw: 4.37039614
     Saved: ~
 Window Geometry:
   Displays:

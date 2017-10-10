@@ -575,7 +575,6 @@ void processData() {
           Eigen::Affine3d tmp = fuser_pose*sensor_offset;
           perception_oru::transformPointCloudInPlace(tmp, points2);
           cloud_pub->publish(points2);
-          std::cout << "sensor_offset : " << sensor_offset.translation() << std::endl;
           fuser_->PlotMapType();
         }
       }

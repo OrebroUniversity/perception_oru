@@ -6,15 +6,15 @@ MCLNDTType::MCLNDTType(LocalisationParamPtr param):LocalisationType(param){
   if(MCLNDTParamPtr mclParam=boost::dynamic_pointer_cast<MCLNDTParam>(param)){
 
 
-    //    NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
-    //    if (current_map != NULL) {
-    //      resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
-    //    }
-    //    else {
-    //      ROS_INFO_STREAM("Not a NDTMapType used(!)");
-    //    }
+        NDTMapPtr current_map = boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap());
+        if (current_map != NULL) {
+          resolution=boost::dynamic_pointer_cast<NDTMapType>(graph_map_->GetCurrentNode()->GetMap())->GetResolution();
+        }
+        else {
+          ROS_INFO_STREAM("MCL-NDT is only valid for NDT maps");
+          exit(0);
+        }
 
-    resolution=mclParam->resolution;
     forceSIR=mclParam->forceSIR;
     motion_model=mclParam->motion_model;
     motion_model_offset=mclParam->motion_model_offset;
@@ -87,7 +87,7 @@ void MCLNDTType::UpdateAndPredict(pcl::PointCloud<pcl::PointXYZ> &cloud, const E
   }
   else
     pf.predict(Tmotion,m[0], m[1], m[2], m[3], m[4], m[5]);
-  pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
+    pose_=graph_map_->GetCurrentNodePose()*pf.getMean();
 
   if((pose_.translation()-pose_last_update_.translation()).norm()<0.01 && (pose_last_update_.inverse()*pose_).rotation().eulerAngles(0,1,2).norm()<0.005 )
     return;
@@ -255,14 +255,15 @@ std::string MCLNDTType::ToString(){
   return ss.str();
 }
 
-void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy}
+void MCLNDTType::InitializeLocalization(const Eigen::Affine3d &pose,const Vector6d &variance){ //Vector3d variance={Vx, Vy, Vz Vp Vr Vy} pose specified in global frame
   pose_=pose;
   pose_last_update_=pose_;
-  graph_map_->SwitchToClosestMapNode(pose_);//specified in local frame, should be specified in gloval
+  graph_map_->SwitchToClosestMapNode(pose_);
   //map_= boost::dynamic_pointer_cast< NDTMapType >(graph_map_->GetCurrentNode()->GetMap())->GetNDTMap();
   map_ = this->GetCurrentNodeNDTMap();
-  Eigen::Vector3d pos=pose_.translation();
-  Eigen::Vector3d euler = pose_.rotation().eulerAngles(0,1,2);
+  Eigen::Affine3d pose_local=graph_map_->GetCurrentNodePose().inverse()*pose;
+  Eigen::Vector3d pos=pose_local.translation();
+  Eigen::Vector3d euler = pose_local.rotation().eulerAngles(0,1,2);
   normalizeEulerAngles(euler);
   pf.initializeNormalRandom(n_particles_, pos(0),pos(1),pos(2),euler(0),euler(1), euler(2), variance(0),variance(1),variance(2),variance(3),variance(4),variance(5));
   initialized_=true;

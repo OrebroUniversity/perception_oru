@@ -16,6 +16,7 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     cerr<<"fuser not initialized"<<endl;
     return registration_succesfull;
   }
+  cout<<"Frame: "<<FramesProcessed()<<", ";
   fuse_this_frame=KeyFrameBasedFuse(Tnow);//fuse frame based on distance traveled
   Eigen::Affine3d T_world_to_local_map=graph_map_->GetCurrentNodePose().inverse(); //transformation from node to world frame
   Tnow=T_world_to_local_map*Tnow;//change frame to local map
@@ -26,7 +27,7 @@ bool GraphMapFuser::ProcessFrame(pcl::PointCloud<PointT> &cloud, Eigen::Affine3d
     registration_succesfull = registrator_->Register(graph_map_->GetCurrentNode()->GetMap(),Tnow,cloud,motion_cov);//Tnow will be updated to the actual pose of the robot according to ndt-d2d registration
   }
   else {
-    cout<<"no registration"<<endl;
+    cout<<"No registration"<<endl;
   }
   if(graph_map_->AutomaticMapInterchange(Tnow,motion_cov,T_world_to_local_map,map_node_changed,map_node_created) && map_node_changed)
   {

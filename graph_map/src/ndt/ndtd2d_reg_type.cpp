@@ -13,7 +13,6 @@ NDTD2DRegType::NDTD2DRegType(const Affine3d &sensor_pose, RegParamPtr paramptr):
     matcher2D_.ITR_MAX = param_ptr->matcher2D_ITR_MAX;
     matcher2D_.step_control=param_ptr->matcher2D_step_control;
     matcher2D_.n_neighbours=param_ptr->matcher2D_n_neighbours;
-    cout<<"succesfully applied ndt d2d registration parameters"<<endl;
   }
   else
     cerr<<"ndtd2d registrator has NULL parameters"<<endl;
@@ -22,7 +21,7 @@ NDTD2DRegType::NDTD2DRegType(const Affine3d &sensor_pose, RegParamPtr paramptr):
 NDTD2DRegType::~NDTD2DRegType(){}
 
 bool NDTD2DRegType::Register(MapTypePtr maptype,Eigen::Affine3d &Tnow,pcl::PointCloud<pcl::PointXYZ> &cloud,Matrix6d cov) {
-cout<<" Registration:NDT ";
+
   if(!enableRegistration_||!maptype->Initialized()){
     cout<<"Registration disabled - motion based on odometry"<<endl;
     return true;
@@ -40,9 +39,7 @@ cout<<" Registration:NDT ";
   //Get ndt map pointer
   NDTMapPtr MapPtr = boost::dynamic_pointer_cast< NDTMapType >(maptype);
   NDTMap *globalMap=MapPtr->GetNDTMap();
-  // cout<<"number of cell in (global/local) map"<<globalMap->getAllCells().size()<<","<<ndlocal.getAllCells().size()<<endl;
   bool matchSuccesfull;
-  cout<<"will register ndt"<<endl;
   if(registration2d_){
     matchSuccesfull=matcher2D_.match(*globalMap, ndlocal,Tinit,true);
   }
@@ -69,6 +66,7 @@ cout<<" Registration:NDT ";
     }
     else{
       Tnow = Tinit;//return registered value
+      cout<<" registration successful"<<endl;;
       return true;
     }
   }

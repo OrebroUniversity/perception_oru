@@ -13,7 +13,6 @@ namespace libgraphMap{
       resolution_=param ->resolution_;
       map_ = new perception_oru::NDTMap(new perception_oru::LazyGrid(resolution_));
       map_->initialize(0.0,0.0,0.0,param->sizex_,param->sizey_,param->sizez_);
-      cout<<"created ndt2dmap"<<endl;
     }
     else
       cerr<<"Cannot create instance of NDTmapHMT"<<std::endl;

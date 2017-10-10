@@ -2,7 +2,7 @@
 #include <boost/serialization/export.hpp>
 BOOST_CLASS_EXPORT(perception_oru::libgraphMap::GraphMapNavigator)
 namespace perception_oru{
-namespace libgraphMap{
+  namespace libgraphMap{
   GraphMapNavigator::GraphMapNavigator(const Eigen::Affine3d &nodepose, const MapParamPtr &mapparam, const GraphParamPtr graphparam): GraphMap(nodepose, mapparam ,graphparam){}
 
   bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow, const Matrix6d &cov, Affine3d & T_world_to_local_map,const double radius){
@@ -10,20 +10,16 @@ namespace libgraphMap{
     MapNodePtr closest_map_node=NULL;
     double closest_distance=-1.0;
     cout<<"currently at pose="<<Tnow.translation()<<endl;
-    for(std::vector<NodePtr>::iterator itr_node = nodes_.begin(); itr_node != nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
+    for(std::vector<MapNodePtr>::iterator itr_node = map_nodes_.begin(); itr_node != map_nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
       if(radius==0.0 || (*itr_node)->WithinRadius(Tnow,radius) ){ //if a node is within radius of pose and the node is of type "map type"
-        if(  MapNodePtr found_map_node_ptr = boost::dynamic_pointer_cast< MapNode >(*itr_node) ){ //A map node has now been found within radius)
-          double found_distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();//Euclidian distance between robot pose and map node pose;
-          cout<<"Node is within range of previously created map, distance="<<found_distance<<endl;
-          if(closest_distance==-1.0|| found_distance<closest_distance){
-            node_found=true;
-            closest_map_node=found_map_node_ptr;
-            closest_distance=found_distance;
-            cout<<"closest node found at pose=\n"<<closest_map_node->GetPose().translation()<<endl;
-          }
+        double found_distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();//Euclidian distance between robot pose and map node pose;
+        cout<<"Node is within range of previously created map, distance="<<found_distance<<endl;
+        if(closest_distance==-1.0|| found_distance<closest_distance){
+          node_found=true;
+          closest_map_node=*itr_node;
+          closest_distance=found_distance;
+          cout<<"closest node found at pose=\n"<<closest_map_node->GetPose().translation()<<endl;
         }
-        else
-          cout<<"wrong type of previously created node"<<endl;
       }
     }
     if(node_found ){//if any node at all was found, switch to the closest and update Tnow & T_world_to_local_map (transformation to current node)
@@ -38,14 +34,12 @@ namespace libgraphMap{
     bool node_found=false;
     MapNodePtr closest_map_node=NULL;
     double closest_distance=0.0;
-    for(std::vector<NodePtr>::iterator itr_node = nodes_.begin(); itr_node != nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
-      if(  MapNodePtr found_map_node_ptr = boost::dynamic_pointer_cast< MapNode >(*itr_node) ){ //A map node has now been found within radius)
-        double found_distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();//Euclidian distance between robot pose and map node pose;
-        if(closest_distance==0.0|| found_distance<closest_distance){
-          node_found=true;
-          closest_map_node=found_map_node_ptr;
-          closest_distance=found_distance;
-        }
+    for(std::vector<MapNodePtr>::iterator itr_node = map_nodes_.begin(); itr_node != map_nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
+      double found_distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();//Euclidian distance between robot pose and map node pose;
+      if(closest_distance==0.0|| found_distance<closest_distance){
+        node_found=true;
+        closest_map_node=*itr_node;
+        closest_distance=found_distance;
       }
     }
     if(node_found ){//if any node at all was found, switch to the closest and update Tnow & T_world_to_local_map (transformation to current node)
@@ -60,9 +54,27 @@ namespace libgraphMap{
   }
 
   bool GraphMapNavigator::SwitchToClosestMapNode(Affine3d &Tnow){
-    Eigen::Affine3d world_to_local;
-    double unlimited_distance=0.0;
-    return SwitchToClosestMapNode(Tnow,unit_covar,world_to_local,unlimited_distance);
+
+    double min_dist=DBL_MAX;
+    MapNodePtr closest_map_node=NULL;
+    for(std::vector<MapNodePtr>::iterator itr_node = map_nodes_.begin(); itr_node != map_nodes_.end(); ++itr_node) { //loop thorugh all existing nodes
+      double distance= Eigen::Vector3d(Tnow.translation()-(*itr_node)->GetPose().translation()).norm();
+      if(distance<min_dist){
+        closest_map_node=*itr_node;
+        min_dist=distance;
+      }
+    }
+    if(closest_map_node!=NULL){
+      if(closest_map_node!=currentNode_){
+        prevNode_=currentNode_;
+        currentNode_=closest_map_node;
+        cout<<"Switched to node: "<<currentNode_->GetPose().translation().transpose()<<endl;
+        return true;
+      }
+      else
+        cout<<"No map transition"<<endl;
+    }
+    else return false;
   }
 
   bool GraphMapNavigator::AutomaticMapInterchange(Affine3d &Tnow, const Matrix6d &cov_incr, Affine3d & T_world_to_local_map,bool &changed_map_node,bool &created_map_node){
@@ -73,7 +85,7 @@ namespace libgraphMap{
     if(use_submap_!=false){
       Tnow=T_world_to_local_map.inverse()*Tnow;//map Tnow to world frame
       if(! currentNode_->WithinRadius(Tnow,interchange_radius_)){ //No longer within radius of node
-        cout<<"Left boundries of previous map, will  search through "<<nodes_.size()<<" node(s) to find a map node within range of"<<interchange_radius_<<"m"<<endl;
+        cout<<"Left boundries of previous map, will  search through "<<map_nodes_.size()<<" node(s) to find a map node within range of"<<interchange_radius_<<"m"<<endl;
         if( changed_map_node=SwitchToClosestMapNode(Tnow,cov_incr,T_world_to_local_map,interchange_radius_)){
           cout<<"switched to node="<<currentNode_->GetPose().translation()<<endl;
           //Reset covariance
@@ -104,5 +116,5 @@ namespace libgraphMap{
     ia & ptr;
   }
 
-}
+  }
 }

@@ -9,13 +9,14 @@ GraphMap::GraphMap(const Affine3d &nodepose,const MapParamPtr &mapparam,const Gr
   prevNode_=NULL;
   currentNode_=GraphFactory::CreateMapNode(nodepose,mapparam);//The first node to be added
   nodes_.push_back(currentNode_);
+  map_nodes_.push_back(currentNode_);
   mapparam_=mapparam;
   use_submap_=graphparam->use_submap_;
   interchange_radius_=graphparam->interchange_radius_;
   compound_radius_=graphparam->compound_radius_;
   use_keyframe_=graphparam->use_keyframe_;
-   min_keyframe_dist_=graphparam->min_keyframe_dist_;
-   min_keyframe_rot_deg_=graphparam->min_keyframe_rot_deg_;
+  min_keyframe_dist_=graphparam->min_keyframe_dist_;
+  min_keyframe_rot_deg_=graphparam->min_keyframe_rot_deg_;
 
   //double min_size=mapparam->sizex_< mapparam->sizey_? mapparam->sizex_ : mapparam->sizey_; //select min map length
   //interchange_radius_=min_size/2-mapparam_->max_range_;//
@@ -26,6 +27,7 @@ GraphMap::GraphMap(){
   prevNode_=NULL;
   nodes_.clear();//Vector of all nodes in graph
   factors_.clear();
+  map_nodes_.clear();
   mapparam_=NULL;//
   bool use_submap_=false;
   double interchange_radius_=0;
@@ -46,6 +48,7 @@ void GraphMap::AddMapNode(const MapParamPtr &mapparam, const Affine3d &diff, con
   FactorPtr sd=GraphFactory::CreateMapNodeFactor(currentNode_,newNode,diff,cov);
   factors_.push_back(sd);//Add connection between current and new node with link diff and covariance
   nodes_.push_back(newNode);
+  map_nodes_.push_back(newNode);
   currentNode_=newNode;
 }
 string GraphMap::ToString(){

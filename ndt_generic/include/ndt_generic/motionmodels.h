@@ -7,6 +7,8 @@ namespace perception_oru
 bool GetMotionModel(const std::string &dataset, std::vector<double> &motion_model, std::vector<double> &motion_model_offset){
 
  if(dataset.compare("hx")==0){
+   std::cout<<"hx motion settings applied"<<std::endl;
+   motion_model.clear();
    motion_model[0] = 0.01;
    motion_model[1] = 0.002;
    motion_model[2] = 0.001;
@@ -63,6 +65,8 @@ bool GetMotionModel(const std::string &dataset, std::vector<double> &motion_mode
    motion_model_offset[5] = 0.000002;
  }
  else if(dataset.compare("arla-2012")==0){
+   std::cout<<"arla-2012 motion settings applied"<<std::endl;
+     motion_model.clear();
      motion_model.push_back(0.05);
      motion_model.push_back(0.05);
      motion_model.push_back(0.00000);
@@ -101,9 +105,9 @@ bool GetMotionModel(const std::string &dataset, std::vector<double> &motion_mode
 
      motion_model.push_back(0.01);
      motion_model.push_back(0.01);
-     motion_model.push_back(0.00001);
-     motion_model.push_back(0.00001);
-     motion_model.push_back(0.00001);
+     motion_model.push_back(0.00000);
+     motion_model.push_back(0.00000);
+     motion_model.push_back(0.00000);
      motion_model.push_back(0.01);
 
      /*motion_model_offset.push_back(0.00);
@@ -115,9 +119,9 @@ bool GetMotionModel(const std::string &dataset, std::vector<double> &motion_mode
 
      motion_model_offset.push_back(0.005);
      motion_model_offset.push_back(0.005);
-     motion_model_offset.push_back(0.000000001);//0.002
-     motion_model_offset.push_back(0.0000001);//0.001
-     motion_model_offset.push_back(0.0000001);//0.001
+     motion_model_offset.push_back(0.000000000);//0.002
+     motion_model_offset.push_back(0.0000000);//0.001
+     motion_model_offset.push_back(0.0000000);//0.001
    motion_model_offset.push_back(0.003);
  /*  motion_model[0] = 0.01;
    motion_model[1] = 0.00001;

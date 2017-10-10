@@ -54,6 +54,7 @@ protected:
   MapNodePtr currentNode_=NULL,prevNode_=NULL;//The current node
   std::vector<NodePtr> nodes_;//Vector of all nodes in graph
   std::vector<FactorPtr> factors_;
+  std::vector<MapNodePtr> map_nodes_;
   MapParamPtr mapparam_=NULL;//
   bool use_submap_=false;
   double interchange_radius_=0;
@@ -70,6 +71,7 @@ private:
     ar & currentNode_;
     ar & prevNode_;
     ar & nodes_;
+    ar & map_nodes_;
     ar & factors_;
     ar & use_submap_;
     ar & interchange_radius_;

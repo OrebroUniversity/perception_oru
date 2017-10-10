@@ -1,0 +1,33 @@
+
+output_folder="/home/daniel/.ros/maps/eval"
+interchangeR="5"
+compoundR="1"
+resolution="0.8"
+
+#------------CREATE GLOBAL MAP ------------------
+roslaunch ndt_offline visualize_graph_fuser.launch arla-2012:=true &
+rosrun ndt_offline graph_fuser3d_offline --sensor_time_offset 0.025 --max-range 100 --reader-type pcl_reader --base-name off --dir-name ../../ndt_offline/bag/arla_bags --velodyne-packets-topic /velodyne_packets --velodyne_frame_id /velodyne --data-set arla-2012 --use-odometry --map_type_name ndt_map  --velodyne_config_file ../../ndt_offline/config/velo32.yaml --save-map --output-dir-name ${output_folder} --resolution ${resolution} --interchange-radius ${interchangeR} --compound-radius ${compoundR} --map-size-xy 250 --map-size-z 10.0 --skip-frame 30 keyframe-min-distance 0.1 --keyframe-min-rot-deg 5  --gt-mapping #--disable-keyframe-update --visualize --disable-submap
+submap_est="off_gt_arla-2012__Sub=1_sizexy=250_Z=10_intrchR=${interchangeR}_compR=${compoundR}_res=${resolution}_maxSensd=100_keyF=1_d=0.5_deg=5_dl=0_xyzir=0_mpsu=0_mnpfg=6kmnp0_npart=30_mpsu=0_mnpfg=6_est.txt"
+submap_gt="off_gt_arla-2012__Sub=1_sizexy=250_Z=10_intrchR=${interchangeR}_compR=${compoundR}_res=${resolution}_maxSensd=100_keyF=1_d=0.5_deg=5_dl=0_xyzir=0_mpsu=0_mnpfg=6kmnp0_npart=30_mpsu=0_mnpfg=6_gt.txt"
+
+#------------CREATE LOCAL MAPS ------------------
+roslaunch ndt_offline visualize_graph_fuser.launch arla-2012:=true &
+rosrun ndt_offline graph_fuser3d_offline --sensor_time_offset 0.025 --max-range 100 --reader-type pcl_reader --base-name off --dir-name ../../ndt_offline/bag/arla_bags --velodyne-packets-topic /velodyne_packets --velodyne_frame_id /velodyne --data-set arla-2012 --use-odometry --map_type_name ndt_map  --velodyne_config_file ../../ndt_offline/config/velo32.yaml --save-map --output-dir-name ${output_folder} --resolution ${resolution} --interchange-radius ${interchangeR} --compound-radius ${compoundR} --map-size-xy 250 --map-size-z 10.0 --skip-frame 30 keyframe-min-distance 0.1 --keyframe-min-rot-deg 5  --gt-mapping --disable-submap #--disable-keyframe-update --visualize
+global_map_est="off_gt_arla-2012__Sub=0_sizexy=250_Z=10_intrchR=${interchangeR}_compR=${compoundR}_res=${resolution}_maxSensd=100_keyF=1_d=0.5_deg=5_dl=0_xyzir=0_mpsu=0_mnpfg=6kmnp0_npart=30_mpsu=0_mnpfg=6_est.txt"
+global_map_gt="off_gt_arla-2012__Sub=0_sizexy=250_Z=10_intrchR=${interchangeR}_compR=${compoundR}_res=${resolution}_maxSensd=100_keyF=1_d=0.5_deg=5_dl=0_xyzir=0_mpsu=0_mnpfg=6kmnp0_npart=30_mpsu=0_mnpfg=6_gt.txt"
+
+
+
+
+#------------RUN MCL------------------------------
+roslaunch ndt_offline visualize_graph_fuser.launch arla-2012:=true &
+rosrun ndt_offline graph_mcl_offline --save-results --skip-frame 50 --z-filter-height 2.0 --base-name mcl-ndt --bag-file-path ../../ndt_offline/bag/arla_bags/2012-09-05-09-44-50_0.bagfix.bag_edited.bag --reader-type pcl_reader --map-dir-path ${output_folder}  --data-set arla-2012 --velodyne_config_file ../../ndt_offline/config/velo32.yaml  --n-particles 30 --visualize
+
+
+
+#------------EVALUATE RESULTS
+echo global_map
+rosrun ndt_feature_reg evaluate_rpe.py ${output_folder}/${global_map_gt} ${output_folder}/${global_map_est} --fixed_delta --delta_unit f --plot global.png --plot_rot global.png --verbose >
+
+echo submap
+rosrun ndt_feature_reg evaluate_rpe.py ${output_folder}/${submap_gt} ${output_folder}/${submap_est} --fixed_delta --delta_unit f --plot local.png --plot_rot local.png --verbose

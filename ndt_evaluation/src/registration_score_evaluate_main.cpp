@@ -33,7 +33,7 @@ int main(int argc, char** argv)
   double incr_ang;
   std::string out_file;
   // Simply to make it transparant to the fuser node.
-  lslgeneric::MotionModel2d::Params motion_params;
+  perception_oru::MotionModel2d::Params motion_params;
   int iter_step;
   int iters;
   std::string global_ndtmap_file;
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
   Eigen::Affine3d sensor_pose = ndt_generic::vectorsToAffine3d(transl,euler);
   std::cout << "Sensor pose used : " << ndt_generic::affine3dToStringRPY(sensor_pose) << std::endl;
 
-  lslgeneric::MotionModel3d::Params motion_params3d(motion_params);
+  perception_oru::MotionModel3d::Params motion_params3d(motion_params);
 
   std::cout << "Motion params used : " << motion_params3d << std::endl;
 

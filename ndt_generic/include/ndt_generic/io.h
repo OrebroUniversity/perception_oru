@@ -167,25 +167,30 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
  public:
    CreateEvalFiles(const std::string &output_dir_name, const std::string &base_name, bool enable=true){
       output_dir_name_=output_dir_name;
-      std::cout<<"output:"<<output_dir_name_<<std::endl;
-      std::cout<<"base_name:"<<base_name<<std::endl;
-     if(output_dir_name_.length()>0 &&output_dir_name_[output_dir_name_.length()-1]!='/')
+     if(output_dir_name_.length()>0 &&output_dir_name_[output_dir_name_.length()-1]!='/')//if doesnt end with '/' add '/'
        output_dir_name_+='/';
 
-     std::cout<<output_dir_name_<<std::endl;
+
      base_name_=base_name;
      enable_=enable;
+     if(enable_){
+     std::cout<<"output directory:"<<output_dir_name_<<std::endl;
+     std::cout<<"base_name:"<<base_name<<std::endl;
      CreateOutputFiles();
+     }
+     else
+      std::cout<<"Evaluation output disabled"<<std::endl;
+
    }
 
    void Write(const ros::Time frame_time ,const Eigen::Affine3d &Tgtbase,const Eigen::Affine3d &Todombase,const Eigen::Affine3d &Tfuserpose,const Eigen::Affine3d &sensoroffset){
      if(!enable_)
        return;
-     std::cout<<"writing results  to file"<<std::endl;
-     gt_file << frame_time << " " << transformToEvalString(Tgtbase);
-     odom_file << frame_time << " " << transformToEvalString(Todombase);
-     est_file << frame_time << " " << transformToEvalString(Tfuserpose);
-     sensorpose_est_file << frame_time << " " << transformToEvalString(Tfuserpose * sensoroffset);
+
+    gt_file << frame_time << " " << transformToEvalString(Tgtbase);
+    odom_file << frame_time << " " << transformToEvalString(Todombase);
+    est_file << frame_time << " " << transformToEvalString(Tfuserpose);
+    sensorpose_est_file << frame_time << " " << transformToEvalString(Tfuserpose * sensoroffset);
     gt_file.flush();
     odom_file.flush();
     est_file.flush();
@@ -205,7 +210,7 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
    void CreateOutputFiles(){
      if(!enable_)
        return;
-
+     std::cout<<"create output files"<<std:: endl;
      std::string filename;
      {
        filename =output_dir_name_ + base_name_ + std::string("_gt.txt");
@@ -225,12 +230,14 @@ std::vector<double> loadDoubleVecTextFile(const std::string &fileName) {
      }
      if (!gt_file.is_open() || !est_file.is_open() || !odom_file.is_open())
      {
-       std::cout<<"Error opening evaluation output files at path:"<<std::endl;
+       std::cout<<"Error creating evaluation output files at path:"<<std::endl;
        std::cout<<filename<<std::endl;
        exit(0);
      }
-     else
+     else{
+       std::cout<<"Created output evaluation files at path: "<<output_dir_name_+base_name_<<std::endl;
        return;
+     }
    }
    bool enable_;
    std::string output_dir_name_,base_name_;

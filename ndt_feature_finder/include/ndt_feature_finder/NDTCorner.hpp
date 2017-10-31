@@ -11,10 +11,39 @@ namespace perception_oru{
 	
 	namespace ndt_feature_finder{
 		
+		class NDTCornerBundle{
+		protected:
+			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell1;
+			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell2;
+			Eigen::Vector3d _mean;
+			double _angle;
+			double _direction;
+			
+		public:
+			NDTCornerBundle(){}
+			NDTCornerBundle(const Eigen::Vector3d& m) :
+				_mean(m)
+			{}
+			void push_back_cell1(const boost::shared_ptr< lslgeneric::NDTCell >& c1){_cell1.push_back(c1);}
+			void push_back_cell2(const boost::shared_ptr< lslgeneric::NDTCell >& c2){_cell2.push_back(c2);}
+			void setMean(const Eigen::Vector3d& m){_mean = m;}
+			void setAngle(double a){_angle = a;}
+			void setDirection(double d){_direction = d;}
+			
+			const Eigen::Vector3d& getMean() const {return _mean;}
+			Eigen::Vector3d getMean(){return _mean;}
+			
+			void inverse_distance_weighting(){
+				
+			}
+		};
+		
 		
 		class NDTCorner{
 			
 		protected:
+			
+			
 			double _x_cell_size, _y_cell_size, _z_cell_size;
 			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > _corners;
 			std::vector< Eigen::Vector3d > _corners_position;
@@ -37,7 +66,7 @@ namespace perception_oru{
 			/**
 			 * @brief return true if the cell correspond to a corner
 			 */
-			bool cellIsCorner(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& allCells, Eigen::Vector3d& corner) ;
+			bool cellIsCorner(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& allCells, NDTCornerBundle& corner) ;
 			
 			/**
 			 * @brief calculate and return a vector of all corners in ndt_map
@@ -47,7 +76,7 @@ namespace perception_oru{
 			/**
 			 * @brief return all the cells around cell that possess a gaussian and are maximum the resolution of the map away.
 			 */
-			std::vector< lslgeneric::NDTCell* > getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size) const ;
+			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size) const ;
 			
 			/**
 			 * @brief return the angle between two Vectors.
@@ -57,7 +86,7 @@ namespace perception_oru{
 			/**
 			 * @brief return the index of the biggest eigen vector in the 2D plane xy
 			 */
-			int getBiggestEigenVector2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const;
+// 			int getBiggestEigenVector2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec) const;
 			
 			/**
 			 * @brief return the angle width and direction of all corner detected by it
@@ -133,8 +162,8 @@ namespace perception_oru{
 			
 		private:
 			
-			std::vector< lslgeneric::NDTCell* > getCellsPointingToward(std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell) const;
-			bool gotAngledNDT(const lslgeneric::NDTMap& map, std::vector< lslgeneric::NDTCell* >& neighbor, Eigen::Vector3d& corner) ;
+			
+			bool gotAngledNDT(const lslgeneric::NDTMap& map, std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& neighbor, NDTCornerBundle& corner) ;
 			/**
 			 * @brief remove doubles of corners. ATTENTION : it does not update the openCV corners
 			 */
@@ -148,8 +177,9 @@ namespace perception_oru{
 			 */
 			void calculateAngles(const lslgeneric::NDTMap& map);
 			
-			
+			std::vector< lslgeneric::NDTCell* > getCellsPointingToward(std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell) const;
 			bool AlignedNDT(const std::vector< lslgeneric::NDTCell* >& neighbor, const lslgeneric::NDTCell& cell);
+			
 		};
 		
 	}

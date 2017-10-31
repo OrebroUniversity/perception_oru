@@ -2144,7 +2144,7 @@ std::vector< boost::shared_ptr<lslgeneric::NDTCell> > NDTMap::getAllCellsShared(
 		}
         it++;
     }
-    std::cout << "Retyurn " << ret.size() << std::endl;
+    std::cout << "Return " << ret.size() << std::endl;
     return ret;
 }
 

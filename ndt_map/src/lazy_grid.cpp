@@ -349,6 +349,36 @@ void LazyGrid::getNeighbors(const pcl::PointXYZ &point, const double &radius, st
 
 }
 
+void LazyGrid::getNeighborsShared(const pcl::PointXYZ &point, const double &radius, std::vector<boost::shared_ptr< NDTCell > > &cells)
+{
+    int indX,indY,indZ;
+    this->getIndexForPoint(point, indX,indY,indZ);
+    if(indX >= sizeX || indY >= sizeY || indZ >= sizeZ)
+    {
+        cells.clear();
+        return;
+    }
+
+    for(int x = indX - radius/cellSizeX; x<=indX+radius/cellSizeX; x++)
+    {
+        if(x < 0 || x >= sizeX) continue;
+        for(int y = indY - radius/cellSizeY; y<=indY+radius/cellSizeY; y++)
+        {
+            if(y < 0 || y >= sizeY) continue;
+            for(int z = indZ - radius/cellSizeZ; z<=indZ+radius/cellSizeZ; z++)
+            {
+                if(z < 0 || z >= sizeZ) continue;
+                if(dataArray[x][y][z]==NULL) continue;
+				NDTCell* nd = dataArray[x][y][z]->copy();
+				boost::shared_ptr< NDTCell > smart_pointer(nd);
+				cells.push_back(smart_pointer);
+            }
+        }
+    }
+
+}
+
+
 void LazyGrid::getIndexForPoint(const pcl::PointXYZ& point, int &indX, int &indY, int &indZ)
 {
     indX = floor((point.x - centerX)/cellSizeX+0.5) + sizeX/2.0;

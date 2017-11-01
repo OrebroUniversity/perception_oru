@@ -297,6 +297,10 @@ inline void getCenter(double &cx,double &cy,double &cz) const
     {
         evals_ = ev;
     }
+    ///FOR TESTING ONLY
+    inline void setEvecs(const Eigen::Matrix3d& ev){
+		evecs_ = ev;
+	}
 
 
 

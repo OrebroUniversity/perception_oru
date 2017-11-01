@@ -13,11 +13,23 @@ namespace perception_oru{
 		
 		class NDTCornerBundle{
 		protected:
+			
+			struct EigenValVec{
+				Eigen::Vector3d eigenvec;
+				double eigenval;
+				Eigen::Vector3d NormEigen(){
+					return eigenvec * eigenval;
+				}
+			};
+			
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell1;
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell2;
-			Eigen::Vector3d _mean;
 			double _angle;
 			double _direction;
+			
+			Eigen::Matrix3d _eigen_vector;
+			Eigen::Vector3d _eigen_values;
+			Eigen::Vector3d _mean;
 			
 		public:
 			NDTCornerBundle(){}
@@ -32,10 +44,70 @@ namespace perception_oru{
 			
 			const Eigen::Vector3d& getMean() const {return _mean;}
 			Eigen::Vector3d getMean(){return _mean;}
+			const Eigen::Matrix3d& getEigenVectors(){return _eigen_vector;}
+			const Eigen::Vector3d& getEigenValues(){return _eigen_values;}
 			
-			void inverse_distance_weighting(){
+			void inverseDistanceWeighting(){
 				
 			}
+			
+			void gaussian(){
+				auto cell1 = _cell1[0];
+				auto cell2 = _cell2[0];
+				
+				EigenValVec biggest_cell1, smallest_cell1, biggest_cell2, smallest_cell2;
+				
+				getEigenVectors(*cell1, biggest_cell1, smallest_cell1);
+				getEigenVectors(*cell2, biggest_cell2, smallest_cell2);
+				
+				Eigen::Vector3d side_point1_cell1;
+				Eigen::Vector3d side_point2_cell1;
+				side_point1_cell1 = cell1->getMean() + smallest_cell1.NormEigen();
+				side_point2_cell1 = cell1->getMean() - smallest_cell1.NormEigen();
+				
+				Eigen::Vector3d side_point1_cell2;
+				Eigen::Vector3d side_point2_cell2;
+				side_point1_cell2 = cell2->getMean() + smallest_cell2.NormEigen();
+				side_point2_cell2 = cell2->getMean() - smallest_cell2.NormEigen();
+				
+				std::cout << "All points " << side_point1_cell1 << " \n\n " << side_point1_cell2 << " \n\n " << side_point2_cell2 << std::endl;
+
+				//First collision line
+				auto collision = collisionRay(biggest_cell1.eigenvec, side_point1_cell1, biggest_cell2.eigenvec, side_point1_cell2);
+				
+				std::cout << "Collision" << collision << std::endl;
+				//Second collision line with only one of the two line moved. It doesn't matter which but it needs to be only one.
+				auto collision1 = collisionRay(biggest_cell1.eigenvec, side_point1_cell1, biggest_cell2.eigenvec, side_point2_cell2);
+				std::cout << "Collision2" << collision << std::endl;
+				
+				Eigen::Vector3d v1(0,0,0);
+				_eigen_vector << collision - _mean , collision1 - _mean, v1 ;
+				_eigen_values << 1, 1, 1;
+				
+			}
+			
+		private:
+			
+			void getEigenVectors(const lslgeneric::NDTCell& cell, EigenValVec& biggest, EigenValVec& smallest) const {
+				
+				Eigen::Vector3d eigenval;
+				Eigen::Matrix3d eigenvec;
+				getEigenVectors2D(cell, eigenval, eigenvec);
+			// 	std::cout << "Eigen sorted" << std::endl;
+				if(eigenval(1) > eigenval(0)){
+					biggest.eigenvec = eigenvec.col(1);
+					smallest.eigenvec = eigenvec.col(0);
+					biggest.eigenval = eigenval(1);
+					smallest.eigenval = eigenval(0);
+				}
+				else{
+					biggest.eigenvec = eigenvec.col(0);
+					smallest.eigenvec = eigenvec.col(1);
+					biggest.eigenval = eigenval(0);
+					smallest.eigenval = eigenval(1);
+				}
+			}
+			
 		};
 		
 		
@@ -45,6 +117,7 @@ namespace perception_oru{
 			
 			
 			double _x_cell_size, _y_cell_size, _z_cell_size;
+			//CHange to NDTCornerBundle
 			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > _corners;
 			std::vector< Eigen::Vector3d > _corners_position;
 			std::vector< cv::Point2d > _opencv_corners;

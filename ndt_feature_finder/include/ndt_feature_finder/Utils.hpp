@@ -236,6 +236,9 @@ namespace perception_oru{
 			const Eigen::Vector3d& ray_direction_second, 
 			const Eigen::Vector3d& ray_point_second){
 			
+			assert(ray_direction != Eigen::Vector3d(0,0,0));
+			assert(ray_direction_second != Eigen::Vector3d(0,0,0));
+			
 			Eigen::Matrix3d A ;//THree rows and 2 cols ;
 			Eigen::Vector3d b;
 			
@@ -281,14 +284,22 @@ namespace perception_oru{
 		}
 		
 		
+		inline void getEigenVectors2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec){
+			eigenval = cell.getEvals();
+			eigenvec = cell.getEvecs();
+			EigenSort2D(eigenval, eigenvec);
+		}
+		
 		inline int getBiggestEigenVector2D(const lslgeneric::NDTCell& cell, Eigen::Vector3d& eigenval, Eigen::Matrix3d& eigenvec)
 		{
 			
-			eigenval = cell.getEvals();
-			eigenvec = cell.getEvecs();
+			getEigenVectors2D(cell, eigenval, eigenvec);
+			
+// 			eigenval = cell.getEvals();
+// 			eigenvec = cell.getEvecs();
 		// 	std::cout << "Eigen Vec : "<< std::endl << eigenvec << std::endl;
 		// 	std::cout << "Eigen sort" << std::endl;
-			EigenSort2D(eigenval, eigenvec);
+// 			EigenSort2D(eigenval, eigenvec);
 		// 	std::cout << "Eigen sorted" << std::endl;
 				
 			Eigen::Vector3d biggest_eigen = eigenvec.col(0);
@@ -300,16 +311,24 @@ namespace perception_oru{
 			return 0;
 		}
 		
-		
-		inline Eigen::Vector3d collisionNDTCells(const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2){
+		inline Eigen::Vector3d getNDTCellOrientation2D(const lslgeneric::NDTCell& cell1){
 			Eigen::Vector3d eigenval; 
 			Eigen::Matrix3d eigenvec;
 			int index = getBiggestEigenVector2D(cell1, eigenval, eigenvec);
-			Eigen::Vector3d orientation = eigenvec.col(index);
-			Eigen::Vector3d eigenval_tmp;
-			Eigen::Matrix3d eigenvec_tmp;
-			int index_tmp = getBiggestEigenVector2D(cell2, eigenval_tmp, eigenvec_tmp);
-			Eigen::Vector3d orientation_tmp = eigenvec_tmp.col(index_tmp);
+			return eigenvec.col(index);
+		}
+		
+		
+		
+		inline Eigen::Vector3d collisionNDTCells(const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2){
+// 			Eigen::Vector3d eigenval; 
+// 			Eigen::Matrix3d eigenvec;
+// 			int index = getBiggestEigenVector2D(cell1, eigenval, eigenvec);
+			Eigen::Vector3d orientation = getNDTCellOrientation2D(cell1);
+// 			Eigen::Vector3d eigenval_tmp;
+// 			Eigen::Matrix3d eigenvec_tmp;
+// 			int index_tmp = getBiggestEigenVector2D(cell2, eigenval_tmp, eigenvec_tmp);
+			Eigen::Vector3d orientation_tmp = getNDTCellOrientation2D(cell2);
 			
 			return collisionRay(orientation_tmp, cell2.getMean(), orientation, cell1.getMean());
 		}

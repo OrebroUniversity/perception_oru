@@ -22,6 +22,8 @@ namespace perception_oru{
 				}
 			};
 			
+			bool _mean_set;
+			
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell1;
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell2;
 			double _angle;
@@ -32,13 +34,13 @@ namespace perception_oru{
 			Eigen::Vector3d _mean;
 			
 		public:
-			NDTCornerBundle(){}
+			NDTCornerBundle(): _mean_set(false){}
 			NDTCornerBundle(const Eigen::Vector3d& m) :
-				_mean(m)
+				_mean(m), _mean_set(true)
 			{}
 			void push_back_cell1(const boost::shared_ptr< lslgeneric::NDTCell >& c1){_cell1.push_back(c1);}
 			void push_back_cell2(const boost::shared_ptr< lslgeneric::NDTCell >& c2){_cell2.push_back(c2);}
-			void setMean(const Eigen::Vector3d& m){_mean = m;}
+			void setMean(const Eigen::Vector3d& m){_mean_set = true; _mean = m;}
 			void setAngle(double a){_angle = a;}
 			void setDirection(double d){_direction = d;}
 			
@@ -52,6 +54,8 @@ namespace perception_oru{
 			}
 			
 			void gaussian(){
+				assert(_mean_set == true);
+				
 				auto cell1 = _cell1[0];
 				auto cell2 = _cell2[0];
 				
@@ -70,19 +74,25 @@ namespace perception_oru{
 				side_point1_cell2 = cell2->getMean() + smallest_cell2.NormEigen();
 				side_point2_cell2 = cell2->getMean() - smallest_cell2.NormEigen();
 				
-				std::cout << "All points " << side_point1_cell1 << " \n\n " << side_point1_cell2 << " \n\n " << side_point2_cell2 << std::endl;
+// 				std::cout << "All points " << side_point1_cell1 << " \n\n " << side_point1_cell2 << " \n\n " << side_point2_cell2 << std::endl <<  smallest_cell2.NormEigen() << std::endl;
 
 				//First collision line
 				auto collision = collisionRay(biggest_cell1.eigenvec, side_point1_cell1, biggest_cell2.eigenvec, side_point1_cell2);
 				
-				std::cout << "Collision" << collision << std::endl;
+// 				std::cout << "Collision " << collision << " nesxtr " << biggest_cell1.eigenvec << " nesxtr " << side_point1_cell1 << " nesxtr " << biggest_cell2.eigenvec << " nesxtr " << side_point1_cell2 << " " << std::endl;
 				//Second collision line with only one of the two line moved. It doesn't matter which but it needs to be only one.
 				auto collision1 = collisionRay(biggest_cell1.eigenvec, side_point1_cell1, biggest_cell2.eigenvec, side_point2_cell2);
-				std::cout << "Collision2" << collision << std::endl;
+// 				std::cout << "Collision2 " << collision1 << " nesxtr " << biggest_cell1.eigenvec << " nesxtr " << side_point1_cell1 << " nesxtr " << biggest_cell2.eigenvec << " nesxtr " << side_point2_cell2 << " " << std::endl;
+				
+// 				std::cout << "Mean " << _mean << std::endl;
+// 				std::cout << "RES1 \n " << collision - _mean << std::endl;
+// 				std::cout << "RES2\n " << collision1 - _mean << std::endl;
 				
 				Eigen::Vector3d v1(0,0,0);
 				_eigen_vector << collision - _mean , collision1 - _mean, v1 ;
 				_eigen_values << 1, 1, 1;
+				
+// 				std::cout << "FINAl\n " << _eigen_vector << std::endl;
 				
 			}
 			

@@ -6,7 +6,7 @@
 #include "ndt_map/ndt_map.h"
 #include <math.h>
 
-#include "Utils.hpp"
+#include "utils.hpp"
 
 namespace perception_oru{
 	namespace ndt_feature_finder{

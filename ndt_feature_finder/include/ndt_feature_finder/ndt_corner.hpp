@@ -5,7 +5,7 @@
 #include <pcl/point_types.h>
 #include "ndt_map/ndt_map.h"
 
-#include "Utils.hpp"
+#include "ndt_cell_2d_utils.hpp"
 
 namespace perception_oru{
 	
@@ -34,20 +34,37 @@ namespace perception_oru{
 			Eigen::Vector3d _mean;
 			
 		public:
+		
 			NDTCornerBundle(): _mean_set(false){}
 			NDTCornerBundle(const Eigen::Vector3d& m) :
 				_mean(m), _mean_set(true)
 			{}
 			void push_back_cell1(const boost::shared_ptr< lslgeneric::NDTCell >& c1){_cell1.push_back(c1);}
 			void push_back_cell2(const boost::shared_ptr< lslgeneric::NDTCell >& c2){_cell2.push_back(c2);}
-			void setMean(const Eigen::Vector3d& m){_mean_set = true; _mean = m;}
+			void setMean(const Eigen::Vector3d& m){
+				_mean_set = true;
+				_mean = m;
+				
+			}
 			void setAngle(double a){_angle = a;}
 			void setDirection(double d){_direction = d;}
+			cv::Point2d getMeanOpenCV(){
+				cv::Point2d p;
+				p.x = _mean(0);
+				p.y = _mean(1);
+				return p;
+			}
 			
 			const Eigen::Vector3d& getMean() const {return _mean;}
 			Eigen::Vector3d getMean(){return _mean;}
 			const Eigen::Matrix3d& getEigenVectors(){return _eigen_vector;}
 			const Eigen::Vector3d& getEigenValues(){return _eigen_values;}
+			double getDirection(){return _direction;}
+			double getAngle(){return _angle;}
+			std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells1(){return _cell1;}
+			const std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells1() const {return _cell1;}
+			std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells2(){return _cell2;}
+			const std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells2() const {return _cell2;}
 			
 			void inverseDistanceWeighting(){
 				
@@ -128,14 +145,14 @@ namespace perception_oru{
 			
 			double _x_cell_size, _y_cell_size, _z_cell_size;
 			//CHange to NDTCornerBundle
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > _corners;
-			std::vector< Eigen::Vector3d > _corners_position;
-			std::vector< cv::Point2d > _opencv_corners;
-			std::vector< cv::Point2d > _opencv_corners_position;
+			std::vector< NDTCornerBundle > _corners;
+// 			std::vector< Eigen::Vector3d > _corners_position;
+// 			std::vector< cv::Point2d > _opencv_corners;
+// 			std::vector< cv::Point2d > _opencv_corners_position;
 			/**
 			 * Pair of angle size between edges + direction of each corner
 			 */
-			std::vector<std::pair<double,double> > _angles;
+// 			std::vector<std::pair<double,double> > _angles;
 			int _neighbor_size;
 			
 		public:
@@ -154,7 +171,7 @@ namespace perception_oru{
 			/**
 			 * @brief calculate and return a vector of all corners in ndt_map
 			 */
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > > getAllCorners(const lslgeneric::NDTMap& map) ;
+			std::vector< NDTCornerBundle > getAllCorners(const lslgeneric::NDTMap& map) ;
 			
 			/**
 			 * @brief return all the cells around cell that possess a gaussian and are maximum the resolution of the map away.
@@ -181,67 +198,70 @@ namespace perception_oru{
 			void clear(){
 				_x_cell_size = _y_cell_size = _z_cell_size = 0;
 				_corners.clear();
-				_corners_position.clear();
-				_opencv_corners.clear();
-				_opencv_corners_position.clear();
-				_angles.clear();
+// 				_corners_position.clear();
+// 				_opencv_corners.clear();
+// 				_opencv_corners_position.clear();
+// 				_angles.clear();
 			}
 			
 			size_t size() const {return _corners.size();}
-			std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& getCorners(){return _corners;}
-			const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& getCorners() const {return _corners;}
-			std::vector< cv::Point2d >& getCvCorners(){return _opencv_corners;}
-			const std::vector< cv::Point2d >& getCvCorners() const {return _opencv_corners;}
-			std::vector< Eigen::Vector3d >& getAccurateCorners(){return _corners_position;}
-			const std::vector< Eigen::Vector3d >& getAccurateCorners() const {return _corners_position;}
-			std::vector< cv::Point2d >& getAccurateCvCorners(){return _opencv_corners_position;}
-			const std::vector< cv::Point2d >& getAccurateCvCorners() const {return _opencv_corners_position;}
-			const std::vector<std::pair<double,double> >& getAngles() const {assert(_angles.size() ==_opencv_corners_position.size()); return _angles;}
-			std::vector<std::pair<double,double> >& getAngles(){assert(_angles.size() ==_opencv_corners_position.size()); return _angles;}
+			std::vector< NDTCornerBundle >& getCorners(){return _corners;}
+			const std::vector< NDTCornerBundle >& getCorners() const {return _corners;}
+			
+			void setNeighborSize(int n){_neighbor_size = n;}
+			int getNeighborSize() const {return _neighbor_size;}
+// 			std::vector< cv::Point2d >& getCvCorners(){return _opencv_corners;}
+// 			const std::vector< cv::Point2d >& getCvCorners() const {return _opencv_corners;}
+// 			std::vector< Eigen::Vector3d >& getAccurateCorners(){return _corners_position;}
+// 			const std::vector< Eigen::Vector3d >& getAccurateCorners() const {return _corners_position;}
+// 			std::vector< cv::Point2d >& getAccurateCvCorners(){return _opencv_corners_position;}
+// 			const std::vector< cv::Point2d >& getAccurateCvCorners() const {return _opencv_corners_position;}
+// 			const std::vector<std::pair<double,double> >& getAngles() const {assert(_angles.size() ==_corners.size()); return _angles;}
+// 			std::vector<std::pair<double,double> >& getAngles(){assert(_angles.size() == _corners.size()); return _angles;}
 			
 			
-			void exportCorners(std::ostream& out){
-				for(size_t i = 0 ; i < _opencv_corners.size() ; ++i){
-					std::cout << _opencv_corners[i].x << " " << _opencv_corners[i].y << std::endl;
-					out << _opencv_corners[i].x << " " << _opencv_corners[i].y << std::endl;
-				}
-			}
-			void exportAccurateCorners(std::ostream& out){
-				for(size_t i = 0 ; i < _opencv_corners_position.size() ; ++i){
-					std::cout << _opencv_corners_position[i].x << " " << _opencv_corners_position[i].y << std::endl;
-					out << _opencv_corners_position[i].x << " " << _opencv_corners_position[i].y << std::endl;
-				}
-			}
+// 			void exportCorners(std::ostream& out){
+// 				for(size_t i = 0 ; i < _opencv_corners.size() ; ++i){
+// 					std::cout << _opencv_corners[i].x << " " << _opencv_corners[i].y << std::endl;
+// 					out << _opencv_corners[i].x << " " << _opencv_corners[i].y << std::endl;
+// 				}
+// 			}
+// 			void exportAccurateCorners(std::ostream& out){
+// 				for(size_t i = 0 ; i < _opencv_corners_position.size() ; ++i){
+// 					std::cout << _opencv_corners_position[i].x << " " << _opencv_corners_position[i].y << std::endl;
+// 					out << _opencv_corners_position[i].x << " " << _opencv_corners_position[i].y << std::endl;
+// 				}
+// 			}
 			
-			void readCorners(std::ifstream& in){
-				while(true){
-					cv::Point2d p;
-// 					std::cout << "f"<<std::endl;
+// 			void readCorners(std::ifstream& in){
+// 				while(true){
+// 					cv::Point2d p;
+// // 					std::cout << "f"<<std::endl;
+// // 					if(in.eof()) break;
+// 					in >> p.x;
+// // 					std::cout << "s : "<< p.x << std::endl;
+// // 					if(in.eof()) break;
+// 					in >> p.y;
+// // 					std::cout << "Pushing " << p << std::endl;
 // 					if(in.eof()) break;
-					in >> p.x;
-// 					std::cout << "s : "<< p.x << std::endl;
+// 					_opencv_corners.push_back(p);
+// 				}
+// 			}
+// 			
+// 			void readAccurateCorners(std::ifstream& in){
+// 				while(true){
+// 					cv::Point2d p;
+// // 					std::cout << "f"<<std::endl;
+// // 					if(in.eof()) break;
+// 					in >> p.x;
+// // 					std::cout << "s : "<< p.x << std::endl;
+// // 					if(in.eof()) break;
+// 					in >> p.y;
+// // 					std::cout << "Pushing " << p << std::endl;
 // 					if(in.eof()) break;
-					in >> p.y;
-// 					std::cout << "Pushing " << p << std::endl;
-					if(in.eof()) break;
-					_opencv_corners.push_back(p);
-				}
-			}
-			
-			void readAccurateCorners(std::ifstream& in){
-				while(true){
-					cv::Point2d p;
-// 					std::cout << "f"<<std::endl;
-// 					if(in.eof()) break;
-					in >> p.x;
-// 					std::cout << "s : "<< p.x << std::endl;
-// 					if(in.eof()) break;
-					in >> p.y;
-// 					std::cout << "Pushing " << p << std::endl;
-					if(in.eof()) break;
-					_opencv_corners_position.push_back(p);
-				}
-			}
+// 					_opencv_corners_position.push_back(p);
+// 				}
+// 			}
 			
 		private:
 			
@@ -254,7 +274,7 @@ namespace perception_oru{
 			/**
 			 * @brief transform ndt_cell mean and eigen point to cv::Point2d
 			 */
-			void toOpenCV();
+// 			void toOpenCV();
 			/**
 			 * @brief calculate the angles of each corners
 			 */

@@ -86,6 +86,7 @@ public:
 
     virtual NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
+    virtual std::vector<boost::shared_ptr< NDTCell > > getClosestNDTCellsShared(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestCells(const pcl::PointXYZ &pt);
 
     virtual inline void getCellAt(int indX, int indY, int indZ, NDTCell* &cell){

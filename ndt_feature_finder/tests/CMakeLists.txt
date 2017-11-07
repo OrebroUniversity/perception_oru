@@ -22,3 +22,6 @@ target_link_libraries(test_ray_collision -lboost_unit_test_framework)
 
 add_executable(test_estimation_cell test_estimation_cell.cpp)
 target_link_libraries(test_estimation_cell ndt_corner ${catkin_LIBRARIES})
+
+add_executable(corner_extraction corner_extraction.cpp)
+target_link_libraries(corner_extraction ndt_corner ${catkin_LIBRARIES})

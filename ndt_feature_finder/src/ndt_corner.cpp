@@ -1,7 +1,7 @@
-#include "ndt_feature_finder/NDTCorner.hpp"
+#include "ndt_feature_finder/ndt_corner.hpp"
 
 
-std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const lslgeneric::NDTMap& map)
+std::vector< perception_oru::ndt_feature_finder::NDTCornerBundle > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const lslgeneric::NDTMap& map)
 {
 	
 	clear();
@@ -14,7 +14,7 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 // 	std::cout << "vector" << std::endl;
 	assert(allCells.size() == map.numberOfActiveCells());
 // 	std::cout << "vector" << std::endl;
-	std::vector< boost::shared_ptr< lslgeneric::NDTCell > > out;
+	std::vector< NDTCornerBundle > out;
 // 	std::cout << "vector" << std::endl;
 	for(size_t i = 0 ; i < allCells.size() ; ++i){
 // 		std::cout << "Searching cell nb " << i << std::endl;
@@ -22,21 +22,21 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 // 	std::cout << "vector" << std::endl;
 		if(cellIsCorner(map, *allCells[i], allCells, corner_out) == true){
 // 			std::cout << "It's a corner :)" << std::endl;
-			out.push_back(allCells[i]);
-			_corners_position.push_back( corner_out.getMean() );
-			assert(_angles.size() == _corners_position.size());
+			out.push_back(corner_out);
+// 			_corners_position.push_back( corner_out.getMean() );
+// 			assert(_angles.size() == out.size());
 		}
 		else{
 // 			std::cout << "Not a corner" << std::endl;
 		}
 	}
 	
-	assert(_angles.size() == _corners_position.size());
+// 	assert(_angles.size() == _corners.size());
 	_corners = out;
 	
 	clearAccurateCorner();
 	//Translate the corner into openCV structure
-	toOpenCV();
+// 	toOpenCV();
 	
 	return out;
 
@@ -158,9 +158,14 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 	pcl::PointXYZ point = cell.getCenter();
 	double radius = max;
 	std::vector< boost::shared_ptr< lslgeneric::NDTCell > > cells;
-	lazygrid->getNeighborsShared(point, radius * neig_size, cells);
 	
-// 	std::cout << "OUT /*SIZE*/ " << cells.size() << " " << max <<std::endl;
+	std::cout << "RADIUS " << radius << "*" << neig_size << std::endl;
+	
+// 	lazygrid->getNeighborsShared(point, radius * neig_size, cells);
+	cells = lazygrid->getClosestNDTCellsShared(point, neig_size, true);
+	
+	std::cout << "OUT /*SIZE*/ " << cells.size() << " " << max <<std::endl;
+// 	exit(0);
 	
 	std::vector<boost::shared_ptr< lslgeneric::NDTCell> > cells_out;
 	for(size_t j = 0 ; j < cells.size() ; ++j){
@@ -170,6 +175,10 @@ std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feat
 			cells_out.push_back(cells[j]);
 		}
 	}
+	
+	std::cout << cells_out.size() << " == " << cells.size() << std::endl;
+	assert(cells_out.size() == cells.size());
+	
 // 	std::cout << "Center " << cell.getMean() << std::endl;
 // 	std::cout << "Nei " << cells_out.size() << " " << max <<std::endl;
 	
@@ -387,8 +396,13 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 // 					bool al2 = AlignedNDT(neig2, *neighbor[i]);
 // 					if(al == true && al2 == true){
 				
-				std::pair<double, double> pair(angle_tmp, direction);
-				_angles.push_back(pair);
+// 				std::pair<double, double> pair(angle_tmp, direction);
+// 				_angles.push_back(pair);
+				
+				//TODO one day use NDTCell directly
+// 				auto cell = map.getCellAtID(collision_point(0), collision_point(1), collision_point(2))->copy();
+// 				boost::shared_ptr<lslgeneric::NDTCell> cell_ptr(cell);
+// 				corner.setNDTCell(cell_ptr);
 
 				//Saving information about the corner: the mean and the two gaussian that defined it.
 				corner.setMean(collision_point);
@@ -396,6 +410,9 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 				corner.push_back_cell2(neighbor[j]);
 				corner.setAngle(angle_tmp);
 				corner.setDirection(direction);
+				corner.gaussian();
+
+				
 // 						std::cout << "COLLSION 
 				return true;
 // 					}
@@ -409,53 +426,52 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 
 void perception_oru::ndt_feature_finder::NDTCorner::clearAccurateCorner()
 {
-	std::vector < Eigen::Vector3d > tmp;
+	std::vector < NDTCornerBundle > tmp;
 	std::vector<std::pair<double,double> > angles_tmp;
-	for(size_t i = 0 ; i < _corners_position.size() ; ++i){
+	for(size_t i = 0 ; i < _corners.size() ; ++i){
 		bool seen = false;
 		
 		for(size_t j = 0 ; j < tmp.size() ; ++j){
 // 			if(tmp[j] == _corners_position[i]){
-			Eigen::Vector3d vec = tmp[j] - _corners_position[i];
+			Eigen::Vector3d vec = tmp[j].getMean() - _corners[i].getMean();
 			if( vec.norm() < _x_cell_size){
 				seen = true;
 			}
 		}
 		if(seen == false){	
-			tmp.push_back(_corners_position[i]);
-			angles_tmp.push_back(_angles[i]);
+			tmp.push_back(_corners[i]);
+// 			angles_tmp.push_back(_angles[i]);
 		}		
 	}
 	
-	_corners_position.clear();
-	_angles.clear();
-	_corners_position = tmp;
-	_angles = angles_tmp;
-
+	_corners.clear();
+// 	_angles.clear();
+	_corners = tmp;
+// 	_angles = angles_tmp;
 }
 
-void perception_oru::ndt_feature_finder::NDTCorner::toOpenCV()
-{
-	_opencv_corners.clear();
-	_opencv_corners_position.clear();
-	
-	//Get openCV point _corners
-	auto it = _corners.begin();
-	for(it; it != _corners.end() ; ++it){
-		cv::Point2d p;
-		p.x = (*it)->getMean()(0);
-		p.y = (*it)->getMean()(1);
-		_opencv_corners.push_back(p);	
-	}
-	auto it_pos = _corners_position.begin();
-	for(it_pos; it_pos != _corners_position.end() ; ++it_pos){
-		cv::Point2d p;
-		p.x = (*it_pos)(0);
-		p.y = (*it_pos)(1);
-		_opencv_corners_position.push_back(p);	
-	}
-// 	std::cout << "All done" << std::endl;
-}
+// void perception_oru::ndt_feature_finder::NDTCorner::toOpenCV()
+// {
+// 	_opencv_corners.clear();
+// 	_opencv_corners_position.clear();
+// 	
+// 	//Get openCV point _corners
+// 	auto it = _corners.begin();
+// 	for(it; it != _corners.end() ; ++it){
+// 		cv::Point2d p;
+// 		p.x = (*it).getMean()(0);
+// 		p.y = (*it).getMean()(1);
+// 		_opencv_corners.push_back(p);	
+// 	}
+// 	auto it_pos = _corners_position.begin();
+// 	for(it_pos; it_pos != _corners_position.end() ; ++it_pos){
+// 		cv::Point2d p;
+// 		p.x = (*it_pos)(0);
+// 		p.y = (*it_pos)(1);
+// 		_opencv_corners_position.push_back(p);	
+// 	}
+// // 	std::cout << "All done" << std::endl;
+// }
 
 
 void perception_oru::ndt_feature_finder::NDTCorner::calculateAngles(const lslgeneric::NDTMap& map)

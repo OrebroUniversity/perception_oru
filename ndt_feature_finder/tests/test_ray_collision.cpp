@@ -1,4 +1,4 @@
-#include "ndt_feature_finder/Utils.hpp"
+#include "ndt_feature_finder/utils.hpp"
 
 #include <iostream>
 #define BOOST_TEST_DYN_LINK

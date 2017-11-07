@@ -484,7 +484,7 @@ public:
                           double weight = 5.0,
                           double threshold = 0.2,
                           Eigen::Vector3d *hit = NULL);
- NDTCell* getCellAtID(int x,int y,int z);
+ NDTCell* getCellAtID(int x,int y,int z) const ;
 protected:
     bool is3D;
     SpatialIndex *index_;

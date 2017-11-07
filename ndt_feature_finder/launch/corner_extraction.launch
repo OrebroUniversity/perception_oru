@@ -1,14 +1,17 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="ndt_fuser" type="ndt_fuser_node" name="laser_fuser_2d" output="screen">
+	
+<node pkg="tf" type="static_transform_publisher" name="world_laser_frame_frame" args="0 0 0 0 0 0 /state_base_link /laser_frame 10"/>
+	
+  <node pkg="ndt_feature_finder" type="corner_extraction" name="corner_extraction" output="screen">
 	<param name="laser_topic" value="/laserscan" />
 	<param name="matchLaser" value="true" />
 	
 	<param name="size_x_meters" value="30" />
 	<param name="size_y_meters" value="30" />
 	<param name="size_z_meters" value="0.8" />
-	<param name="resolution" value="0.4" />
-	<param name="laser_variance_z" value="0.02" />
+	<param name="resolution" value="0.1" />
+	<param name="laser_variance_z" value="5" />
 	
 	<param name="sensor_range" value="20." />
 	<param name="min_laser_range" value="0.5" />
@@ -28,9 +31,11 @@
 	<param name="beHMT" value="false" />
 	<param name="useOdometry" value="true" />
 	<param name="odometry_topic" value="/vmc_navserver/odom" />
-	<param name="visualize" value="true" />
+	<param name="visualize" value="false" />
 	<param name="plotGTTrack" value="true" />
 	<param name="initPoseFromGT" value="true" />
 	<param name="gt_topic" value="/vmc_navserver/state" />
     </node>
+	
 </launch>
+

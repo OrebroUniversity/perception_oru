@@ -1,4 +1,4 @@
-#include "ndt_feature_finder/NDTCorner.hpp"
+#include "ndt_feature_finder/ndt_corner.hpp"
 #include "ndt_feature_finder/conversion.hpp"
 
 int main(){

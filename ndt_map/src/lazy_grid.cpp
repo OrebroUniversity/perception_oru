@@ -416,7 +416,7 @@ std::vector<NDTCell*> LazyGrid::getClosestCells(const pcl::PointXYZ &pt)
     return cells;
 }
 
-std::vector<NDTCell*> LazyGrid::getClosestNDTCells(const pcl::PointXYZ &point, int &n_neigh, bool checkForGaussian)
+std::vector< NDTCell* > LazyGrid::getClosestNDTCells(const pcl::PointXYZ &point, int &n_neigh, bool checkForGaussian)
 {
 
     int indXn,indYn,indZn;
@@ -441,7 +441,43 @@ std::vector<NDTCell*> LazyGrid::getClosestNDTCells(const pcl::PointXYZ &point, i
                 indZn = (z%2 == 0) ? indZ+z/2 : indZ-z/2;
                 if(checkCellforNDT(indXn,indYn,indZn,checkForGaussian))
                 {
-                    cells.push_back(dataArray[indXn][indYn][indZn]);
+					cells.push_back(dataArray[indXn][indYn][indZn]);
+                }
+            }
+        }
+    }
+
+    return cells;
+}
+
+std::vector<boost::shared_ptr< NDTCell > > LazyGrid::getClosestNDTCellsShared(const pcl::PointXYZ &point, int &n_neigh, bool checkForGaussian)
+{
+
+    int indXn,indYn,indZn;
+    int indX,indY,indZ;
+    this->getIndexForPoint(point,indX,indY,indZ);
+    std::vector<boost::shared_ptr< NDTCell > > cells;
+
+    int i = n_neigh; //how many cells on each side
+
+    //for(int i=1; i<= maxNumberOfCells; i++) {
+    //the strange thing for the indeces is for convenience of writing
+    //basicly, we go through 2* the number of cells and use parity to
+    //decide if we subtract or add. should work nicely
+    for(int x=1; x<2*i+2; x++)
+    {
+        indXn = (x%2 == 0) ? indX+x/2 : indX-x/2;
+        for(int y=1; y<2*i+2; y++)
+        {
+            indYn = (y%2 == 0) ? indY+y/2 : indY-y/2;
+            for(int z=1; z<2*i+2; z++)
+            {
+                indZn = (z%2 == 0) ? indZ+z/2 : indZ-z/2;
+                if(checkCellforNDT(indXn,indYn,indZn,checkForGaussian))
+                {
+					NDTCell* nd = dataArray[indXn][indYn][indZn]->copy();
+					boost::shared_ptr< NDTCell > smart_pointer(nd);
+					cells.push_back(smart_pointer);
                 }
             }
         }

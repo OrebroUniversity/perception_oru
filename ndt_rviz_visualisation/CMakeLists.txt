@@ -15,6 +15,14 @@ find_package(Qt5Gui REQUIRED)
 include_directories(${Qt5Core_INCLUDE_DIRS})
 include_directories(${Qt5Gui_INCLUDE_DIRS})
 
+find_package(Qt5Widgets REQUIRED)
+if(${Qt5Widgets_VERSION} VERSION_LESS 5.7.0)
+    message("QT less than 5.7")
+else()
+    message("Qt more than version 5.7, enabling c++11 support")
+    set(CMAKE_CXX_STANDARD 11)
+endif()
+
 include_directories(include)
 
 add_definitions(-DQT_NO_KEYWORDS)

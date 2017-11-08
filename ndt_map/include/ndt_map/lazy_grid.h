@@ -121,6 +121,8 @@ public:
 
     ///method to return all cells within a certain radius from a point
     virtual void getNeighbors(const pcl::PointXYZ &point, const double &radius, std::vector<NDTCell*> &cells);
+	///method to return all cells within a certain radius from a point. Clone the cell once and the return shared pointers.
+    virtual void getNeighborsShared(const pcl::PointXYZ &point, const double &radius, std::vector<boost::shared_ptr< NDTCell > > &cells);
 
     ///sets the cell factory type
     virtual void setCellType(NDTCell *type);
@@ -131,6 +133,7 @@ public:
 
     virtual NDTCell* getClosestNDTCell(const pcl::PointXYZ &pt, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestNDTCells(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
+    virtual std::vector<boost::shared_ptr< NDTCell > > getClosestNDTCellsShared(const pcl::PointXYZ &pt, int &n_neigh, bool checkForGaussian=true);
     virtual std::vector<NDTCell*> getClosestCells(const pcl::PointXYZ &pt);
 
     virtual inline void getCellAt(int indX, int indY, int indZ, NDTCell* &cell){

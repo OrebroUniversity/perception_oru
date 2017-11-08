@@ -1,4 +1,4 @@
-#include "ndt_feature_finder/NDTCorner.hpp"
+#include "ndt_feature_finder/ndt_corner.hpp"
 
 double getAngle(const Eigen::Vector3d& orientation_tmp, const Eigen::Vector3d& orientation){
 	perception_oru::ndt_feature_finder::NDTCorner coirners;

@@ -2448,7 +2448,7 @@ std::vector< boost::shared_ptr<perception_oru::NDTCell> > NDTMap::getAllCellsSha
 		}
         it++;
     }
-    std::cout << "Retyurn " << ret.size() << std::endl;
+    std::cout << "Return " << ret.size() << std::endl;
     return ret;
 }
 
@@ -2510,7 +2510,7 @@ int NDTMap::numberOfActiveCells() const
     }
     return ret;
 }
-NDTCell* NDTMap::getCellAtID(int x,int y,int z){
+NDTCell* NDTMap::getCellAtID(int x,int y,int z) const {
     NDTCell* cell;
     LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     lz->getCellAt(x,y,z,cell);

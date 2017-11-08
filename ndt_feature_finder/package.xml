@@ -46,12 +46,16 @@
 <!--   <build_depend>roscpp</build_depend>  -->
 <!--   <build_depend>std_msgs</build_depend> -->
   <build_depend>ndt_map</build_depend>
+  <build_depend>ndt_fuser</build_depend>
+  <build_depend>rviz</build_depend>
 <!--   <build_depend>message_generation</build_depend> -->
   
 <!--   <run_depend>cv_bridge</run_depend>  -->
 <!--   <run_depend>roscpp</run_depend>  -->
 <!--   <run_depend>std_msgs</run_depend> -->
   <run_depend>ndt_map</run_depend>
+  <run_depend>ndt_fuser</run_depend>
+  <run_depend>rviz</run_depend>
 <!--   <run_depend>message_generation</run_depend> -->
 
   <!-- The export tag contains other, unspecified, tags -->

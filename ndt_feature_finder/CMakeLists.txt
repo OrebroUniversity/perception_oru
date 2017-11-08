@@ -6,7 +6,8 @@ add_definitions(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS ndt_map)
+## ndt_fuser here for testing purposes
+find_package(catkin REQUIRED COMPONENTS ndt_map ndt_fuser rviz)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -104,7 +105,7 @@ find_package( Boost REQUIRED )
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ndt_corner
- CATKIN_DEPENDS ndt_map
+ CATKIN_DEPENDS ndt_map ndt_fuser rviz
  DEPENDS eigen3 boost pcl opencv
 )
 
@@ -122,7 +123,7 @@ add_definitions(${EIGEN_DEFINITIONS})
 #   src/${PROJECT_NAME}/ndt_feature.cpp
 # )
 
-add_library(ndt_corner src/NDTCorner.cpp)
+add_library(ndt_corner src/ndt_corner.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

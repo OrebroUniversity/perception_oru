@@ -1,5 +1,5 @@
 
-#include "ndt_feature_finder/NDTCorner.hpp"
+#include "ndt_feature_finder/ndt_corner.hpp"
 
 int main(){
 	

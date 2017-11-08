@@ -530,6 +530,7 @@ public:
   /**
     * Computes a maximum likelihood depth from the map, given a position and a view vector
     */
+
   double getDepth(Eigen::Vector3d origin, Eigen::Vector3d dir, double maxDepth=100);
   double getDepthSmooth(Eigen::Vector3d origin,
                         Eigen::Vector3d dir,
@@ -538,8 +539,9 @@ public:
                         double weight = 5.0,
                         double threshold = 0.2,
                         Eigen::Vector3d *hit = NULL);
-  NDTCell* getCellAtID(int x,int y,int z);
+  NDTCell* getCellAtID(int x,int y,int z) const;
   std::string ToString();
+
 protected:
   bool is3D;
   SpatialIndex *index_;

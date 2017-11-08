@@ -299,6 +299,10 @@ public:
     evals_ = ev;
   }
 
+  ///FOR TESTING ONLY
+  inline void setEvecs(const Eigen::Matrix3d& ev){
+    evecs_ = ev;
+  }
 
 
   ///use this to set the parameters for the NDTCell. \note be careful, remember that the parameters are static, thus global
@@ -308,7 +312,9 @@ public:
                             int _MIN_NB_POINTS_FOR_GAUSSIAN = 3,
                             bool _CLEAR_MIN_NB_POINTS = true,
                             bool _MIN_NB_POINTS_SET_UNIFORM = false);
-  /**
+
+    
+    /**
     * Get likelihood for a given point
     */
   double getLikelihood(const pcl::PointXYZ &pt) const;

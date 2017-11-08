@@ -5,6 +5,8 @@
 #include "Eigen/Dense"
 #include "opencv2/opencv.hpp"
 
+#include "ndt_map/ndt_map.h"
+
 namespace perception_oru{
 	namespace ndt_feature_finder{
 		
@@ -234,6 +236,9 @@ namespace perception_oru{
 			const Eigen::Vector3d& ray_direction_second, 
 			const Eigen::Vector3d& ray_point_second){
 			
+			assert(ray_direction != Eigen::Vector3d(0,0,0));
+			assert(ray_direction_second != Eigen::Vector3d(0,0,0));
+			
 			Eigen::Matrix3d A ;//THree rows and 2 cols ;
 			Eigen::Vector3d b;
 			
@@ -277,6 +282,9 @@ namespace perception_oru{
 			return x;
 			
 		}
+		
+		
+		
 	}
 	
 }

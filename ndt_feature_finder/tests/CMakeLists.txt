@@ -19,3 +19,9 @@ target_link_libraries(conversionOpenCV ndt_corner ${OpenCV_LIBS}  ${catkin_LIBRA
 add_executable(test_ray_collision test_ray_collision.cpp)
 target_link_libraries(test_ray_collision -lboost_unit_test_framework ${OpenCV_LIBS})
 # target_link_libraries(tes ndtCorner ${OpenCV_LIBS}  ${catkin_LIBRARIES})
+
+add_executable(test_estimation_cell test_estimation_cell.cpp)
+target_link_libraries(test_estimation_cell ndt_corner ${catkin_LIBRARIES})
+
+#add_executable(corner_extraction corner_extraction.cpp)
+#target_link_libraries(corner_extraction ndt_corner ${catkin_LIBRARIES})

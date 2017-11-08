@@ -1,6 +1,6 @@
 //#include <ndt_fuser.h>
 #include <ndt_fuser/ndt_fuser_hmt.h>
-#include <ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
+#include <ndt_fuser/ndt_fuser_ros_wrappers/ndt_fuser_logger.hpp>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -31,7 +31,7 @@
 #include <boost/foreach.hpp>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
-#include <ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
+#include <ndt_fuser/ndt_fuser_ros_wrappers/ros_fuser_init.hpp>
 
 #include "ndt_feature_finder/ndt_corner.hpp"
 
@@ -70,7 +70,7 @@ protected:
   double varz;
 	
   boost::mutex m, message_m;
-//   lslgeneric::NDTFuserHMT *fuser_base;
+//   perception_oru::NDTFuserHMT *fuser_base;
   perception_oru::ndt_fuser::NDTFuserHMTLogger *fuser;
   std::string points_topic, laser_topic, map_dir, map_name, odometry_topic, 
     world_frame, robot_frame, sensor_frame, fuser_frame, init_pose_frame, gt_topic, bag_name;
@@ -247,7 +247,7 @@ public:
 
     param_nh.param<std::string>("tf_pose_frame", tf_pose_frame_, std::string(""));
 
-    lslgeneric::MotionModel2d::Params motion_params;
+    perception_oru::MotionModel2d::Params motion_params;
     param_nh.param<double>("motion_params_Cd", motion_params.Cd, 0.005);
     param_nh.param<double>("motion_params_Ct", motion_params.Ct, 0.01);
     param_nh.param<double>("motion_params_Dd", motion_params.Dd, 0.001);
@@ -413,7 +413,7 @@ public:
 	std::cout << "Exporting the map of size " << fuser->map->getAllInitializedCellsShared().size() << std::endl;
 	ndt_map::NDTMapMsg mapmsg;
 	mapmsg.header.stamp = ros::Time::now();
-	lslgeneric::toMessage(fuser->map, mapmsg, "/world");
+	perception_oru::toMessage(fuser->map, mapmsg, "/world");
 	_ndt_map_pub.publish(mapmsg);
 	
 	
@@ -768,7 +768,7 @@ public:
   bool publish_map(){
 // #if 0
     ndt_map::NDTMapMsg map_msg;
-    lslgeneric::toMessage(fuser->map, map_msg,world_frame);
+    perception_oru::toMessage(fuser->map, map_msg,world_frame);
     map_publisher_.publish(map_msg);
 // #endif    
 return true;

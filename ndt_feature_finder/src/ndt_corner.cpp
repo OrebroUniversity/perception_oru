@@ -409,7 +409,7 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 				corner.push_back_cell1(neighbor[i]);
 				corner.push_back_cell2(neighbor[j]);
 				corner.setAngle(angle_tmp);
-				corner.setDirection(direction);
+				corner.setOrientation(direction);
 				corner.gaussian();
 
 				

@@ -101,11 +101,13 @@ protected:
   perception_oru::ndt_feature_finder::NDTCorner _ndt_corners;
 	ros::Publisher _gaussian_pub;
 	ros::Publisher _gaussian_pub2;
+	ros::Publisher _corner_orientation_pub;
 	ros::Publisher _lines_pub;
 	ros::Publisher _ndt_corner_pub;
 	ros::Publisher _ndt_map_pub;
 	visualization_msgs::Marker _gaussian_that_gave_corners;
 	visualization_msgs::Marker _gaussian_that_gave_corners2;
+	visualization_msgs::Marker _corner_orientation;
 	visualization_msgs::Marker _lines;
 	visualization_msgs::Marker _ndt_corner_markers;
   
@@ -118,6 +120,7 @@ public:
 	  
 	_gaussian_pub = param_nh.advertise<visualization_msgs::Marker>("gaussian_that_gave_corners", 10);
 	_gaussian_pub2 = param_nh.advertise<visualization_msgs::Marker>("gaussian_that_gave_corners2", 10);
+	_corner_orientation_pub = param_nh.advertise<visualization_msgs::Marker>("corner_orientation", 10);
 	_ndt_corner_pub = param_nh.advertise<visualization_msgs::Marker>("corner_ndt_marker", 10);
 	_ndt_map_pub = param_nh.advertise<ndt_map::NDTMapMsg>("ndt_map_corner", 10);
 	_lines_pub = param_nh.advertise<visualization_msgs::Marker>("lines", 10);
@@ -141,6 +144,16 @@ public:
 	_gaussian_that_gave_corners2.color.r = 1.0f;
 	_gaussian_that_gave_corners2.color.b = 1.0f;
 	_gaussian_that_gave_corners2.color.a = 1.0;
+	
+	_corner_orientation.type = visualization_msgs::Marker::LINE_LIST;
+	_corner_orientation.header.frame_id = "/world";
+	_corner_orientation.ns = "corner_extraction";
+	_corner_orientation.id = 7;
+	_corner_orientation.scale.x = 0.2;
+	_corner_orientation.scale.y = 0.2;
+// 	_corner_orientation.color.b = 1.0f;
+	_corner_orientation.color.b = 1.0f;
+	_corner_orientation.color.a = 1.0;
 	
 	_ndt_corner_markers.type = visualization_msgs::Marker::POINTS;
 	_ndt_corner_markers.header.frame_id = "/world";
@@ -445,6 +458,9 @@ public:
 		_ndt_corner_markers.points.clear();
 		_ndt_corner_markers.header.stamp = ros::Time::now();
 		
+		_corner_orientation.points.clear();
+		_corner_orientation.header.stamp = ros::Time::now();
+		
 	// 		std::cout << "Getting the angles" << landmark.size() << std::endl;
 	// 		std::cout << "Getting the corners " << edges.size() << std::endl;
 			
@@ -515,6 +531,8 @@ public:
 			p.y = it->getMean()(1);
 			p.z = 0;			
 			_ndt_corner_markers.points.push_back(p);
+			
+			drawOrientation(*it);
 						
 		}
 		
@@ -522,6 +540,8 @@ public:
 		
 		_gaussian_pub.publish(_gaussian_that_gave_corners);
 		_gaussian_pub2.publish(_gaussian_that_gave_corners2);
+		
+		_corner_orientation_pub.publish(_corner_orientation);
 		
 		
 		
@@ -533,6 +553,50 @@ public:
 		
 		
 	}
+	
+	
+	void drawOrientation(const perception_oru::ndt_feature_finder::NDTCornerBundle& corner_bundle)
+	{
+// 		std::cout << "Getting the angles" << std::endl;
+		
+
+		// 		std::cout << "Getting the angles" << landmark.size() << std::endl;
+// 		std::cout << "Getting the corners " << edges.size() << std::endl;
+
+		geometry_msgs::Point p;
+// 				VertexLandmarkNDT* ptr = dynamic_cast<g2o::VertexPointXY*>((*it));
+		auto vertex = corner_bundle.getMean();
+		//Getting the translation out of the transform : https://en.wikipedia.org/wiki/Transformation_matrix
+		p.x = vertex(0);
+		p.y = vertex(1);
+		p.z = 0;
+		
+		
+		double x, y, z;
+		fuser->map->getCellSizeInMeters(x, y, z);
+		
+// 				std::cout << "getting the angle" << std::endl;
+		
+		for(auto it = corner_bundle.getOrientations().begin() ; it != corner_bundle.getOrientations().end(); ++it){
+			
+			_corner_orientation.points.push_back(p);
+			double angle = *it;
+			
+			std::cout << "angle " << angle<< std::endl;
+			geometry_msgs::Point p2;
+			p2.x = p.x + (2 * x * std::cos(angle) );
+			p2.y = p.y + (2 * x * std::sin(angle) );
+			p2.z = 0;
+			_corner_orientation.points.push_back(p2);
+		}
+// 				
+// 				std::cout << "Line " << p << " "<< p2 << std::endl;;
+				
+	}
+	
+	
+	
+	
 	
   bool save_map_callback(std_srvs::Empty::Request  &req,
                          std_srvs::Empty::Response &res ) {

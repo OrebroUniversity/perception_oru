@@ -28,7 +28,7 @@
 	<param name="beHMT" value="false" />
 	<param name="useOdometry" value="true" />
 	<param name="odometry_topic" value="/vmc_navserver/odom" />
-	<param name="visualize" value="true" />
+	<param name="visualize" value="false" />
 	<param name="plotGTTrack" value="true" />
 	<param name="initPoseFromGT" value="true" />
 	<param name="gt_topic" value="/vmc_navserver/state" />

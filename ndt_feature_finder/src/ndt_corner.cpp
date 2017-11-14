@@ -1,6 +1,17 @@
 #include "ndt_feature_finder/ndt_corner.hpp"
 
 
+std::vector< perception_oru::ndt_feature_finder::NDTCornerBundle > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const lslgeneric::NDTMap& map, const Eigen::Vector3d& robot_pose)
+{
+	auto corners_temp = getAllCorners(map);
+	std::vector< NDTCornerBundle > corners;
+	
+	
+	
+	
+	return corners;
+}
+
 std::vector< perception_oru::ndt_feature_finder::NDTCornerBundle > perception_oru::ndt_feature_finder::NDTCorner::getAllCorners(const lslgeneric::NDTMap& map)
 {
 	
@@ -54,7 +65,11 @@ bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const lslgeneri
 		//For every cell get all other cells around and test if at least two are pointing toward the center cell
 		//Get neighbor of the cell
 // 		std::cout << "Getting closest cells" <<std::endl;
-		auto neighbor = getClosestCells(map, cell, _neighbor_size);
+		
+		std::vector< boost::shared_ptr< lslgeneric::NDTCell > > neighbor;
+		std::vector< boost::shared_ptr< lslgeneric::NDTCell > > cells_initialized;
+		
+		getClosestCells(map, cell, _neighbor_size, neighbor, cells_initialized);
 		
 // 		std::cout << "Got the closest cells : " << neighbor.size() <<std::endl;
 		assert(neighbor.size() <= allCells.size());
@@ -102,7 +117,7 @@ bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const lslgeneri
 			auto possible_neighbor = neighbor;
 			if(possible_neighbor.size() > 0){
 // 				std::cout << "nieghbor size " << possible_neighbor.size() << std::endl;
-				if(gotAngledNDT(map, possible_neighbor, corner)){
+				if(gotAngledNDT(map, possible_neighbor, cells_initialized, corner)){
 					return true;
 				}
 			}
@@ -145,45 +160,52 @@ bool perception_oru::ndt_feature_finder::NDTCorner::cellIsCorner(const lslgeneri
 // 	}
 // }
 
-std::vector< boost::shared_ptr< lslgeneric::NDTCell > > perception_oru::ndt_feature_finder::NDTCorner::getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size) const{
-	double max = _x_cell_size;
-	if(max < _y_cell_size){
-		max = _y_cell_size;
-	}
-	if(max < _z_cell_size){
-		max = _z_cell_size;
-	}
-	
-	auto lazygrid = dynamic_cast<lslgeneric::LazyGrid*>(map.getMyIndex());
-	pcl::PointXYZ point = cell.getCenter();
-	double radius = max;
-	std::vector< boost::shared_ptr< lslgeneric::NDTCell > > cells;
-	
-	std::cout << "RADIUS " << radius << "*" << neig_size << std::endl;
-	
-// 	lazygrid->getNeighborsShared(point, radius * neig_size, cells);
-	cells = lazygrid->getClosestNDTCellsShared(point, neig_size, true);
-	
-	std::cout << "OUT /*SIZE*/ " << cells.size() << " " << max <<std::endl;
-// 	exit(0);
-	
-	std::vector<boost::shared_ptr< lslgeneric::NDTCell> > cells_out;
-	for(size_t j = 0 ; j < cells.size() ; ++j){
-// 		std::cout << "Celly " << cells[j]->getMean() << std::endl;
-		if(cells[j]->hasGaussian_ == true){
-// 			std::cout << "PUSHED" << std::endl;
-			cells_out.push_back(cells[j]);
-		}
-	}
-	
-	std::cout << cells_out.size() << " == " << cells.size() << std::endl;
-	assert(cells_out.size() == cells.size());
-	
-// 	std::cout << "Center " << cell.getMean() << std::endl;
-// 	std::cout << "Nei " << cells_out.size() << " " << max <<std::endl;
-	
-	return cells_out;
-}
+// void perception_oru::ndt_feature_finder::NDTCorner::getClosestCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell, int neig_size, std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& cells_gaussian, std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& cells_initialized) const{
+// 	double max = _x_cell_size;
+// 	if(max < _y_cell_size){
+// 		max = _y_cell_size;
+// 	}
+// 	if(max < _z_cell_size){
+// 		max = _z_cell_size;
+// 	}
+// 	
+// 	auto lazygrid = dynamic_cast<lslgeneric::LazyGrid*>(map.getMyIndex());
+// 	pcl::PointXYZ point = cell.getCenter();
+// 	double radius = max;
+// 	std::vector< boost::shared_ptr< lslgeneric::NDTCell > > cells;
+// 	
+// // 	std::cout << "RADIUS " << radius << "*" << neig_size << std::endl;
+// 	
+// // 	lazygrid->getNeighborsShared(point, radius * neig_size, cells);
+// 	//Get all closest cell and then classify to keep the one with gaussians and the initialized ones
+// 	cells = lazygrid->getClosestNDTCellsShared(point, neig_size, false);
+// 	
+// // 	std::cout << "OUT /*SIZE*/ " << cells.size() << " " << max <<std::endl;
+// // 	exit(0);
+// 	
+// // 	std::vector<boost::shared_ptr< lslgeneric::NDTCell> > cells_gaussian;
+// 	cells_gaussian.clear();
+// 	cells_initialized.clear();
+// 	
+// 	for(size_t j = 0 ; j < cells.size() ; ++j){
+// // 		std::cout << "Celly " << cells[j]->getMean() << std::endl;
+// 		if(cells[j]->hasGaussian_ == true){
+// // 			std::cout << "PUSHED" << std::endl;
+// 			cells_gaussian.push_back(cells[j]);
+// 		}
+// 		else if(cells[j]->isEmpty == 1){
+// 			cells_initialized.push_back(cells[j]);
+// 		}
+// 	}
+// 	
+// // 	std::cout << cells_gaussian.size() << " == " << cells.size() << std::endl;
+// // 	assert(cells_gaussian.size() == cells.size());
+// 	
+// // 	std::cout << "Center " << cell.getMean() << std::endl;
+// // 	std::cout << "Nei " << cells_out.size() << " " << max <<std::endl;
+// 	
+// // 	return cells_gaussian;
+// }
 
 
 // std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorner::getClosestCells(const std::vector< lslgeneric::NDTCell* >& allcells, const lslgeneric::NDTCell& cell) const
@@ -300,7 +322,7 @@ std::vector< lslgeneric::NDTCell* > perception_oru::ndt_feature_finder::NDTCorne
 	return possible_neighbor;
 }
 
-bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneric::NDTMap& map,std::vector<  boost::shared_ptr< lslgeneric::NDTCell > >& neighbor, NDTCornerBundle& corner) {
+bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneric::NDTMap& map, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& neighbor, const std::vector< boost::shared_ptr< lslgeneric::NDTCell > >& cells_initialized, NDTCornerBundle& corner) {
 	
 	for(size_t j = 0 ; j < neighbor.size() ; ++j){
 		//Get orientation of neighbor 
@@ -379,15 +401,23 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 			//END OF TEST
 			
 			double angle_tmp;
-			double direction;
-			angleNDTCells(*neighbor[j], *neighbor[i], collision_point, angle_tmp, direction);
+			std::vector<double> orientations;
+// 			double orientation_t;
+// 			angleNDTCells(*neighbor[j], *neighbor[i], collision_point, angle_tmp, orientation_t);
+// 			orientations.push_back(orientation_t);
+			angleNDTCells(map, *neighbor[j], *neighbor[i], collision_point, angle_tmp, orientations);
 			
 			//TEST
-				assert(angle_tmp_test == angle_tmp);
-				assert(direction_test == direction);
+// 				assert(angle_tmp_test == angle_tmp);
+// 				assert(direction_test == direction);
 			//END OF TEST
 			
-			if( (angle_tmp < ( ( M_PI / 2 ) + 0.1 ) ) && ( angle_tmp > ( ( M_PI / 2 ) - 0.1 ) ) ){
+			if( (angle_tmp < ( ( M_PI / 2 ) + 0.1 ) ) && ( angle_tmp > ( ( M_PI / 2 ) - 0.1 ) ) ||
+				(angle_tmp < ( ( 3 * M_PI / 2 ) + 0.1 ) ) && ( angle_tmp > ( ( 3 * M_PI / 2 ) - 0.1 ) )
+			){
+				
+// 				assert(orientations.size() >= 1);
+				//Need to correct angle orientation depending on where does the robot see the angle from. Check on which direction with initialized cells with no gaussians. Add a direction there.
 
 				//TODO Parameter to check that a certain number of neighbor of the crossing ndt or aligned.
 // 					auto neig1 = getClosestCells(map, *neighbor[j], 2);
@@ -409,7 +439,7 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 				corner.push_back_cell1(neighbor[i]);
 				corner.push_back_cell2(neighbor[j]);
 				corner.setAngle(angle_tmp);
-				corner.setOrientation(direction);
+				corner.setOrientations(orientations);
 				corner.gaussian();
 
 				

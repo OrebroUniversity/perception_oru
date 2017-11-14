@@ -390,6 +390,18 @@ bool NDTMap::getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell)
     return (cell != NULL);
 }
 
+bool NDTMap::getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell) const 
+{
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    lz->getNDTCellAt(refPoint,cell);
+    return (cell != NULL);
+}
+
 /**
  * Adds a new cloud: NDT-OM update step
  */

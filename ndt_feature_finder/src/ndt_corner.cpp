@@ -401,11 +401,11 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 			//END OF TEST
 			
 			double angle_tmp;
-			std::vector<double> orientations;
-// 			double orientation_t;
-// 			angleNDTCells(*neighbor[j], *neighbor[i], collision_point, angle_tmp, orientation_t);
+			double orientation_t;
+			//Faster function, only calculate angle for testing
+			angleNDTCells(*neighbor[j], *neighbor[i], collision_point, angle_tmp, orientation_t);
 // 			orientations.push_back(orientation_t);
-			angleNDTCells(map, *neighbor[j], *neighbor[i], collision_point, angle_tmp, orientations);
+			
 			
 			//TEST
 // 				assert(angle_tmp_test == angle_tmp);
@@ -416,6 +416,10 @@ bool perception_oru::ndt_feature_finder::NDTCorner::gotAngledNDT(const lslgeneri
 				(angle_tmp < ( ( 3 * M_PI / 2 ) + 0.1 ) ) && ( angle_tmp > ( ( 3 * M_PI / 2 ) - 0.1 ) )
 			){
 				
+				std::vector<double> orientations;
+				//Calculate orientations. Slower function so we only use it if we found an angle
+// 				angleNDTCells(map, *neighbor[j], *neighbor[i], collision_point, angle_tmp, orientations);
+				orientationNDTCells(map, *neighbor[j], *neighbor[i], collision_point, angle_tmp, orientation_t, orientations);
 // 				assert(orientations.size() >= 1);
 				//Need to correct angle orientation depending on where does the robot see the angle from. Check on which direction with initialized cells with no gaussians. Add a direction there.
 

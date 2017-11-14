@@ -131,19 +131,15 @@ namespace perception_oru{
 		}
 		
 		/**
-		 * @brief return the angle between two ndt cell and its direction.
+		 * @brief return the angle between two ndt cell and all possible direction found using initialized but unoccupied cells.
 		 * @param[in] cell1 : first cell
 		 * @param[in] cell2 : second cell
 		 * @param[in] collision_point : collision point of both cells
 		 * @param[in] initialized_cells : initialized_cells around corner
-		 * @param[out] angle : actual angle
+		 * @param[in] angle : actual angle
 		 * @param[out] angle_directions : all possible direction of the angle depending on empty cells around it.
 		 */
-		inline void angleNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double& angle, std::vector<double>& angle_orientations){
-			
-			std::cout << "angle ndt cell multiple" << std::endl;
-			double orientation;
-			angleNDTCells(cell1, cell2, collision_point, angle, orientation);
+		inline void orientationNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double angle, double orientation, std::vector<double>& angle_orientations){
 			
 			auto point_center = cell1.getCenter();
 			auto point_center2 = cell2.getCenter();
@@ -414,11 +410,25 @@ namespace perception_oru{
 // // 				}
 // // 			}
 			
+
 			
+		}
+		
+		/**
+		 * @brief return the angle between two ndt cell and all possible orientations found using initialized but unoccupied cells.
+		 * @param[in] cell1 : first cell
+		 * @param[in] cell2 : second cell
+		 * @param[in] collision_point : collision point of both cells
+		 * @param[in] initialized_cells : initialized_cells around corner
+		 * @param[out] angle : actual angle
+		 * @param[out] angle_directions : all possible direction of the angle depending on empty cells around it.
+		 */
+		inline void angleNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double& angle, std::vector<double>& angle_orientations){
 			
-			
-			
-			
+			std::cout << "angle ndt cell multiple" << std::endl;
+			double orientation;
+			angleNDTCells(cell1, cell2, collision_point, angle, orientation);
+			orientationNDTCells(map, cell1, cell2, collision_point, angle, orientation, angle_orientations);
 			
 		}
 		

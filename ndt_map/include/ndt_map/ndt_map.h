@@ -368,6 +368,8 @@ public:
     ///Get the cell for which the point fall into (not the closest cell)
     virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell);
     virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell) const ;
+    virtual bool getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell);
+    virtual bool getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell) const ;
 
     /**
      * returns the closest cell to refPoint

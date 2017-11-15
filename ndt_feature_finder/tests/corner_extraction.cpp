@@ -576,9 +576,10 @@ public:
 		fuser->map->getCellSizeInMeters(x, y, z);
 		
 // 				std::cout << "getting the angle" << std::endl;
-		
+		int i = 0;
 		for(auto it = corner_bundle.getOrientations().begin() ; it != corner_bundle.getOrientations().end(); ++it){
 			
+			assert(corner_bundle.getOrientations().size() == corner_bundle.getAngles().size());
 			_corner_orientation.points.push_back(p);
 			double angle = *it;
 			
@@ -588,7 +589,26 @@ public:
 			p2.y = p.y + (2 * x * std::sin(angle) );
 			p2.z = 0;
 			_corner_orientation.points.push_back(p2);
+			
+			double anglew = corner_bundle.getAngles()[i];
+			
+			std::cout << "angle " << angle<< std::endl;
+			p2.x = p.x + (2 * std::cos(angle - (anglew/2)) );
+			p2.y = p.y + (2 * std::sin(angle - (anglew/2)) );
+			p2.z = 0;
+			_corner_orientation.points.push_back(p);
+			_corner_orientation.points.push_back(p2);
+			
+// 			std::cout << "angle " << angle<< std::endl;
+			p2.x = p.x + (2 * std::cos(angle + (anglew/2)) );
+			p2.y = p.y + (2 * std::sin(angle + (anglew/2)) );
+			p2.z = 0;
+			_corner_orientation.points.push_back(p);
+			_corner_orientation.points.push_back(p2);
+			++i;
 		}
+		
+		
 // 				
 // 				std::cout << "Line " << p << " "<< p2 << std::endl;;
 				

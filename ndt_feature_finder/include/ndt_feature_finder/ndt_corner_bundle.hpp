@@ -32,7 +32,7 @@ namespace perception_oru{
 			
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell1;
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > > _cell2;
-			double _angle;
+			std::vector<double> _angle;
 			std::vector<double> _orientation;
 			
 			Eigen::Matrix3d _eigen_vector;
@@ -52,7 +52,7 @@ namespace perception_oru{
 				_mean = m;
 				
 			}
-			void setAngle(double a){_angle = a;}
+			void setAngles(const std::vector<double>& a){_angle = a;}
 			void setOrientations(const std::vector<double>& d){_orientation = d;}
 			cv::Point2d getMeanOpenCV(){
 				cv::Point2d p;
@@ -68,7 +68,7 @@ namespace perception_oru{
 			Eigen::Matrix3d getEigenVectors() {return _eigen_vector;}
 			Eigen::Vector3d getEigenValues() {return _eigen_values;}
 			const std::vector<double>& getOrientations() const {return _orientation;}
-			double getAngle() const {return _angle;}
+			const std::vector<double>& getAngles() const {return _angle;}
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells1(){return _cell1;}
 			const std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells1() const {return _cell1;}
 			std::vector<boost::shared_ptr< lslgeneric::NDTCell > >& getCells2(){return _cell2;}

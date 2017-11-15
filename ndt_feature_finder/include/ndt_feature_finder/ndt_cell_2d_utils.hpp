@@ -139,7 +139,7 @@ namespace perception_oru{
 		 * @param[in] angle : actual angle
 		 * @param[out] angle_directions : all possible direction of the angle depending on empty cells around it.
 		 */
-		inline void orientationNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double angle, double orientation, std::vector<double>& angle_orientations){
+		inline void orientationNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double angle, double orientation, std::vector<double>& angles, std::vector<double>& angle_orientations){
 			
 			auto point_center = cell1.getCenter();
 			auto point_center2 = cell2.getCenter();
@@ -239,20 +239,30 @@ namespace perception_oru{
 							
 							
 							//Calculating the angle between both vector
-							double angle_init_orientation = atan2(vector_init(1), vector_init(0)) - atan2(orientation_vector(1), orientation_vector(0));
+							Eigen::Vector2d vector_init_2d; vector_init_2d << vector_init(0), vector_init(1);
+							Eigen::Vector2d  orientation_vector_2d; orientation_vector_2d <<  orientation_vector(0),  orientation_vector(1);
+// 							double angle_init_orientation = getAngleDirected(vector_init_2d, orientation_vector_2d);
+							double angle_init_orientation = getAngle(vector_init, orientation_vector);
+							
+// 							std::cout << angle_init_orientation << " == " << angle_init_orientation_3dtest << std::endl;
+// 							assert(angle_init_orientation == angle_init_orientation_3dtest);
+// 							double angle_init_orientation = atan2(vector_init(1), vector_init(0)) - atan2(orientation_vector(1), orientation_vector(0));
+							
 							//Angle between 0 and 2pi
 							if (angle_init_orientation < 0) angle_init_orientation += 2 * M_PI;
 							if (angle_init_orientation >= 2 * M_PI) angle_init_orientation -= 2 * M_PI;
-							//Angle between 0 and pi
+							//Angle between 0 and pi Because we don't care about orientation as in how close they are
 							if (angle_init_orientation >= M_PI) angle_init_orientation = (2 * M_PI) - angle_init_orientation;
 							
 							
-							//Are they pointing the same direction? (45deg)
+							//Are they pointing the same direction? Thus is the angle between the orientation and the initialised cell less than 0.78rad (45deg)
 							if(angle_init_orientation < 0.78){
 								
 								//Check that the direction is in the middle of the gaussians
 								double angle_between = atan2(vector1(1), vector1(0)) - atan2(orientation_vector(1), orientation_vector(0));
 								double angle_between2 = atan2(orientation_vector(1), orientation_vector(0)) - atan2(vector2(1), vector2(0) );
+								
+								
 								
 								//Angle between 0 and 2pi
 								if (angle_between < 0) angle_between += 2 * M_PI;
@@ -264,6 +274,11 @@ namespace perception_oru{
 								if (angle_between >= M_PI) angle_between = (2 * M_PI) - angle_between;
 								if (angle_between2 >= M_PI) angle_between2 = (2 * M_PI) - angle_between2;
 								
+								//Actual angle between the gaussian and passing by the orientation.
+								double angle_final = angle_between + angle_between2;
+								while(angle_final >= 2 * M_PI){
+									angle_between -= 2 * M_PI;
+								}
 								
 								std::cout << " ANGLE "  << atan2(vector1(1), vector1(0)) - atan2(orientation_vector(1), orientation_vector(0)) << " and " << std::abs( atan2(vector2(1), vector2(0)) - atan2(orientation_vector(1), orientation_vector(0)) ) << std::endl;
 								std::cout << "FINAL ANGLES " << angle_between << " " << angle_between2<<std::endl;
@@ -272,6 +287,7 @@ namespace perception_oru{
 								if(	(angle_between < ( angle_between2 + 0.1 ) ) && ( angle_between > (angle_between2 - 0.1 ) ) ){
 									std::cout << "Pushing back " << orientation + (i * M_PI)<< " with " << angle_between << " " << angle_between2 << std::endl;
 									angle_orientations.push_back(orientation + (i * M_PI));
+									angles.push_back(angle_final);
 								}
 								else{
 									std::cout << "Wrong angle " << angle_between << " " << angle_between2 << std::endl;
@@ -423,12 +439,12 @@ namespace perception_oru{
 		 * @param[out] angle : actual angle
 		 * @param[out] angle_directions : all possible direction of the angle depending on empty cells around it.
 		 */
-		inline void angleNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double& angle, std::vector<double>& angle_orientations){
+		inline void angleNDTCells(const lslgeneric::NDTMap& map, const lslgeneric::NDTCell& cell1, const lslgeneric::NDTCell& cell2, const Eigen::Vector3d& collision_point, double& angle, std::vector<double>& angles, std::vector<double>& angle_orientations){
 			
 			std::cout << "angle ndt cell multiple" << std::endl;
 			double orientation;
 			angleNDTCells(cell1, cell2, collision_point, angle, orientation);
-			orientationNDTCells(map, cell1, cell2, collision_point, angle, orientation, angle_orientations);
+			orientationNDTCells(map, cell1, cell2, collision_point, angle, orientation, angles, angle_orientations);
 			
 		}
 		

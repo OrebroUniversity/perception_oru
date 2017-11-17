@@ -69,20 +69,22 @@ namespace lslgeneric{
     }
     for(int itr=0;itr<msg->cells.size();itr++){
     //for(int itr=0;itr<10;itr++){
-      boost::shared_ptr<NDTVisual> visual;
-      visual.reset(new NDTVisual(context_->getSceneManager(), scene_node_));
-      if(!(msg->x_cell_size==msg->y_cell_size&&msg->y_cell_size==msg->z_cell_size)){ 
-        ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
-        //return false;
-      }
+		if(msg->cells[itr].hasGaussian_ == true){
+			boost::shared_ptr<NDTVisual> visual;
+			visual.reset(new NDTVisual(context_->getSceneManager(), scene_node_));
+			if(!(msg->x_cell_size==msg->y_cell_size&&msg->y_cell_size==msg->z_cell_size)){ 
+				ROS_ERROR("SOMETHING HAS GONE VERY WRONG YOUR VOXELL IS NOT A CUBE"); 
+				//return false;
+			}
 
-      visual->setCell(msg->cells[itr],msg->x_cell_size);
-      visual->setFramePosition(position);
-      visual->setFrameOrientation(orientation);
-      float alpha = alpha_property_->getFloat();
-      Ogre::ColourValue color=color_property_->getOgreColor();
-      visual->setColor(color.r,color.g,color.b,alpha);
-      visuals_.push_back(visual);
+			visual->setCell(msg->cells[itr],msg->x_cell_size);
+			visual->setFramePosition(position);
+			visual->setFrameOrientation(orientation);
+			float alpha = alpha_property_->getFloat();
+			Ogre::ColourValue color=color_property_->getOgreColor();
+			visual->setColor(color.r,color.g,color.b,alpha);
+			visuals_.push_back(visual);
+		}
     }
   }
 }

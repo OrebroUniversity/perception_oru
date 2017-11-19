@@ -40,23 +40,33 @@ namespace perception_oru{
 	  return false;
     }
     for (int cell_idx=0;cell_idx<map_vector.size();cell_idx++){
-	  if(map_vector[cell_idx]->hasGaussian_){ //we only send a cell with gaussian
-        ndt_map::NDTCellMsg cell;
-        Eigen::Vector3d means=map_vector[cell_idx]->getMean();
-        cell.mean_x=means(0);
-        cell.mean_y=means(1);
-        cell.mean_z=means(2);
-        cell.occupancy=map_vector[cell_idx]->getOccupancyRescaled();
-        Eigen::Matrix3d cov=map_vector[cell_idx]->getCov();
-        for(int i=0;i<3;i++){
-		  for(int j=0;j<3;j++){
-            cell.cov_matrix.push_back(cov(i,j));
-		  }
-        }
-        cell.N=map_vector[cell_idx]->getN();
-        msg.cells.push_back(cell);
-	  }
-	  delete map_vector[cell_idx];
+		if(map_vector[cell_idx] != NULL){ //we send intialized cells
+			
+			ndt_map::NDTCellMsg cell;
+			cell.hasGaussian_ = map_vector[cell_idx]->hasGaussian_;
+			
+			cell.center_x = map_vector[cell_idx]->getCenter().x;
+			cell.center_y = map_vector[cell_idx]->getCenter().y;
+			cell.center_z = map_vector[cell_idx]->getCenter().z;
+			
+			if(map_vector[cell_idx]->hasGaussian_){ //we only send a cell with gaussian
+			
+				Eigen::Vector3d means=map_vector[cell_idx]->getMean();
+				cell.mean_x=means(0);
+				cell.mean_y=means(1);
+				cell.mean_z=means(2);
+				cell.occupancy=map_vector[cell_idx]->getOccupancyRescaled();
+				Eigen::Matrix3d cov=map_vector[cell_idx]->getCov();
+				for(int i=0;i<3;i++){
+				for(int j=0;j<3;j++){
+					cell.cov_matrix.push_back(cov(i,j));
+				}
+				}
+				cell.N=map_vector[cell_idx]->getN();
+			}
+			msg.cells.push_back(cell);
+		}
+		delete map_vector[cell_idx];
     }
     return true;
   }
@@ -81,17 +91,37 @@ namespace perception_oru{
     frame_name=msg.header.frame_id;
     int gaussians=0;
     for(int itr=0;itr<msg.cells.size();itr++){
-	  Eigen::Vector3d mean;
-	  Eigen::Matrix3d cov;
-	  mean<<msg.cells[itr].mean_x,msg.cells[itr].mean_y,msg.cells[itr].mean_z;
-	  int m_itr=0;
-	  for(int i=0;i<3;i++){
-        for(int j=0;j<3;j++){
-		  cov(i,j)=msg.cells[itr].cov_matrix[m_itr];
-		  m_itr++;
-        }
-	  }
-	  map->addDistributionToCell(cov,mean,msg.cells[itr].N);
+		if(msg.cells[itr].hasGaussian_ == true){
+			Eigen::Vector3d mean;
+			Eigen::Matrix3d cov;
+			mean<<msg.cells[itr].mean_x,msg.cells[itr].mean_y,msg.cells[itr].mean_z;
+			int m_itr=0;
+			for(int i=0;i<3;i++){
+				for(int j=0;j<3;j++){
+				cov(i,j)=msg.cells[itr].cov_matrix[m_itr];
+				m_itr++;
+				}
+			}
+			map->addDistributionToCell(cov,mean,msg.cells[itr].N);
+		}
+		else{
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			perception_oru::NDTCell* ptCell;
+			pcl::PointXYZ point;
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			point.x = msg.cells[itr].center_x;
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			point.y = msg.cells[itr].center_y;
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			point.z = msg.cells[itr].center_z;
+			std::cout << "Getting the Cell" << std::endl;
+			map->getCellAtAllocate(point, ptCell);
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			ptCell->updateOccupancy(-0.2);
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+			if(ptCell->getOccupancy()<=0) ptCell->hasGaussian_ = false; 
+			std::cout << "Adding initialized cell with no gaussian" << std::endl;
+		}
     }
     return true;
   }

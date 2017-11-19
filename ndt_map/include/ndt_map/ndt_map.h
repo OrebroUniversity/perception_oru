@@ -390,29 +390,33 @@ public:
     * Stuff for saving things
     */
 
-  int writeToJFF(const char* filename);
-  int writeLazyGridJFF(FILE * jffout);
-  int writeCellVectorJFF(FILE * jffout);
-  int writeOctTreeJFF(FILE * jffout);
 
-  int loadFromJFF(const char* filename);
-  int loadFromJFF(FILE * jffin);
-  inline SpatialIndex* getMyIndex() const
-  {
-    return index_;
-  }
-  /// return the spatial index used as a string
-  std::string getMyIndexStr() const;
-  /// return the spatial index used as an integer
-  int getMyIndexInt() const;
+    int writeToJFF(const char* filename);
+    int writeLazyGridJFF(FILE * jffout);
+    int writeCellVectorJFF(FILE * jffout);
+    int writeOctTreeJFF(FILE * jffout);
 
-  //computes the likelihood of a single observation
-  virtual double getLikelihoodForPoint(pcl::PointXYZ pt);
+    int loadFromJFF(const char* filename);
+    int loadFromJFF(FILE * jffin);
+    inline SpatialIndex* getMyIndex() const
+    {
+        return index_;
+    }
+    /// return the spatial index used as a string
+    std::string getMyIndexStr() const;
+    /// return the spatial index used as an integer
+    int getMyIndexInt() const;
 
-  ///Get the cell for which the point fall into (not the closest cell)
-  virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell);
+    //computes the likelihood of a single observation
+    virtual double getLikelihoodForPoint(pcl::PointXYZ pt);
 
-  /**
+    ///Get the cell for which the point fall into (not the closest cell)
+    virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell);
+    virtual bool getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell) const ;
+    virtual bool getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell);
+    virtual bool getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell) const ;
+
+    /**
      * returns the closest cell to refPoint
      * Does not work with NDT-OM
      */
@@ -447,7 +451,13 @@ public:
      */
   virtual std::vector<perception_oru::NDTCell*> getAllCells() const;
 
-  std::vector< boost::shared_ptr< NDTCell > > getAllCellsShared() const;
+	/**
+     * Returns all computed cells from the map
+     * This method gives all the vectors that contain a gaussian within a cell (hasGaussian is true).
+	 * New is called in the function and the vector needs to be deleted.
+     */
+  virtual std::vector< boost::shared_ptr< NDTCell > > getAllCellsShared() const;
+
 
   /**
      * Returns all cells that have been initialized (including ones that do not contain gaussian at the moment).

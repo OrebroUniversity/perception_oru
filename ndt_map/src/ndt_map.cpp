@@ -390,12 +390,51 @@ bool NDTMap::getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell)
     return (cell != NULL);
 }
 
+bool NDTMap::getCellAtPoint(const pcl::PointXYZ &refPoint, NDTCell *&cell) const 
+{
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    lz->getNDTCellAt(refPoint,cell);
+    return (cell != NULL);
+}
+
+///Get the cell for which the point fall into (not the closest cell)
+bool NDTMap::getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell)
+{
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    lz->getCellAtAllocate(refPoint,cell);
+    return (cell != NULL);
+}
+
+bool NDTMap::getCellAtAllocate(const pcl::PointXYZ &refPoint, NDTCell *&cell) const 
+{
+    LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
+    if(lz==NULL)
+    {
+        fprintf(stderr,"NOT LAZY GRID!!!\n");
+        exit(1);
+    }
+    lz->getCellAtAllocate(refPoint,cell);
+    return (cell != NULL);
+}
+
 /**
  * Adds a new cloud: NDT-OM update step
  */
 void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<pcl::PointXYZ> &pc, double classifierTh, double maxz, 
 	double sensor_noise, double occupancy_limit)
 {
+// 	std::cout << "Good function: addPointCloud" << std::endl;
+// 	exit(0);
     if(isFirstLoad_)
     {
 			loadPointCloud( pc);
@@ -443,10 +482,14 @@ void NDTMap::addPointCloud(const Eigen::Vector3d &origin, const pcl::PointCloud<
 			}
 
 			cells.clear();
+// 			std::cout << "Tracing the line" << std::endl;
 			if(!lz->traceLine(origin,*it,diff,maxz,cells)) {
 					it++;
 					continue;
 			}
+// 			else{
+// 				std::cout << "That is not true so it's good" << std::endl;
+// 			}
 
 			for(unsigned int i=0; i<cells.size(); i++)
 			{

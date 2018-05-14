@@ -41,6 +41,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 ADD_DEFINITIONS(-DLINUX_OS)
 #find_package(ndt_visualisation)
 find_package(OpenGL REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(GLU REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(JPEG REQUIRED)
@@ -71,7 +72,7 @@ target_link_libraries(fuser3d_offline ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${J
 
 
 add_executable(bag_converter src/bag_converter.cpp)
-target_link_libraries(bag_converter ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})
+target_link_libraries(bag_converter ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS} ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(bag_file_view src/bag_file_view.cpp)
 target_link_libraries(bag_file_view ${LIBXML2_LIBRARIES} ${GLUT_LIBRARIES} ${JPEG_LIBRARIES} ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${Eigen_INCLUDE_DIRS})

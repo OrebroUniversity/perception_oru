@@ -19,6 +19,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 #include_directories(${LIBXML2_INCLUDE_DIR})
 #ADD_DEFINITIONS(-DLINUX_OS)
 find_package(OpenGL REQUIRED)
+find_package(OpenCV REQUIRED)
 #find_package(GLU REQUIRED)
 #find_package(GLUT REQUIRED)
 #find_package(JPEG REQUIRED)
@@ -136,6 +137,7 @@ add_executable(slice_map src/slice_map.cpp)
 target_link_libraries(ndt_costmap
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
   ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES}
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
 )
 
 target_link_libraries(2d_occ_map

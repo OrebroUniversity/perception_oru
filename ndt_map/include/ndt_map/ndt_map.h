@@ -169,6 +169,9 @@ public:
     map_sizex = sizex;
     map_sizey = sizey;
     map_sizez = sizez;
+    centerx = cenx;
+    centery = ceny;
+    centerz = cenz;
     is3D=true;
     LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz == NULL)
@@ -198,6 +201,9 @@ public:
     map_sizex = sizex;
     map_sizey = sizey;
     map_sizez = sizez;
+    centerx = cenx;
+    centery = ceny;
+    centerz = cenz;
     is3D=true;
     LazyGrid *lz = dynamic_cast<LazyGrid*>(index_);
     if(lz == NULL)

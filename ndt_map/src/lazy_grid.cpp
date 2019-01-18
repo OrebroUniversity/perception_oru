@@ -148,7 +148,7 @@ void LazyGrid::initializeAll()
 
 void LazyGrid::initialize()
 {
-
+	if(initialized) return;
     dataArray = new NDTCell***[sizeX];
     for(int i=0; i<sizeX; i++)
     {
